@@ -93,7 +93,7 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
   );
 
   const userMenu = (
-    <Dropdown.Popover placement="top left">
+    <Dropdown.Popover placement="top left" className={styles.profilePopover}>
       <Dropdown.Menu
         aria-label="用户菜单"
         className={styles.profileMenu}

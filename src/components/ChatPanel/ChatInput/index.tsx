@@ -1,8 +1,9 @@
-import AppIconButton from '@/components/Button/AppIconButton';
+import { FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH } from '@/constants/layoutScale';
+import { useEffectForce } from '@/hooks/useEffectForce';
 import { TextArea } from '@heroui/react';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { ChatInputStoreProvider } from './_store/ChatInputStoreProvider';
 import AttachmentStrip from './AttachmentStrip';
 import { ChatInputFileProvider } from './ChatInputFileContext';
@@ -24,7 +25,9 @@ function ChatInputContent({
   preferredAgent,
   fullWidth = false,
 }: ChatInputProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const inputCardRef = useRef<HTMLDivElement>(null);
+  const [compactModelTrigger, setCompactModelTrigger] = useState(false);
   const { attachmentStripProps, containerProps, dropOverlayProps, textAreaProps, toolbarProps } =
     useChatInputController({
       onSend,
@@ -32,33 +35,80 @@ function ChatInputContent({
       sending,
     });
 
+  const syncCompactModelTrigger = useCallback((width: number) => {
+    setCompactModelTrigger(width < FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH);
+  }, []);
+
+  /**
+   * 执行时机：fullWidth 挂载后，以及输入卡片尺寸变化时。
+   * 不可替代原因：模型按钮是否展示文案取决于输入区实宽，无法仅靠 fullWidth 判断。
+   * cleanup：断开 ResizeObserver。
+   */
+  useEffectForce(() => {
+    if (!fullWidth) {
+      setCompactModelTrigger(false);
+      return;
+    }
+
+    const inputCard = inputCardRef.current;
+    if (!inputCard || typeof ResizeObserver === 'undefined') {
+      syncCompactModelTrigger(window.innerWidth);
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      syncCompactModelTrigger(entry.contentRect.width);
+    });
+    observer.observe(inputCard);
+    syncCompactModelTrigger(inputCard.getBoundingClientRect().width);
+    return () => observer.disconnect();
+  }, [fullWidth, syncCompactModelTrigger]);
+
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
-    textarea.style.height = 'auto';
-    const maxHeight = Number.parseFloat(window.getComputedStyle(textarea).maxHeight);
-    const nextHeight = Number.isFinite(maxHeight)
-      ? Math.min(textarea.scrollHeight, maxHeight)
-      : textarea.scrollHeight;
+
+    // 先压到 0 再读 scrollHeight，避免沿用错误的大高度
+    textarea.style.height = '0px';
+    const contentHeight = textarea.scrollHeight;
+    const computedMax = window.getComputedStyle(textarea).maxHeight;
+    const parsedMax = Number.parseFloat(computedMax);
+    // calc(...) 时 parseFloat 为 NaN；侧栏与 fullWidth 共用同一回退上限
+    const maxHeightPx = Number.isFinite(parsedMax) ? parsedMax : 16 * 16 + 16;
+    const minHeightPx = Number.parseFloat(window.getComputedStyle(textarea).minHeight);
+    const floor = Number.isFinite(minHeightPx) ? minHeightPx : 0;
+    const nextHeight = Math.min(Math.max(contentHeight, floor), maxHeightPx);
     textarea.style.height = `${nextHeight}px`;
-    textarea.style.overflowY = textarea.scrollHeight > nextHeight ? 'auto' : 'hidden';
+    textarea.style.overflowY = contentHeight > nextHeight ? 'auto' : 'hidden';
   }, [textAreaProps.value]);
 
+  const modelIconOnly = !fullWidth || compactModelTrigger;
+
   return (
-    <div className={styles.container} {...containerProps}>
-      <div className={clsx(styles.inputCard, dropOverlayProps.visible && styles.inputCardDragOver)}>
+    <div
+      className={styles.container}
+      data-model-trigger={modelIconOnly ? 'icon' : 'default'}
+      {...containerProps}
+    >
+      <div
+        ref={inputCardRef}
+        className={clsx(styles.inputCard, dropOverlayProps.visible && styles.inputCardDragOver)}
+      >
         <AttachmentStrip {...attachmentStripProps} />
 
         {contextPreview ? (
           <div className={styles.contextAttachment}>
             <span className={styles.contextAttachmentPreview}>{contextPreview}</span>
-            <AppIconButton
-              icon={<X size={14} aria-hidden="true" />}
-              label="移除上下文"
-              size="sm"
+            <button
+              type="button"
               className={styles.contextAttachmentClear}
-              onPress={onClearContext}
-            />
+              aria-label="移除上下文"
+              onClick={onClearContext}
+            >
+              <X size={14} />
+            </button>
           </div>
         ) : null}
 
@@ -74,7 +124,7 @@ function ChatInputContent({
           {...toolbarProps}
           injectedAgents={injectedAgents}
           preferredAgent={preferredAgent}
-          modelIconOnly={!fullWidth}
+          modelIconOnly={modelIconOnly}
         />
 
         <DropOverlay {...dropOverlayProps} />

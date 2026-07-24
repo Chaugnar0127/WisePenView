@@ -1,3 +1,4 @@
+import { APP_MAIN_MIN_WIDTH, LAYOUT_DENSITY, resolveLayoutDensity } from '@/constants/layoutScale';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
 import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
 import {
@@ -11,6 +12,7 @@ import {
   SystemResizablePanel,
   SystemResizablePanelGroup,
 } from '@/layouts/_common/SystemResizable';
+import { useCompactSidebarCollapse } from '@/layouts/_common/useCompactSidebarCollapse';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
@@ -25,11 +27,13 @@ import type {
 import { Outlet } from 'react-router-dom';
 import styles from './AppLayout.module.less';
 
-const MAIN_MIN_WIDTH = 360;
-
 function AppLayout() {
   const appNavigation = useAppNavigation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      resolveLayoutDensity(window.innerWidth) === LAYOUT_DENSITY.COMPACT
+  );
   const storedSidebarWidth = useSystemLayoutStore((state) => state.appSidebarWidth);
   const setSidebarWidth = useSystemLayoutStore((state) => state.setAppSidebarWidth);
   const sidebarPanelRef = useRef<PanelImperativeHandle | null>(null);
@@ -37,25 +41,35 @@ function AppLayout() {
   const sidebarWidth = clampSidebarWidth(storedSidebarWidth);
   const sidebarPanelSize = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : sidebarWidth;
 
+  const persistSidebarWidthFromPanel = useCallback(() => {
+    const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
+    if (currentWidth == null) return;
+    const nextSidebarWidth = clampSidebarWidth(currentWidth);
+    if (nextSidebarWidth > SIDEBAR_MIN_WIDTH || sidebarWidth === SIDEBAR_MIN_WIDTH) {
+      setSidebarWidth(nextSidebarWidth);
+    }
+  }, [setSidebarWidth, sidebarWidth]);
+
+  const { density, markSidebarUserOverride } = useCompactSidebarCollapse({
+    sidebarCollapsed,
+    setSidebarCollapsed,
+    onAutoCollapse: persistSidebarWidthFromPanel,
+  });
+
   useResizablePanelSize({
     panelRef: sidebarPanelRef,
     size: sidebarPanelSize,
   });
 
   const handleSidebarToggle = useCallback(() => {
+    markSidebarUserOverride();
     setSidebarCollapsed((collapsed) => {
       if (!collapsed) {
-        const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
-        if (currentWidth != null) {
-          const nextSidebarWidth = clampSidebarWidth(currentWidth);
-          if (nextSidebarWidth > SIDEBAR_MIN_WIDTH || sidebarWidth === SIDEBAR_MIN_WIDTH) {
-            setSidebarWidth(nextSidebarWidth);
-          }
-        }
+        persistSidebarWidthFromPanel();
       }
       return !collapsed;
     });
-  }, [setSidebarWidth, sidebarWidth]);
+  }, [markSidebarUserOverride, persistSidebarWidthFromPanel]);
 
   const handleSidebarResize = useCallback(
     (panelSize: PanelSize) => {
@@ -76,7 +90,7 @@ function AppLayout() {
   );
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-layout-density={density}>
       {sidebarCollapsed ? (
         <div className={styles.collapsedHeaderControls}>
           <AppNavigationControls
@@ -124,7 +138,7 @@ function AppLayout() {
 
         <SystemResizablePanel
           id="app-main"
-          minSize={MAIN_MIN_WIDTH}
+          minSize={APP_MAIN_MIN_WIDTH}
           className={styles.middleLayout}
         >
           <main className={styles.middleContent}>

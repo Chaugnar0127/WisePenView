@@ -14,7 +14,7 @@ export interface ChatInputProps {
   onClearContext?: () => void;
   injectedAgents?: ChatAgentOption[];
   preferredAgent?: ChatAgentOption | null;
-  /** 全宽页展示模型名；侧栏窄宽时仅图标 */
+  /** 全宽页默认可展示模型名；窄宽时自动仅图标（与侧栏一致） */
   fullWidth?: boolean;
 }
 

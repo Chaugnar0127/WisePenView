@@ -1,15 +1,17 @@
 import { useMessageScroller } from '@/components/_shadcn';
 import { useEffectForce } from '@/hooks/useEffectForce';
-import { Button, Disclosure } from '@heroui/react';
-import { Brain } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { Button } from '@heroui/react';
+import { Brain, ChevronDown } from 'lucide-react';
+import { useId, useRef, useState } from 'react';
 import styles from './ReasoningBlock.module.less';
+import { useCollapseHeight } from './useCollapseHeight';
 
 interface ReasoningBlockProps {
   content: string;
   loading: boolean;
-
   durationSeconds?: number;
+  /** 流式结束后是否自动收起，默认 true */
+  autoCollapseOnFinish?: boolean;
 }
 
 function formatReasoningLabel(loading: boolean, durationSeconds?: number): string {
@@ -20,7 +22,12 @@ function formatReasoningLabel(loading: boolean, durationSeconds?: number): strin
   return '思考过程';
 }
 
-function ReasoningBlock({ content, loading, durationSeconds }: ReasoningBlockProps) {
+function ReasoningBlock({
+  content,
+  loading,
+  durationSeconds,
+  autoCollapseOnFinish = true,
+}: ReasoningBlockProps) {
   const [userExpanded, setUserExpanded] = useState(loading);
   const [localDurationSeconds, setLocalDurationSeconds] = useState<number | undefined>(
     durationSeconds
@@ -30,11 +37,9 @@ function ReasoningBlock({ content, loading, durationSeconds }: ReasoningBlockPro
   const { scrollToEndUnlessUserInterrupted } = useMessageScroller();
   const isExpanded = loading || userExpanded;
   const displayDuration = durationSeconds ?? localDurationSeconds;
+  const collapseRef = useCollapseHeight(isExpanded);
+  const panelId = useId();
 
-  /**
-   * 对齐 AI Elements Reasoning：流式时自动展开，结束后自动收起并结算耗时。
-   * 下滚是否保留阅读位置由消息滚动控制器统一处理。
-   */
   useEffectForce(() => {
     const wasLoading = previousLoadingRef.current;
     previousLoadingRef.current = loading;
@@ -51,40 +56,47 @@ function ReasoningBlock({ content, loading, durationSeconds }: ReasoningBlockPro
         setLocalDurationSeconds(elapsedSeconds);
         startedAtRef.current = null;
       }
-      setUserExpanded(false);
+      if (autoCollapseOnFinish) {
+        setUserExpanded(false);
+      }
       scrollToEndUnlessUserInterrupted();
     }
-  }, [loading, scrollToEndUnlessUserInterrupted]);
+  }, [loading, autoCollapseOnFinish, scrollToEndUnlessUserInterrupted]);
 
   if (!content && !loading) return null;
 
   return (
-    <Disclosure
-      isExpanded={isExpanded}
-      onExpandedChange={(next) => {
-        if (!loading) setUserExpanded(next);
-      }}
-      className={styles.wrapper}
-    >
-      <Disclosure.Heading>
-        <Button slot="trigger" variant="ghost" size="sm" className={styles.header}>
-          <Brain
-            className={loading ? styles.brainIconPulse : styles.brainIcon}
-            aria-hidden="true"
-            size={14}
-          />
-          <span className={loading ? styles.shimmerLabel : undefined}>
-            {formatReasoningLabel(loading, displayDuration)}
-          </span>
-          <Disclosure.Indicator />
-        </Button>
-      </Disclosure.Heading>
-      <Disclosure.Content>
-        <Disclosure.Body>
-          <blockquote className={styles.content}>{content}</blockquote>
-        </Disclosure.Body>
-      </Disclosure.Content>
-    </Disclosure>
+    <div className={styles.wrapper}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={styles.header}
+        aria-expanded={isExpanded}
+        aria-controls={panelId}
+        onPress={() => {
+          if (!loading) setUserExpanded((prev) => !prev);
+        }}
+      >
+        <Brain
+          className={loading ? styles.brainIconPulse : styles.brainIcon}
+          aria-hidden="true"
+          size={14}
+        />
+        <span className={loading ? styles.shimmerLabel : undefined}>
+          {formatReasoningLabel(loading, displayDuration)}
+        </span>
+        <ChevronDown
+          size={14}
+          aria-hidden="true"
+          className={styles.indicator}
+          data-expanded={isExpanded ? 'true' : 'false'}
+        />
+      </Button>
+
+      <div ref={collapseRef} id={panelId} className={styles.collapse} aria-hidden={!isExpanded}>
+        <blockquote className={styles.content}>{content}</blockquote>
+      </div>
+    </div>
   );
 }
 

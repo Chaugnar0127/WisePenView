@@ -19,7 +19,7 @@ export const COLOR_SCHEME = {
   SUNSET: 'sunset',
   EMERALD: 'emerald',
   LAVENDER: 'lavender',
-  VANILLA: 'vanilla',
+  SPROUT: 'vanilla',
 } as const;
 
 export type ColorScheme = (typeof COLOR_SCHEME)[keyof typeof COLOR_SCHEME];
@@ -75,7 +75,7 @@ export const COLOR_SCHEME_OPTIONS: ColorSchemeOption[] = [
   { id: COLOR_SCHEME.SUNSET, label: '暮橘', description: '暖橘色系' },
   { id: COLOR_SCHEME.EMERALD, label: '翠微', description: '翠绿色系' },
   { id: COLOR_SCHEME.LAVENDER, label: '紫烟', description: '薰衣草紫' },
-  { id: COLOR_SCHEME.VANILLA, label: '暖杏', description: '暖金色系' },
+  { id: COLOR_SCHEME.SPROUT, label: '春芽', description: '春芽色系' },
 ];
 
 export const THEME_MODE_OPTIONS: Array<{ id: ThemeMode; label: string; description: string }> = [

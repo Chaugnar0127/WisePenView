@@ -4,7 +4,7 @@
   .default,
   [data-theme='light'],
   [data-theme='default'] {
-    /* 默认 · 学术 light */
+    /* 榛樿 路 瀛︽湳 light */
     color-scheme: light;
     --white: oklch(100% 0 0);
     --black: oklch(0% 0 0);
@@ -17,16 +17,12 @@
     --ring-offset-width: 2px;
     --cursor-interactive: pointer;
     --cursor-disabled: not-allowed;
-    /* 延迟显示 Tooltip，减少鼠标经过密集工具栏时的视觉干扰。 */
-    --tooltip-delay: 800ms;
-    --tooltip-close-delay: 100ms;
     /* Brand + paper/canvas anchors (neutrals derived in shared ladder) */
-    --accent: #155a85;
-    --accent-foreground: #ffffff;
+    --accent: #127abb;    --accent-foreground: #ffffff;
     --foreground: #111827;
     --paper: #ffffff;
-    /* 更接近纸面，避免外壳/次级面发死灰 */
-    --canvas: #f7fafc;
+    /* 鏇存帴杩戠焊闈紝閬垮厤澶栧３/娆＄骇闈㈠彂姝荤伆 */
+    --canvas: #f8fafb;
     --danger: #ef4444;
     --danger-foreground: #ffffff;
     --field-border: transparent;
@@ -57,7 +53,7 @@
     --diff-removed-selected: #ef9a9a;
     --diff-modified: #e8f0fe;
     --diff-modified-border: #1967d2;
-    /* L2 选中：所在行/块浅底（逻辑共用，深色另写） */
+    /* L2 閫変腑锛氭墍鍦ㄨ/鍧楁祬搴曪紙閫昏緫鍏辩敤锛屾繁鑹插彟鍐欙級 */
     --diff-row-selected: var(--default-soft);
     --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     --radius: 0.5rem;
@@ -78,12 +74,11 @@
   .dark,
   [data-theme='dark'] {
     color-scheme: dark;
-    /* 默认 · 学术 dark */
-    --accent: #4ea8de;
-    --accent-foreground: #111827;
+    /* 榛樿 路 瀛︽湳 dark */
+    --accent: #71bfee;    --accent-foreground: #111827;
     --foreground: #f9fafb;
-    --paper: #12151c;
-    --canvas: #0c0e14;
+    --paper: #14161a;
+    --canvas: #0e0f12;
     --danger: #ef4444;
     --danger-foreground: #ffffff;
     --field-border: transparent;
@@ -103,7 +98,7 @@
     --text-inverse: #111827;
     --info: #3b82f6;
     --error: #ef4444;
-    /* AI Diff 深色：参考 Cursor；选中态再提亮一档，对比更明显 */
+    /* AI Diff 娣辫壊锛氬弬鑰?Cursor锛涢€変腑鎬佸啀鎻愪寒涓€妗ｏ紝瀵规瘮鏇存槑鏄?*/
     --diff-added: #373d29;
     --diff-added-border: #6a7a4a;
     --diff-added-fg: var(--foreground);
@@ -122,7 +117,7 @@
     --backdrop: rgba(0, 0, 0, 0.6);
   }
 
-  /* HeroUI 主题页 Radius */
+  /* HeroUI 涓婚椤?Radius */
   html[data-theme-radius='none'] {
     --radius: 0;
   }
@@ -143,7 +138,7 @@
     --radius: 0.75rem;
   }
 
-  /* HeroUI 主题页 Radius Form */
+  /* HeroUI 涓婚椤?Radius Form */
   html[data-theme-form-radius='none'] {
     --field-radius: 0;
   }
@@ -174,95 +169,88 @@
 
   /* Floral */
   html[data-color-scheme='floral'] {
-    --accent: #8b4150;
-    --accent-foreground: #ffffff;
+    --accent: #bb455c;    --accent-foreground: #ffffff;
     --foreground: #2e2e2e;
     --paper: #ffffff;
-    --canvas: #f7f0f2;
+    --canvas: #f6f1f2;
     --text-inverse: #ffffff;
     --card-shadow: 0 2px 8px rgba(210, 140, 150, 0.08);
-    --preview-color-1: #f5e8ec;
-    --preview-color-2: #d8b8c0;
-    --preview-color-3: #8b4150;
+    --preview-color-1: #ffffff;
+    --preview-color-2: #edd6dc;
+    --preview-color-3: #bb455c;
   }
   html[data-color-scheme='floral'].dark,
   html[data-color-scheme='floral'][data-theme='dark'] {
     color-scheme: dark;
-    --accent: #d4a0a8;
-    --accent-foreground: #0d1117;
+    --accent: #e8bfc5;    --accent-foreground: #0d1117;
     --foreground: #eee6e7;
-    --paper: #18161a;
-    --canvas: #121014;
+    --paper: #181818;
+    --canvas: #121212;
     --text-inverse: #0d1117;
     --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --preview-color-1: #1c181c;
-    --preview-color-2: #d4a0a8;
-    --preview-color-3: #d4a0a8;
+    --preview-color-1: #3d2a3d;
+    --preview-color-2: #e8bfc5;
+    --preview-color-3: #e8bfc5;
   }
 
   /* Aqua */
   html[data-color-scheme='aqua'] {
-    --accent: #2c7a7d;
-    --accent-foreground: #ffffff;
+    --accent: #2ea9ae;    --accent-foreground: #ffffff;
     --foreground: #262626;
     --paper: #ffffff;
-    --canvas: #f0f6f6;
+    --canvas: #f1f5f5;
     --text-inverse: #ffffff;
     --card-shadow: 0 2px 8px rgba(34, 209, 217, 0.06);
-    --preview-color-1: #e9f8f8;
-    --preview-color-2: #79c1c6;
-    --preview-color-3: #2c7a7d;
+    --preview-color-1: #ffffff;
+    --preview-color-2: #96d8dc;
+    --preview-color-3: #2ea9ae;
   }
   html[data-color-scheme='aqua'].dark,
   html[data-color-scheme='aqua'][data-theme='dark'] {
     color-scheme: dark;
-    --accent: #4db0b6;
-    --accent-foreground: #0d1117;
+    --accent: #67c9cf;    --accent-foreground: #0d1117;
     --foreground: #e1f2f2;
-    --paper: #151a1b;
-    --canvas: #0f1314;
+    --paper: #171819;
+    --canvas: #111212;
     --text-inverse: #0d1117;
     --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --preview-color-1: #101616;
-    --preview-color-2: #4db0b6;
-    --preview-color-3: #2c7a7d;
+    --preview-color-1: #213838;
+    --preview-color-2: #67c9cf;
+    --preview-color-3: #2ea9ae;
   }
 
   /* Sunset */
   html[data-color-scheme='sunset'] {
-    --accent: #b35a40;
-    --accent-foreground: #ffffff;
+    --accent: #d17155;    --accent-foreground: #ffffff;
     --foreground: #252121;
     --paper: #ffffff;
-    --canvas: #f8f3f0;
+    --canvas: #f7f3f1;
     --text-inverse: #ffffff;
     --card-shadow: 0 2px 8px rgba(255, 153, 102, 0.06);
-    --preview-color-1: #fdf2ea;
-    --preview-color-2: #f3b495;
-    --preview-color-3: #b35a40;
+    --preview-color-1: #ffffff;
+    --preview-color-2: #fcd3bf;
+    --preview-color-3: #d17155;
   }
   html[data-color-scheme='sunset'].dark,
   html[data-color-scheme='sunset'][data-theme='dark'] {
     color-scheme: dark;
-    --accent: #f09a72;
-    --accent-foreground: #0d1117;
+    --accent: #fab99b;    --accent-foreground: #0d1117;
     --foreground: #f6eee9;
-    --paper: #1a1715;
-    --canvas: #13110f;
+    --paper: #181717;
+    --canvas: #111111;
     --text-inverse: #0d1117;
     --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --preview-color-1: #161311;
-    --preview-color-2: #f09a72;
-    --preview-color-3: #f09a72;
+    --preview-color-1: #372b23;
+    --preview-color-2: #fab99b;
+    --preview-color-3: #fab99b;
   }
 
   /* Emerald */
   html[data-color-scheme='emerald'] {
-    --accent: #2f8a64;
-    --accent-foreground: #ffffff;
+    --accent: #2f8a64;    --accent-foreground: #ffffff;
     --foreground: #1a2c25;
     --paper: #ffffff;
-    --canvas: #f1f6f3;
+    --canvas: #f2f5f3;
     --text-inverse: #ffffff;
     --card-shadow: 0 2px 8px rgba(39, 179, 122, 0.06);
     --preview-color-1: #ecf4ef;
@@ -272,11 +260,10 @@
   html[data-color-scheme='emerald'].dark,
   html[data-color-scheme='emerald'][data-theme='dark'] {
     color-scheme: dark;
-    --accent: #4eb887;
-    --accent-foreground: #0d1117;
+    --accent: #4eb887;    --accent-foreground: #0d1117;
     --foreground: #dff0e6;
-    --paper: #151a17;
-    --canvas: #101412;
+    --paper: #171817;
+    --canvas: #121212;
     --text-inverse: #0d1117;
     --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     --preview-color-1: #111613;
@@ -286,163 +273,148 @@
 
   /* Lavender */
   html[data-color-scheme='lavender'] {
-    --accent: #6b4aa8;
-    --accent-foreground: #ffffff;
+    --accent: #835ec7;    --accent-foreground: #ffffff;
     --foreground: #232323;
     --paper: #ffffff;
-    --canvas: #f4f2f9;
+    --canvas: #f4f3f8;
     --text-inverse: #ffffff;
     --card-shadow: 0 2px 8px rgba(205, 180, 255, 0.06);
-    --preview-color-1: #f7f3fe;
-    --preview-color-2: #cebff8;
-    --preview-color-3: #6b4aa8;
+    --preview-color-1: #ffffff;
+    --preview-color-2: #f1ecfe;
+    --preview-color-3: #835ec7;
   }
   html[data-color-scheme='lavender'].dark,
   html[data-color-scheme='lavender'][data-theme='dark'] {
     color-scheme: dark;
-    --accent: #b8a6f5;
-    --accent-foreground: #0d1117;
+    --accent: #dbd1fd;    --accent-foreground: #0d1117;
     --foreground: #f0ecf8;
-    --paper: #17161c;
-    --canvas: #111016;
+    --paper: #19191a;
+    --canvas: #121214;
     --text-inverse: #0d1117;
     --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --preview-color-1: #131218;
-    --preview-color-2: #b8a6f5;
-    --preview-color-3: #6b4aa8;
+    --preview-color-1: #27233a;
+    --preview-color-2: #dbd1fd;
+    --preview-color-3: #835ec7;
   }
 
   /* Vanilla */
   html[data-color-scheme='vanilla'] {
-    --accent: #8c7736;
-    /* mustard solid: dark fg for contrast */
+    --accent: #bdbd38;    /* mustard solid: dark fg for contrast */
     --accent-foreground: #161622;
     --foreground: #252525;
     --paper: #ffffff;
-    --canvas: #f7f5ef;
+    --canvas: #f6f4f0;
     --text-inverse: #161622;
     --card-shadow: 0 2px 8px rgba(196, 160, 48, 0.08);
-    --preview-color-1: #fdf8ef;
-    --preview-color-2: #c0a854;
-    --preview-color-3: #8c7736;
+    --preview-color-1: #ffffff;
+    --preview-color-2: #d7d770;
+    --preview-color-3: #bdbd38;
   }
   html[data-color-scheme='vanilla'].dark,
   html[data-color-scheme='vanilla'][data-theme='dark'] {
     color-scheme: dark;
-    --accent: #e5d3a6;
-    --accent-foreground: #0d1117;
+    --accent: #f4f4ca;    --accent-foreground: #0d1117;
     --foreground: #f2ece2;
-    --paper: #191714;
-    --canvas: #131210;
+    --paper: #171716;
+    --canvas: #121212;
     --text-inverse: #0d1117;
     --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --preview-color-1: #151310;
-    --preview-color-2: #e5d3a6;
-    --preview-color-3: #e5d3a6;
+    --preview-color-1: #363522;
+    --preview-color-2: #f4f4ca;
+    --preview-color-3: #f4f4ca;
   }
+
 
   /* default preview (three colors) */
   html.light [data-scheme-preview='default'],
   html[data-theme='light'] [data-scheme-preview='default'] {
-    --preview-color-1: #edf5f8;
-    --preview-color-2: #316b8c;
-    --preview-color-3: #155a85;
+    --preview-color-1: #ffffff;
+    --preview-color-2: #328bbe;
+    --preview-color-3: #127abb;
   }
 
   html.dark [data-scheme-preview='default'],
   html[data-theme='dark'] [data-scheme-preview='default'] {
-    --preview-color-1: #1f3039;
-    --preview-color-2: #63a3c9;
-    --preview-color-3: #4ea8de;
+    --preview-color-1: #2a4e61;
+    --preview-color-2: #81bbde;
+    --preview-color-3: #71bfee;
   }
 
-  /* previews for new palettes — explicit colors with contrast */
+  /* previews for new palettes 鈥?explicit colors with contrast */
 
   /* Floral */
-  html.light [data-scheme-preview='floral'],
-  html[data-theme='light'] [data-scheme-preview='floral'] {
-    --preview-color-1: #fcf2f4;
-    --preview-color-2: #d6aab4;
-    --preview-color-3: #8b4150;
+  html.light [data-scheme-preview='floral'], html[data-theme='light'] [data-scheme-preview='floral'] {
+    --preview-color-1: #ffffff;
+    --preview-color-2: #eac9d0;
+    --preview-color-3: #bb455c;
   }
-  html.dark [data-scheme-preview='floral'],
-  html[data-theme='dark'] [data-scheme-preview='floral'] {
-    --preview-color-1: #312f31;
-    --preview-color-2: #d4a0a8;
-    --preview-color-3: #d4a0a8;
+  html.dark [data-scheme-preview='floral'], html[data-theme='dark'] [data-scheme-preview='floral'] {
+    --preview-color-1: #524152;
+    --preview-color-2: #e8bfc5;
+    --preview-color-3: #e8bfc5;
   }
 
   /* Aqua */
-  html.light [data-scheme-preview='aqua'],
-  html[data-theme='light'] [data-scheme-preview='aqua'] {
-    --preview-color-1: #e9f8f8;
-    --preview-color-2: #79c1c6;
-    --preview-color-3: #2c7a7d;
+  html.light [data-scheme-preview='aqua'], html[data-theme='light'] [data-scheme-preview='aqua'] {
+    --preview-color-1: #ffffff;
+    --preview-color-2: #96d8dc;
+    --preview-color-3: #2ea9ae;
   }
-  html.dark [data-scheme-preview='aqua'],
-  html[data-theme='dark'] [data-scheme-preview='aqua'] {
-    --preview-color-1: #1a1a1a;
-    --preview-color-2: #4db0b6;
-    --preview-color-3: #2c7a7d;
+  html.dark [data-scheme-preview='aqua'], html[data-theme='dark'] [data-scheme-preview='aqua'] {
+    --preview-color-1: #392e2e;
+    --preview-color-2: #67c9cf;
+    --preview-color-3: #2ea9ae;
   }
 
   /* Sunset */
-  html.light [data-scheme-preview='sunset'],
-  html[data-theme='light'] [data-scheme-preview='sunset'] {
-    --preview-color-1: #fdf2ea;
-    --preview-color-2: #f09e75;
-    --preview-color-3: #b35a40;
+  html.light [data-scheme-preview='sunset'], html[data-theme='light'] [data-scheme-preview='sunset'] {
+    --preview-color-1: #ffffff;
+    --preview-color-2: #fabd9e;
+    --preview-color-3: #d17155;
   }
-  html.dark [data-scheme-preview='sunset'],
-  html[data-theme='dark'] [data-scheme-preview='sunset'] {
-    --preview-color-1: #261d1d;
-    --preview-color-2: #f09a72;
-    --preview-color-3: #f09a72;
+  html.dark [data-scheme-preview='sunset'], html[data-theme='dark'] [data-scheme-preview='sunset'] {
+    --preview-color-1: #492d2d;
+    --preview-color-2: #fab99b;
+    --preview-color-3: #fab99b;
   }
 
   /* Emerald */
-  html.light [data-scheme-preview='emerald'],
-  html[data-theme='light'] [data-scheme-preview='emerald'] {
+  html.light [data-scheme-preview='emerald'], html[data-theme='light'] [data-scheme-preview='emerald'] {
     --preview-color-1: #ecf4ef;
     --preview-color-2: #91c0a0;
     --preview-color-3: #2f8a64;
   }
-  html.dark [data-scheme-preview='emerald'],
-  html[data-theme='dark'] [data-scheme-preview='emerald'] {
+  html.dark [data-scheme-preview='emerald'], html[data-theme='dark'] [data-scheme-preview='emerald'] {
     --preview-color-1: #1a1a1a;
     --preview-color-2: #4eb887;
     --preview-color-3: #4eb887;
   }
 
   /* Lavender */
-  html.light [data-scheme-preview='lavender'],
-  html[data-theme='light'] [data-scheme-preview='lavender'] {
-    --preview-color-1: #f7f3fe;
-    --preview-color-2: #cfbcf7;
-    --preview-color-3: #6b4aa8;
+  html.light [data-scheme-preview='lavender'], html[data-theme='light'] [data-scheme-preview='lavender'] {
+    --preview-color-1: #ffffff;
+    --preview-color-2: #efe8fe;
+    --preview-color-3: #835ec7;
   }
-  html.dark [data-scheme-preview='lavender'],
-  html[data-theme='dark'] [data-scheme-preview='lavender'] {
-    --preview-color-1: #1a1a1a;
-    --preview-color-2: #b8a6f5;
-    --preview-color-3: #6b4aa8;
+  html.dark [data-scheme-preview='lavender'], html[data-theme='dark'] [data-scheme-preview='lavender'] {
+    --preview-color-1: #392e2e;
+    --preview-color-2: #dbd1fd;
+    --preview-color-3: #835ec7;
   }
 
   /* Vanilla */
-  html.light [data-scheme-preview='vanilla'],
-  html[data-theme='light'] [data-scheme-preview='vanilla'] {
-    --preview-color-1: #fdf8ef;
-    --preview-color-2: #c0a854;
-    --preview-color-3: #8c7736;
+  html.light [data-scheme-preview='vanilla'], html[data-theme='light'] [data-scheme-preview='vanilla'] {
+    --preview-color-1: #ffffff;
+    --preview-color-2: #d7d770;
+    --preview-color-3: #bdbd38;
   }
-  html.dark [data-scheme-preview='vanilla'],
-  html[data-theme='dark'] [data-scheme-preview='vanilla'] {
-    --preview-color-1: #1f1f1f;
-    --preview-color-2: #e5d3a6;
-    --preview-color-3: #e5d3a6;
+  html.dark [data-scheme-preview='vanilla'], html[data-theme='dark'] [data-scheme-preview='vanilla'] {
+    --preview-color-1: #3e3333;
+    --preview-color-2: #f4f4ca;
+    --preview-color-3: #f4f4ca;
   }
 
-  /* WisePen 排版 / 间距 / Table 行高 */
+  /* WisePen 鎺掔増 / 闂磋窛 / Table 琛岄珮 */
   :root,
   .light,
   .default,
@@ -474,7 +446,39 @@
     --space-lg: 24px;
     --space-xl: 32px;
     --space-2xl: 40px;
+    /* 运行时由 syncViewportLayoutScale 覆盖，此处为同源兜底 */
     --chat-panel-min-width: 480px;
+    --chat-full-width-min-width: 720px;
+    --layout-sidebar-min-width: 240px;
+    --layout-sidebar-max-width: 420px;
+    --layout-sidebar-min-height: 424px;
+    --layout-sidebar-session-list-min-height: 120px;
+    --layout-window-min-height: 720px;
+    --layout-main-min-width: 560px;
+    --layout-app-main-min-width: 720px;
+    --layout-main-scroll-min-width: 400px;
+    --layout-note-editor-min-width: 560px;
+    --layout-resource-side-panel-min-width: 280px;
+    --layout-note-with-side-panel-min-width: 864px;
+    --layout-workspace-inner-chat-min-width: 1064px;
+    --layout-resize-handle-reserve: 24px;
+    --layout-note-outline-open-width: 260px;
+    --layout-note-outline-collapsed-width: 40px;
+    --layout-chat-panel-max-width: 1020px;
+    --layout-model-selector-max-width: 240px;
+    --layout-compact-max-width: 1280px;
+    --layout-short-max-height: 720px;
+    --layout-drive-chrome-height: 240px;
+    --table-drive-detail-panel-width: 300px;
+    --layout-drive-table-min-width: 560px;
+    --layout-drive-layout-min-width: 860px;
+    --layout-drive-page-min-width: 956px;
+    --layout-chat-footer-scroll-offset: 132px;
+    --chat-input-textarea-max-height: calc(16em + 16px);
+    --chat-input-card-padding-block: 12px;
+    --chat-input-container-padding-block: 8px;
+    --layout-welcome-icon-size: 40px;
+    --layout-welcome-title-size: 18px;
     --radius-xs: calc(var(--radius) * 0.25);
     --radius-sm: calc(var(--radius) * 0.5);
     --radius-md: calc(var(--radius) * 0.75);
@@ -485,7 +489,7 @@
     --radius-4xl: calc(var(--radius) * 4);
     --radius-field: var(--field-radius);
     --app-popover-content-padding: var(--space-xs);
-    --app-popover-item-inset: var(--app-popover-content-padding);
+    --app-popover-item-inset: calc(var(--app-popover-content-padding) + var(--space-2xs));
     --app-radius-sidebar-item: var(--radius-2xl);
     --app-radius-popover: min(32px, var(--radius-3xl));
     --app-radius-popover-item: min(
@@ -502,7 +506,7 @@
     --row-height-comfortable: var(--table-row-height);
     --row-height-compact: var(--table-row-height);
 
-    /* Table 布局 / 列宽（Less @table-* 经 table.module.less 引用） */
+    /* Table 甯冨眬 / 鍒楀锛圠ess @table-* 缁?table.module.less 寮曠敤锛?*/
     --table-header-row-height: var(--table-row-height);
     --table-footer-row-height: var(--line-height-xs);
     --table-footer-padding-block: var(--space-2xs);
@@ -539,11 +543,15 @@
     --table-chip-min-height: 28px;
     --table-chip-padding-block: 4px;
     --table-chip-padding-inline: 14px;
-    /* Table 圆角：shell / 行内按钮统一；小控件（展开钮、Chip）用 inner */
+    /* 延迟显示 Tooltip，减少鼠标经密集图标区时的视觉干扰。 */
+    --tooltip-delay: 800ms;
+    --tooltip-close-delay: 100ms;
+    /* Table 鍦嗚锛歴hell / 琛屽唴鎸夐挳 / 涓嬫媺灞傜粺涓€锛涘皬鎺т欢锛堝睍寮€閽€丆hip锛夌敤 inner */
     --table-shell-radius: var(--radius-xl);
     --table-control-radius: var(--table-shell-radius);
+    --table-overlay-radius: var(--table-shell-radius);
     --table-inner-radius: var(--radius-lg);
-    --table-drive-layout-max-height: calc(100dvh - 240px);
+    --table-drive-layout-max-height: calc(100dvh - var(--layout-drive-chrome-height, 240px));
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
     --shadow-md: var(--card-shadow);
     --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.12);
@@ -555,9 +563,9 @@
     --motion-duration-fast: 0.1s;
     --motion-duration-mid: 0.2s;
 
-    /* 纸面带极弱色温；正文略白；顶栏用纯纸 */
+    /* 绾搁潰甯︽瀬寮辫壊娓╋紱姝ｆ枃鐣ョ櫧锛涢《鏍忕敤绾焊 */
     --header-surface: var(--paper);
-    --surface: color-mix(in oklab, var(--accent) 2%, var(--paper));
+    --surface: color-mix(in oklab, var(--accent) 0.5%, var(--paper));
     --surface-foreground: var(--foreground);
     --overlay: var(--surface);
     --overlay-foreground: var(--foreground);
@@ -567,7 +575,7 @@
     --segment: var(--surface);
     --segment-foreground: var(--foreground);
 
-    /* L 台阶：弱 accent 色温为主；少掺 foreground，避免发死灰 */
+    /* L 鍙伴樁锛氬急 accent 鑹叉俯涓轰富锛涘皯鎺?foreground锛岄伩鍏嶅彂姝荤伆 */
     --background: color-mix(in oklab, var(--accent) 4%, var(--canvas));
     --surface-secondary: color-mix(in oklab, var(--accent) 5%, var(--paper));
     --surface-secondary-foreground: var(--foreground);
@@ -578,11 +586,11 @@
     );
     --surface-tertiary-foreground: var(--foreground);
 
-    /* HeroUI 控件默认底 ≈ tertiary，不另开第四套布局灰 */
+    /* HeroUI 鎺т欢榛樿搴?鈮?tertiary锛屼笉鍙﹀紑绗洓濂楀竷灞€鐏?*/
     --default: var(--surface-tertiary);
     --default-foreground: var(--foreground);
 
-    /* aliases → 同一套三层壳，禁止再 mix 出并行灰阶 */
+    /* aliases 鈫?鍚屼竴濂椾笁灞傚３锛岀姝㈠啀 mix 鍑哄苟琛岀伆闃?*/
     --surface-hover: var(--surface-secondary);
     --surface-muted: var(--surface-tertiary);
     --background-alt: var(--surface-tertiary);
@@ -646,10 +654,10 @@
     --accent-soft-hover: color-mix(in srgb, var(--accent) 20%, var(--surface));
     --accent-softer: color-mix(in srgb, var(--accent) 8%, var(--surface));
     --accent-border: color-mix(in srgb, var(--accent) 32%, var(--border));
-    /* 实心按钮悬停：浅色加深；dark 块内改为提亮 */
+    /* 瀹炲績鎸夐挳鎮仠锛氭祬鑹插姞娣憋紱dark 鍧楀唴鏀逛负鎻愪寒 */
     --accent-hover: color-mix(in oklab, var(--accent) 86%, #000);
     --card-glow: 0 0 0 2px var(--accent-soft);
-    /* HeroUI / 旧桥：业务请只用 --accent* */
+    /* HeroUI / 鏃фˉ锛氫笟鍔¤鍙敤 --accent* */
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
     --primary-hover: var(--accent-hover);
@@ -680,13 +688,14 @@
     --default-soft-hover: color-mix(in oklab, var(--default) 60%, transparent);
   }
 
-  /* Dark：色温极弱，避免整页发色；层级主要靠明度 */
+
+  /* Dark锛氳壊娓╂瀬寮憋紝閬垮厤鏁撮〉鍙戣壊锛涘眰绾т富瑕侀潬鏄庡害 */
   .dark,
   [data-theme='dark'],
   html[data-color-scheme].dark,
   html[data-color-scheme][data-theme='dark'] {
     --header-surface: var(--paper);
-    --surface: color-mix(in oklab, var(--accent) 1%, var(--paper));
+    --surface: color-mix(in oklab, var(--accent) 0.3%, var(--paper));
     --overlay: var(--surface);
     --field-background: var(--surface);
     --card-surface: var(--surface);
@@ -737,14 +746,14 @@
       color-mix(in oklab, var(--foreground) 22%, var(--paper))
     );
 
-    /* soft 选中底也略降，避免大块发色 */
+    /* soft 閫変腑搴曚篃鐣ラ檷锛岄伩鍏嶅ぇ鍧楀彂鑹?*/
     --accent-soft: color-mix(in srgb, var(--accent) 10%, var(--surface));
     --accent-soft-hover: color-mix(in srgb, var(--accent) 16%, var(--surface));
     --accent-softer: color-mix(in srgb, var(--accent) 6%, var(--surface));
     --accent-border: color-mix(in srgb, var(--accent) 24%, var(--border));
     --accent-hover: color-mix(in oklab, var(--accent) 88%, #fff);
 
-    /* AI Diff 深色：参考 Cursor；选中态再提亮一档，对比更明显 */
+    /* AI Diff 娣辫壊锛氬弬鑰?Cursor锛涢€変腑鎬佸啀鎻愪寒涓€妗ｏ紝瀵规瘮鏇存槑鏄?*/
     --diff-added: #373d29;
     --diff-added-border: #6a7a4a;
     --diff-added-fg: var(--foreground);
@@ -758,9 +767,9 @@
     --diff-row-selected: color-mix(in srgb, var(--foreground) 10%, var(--surface));
   }
 
+
   html[data-color-scheme] :is(.light, .dark, .default):not(html):not(:root) {
-    --accent: inherit;
-    --accent-foreground: inherit;
+    --accent: inherit;    --accent-foreground: inherit;
     --accent-hover: inherit;
     --paper: inherit;
     --canvas: inherit;

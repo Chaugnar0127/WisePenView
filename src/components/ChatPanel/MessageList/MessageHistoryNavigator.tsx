@@ -3,12 +3,12 @@ import type { WisePenUIMessage } from '@/domains/Chat';
 import { useUnmount, useUpdateEffect } from 'ahooks';
 import { isTextUIPart } from 'ai';
 import clsx from 'clsx';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import styles from './style.module.less';
 
 const PREVIEW_LENGTH = 28;
-const OPEN_DELAY_MS = 160;
-const CLOSE_DELAY_MS = 280;
+const OPEN_DELAY_MS = 24;
+const CLOSE_DELAY_MS = 140;
 
 interface MessageHistoryNavigatorProps {
   messages: WisePenUIMessage[];
@@ -51,22 +51,23 @@ function useActiveHistoryAnchorId(anchors: UserMessageAnchor[]) {
   return anchors.some((anchor) => anchor.id === currentAnchorId) ? currentAnchorId : null;
 }
 
-function HistoryBar({ active }: { active: boolean }) {
+function scrollActiveItemIntoView(container: HTMLElement | null, activeAnchorId: string | null) {
+  if (!container || !activeAnchorId) return;
+  const activeItem = container.querySelector<HTMLElement>(
+    `[data-anchor-id="${CSS.escape(activeAnchorId)}"]`
+  );
+  activeItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+
+function HistoryBar({ active, anchorId }: { active: boolean; anchorId?: string }) {
   return (
     <span
       className={styles.historyNavigatorBar}
       data-active={active ? 'true' : 'false'}
+      data-anchor-id={anchorId}
       aria-hidden="true"
     />
   );
-}
-
-function scrollActiveItemIntoView(panel: HTMLDivElement | null, activeAnchorId: string | null) {
-  if (!panel || !activeAnchorId) return;
-  const activeItem = panel.querySelector<HTMLElement>(
-    `[data-anchor-id="${CSS.escape(activeAnchorId)}"]`
-  );
-  activeItem?.scrollIntoView({ block: 'nearest' });
 }
 
 /** 右侧垂直居中横条轨；hover / 点击展开文案浮层 */
@@ -77,6 +78,7 @@ function MessageHistoryNavigator({
   const anchors = useUserMessageAnchors(messages);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -139,10 +141,11 @@ function MessageHistoryNavigator({
     };
   }, [open]);
 
-  useUpdateEffect(() => {
-    if (!open) return;
-    scrollActiveItemIntoView(panelRef.current, activeAnchorId);
-  }, [open, activeAnchorId]);
+  /* 高亮条变化时把亮条滚进可视区 */
+  useLayoutEffect(() => {
+    const container = open ? panelRef.current : railRef.current;
+    scrollActiveItemIntoView(container, activeAnchorId);
+  }, [open, activeAnchorId, anchors.length]);
 
   if (anchors.length === 0) return null;
 
@@ -154,6 +157,7 @@ function MessageHistoryNavigator({
         styles.historyNavigatorRail,
         open && styles.historyNavigatorRailOpen
       )}
+      data-open={open ? 'true' : 'false'}
       onMouseEnter={scheduleOpen}
       onMouseLeave={scheduleClose}
       onFocusCapture={scheduleOpen}
@@ -163,17 +167,29 @@ function MessageHistoryNavigator({
         }
       }}
     >
-      <button
-        type="button"
-        className={styles.historyNavigatorRailTrigger}
-        aria-label="历史提问"
-        aria-expanded={open}
-        aria-controls="chat-history-navigator-panel"
-        onClick={() => {
-          clearTimers();
-          setOpen((prev) => !prev);
-        }}
-      ></button>
+      <div className={styles.historyNavigatorRailTriggerWrap}>
+        <button
+          ref={railRef}
+          type="button"
+          className={styles.historyNavigatorRailTrigger}
+          aria-label="历史提问"
+          aria-expanded={open}
+          aria-controls="chat-history-navigator-panel"
+          tabIndex={open ? -1 : 0}
+          onClick={() => {
+            clearTimers();
+            setOpen((prev) => !prev);
+          }}
+        >
+          {anchors.map((anchor) => (
+            <HistoryBar
+              key={anchor.id}
+              anchorId={anchor.id}
+              active={anchor.id === activeAnchorId}
+            />
+          ))}
+        </button>
+      </div>
 
       <div
         ref={panelRef}
@@ -183,6 +199,7 @@ function MessageHistoryNavigator({
         aria-label="历史提问"
         aria-hidden={!open}
         inert={!open}
+        data-open={open ? 'true' : 'false'}
       >
         {anchors.map((anchor) => {
           const isActive = anchor.id === activeAnchorId;
@@ -195,7 +212,7 @@ function MessageHistoryNavigator({
               aria-selected={isActive}
               className={styles.historyNavigatorRailItem}
               data-active={isActive ? 'true' : 'false'}
-              title={anchor.preview}
+              tabIndex={open ? 0 : -1}
               onClick={() => handleJumpToMessage(anchor.id)}
             >
               <span className={styles.historyNavigatorRailPreview}>{anchor.preview}</span>

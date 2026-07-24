@@ -10,6 +10,11 @@ import type { DriveSelectionItem } from '@/components/Drive/common/driveComponen
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import AppModal from '@/components/Overlay/AppModal';
 import {
+  CHAT_PANEL_MIN_WIDTH,
+  ZEN_CHAT_PANEL_MAX_WIDTH,
+  ZEN_RESOURCE_PANE_MIN_WIDTH,
+} from '@/constants/layoutScale';
+import {
   SystemResizableHandle,
   SystemResizablePanel,
   SystemResizablePanelGroup,
@@ -42,9 +47,6 @@ import {
 import styles from './ZenModeLayout.module.less';
 import { isZenModeNodeSelectable, normalizeZenModeTarget } from './zenModeResource';
 
-const RESOURCE_PANE_MIN_WIDTH = 320;
-const CHAT_PANEL_MIN_WIDTH = 480;
-const CHAT_PANEL_MAX_WIDTH = 720;
 const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
 
 interface ZenPaneRuntime {
@@ -367,7 +369,7 @@ function ZenModeLayout() {
           onLayoutChanged={handleShellLayoutChanged}
         >
           <SystemResizablePanel
-            minSize={RESOURCE_PANE_MIN_WIDTH * 2}
+            minSize={ZEN_RESOURCE_PANE_MIN_WIDTH * 2}
             className={styles.resourceArea}
           >
             <SystemResizablePanelGroup
@@ -377,7 +379,7 @@ function ZenModeLayout() {
             >
               <SystemResizablePanel
                 id={ZEN_PANE_IDS[0]}
-                minSize={RESOURCE_PANE_MIN_WIDTH}
+                minSize={ZEN_RESOURCE_PANE_MIN_WIDTH}
                 defaultSize={`${primaryPanePercentage}%`}
                 className={styles.resourcePanel}
                 onResize={handleResourcePaneResize}
@@ -395,7 +397,7 @@ function ZenModeLayout() {
 
               <SystemResizablePanel
                 id={ZEN_PANE_IDS[1]}
-                minSize={RESOURCE_PANE_MIN_WIDTH}
+                minSize={ZEN_RESOURCE_PANE_MIN_WIDTH}
                 defaultSize={`${100 - primaryPanePercentage}%`}
                 className={styles.resourcePanel}
               >
@@ -415,7 +417,7 @@ function ZenModeLayout() {
           <SystemResizablePanel
             id="zen-chat-dock"
             minSize={CHAT_PANEL_MIN_WIDTH}
-            maxSize={CHAT_PANEL_MAX_WIDTH}
+            maxSize={ZEN_CHAT_PANEL_MAX_WIDTH}
             defaultSize={chatWidth}
             groupResizeBehavior="preserve-pixel-size"
             className={styles.chatDock}

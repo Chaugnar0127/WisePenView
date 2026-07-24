@@ -1,3 +1,11 @@
+.navContainer {
+  position: relative;
+}
+
+.navContainerCollapsed {
+  /* reserved */
+}
+
 .headerMenu {
   width: 100%;
   display: flex;
@@ -10,6 +18,24 @@
 
 .headerMenuCollapsed {
   padding-inline: 4px;
+}
+
+.indicator {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  will-change: transform;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.navContainerCollapsed .indicator {
+  left: 4px;
+  right: 4px;
 }
 
 .menuSection {
@@ -25,30 +51,31 @@
 }
 
 .menuItem {
+  position: relative;
+  z-index: 1;
   width: 100%;
   min-height: 40px;
   display: flex;
   align-items: center;
   gap: 10px;
-  border-radius: var(--app-radius-interactive, var(--radius-2xl));
+  border-radius: var(--radius-md);
   padding: 0 var(--space-xs);
   color: var(--muted);
   cursor: pointer;
   outline: none;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  background: transparent;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1), font-weight 0.3s ease;
 
   &:hover,
   &[data-hovered],
   &[data-focused] {
     color: var(--foreground);
     background: var(--accent-soft);
+    transition: color 0.15s ease, background 0.15s ease;
   }
 
   &[data-selected] {
     color: var(--accent);
-    background: var(--accent-soft);
     font-weight: 500;
   }
 

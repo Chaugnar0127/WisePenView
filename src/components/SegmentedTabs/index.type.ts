@@ -16,4 +16,5 @@ export interface SegmentedTabsProps<T extends Key = string> {
   tabClassName?: string;
   block?: boolean;
   size?: 'sm' | 'md';
+  variant?: 'underline' | 'pill';
 }

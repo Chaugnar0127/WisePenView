@@ -16,6 +16,7 @@ function SegmentedTabs<T extends Key = string>({
   tabClassName,
   block = false,
   size = 'md',
+  variant = 'underline',
 }: SegmentedTabsProps<T>) {
   const listRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -59,7 +60,9 @@ function SegmentedTabs<T extends Key = string>({
   );
 
   return (
-    <div className={cx(styles.root, block && styles.block, styles[size], className)}>
+    <div
+      className={cx(styles.root, block && styles.block, styles[size], styles[variant], className)}
+    >
       <div
         className={cx(styles.list, listClassName)}
         role="tablist"

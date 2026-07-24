@@ -32,10 +32,6 @@ export function useResizablePanelSize({
   const syncPanelSize = () => {
     cancelDeferredResize();
     resizePanel();
-    /**
-     * Panel 的 min/max 约束也会在同一轮 render 更新；下一帧再校准一次，
-     * 避免展开时 resize 被上一轮折叠态约束拦截后停在最小宽度。
-     */
     resizeFrameRef.current = window.requestAnimationFrame(() => {
       resizeFrameRef.current = null;
       resizePanel();

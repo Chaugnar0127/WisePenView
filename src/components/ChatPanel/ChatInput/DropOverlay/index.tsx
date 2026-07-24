@@ -1,10 +1,16 @@
-import type { DropOverlayProps } from './index.type';
 import styles from '../style.module.less';
+import type { DropOverlayProps } from './index.type';
 
 function DropOverlay({ visible }: DropOverlayProps) {
-  if (!visible) return null;
-
-  return <div className={styles.dropOverlay}>松开即可添加附件</div>;
+  return (
+    <div
+      className={styles.dropOverlay}
+      data-visible={visible ? 'true' : 'false'}
+      aria-hidden={!visible}
+    >
+      <span className={styles.dropOverlayLabel}>松开即可添加附件</span>
+    </div>
+  );
 }
 
 export default DropOverlay;

@@ -19,7 +19,7 @@ const DEFAULT_CHAT_PANEL_STATE: Pick<
   'chatPanelCollapsed' | 'chatPanelWidth' | 'chatPanelDraftOpen'
 > = {
   chatPanelCollapsed: true,
-  chatPanelWidth: 500,
+  chatPanelWidth: 600,
   chatPanelDraftOpen: false,
 };
 

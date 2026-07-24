@@ -4,6 +4,7 @@ import { AppPopover } from '@/components/Overlay';
 import type { ChatModel } from '@/domains/Chat';
 import { ListBox, ListBoxItem } from '@heroui/react';
 import { Check, ChevronDown, LoaderCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
 export type ModelSelectorTriggerVariant = 'default' | 'icon';
@@ -39,9 +40,12 @@ function ModelSelector({
   placement = 'bottom',
   triggerVariant = 'default',
 }: ModelSelectorProps) {
+  const { t } = useTranslation('chat');
   const selected = models.find((model) => model.id === selectedId) ?? null;
   const iconOnly = triggerVariant === 'icon';
-  const triggerLabel = loading ? '模型加载中' : (selected?.name ?? '选择模型');
+  const triggerLabel = loading
+    ? t('modelSelector.loading')
+    : (selected?.name ?? t('modelSelector.select'));
 
   return (
     <AppPopover isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -76,12 +80,16 @@ function ModelSelector({
           </button>
         </AppPopover.Trigger>
       )}
-      <AppPopover.Content className={styles.popover} placement={placement} title="模型">
+      <AppPopover.Content
+        className={styles.popover}
+        placement={placement}
+        title={t('modelSelector.title')}
+      >
         {models.length === 0 ? (
-          <div className={styles.empty}>暂无可用模型</div>
+          <div className={styles.empty}>{t('modelSelector.empty')}</div>
         ) : (
           <ListBox
-            aria-label="选择模型"
+            aria-label={t('modelSelector.select')}
             selectionMode="single"
             selectedKeys={selected ? [selected.id] : []}
             className={styles.list}

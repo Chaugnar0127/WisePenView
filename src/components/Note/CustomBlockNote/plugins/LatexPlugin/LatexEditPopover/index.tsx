@@ -1,5 +1,6 @@
 import type { FormEvent, KeyboardEvent, RefObject } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 import { AppPopover } from '@/components/Overlay';
 import { useEffectForce } from '@/hooks/useEffectForce';
@@ -66,6 +67,7 @@ function handleTextareaBeforeInput(event: FormEvent<HTMLTextAreaElement>): void 
  * 行内 / 块级公式共用的 LaTeX 编辑浮层（Portal → body，样式来自 InlineMath/style.module.less）。
  */
 export function LatexEditPopover(props: LatexEditPopoverProps) {
+  const { t } = useTranslation('note');
   const {
     visible,
     position,
@@ -132,7 +134,7 @@ export function LatexEditPopover(props: LatexEditPopoverProps) {
           rows={rows}
           spellCheck={false}
           autoComplete="off"
-          aria-label="LaTeX 源码"
+          aria-label={t('latex.source')}
         />
         <div className={popoverStyles.inlineEditHint}>{hint}</div>
       </div>

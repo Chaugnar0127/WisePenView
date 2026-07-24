@@ -21,6 +21,7 @@ import { useEventListener, useMount, useUnmount, useUpdateEffect } from 'ahooks'
 import { Plus, Table2 } from 'lucide-react';
 import { useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { tableRailSelectionState } from './railSelectionState';
 import { getSafeTableCellSelection, getTableHandles, hasMountedEditorView } from './safe';
 import styles from './style.module.less';
@@ -95,6 +96,7 @@ function TableInsertHandles() {
 }
 
 function MountedTableInsertHandles() {
+  const { t } = useTranslation('note');
   const editor = useBlockNoteEditor(blockNoteSchema);
   const tableHandles = getTableHandles(editor);
   const state = useExtensionState(TableHandlesExtension, { editor });
@@ -542,7 +544,7 @@ function MountedTableInsertHandles() {
                 '--selection-highlight-width': `${tableWidth}px`,
               } as CSSProperties
             }
-            aria-label={`选择第 ${target.index + 1} 行`}
+            aria-label={t('table.selectRow', { index: target.index + 1 })}
             onPointerDown={(event) => handleSelectionPointerDown(event, target)}
             onPointerEnter={() => handleSelectionPointerEnter(target)}
             onPointerLeave={() => handleSelectionPointerLeave(target)}
@@ -564,7 +566,7 @@ function MountedTableInsertHandles() {
                 '--selection-highlight-height': `${tableHeight}px`,
               } as CSSProperties
             }
-            aria-label={`选择第 ${target.index + 1} 列`}
+            aria-label={t('table.selectColumn', { index: target.index + 1 })}
             onPointerDown={(event) => handleSelectionPointerDown(event, target)}
             onPointerEnter={() => handleSelectionPointerEnter(target)}
             onPointerLeave={() => handleSelectionPointerLeave(target)}
@@ -593,7 +595,7 @@ function MountedTableInsertHandles() {
             >
               <AppIconButton
                 icon={<Plus size={16} strokeWidth={2.25} aria-hidden="true" />}
-                label="插入行"
+                label={t('table.insertRow')}
                 size="sm"
                 className={styles.insertButton}
                 tooltip={{
@@ -630,7 +632,7 @@ function MountedTableInsertHandles() {
             >
               <AppIconButton
                 icon={<Plus size={16} strokeWidth={2.25} aria-hidden="true" />}
-                label="插入列"
+                label={t('table.insertColumn')}
                 size="sm"
                 className={styles.insertButton}
                 tooltip={{

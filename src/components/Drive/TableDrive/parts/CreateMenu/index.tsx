@@ -3,6 +3,7 @@ import { AppPopover } from '@/components/Overlay';
 import { Button } from '@heroui/react';
 import { CloudUpload, FileInput, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './index.module.less';
 import type { CreateMenuItem, CreateMenuProps } from './index.type';
 
@@ -34,6 +35,7 @@ function CreateMenuIcon({ id }: { id: CreateMenuItem['id'] }) {
 }
 
 function CreateMenu({ disabled = false, items, onSelect }: CreateMenuProps) {
+  const { t } = useTranslation('drive');
   const [open, setOpen] = useState(false);
 
   if (items.length === 0) {
@@ -50,11 +52,11 @@ function CreateMenu({ disabled = false, items, onSelect }: CreateMenuProps) {
       <AppPopover.Trigger>
         <Button variant="secondary" size="sm" isDisabled={disabled}>
           <Plus size={16} aria-hidden="true" />
-          新建
+          {t('create.menu')}
         </Button>
       </AppPopover.Trigger>
       <AppPopover.Content className={styles.menuPopover} placement="bottom start">
-        <div role="menu" aria-label="新建菜单">
+        <div role="menu" aria-label={t('create.menuAria')}>
           <ul className={styles.menuList}>
             {items.map((item) => (
               <li key={item.id} role="none">

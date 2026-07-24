@@ -4,17 +4,18 @@
  */
 import { WALLET_TARGET_TYPE } from '@/domains/Wallet';
 import ComputeWallet from '@/views/app/_common/Wallet/ComputeWallet';
+import { useTranslation } from 'react-i18next';
 import QuotaByGroup from '../_components/QuotaByGroup';
 import layout from '../style.module.less';
 
 function Usage() {
+  const { t } = useTranslation('profile');
+
   return (
     <div className={layout.pageContainer}>
       <div className={layout.pageHeader}>
-        <h1 className={layout.pageTitle}>余额与使用量</h1>
-        <span className={layout.pageSubtitle}>
-          查看个人计算点余额、点卡充值记录，以及在各小组中的配额使用情况
-        </span>
+        <h1 className={layout.pageTitle}>{t('usage.title')}</h1>
+        <span className={layout.pageSubtitle}>{t('usage.subtitle')}</span>
       </div>
       <div className={layout.usageContent}>
         <ComputeWallet targetType={WALLET_TARGET_TYPE.USER} canRecharge surface="plain" />

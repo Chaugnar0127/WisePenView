@@ -1,4 +1,5 @@
 import type { SkillDetail, SkillFileNode } from '@/domains/Skill';
+import i18n from '@/i18n';
 import { useMemo, useReducer, type SetStateAction } from 'react';
 
 import type { SkillSaveQueueItem } from '../_components/SkillSaveQueueDock/index.type';
@@ -60,7 +61,11 @@ function resolveValue<T>(current: T, value: SetStateAction<T>): T {
 function recoverInterruptedQueue(items: SkillSaveQueueItem[]): SkillSaveQueueItem[] {
   return items.map((item) =>
     item.phase === 'preparing' || item.phase === 'uploading'
-      ? { ...item, phase: 'failed', errorMessage: '上次保存被中断，请重新保存' }
+      ? {
+          ...item,
+          phase: 'failed',
+          errorMessage: i18n.t('queue.interrupted', { ns: 'skill' }),
+        }
       : item
   );
 }

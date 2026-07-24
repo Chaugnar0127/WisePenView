@@ -7,6 +7,7 @@ import { Button, Pagination, toast } from '@heroui/react';
 import { usePagination } from 'ahooks';
 import { Plus, UserPlus } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import GroupCard from '../_components/GroupCard';
 import { CreateGroupModal, JoinGroupModal } from '../_components/GroupModals';
@@ -43,6 +44,7 @@ function buildPaginationItems(currentPage: number, totalPages: number): Paginati
 }
 
 function MyGroup() {
+  const { t } = useTranslation('group');
   const groupService = useGroupService();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('joined');
@@ -71,7 +73,7 @@ function MyGroup() {
       defaultPageSize: PAGE_SIZE,
       refreshDeps: [groupRoleFilter],
       onError: () => {
-        toast.danger('获取小组列表失败');
+        toast.danger(t('list.loadFailed'));
       },
     }
   );
@@ -105,28 +107,28 @@ function MyGroup() {
     <div className={layout.pageContainer}>
       <div className={layout.pageHeaderWithActions}>
         <div>
-          <h1 className={layout.pageTitle}>我的小组</h1>
-          <span className={layout.pageSubtitle}>管理您的小组和协作</span>
+          <h1 className={layout.pageTitle}>{t('list.title')}</h1>
+          <span className={layout.pageSubtitle}>{t('list.subtitle')}</span>
         </div>
         <div className={layout.actionsRow}>
           <Button onPress={() => setJoinGroupModalOpen(true)}>
             <UserPlus size={16} aria-hidden="true" />
-            加入小组
+            {t('list.join')}
           </Button>
           <Button variant="primary" onPress={() => setCreateGroupModalOpen(true)}>
             <Plus size={16} aria-hidden="true" />
-            新建小组
+            {t('list.create')}
           </Button>
         </div>
       </div>
 
       <SegmentedTabs
-        ariaLabel="小组筛选"
+        ariaLabel={t('list.filterAria')}
         selectedKey={activeTab}
         onSelectionChange={handleTabChange}
         items={[
-          { key: 'joined', label: '我加入的' },
-          { key: 'managed', label: '我管理的' },
+          { key: 'joined', label: t('list.joined') },
+          { key: 'managed', label: t('list.managed') },
         ]}
         className={layout.detailTabs}
         size="sm"
@@ -140,7 +142,7 @@ function MyGroup() {
         <>
           {groups.length === 0 ? (
             <div className={page.emptyState}>
-              <Empty description="暂无小组" />
+              <Empty description={t('list.empty')} />
             </div>
           ) : (
             <div className={page.groupGrid}>
@@ -155,9 +157,7 @@ function MyGroup() {
           {total > 0 && (
             <div className={page.paginationWrap}>
               <Pagination size="sm">
-                <Pagination.Summary>
-                  {start} - {end} / 共 {total} 条
-                </Pagination.Summary>
+                <Pagination.Summary>{t('list.summary', { start, end, total })}</Pagination.Summary>
                 <Pagination.Content>
                   <Pagination.Item>
                     <Pagination.Previous
@@ -165,7 +165,7 @@ function MyGroup() {
                       onPress={() => onPageChange(Math.max(1, pageNum - 1), size)}
                     >
                       <Pagination.PreviousIcon />
-                      上一页
+                      {t('list.previous')}
                     </Pagination.Previous>
                   </Pagination.Item>
                   {pages.map((targetPage, index) =>
@@ -189,7 +189,7 @@ function MyGroup() {
                       isDisabled={pageNum >= totalPages}
                       onPress={() => onPageChange(Math.min(totalPages, pageNum + 1), size)}
                     >
-                      下一页
+                      {t('list.next')}
                       <Pagination.NextIcon />
                     </Pagination.Next>
                   </Pagination.Item>

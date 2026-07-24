@@ -5,6 +5,7 @@ import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { Button } from '@heroui/react';
 import { useMemoizedFn, useUpdateEffect } from 'ahooks';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './ResourceTargetModal.module.less';
 
 interface ResourceTargetModalProps {
@@ -29,11 +30,12 @@ function ResourceTargetModal({
   scope,
   excludedGroupIds,
   submitting,
-  confirmText = '确定',
+  confirmText,
   isTargetSelectable,
   onOpenChange,
   onConfirm,
 }: ResourceTargetModalProps) {
+  const { t } = useTranslation('common');
   const [target, setTarget] = useState<DriveSelectionItem>();
   const isNavigatorNodeSelectable = useMemoizedFn((node: DriveNode) => {
     if (node.type !== 'root' && node.type !== 'folder') return false;
@@ -76,7 +78,7 @@ function ResourceTargetModal({
             isDisabled={submitting}
             onPress={() => handleOpenChange(false)}
           >
-            取消
+            {t('actions.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -84,7 +86,7 @@ function ResourceTargetModal({
             aria-busy={submitting || undefined}
             onPress={() => target && onConfirm(target)}
           >
-            {confirmText}
+            {confirmText ?? t('actions.confirm')}
           </Button>
         </>
       }

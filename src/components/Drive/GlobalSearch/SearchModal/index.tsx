@@ -5,11 +5,13 @@ import { Kbd, TextField } from '@heroui/react';
 import { useDebounce, useKeyPress } from 'ahooks';
 import { Search, X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import SearchResultList from '../SearchResultList';
 import type { SearchModalProps } from './index.type';
 import styles from './style.module.less';
 
 function SearchModal({ isOpen, onOpenChange, scope }: SearchModalProps) {
+  const { t } = useTranslation('drive');
   const [rawKeyword, setRawKeyword] = useState('');
   const debouncedKeyword = useDebounce(rawKeyword, { wait: 400 });
 
@@ -48,7 +50,7 @@ function SearchModal({ isOpen, onOpenChange, scope }: SearchModalProps) {
               <div className={styles.header}>
                 <Search className={styles.headerIcon} size={18} />
                 <TextField
-                  aria-label="搜索文档、笔记和标签"
+                  aria-label={t('search.inputAria')}
                   value={rawKeyword}
                   onChange={setRawKeyword}
                   className={styles.input}
@@ -56,14 +58,14 @@ function SearchModal({ isOpen, onOpenChange, scope }: SearchModalProps) {
                   <InputGroup className={styles.inputGroup}>
                     <InputGroup.Input
                       autoFocus
-                      placeholder="搜索文档、笔记和标签..."
+                      placeholder={t('search.placeholder')}
                       className={styles.inputControl}
                     />
                     {rawKeyword ? (
                       <InputGroup.Suffix>
                         <AppIconButton
                           icon={<X size={14} aria-hidden="true" />}
-                          label="清空搜索"
+                          label={t('search.clear')}
                           size="sm"
                           className={styles.clearButton}
                           onClick={() => setRawKeyword('')}
@@ -75,7 +77,7 @@ function SearchModal({ isOpen, onOpenChange, scope }: SearchModalProps) {
                 <button
                   type="button"
                   className={styles.escapeButton}
-                  aria-label="关闭搜索"
+                  aria-label={t('search.close')}
                   onClick={handleClose}
                 >
                   <Kbd className={styles.escapeKbd}>Esc</Kbd>

@@ -9,6 +9,7 @@ import {
 import markerStyles from '@/components/_shadcn/marker.module.less';
 import { useLatest, useUpdateEffect } from 'ahooks';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
 interface HistoryLoaderProps {
@@ -22,6 +23,7 @@ function HistoryLoader({
   loadingMoreHistory,
   onLoadMoreHistory,
 }: HistoryLoaderProps) {
+  const { t } = useTranslation('chat');
   const { start } = useMessageScrollerScrollable();
   const loadMoreRef = useLatest(onLoadMoreHistory);
   const pendingRef = useRef(false);
@@ -43,7 +45,9 @@ function HistoryLoader({
         <MarkerIcon>
           <Spin size="small" />
         </MarkerIcon>
-        <MarkerContent className={markerStyles.shimmer}>正在加载更早消息...</MarkerContent>
+        <MarkerContent className={markerStyles.shimmer}>
+          {t('message.historyLoading')}
+        </MarkerContent>
       </Marker>
     </MessageScrollerItem>
   );

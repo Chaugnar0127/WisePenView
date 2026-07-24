@@ -1,6 +1,7 @@
 import { toast } from '@heroui/react';
 import { useMemoizedFn } from 'ahooks';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { captureInlineCommentDraft } from '../engines/inlineComments/relativePosition';
 import type { CustomBlockNoteProps } from '../index.type';
@@ -25,6 +26,7 @@ export function useNoteEditorRuntimeCoordinator({
   definition: NoteEditorDefinition;
   props: CustomBlockNoteProps;
 }) {
+  const { t } = useTranslation('note');
   const {
     resourceId,
     collaboration: collaborationBinding,
@@ -101,7 +103,7 @@ export function useNoteEditorRuntimeCoordinator({
     if (!props.inlineComments) return;
     const draft = captureInlineCommentDraft(editor, notePluginRegistry);
     if (!draft) {
-      toast.info('请先选中一段文字再添加批注');
+      toast.info(t('comments.selectTextFirst'));
       return;
     }
     props.inlineComments.onCreateRequest(draft);

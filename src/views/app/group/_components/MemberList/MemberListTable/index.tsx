@@ -7,11 +7,12 @@ import {
   type ManageTableColumn,
 } from '@/components/Table';
 import type { GroupMember } from '@/domains/Group';
-import { ROLE } from '@/domains/Group';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { Label, ListBox, TextField } from '@heroui/react';
+import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { canEditSelectedMembers, canEditSelectedMembersForQuota } from '../../GroupDisplayConfig';
 import type {
   MemberListInlineDraft,
@@ -78,9 +79,9 @@ function canRemoveMember(member: GroupMember, props: MemberListTableProps): bool
 
 function buildPageSizeControl(
   config: Required<MemberListPaginationConfig>,
-  currentPage: number,
   pageSize: number,
-  onPageChange: (page: number, size: number) => void
+  onPageChange: (page: number, size: number) => void,
+  t: TFunction<'group'>
 ): ReactNode {
   if (!config.showSizeChanger) {
     return null;
@@ -88,7 +89,7 @@ function buildPageSizeControl(
 
   return (
     <Select
-      aria-label="每页成员数"
+      aria-label={t('member.table.pageSizeAria')}
       value={String(pageSize)}
       onChange={(value) => {
         if (value == null || Array.isArray(value)) {
@@ -105,8 +106,12 @@ function buildPageSizeControl(
       <Select.Popover>
         <ListBox>
           {config.pageSizeOptions.map((value) => (
-            <ListBox.Item key={String(value)} id={String(value)} textValue={`${value} 条/页`}>
-              {value} 条/页
+            <ListBox.Item
+              key={String(value)}
+              id={String(value)}
+              textValue={t('member.table.pageSize', { count: value })}
+            >
+              {t('member.table.pageSize', { count: value })}
               <ListBox.ItemIndicator />
             </ListBox.Item>
           ))}
@@ -116,12 +121,14 @@ function buildPageSizeControl(
   );
 }
 
-function renderRole(role: GroupMember['role']) {
-  return (
-    <span className={`${styles.roleBadge} ${getRoleClassName(role)}`}>
-      {ROLE.keyLabels[role] ?? role}
-    </span>
-  );
+function renderRole(role: GroupMember['role'], t: TFunction<'group'>) {
+  const roleLabel =
+    role === 'OWNER'
+      ? t('member.role.owner')
+      : role === 'ADMIN'
+        ? t('member.role.admin')
+        : t('member.role.member');
+  return <span className={`${styles.roleBadge} ${getRoleClassName(role)}`}>{roleLabel}</span>;
 }
 
 function renderQuota(member: GroupMember) {
@@ -136,13 +143,14 @@ function renderRoleEditor(
   member: GroupMember,
   inlineDraft: MemberListInlineDraft,
   onInlineDraftChange: (draft: MemberListInlineDraft) => void,
-  canPromoteToAdmin: boolean
+  canPromoteToAdmin: boolean,
+  t: TFunction<'group'>
 ) {
   const value = inlineDraft.role ?? member.role;
 
   return (
     <Select
-      aria-label="成员角色"
+      aria-label={t('member.table.roleAria')}
       value={value}
       onChange={(nextValue) => {
         if (nextValue == null || Array.isArray(nextValue)) {
@@ -159,13 +167,13 @@ function renderRoleEditor(
       <Select.Popover>
         <ListBox>
           {canPromoteToAdmin ? (
-            <ListBox.Item key="ADMIN" id="ADMIN" textValue="管理员">
-              管理员
+            <ListBox.Item key="ADMIN" id="ADMIN" textValue={t('member.role.admin')}>
+              {t('member.role.admin')}
               <ListBox.ItemIndicator />
             </ListBox.Item>
           ) : null}
-          <ListBox.Item key="MEMBER" id="MEMBER" textValue="成员">
-            成员
+          <ListBox.Item key="MEMBER" id="MEMBER" textValue={t('member.role.member')}>
+            {t('member.role.member')}
             <ListBox.ItemIndicator />
           </ListBox.Item>
         </ListBox>
@@ -177,35 +185,39 @@ function renderRoleEditor(
 function renderQuotaEditor(
   member: GroupMember,
   inlineDraft: MemberListInlineDraft,
-  onInlineDraftChange: (draft: MemberListInlineDraft) => void
+  onInlineDraftChange: (draft: MemberListInlineDraft) => void,
+  t: TFunction<'group'>
 ) {
   const min = Math.max(1, member.used ?? 0);
   const value = inlineDraft.quota ?? String(member.limit ?? min);
 
   return (
     <TextField
-      aria-label="成员配额"
+      aria-label={t('member.table.quotaAria')}
       value={value}
       onChange={(nextValue) => onInlineDraftChange({ quota: nextValue })}
       className={styles.inlineNumberField}
     >
-      <Label className={styles.inlineFieldLabel}>配额</Label>
+      <Label className={styles.inlineFieldLabel}>{t('member.table.quotaLabel')}</Label>
       <Input
         type="number"
         min={min}
         max={GROUP_MEMBER_TOKEN_LIMIT_MAX}
         step={1}
-        placeholder="请输入整数"
+        placeholder={t('member.table.integerPlaceholder')}
       />
     </TextField>
   );
 }
 
-function buildReadonlyColumns(props: MemberListTableProps): ReadonlyColumn[] {
+function buildReadonlyColumns(
+  props: MemberListTableProps,
+  t: TFunction<'group'>
+): ReadonlyColumn[] {
   const columns: ReadonlyColumn[] = [
     {
       id: 'member',
-      label: '成员',
+      label: t('member.table.columns.member'),
       width: 'lg',
       align: 'start',
       isRowHeader: true,
@@ -224,14 +236,14 @@ function buildReadonlyColumns(props: MemberListTableProps): ReadonlyColumn[] {
   columns.push(
     {
       id: 'role',
-      label: '角色',
+      label: t('member.table.columns.role'),
       width: 'sm',
       align: 'center',
-      renderCell: (member) => renderRole(member.role),
+      renderCell: (member) => renderRole(member.role, t),
     },
     {
       id: 'joinTime',
-      label: '加入时间',
+      label: t('member.table.columns.joinedAt'),
       width: 'md',
       align: 'start',
       allowsSorting: true,
@@ -247,7 +259,7 @@ function buildReadonlyColumns(props: MemberListTableProps): ReadonlyColumn[] {
   if (props.groupDisplayConfig.showQuotas) {
     columns.push({
       id: 'quota',
-      label: '配额使用',
+      label: t('member.table.columns.quota'),
       width: 'lg',
       align: 'center',
       renderCell: renderQuota,
@@ -257,8 +269,11 @@ function buildReadonlyColumns(props: MemberListTableProps): ReadonlyColumn[] {
   return columns;
 }
 
-function buildEditableColumns(props: MemberListTableProps): EditableColumn[] {
-  const readonlyColumns = buildReadonlyColumns(props);
+function buildEditableColumns(
+  props: MemberListTableProps,
+  t: TFunction<'group'>
+): EditableColumn[] {
+  const readonlyColumns = buildReadonlyColumns(props, t);
 
   return readonlyColumns.map((column): EditableColumn => {
     if (column.id === 'member') {
@@ -280,7 +295,8 @@ function buildEditableColumns(props: MemberListTableProps): EditableColumn[] {
                 member,
                 props.inlineDraft,
                 props.onInlineDraftChange,
-                props.groupDisplayConfig.canModifyPermission
+                props.groupDisplayConfig.canModifyPermission,
+                t
               )
             : column.renderCell(member, { row: member, rowId: member.key }),
       };
@@ -293,7 +309,7 @@ function buildEditableColumns(props: MemberListTableProps): EditableColumn[] {
         renderCell: column.renderCell,
         renderEditCell: (member) =>
           props.editingKind === 'quota'
-            ? renderQuotaEditor(member, props.inlineDraft, props.onInlineDraftChange)
+            ? renderQuotaEditor(member, props.inlineDraft, props.onInlineDraftChange, t)
             : column.renderCell(member, { row: member, rowId: member.key }),
       };
     }
@@ -306,6 +322,7 @@ function buildEditableColumns(props: MemberListTableProps): EditableColumn[] {
 }
 
 function MemberListTable(props: MemberListTableProps) {
+  const { t } = useTranslation('group');
   const {
     pagination,
     members,
@@ -347,22 +364,17 @@ function MemberListTable(props: MemberListTableProps) {
     [members]
   );
 
-  const pageSizeControl = buildPageSizeControl(
-    paginationConfig,
-    currentPage,
-    pageSize,
-    onPageChange
-  );
+  const pageSizeControl = buildPageSizeControl(paginationConfig, pageSize, onPageChange, t);
 
   if (!props.groupDisplayConfig.canEnterEditMode) {
     return (
       <DataTable
-        ariaLabel="小组成员列表"
+        ariaLabel={t('member.table.listAria')}
         items={dataSource}
         rowKey="key"
-        columns={buildReadonlyColumns(props)}
+        columns={buildReadonlyColumns(props, t)}
         loading={loading}
-        emptyText="暂无成员"
+        emptyText={t('member.table.empty')}
         toolbar={toolbar}
         sortDescriptor={sortDescriptor}
         onSortChange={onSortChange}
@@ -371,7 +383,7 @@ function MemberListTable(props: MemberListTableProps) {
           current: currentPage,
           pageSize,
           onChange: onPageChange,
-          summary: total > 0 ? `共 ${total} 人` : '共 0 人',
+          summary: t('member.table.summary', { count: total }),
           pageSizeControl,
         }}
       />
@@ -380,12 +392,12 @@ function MemberListTable(props: MemberListTableProps) {
 
   return (
     <ManageTable
-      ariaLabel="小组成员管理"
+      ariaLabel={t('member.table.manageAria')}
       items={dataSource}
       rowKey="key"
-      columns={buildEditableColumns(props)}
+      columns={buildEditableColumns(props, t)}
       loading={loading}
-      emptyText="暂无成员"
+      emptyText={t('member.table.empty')}
       toolbar={toolbar}
       sortDescriptor={sortDescriptor}
       onSortChange={onSortChange}
@@ -410,21 +422,21 @@ function MemberListTable(props: MemberListTableProps) {
       rowActions={(member) => [
         {
           key: 'editRole',
-          label: '修改权限',
+          label: t('member.actions.editPermission'),
           visible: props.groupDisplayConfig.canModifyPermission,
           disabled: !canEditRole(member, props),
           onPress: () => onStartInlineEdit(member, 'role'),
         },
         {
           key: 'editQuota',
-          label: '分配配额',
+          label: t('member.actions.assignQuota'),
           visible: props.groupDisplayConfig.canAssignQuota && props.groupDisplayConfig.showQuotas,
           disabled: !canEditQuota(member, props),
           onPress: () => onStartInlineEdit(member, 'quota'),
         },
         {
           key: 'deleteMember',
-          label: '删除成员',
+          label: t('member.actions.delete'),
           variant: 'danger',
           visible: props.groupDisplayConfig.canRemoveMember,
           disabled: !canRemoveMember(member, props),
@@ -436,7 +448,7 @@ function MemberListTable(props: MemberListTableProps) {
         current: currentPage,
         pageSize,
         onChange: onPageChange,
-        summary: total > 0 ? `共 ${total} 人` : '共 0 人',
+        summary: t('member.table.summary', { count: total }),
         pageSizeControl,
       }}
     />

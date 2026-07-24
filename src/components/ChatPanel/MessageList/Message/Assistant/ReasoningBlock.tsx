@@ -3,6 +3,7 @@ import { useEffectForce } from '@/hooks/useEffectForce';
 import { Button } from '@heroui/react';
 import { Brain, ChevronDown } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './ReasoningBlock.module.less';
 import { useCollapseHeight } from './useCollapseHeight';
 
@@ -14,20 +15,13 @@ interface ReasoningBlockProps {
   autoCollapseOnFinish?: boolean;
 }
 
-function formatReasoningLabel(loading: boolean, durationSeconds?: number): string {
-  if (loading) return '思考中...';
-  if (durationSeconds != null && durationSeconds >= 0) {
-    return `思考了 ${durationSeconds} 秒`;
-  }
-  return '思考过程';
-}
-
 function ReasoningBlock({
   content,
   loading,
   durationSeconds,
   autoCollapseOnFinish = true,
 }: ReasoningBlockProps) {
+  const { t } = useTranslation('chat');
   const [userExpanded, setUserExpanded] = useState(loading);
   const [localDurationSeconds, setLocalDurationSeconds] = useState<number | undefined>(
     durationSeconds
@@ -39,6 +33,12 @@ function ReasoningBlock({
   const displayDuration = durationSeconds ?? localDurationSeconds;
   const collapseRef = useCollapseHeight(isExpanded);
   const panelId = useId();
+  let label = t('message.reasoning.title');
+  if (loading) {
+    label = t('message.reasoning.loading');
+  } else if (displayDuration != null && displayDuration >= 0) {
+    label = t('message.reasoning.duration', { count: displayDuration });
+  }
 
   useEffectForce(() => {
     const wasLoading = previousLoadingRef.current;
@@ -83,7 +83,7 @@ function ReasoningBlock({
           size={14}
         />
         <span className={loading ? styles.shimmerLabel : undefined}>
-          {formatReasoningLabel(loading, displayDuration)}
+          {label}
         </span>
         <ChevronDown
           size={14}

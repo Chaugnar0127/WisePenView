@@ -13,6 +13,7 @@ import { useEffectForce } from '@/hooks/useEffectForce';
 import type { ChatStatus } from 'ai';
 import { ArrowDown } from 'lucide-react';
 import { useRef, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import HistoryLoader from './HistoryLoader';
 import Message from './Message';
 import MessageHistoryNavigator from './MessageHistoryNavigator';
@@ -78,6 +79,7 @@ function MessageListContent({
   fullWidth = false,
   footer,
 }: MessageListProps) {
+  const { t } = useTranslation('chat');
   const isGenerating = status === 'submitted' || status === 'streaming';
 
   return (
@@ -123,7 +125,7 @@ function MessageListContent({
 
       <MessageScrollerButton className={styles.scrollToBottomButton}>
         <ArrowDown size={14} />
-        <span className={styles.srOnly}>滚动到底部</span>
+        <span className={styles.srOnly}>{t('message.scrollToBottom')}</span>
       </MessageScrollerButton>
       <MessageHistoryNavigator
         messages={messages}

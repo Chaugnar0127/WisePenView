@@ -44,6 +44,7 @@ import {
 import { useUpdateEffect } from 'ahooks';
 import clsx from 'clsx';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type {
   Layout,
   LayoutChangedMeta,
@@ -72,6 +73,7 @@ const closeOpenResourceSidePanels = (): void => {
 };
 
 function WorkspaceLayout() {
+  const { t } = useTranslation('workspace');
   const appNavigation = useAppNavigation();
   const openResource = useOpenInWorkspace();
   const enterZenMode = useEnterZenMode();
@@ -403,7 +405,7 @@ function WorkspaceLayout() {
         maxSize={sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MAX_WIDTH}
         groupResizeBehavior="preserve-pixel-size"
         className={styles.leftSider}
-        aria-label="应用侧边栏"
+        aria-label={t('shell.appSidebar')}
         aria-hidden={sidebarCollapsed ? true : undefined}
         onResize={handleLeftSidebarResize}
       >
@@ -468,7 +470,7 @@ function WorkspaceLayout() {
             maxSize={chatPanelOpen ? WORKSPACE_CHAT_PANEL_MAX_WIDTH : 0}
             groupResizeBehavior="preserve-pixel-size"
             className={styles.rightSider}
-            aria-label="聊天面板"
+            aria-label={t('shell.chatPanel')}
             aria-hidden={!chatPanelOpen ? true : undefined}
             onResize={handleRightDockResize}
           >

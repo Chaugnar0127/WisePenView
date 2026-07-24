@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { ChevronRight, LoaderCircle } from 'lucide-react';
 import type { CSSProperties, DragEvent, Key, ReactNode } from 'react';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
 export interface DataNode {
@@ -157,6 +158,7 @@ function Tree({
   onExpand,
   onDrop,
 }: TreeProps) {
+  const { t } = useTranslation('common');
   const defaultExpandedSignature = keysSignature(defaultExpandedKeys);
   const [internalSelectedKeys, setInternalSelectedKeys] = useState<string[]>([]);
   const [internalCheckedKeys, setInternalCheckedKeys] = useState<string[]>([]);
@@ -392,7 +394,7 @@ function Tree({
             {expandable ? (
               <AppIconButton
                 icon={<span className={styles.switcherIcon}>{renderSwitcherIcon(loading)}</span>}
-                label={expanded ? '收起节点' : '展开节点'}
+                label={expanded ? t('tree.collapse') : t('tree.expand')}
                 size="sm"
                 className={clsx(styles.switcher, 'wisepen-tree__switcher')}
                 data-expanded={expanded}
@@ -414,7 +416,7 @@ function Tree({
                 className={clsx(styles.checkbox, 'wisepen-tree__checkbox')}
                 isSelected={checked}
                 isDisabled={!canCheck}
-                aria-label="选择节点"
+                aria-label={t('tree.select')}
                 onChange={() => toggleCheck(node)}
                 onClick={(event) => event.stopPropagation()}
               />

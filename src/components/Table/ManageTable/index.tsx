@@ -110,7 +110,8 @@ function ManageTable<T extends object>({
   onSortChange,
   getRowClassName,
 }: ManageTableProps<T>) {
-  const { t } = useTranslation('table');
+  const { t, i18n } = useTranslation('table');
+  const sortLocale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
   const resolvedEmptyText = emptyText ?? t('empty.noData');
   const resolvedLoadingText = loadingText ?? t('loading');
 
@@ -227,11 +228,17 @@ function ManageTable<T extends object>({
 
   const sortedItems = useMemo(
     () =>
-      sortTableRows(items, columns, sortDescriptor, (row) => {
-        const rowId = String(row[rowKey]);
-        return { row, rowId, state: resolveRowState(rowId, inlineEdit) };
-      }),
-    [columns, inlineEdit, items, rowKey, sortDescriptor]
+      sortTableRows(
+        items,
+        columns,
+        sortDescriptor,
+        (row) => {
+          const rowId = String(row[rowKey]);
+          return { row, rowId, state: resolveRowState(rowId, inlineEdit) };
+        },
+        { locale: sortLocale }
+      ),
+    [columns, inlineEdit, items, rowKey, sortDescriptor, sortLocale]
   );
 
   const handleBatchSelectionChange = useCallback(

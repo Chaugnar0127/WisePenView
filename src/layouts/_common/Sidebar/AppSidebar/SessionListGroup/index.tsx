@@ -7,6 +7,7 @@ import { Button, ListBox, ListBoxItem, ListBoxSection, toast } from '@heroui/rea
 import { useMount, useRequest } from 'ahooks';
 import clsx from 'clsx';
 import { useImperativeHandle, useState, type Ref } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styles from '../AppSidebarTabs/style.module.less';
 import SessionMenuItem from '../SessionMenuItem';
@@ -112,6 +113,7 @@ function SessionListGroup({
   ref,
   selectedKeys,
 }: SessionListGroupProps & { ref?: Ref<SessionListGroupRef> }) {
+  const { t } = useTranslation('chat');
   const {
     handleDeleted,
     hasMoreSessions,
@@ -127,7 +129,7 @@ function SessionListGroup({
 
   return (
     <ListBox
-      aria-label="会话历史"
+      aria-label={t('session.listAria')}
       selectionMode="single"
       className={styles.sessionMenu}
       selectedKeys={selectedKeys}
@@ -137,11 +139,11 @@ function SessionListGroup({
           <ListBoxItem
             key="session-loading"
             id="session-loading"
-            textValue="会话加载中..."
+            textValue={t('session.loading')}
             isDisabled
             className={styles.sessionItem}
           >
-            会话加载中...
+            {t('session.loading')}
           </ListBoxItem>
         ) : (
           <>
@@ -149,18 +151,18 @@ function SessionListGroup({
               <ListBoxItem
                 key="empty-normal-session"
                 id="empty-normal-session"
-                textValue="暂无会话"
+                textValue={t('session.empty')}
                 isDisabled
                 className={styles.sessionItem}
               >
-                暂无会话
+                {t('session.empty')}
               </ListBoxItem>
             ) : (
               sessionItems.map((session) => (
                 <ListBoxItem
                   key={session.id}
                   id={`session-${session.id}`}
-                  textValue={session.title || '未命名会话'}
+                  textValue={session.title || t('session.untitled')}
                   className={clsx(styles.sessionItem, styles.sessionItemWithActions)}
                   onPress={() => selectSession(session)}
                 >
@@ -176,7 +178,7 @@ function SessionListGroup({
               <ListBoxItem
                 key="session-load-more"
                 id="session-load-more"
-                textValue={hasMoreSessions ? '加载更多' : '没有更多了'}
+                textValue={hasMoreSessions ? t('session.loadMore') : t('session.noMore')}
                 isDisabled
                 className={styles.sessionItem}
               >
@@ -192,7 +194,7 @@ function SessionListGroup({
                     event.stopPropagation();
                   }}
                 >
-                  {hasMoreSessions ? '加载更多' : '没有更多了'}
+                  {hasMoreSessions ? t('session.loadMore') : t('session.noMore')}
                 </Button>
               </ListBoxItem>
             )}

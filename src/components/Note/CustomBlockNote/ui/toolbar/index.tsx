@@ -22,6 +22,7 @@ import { ButtonGroup, Separator, Toolbar } from '@heroui/react';
 import { useEventListener } from 'ahooks';
 import { MessageSquarePlus, Search, Sparkles } from 'lucide-react';
 import { useCallback, useMemo, type ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BlockTypeMenu } from './components/BlockTypeMenu';
 import { ColorMenu } from './components/ColorMenu';
 import { FileCaptionToolbarButton } from './components/FileButtons';
@@ -111,12 +112,13 @@ function CustomFormattingToolbar({
   onAddComment,
   onOpenFind,
 }: CustomFormattingToolbarProps) {
+  const { t } = useTranslation('note');
   const readOnly = useNoteEditorReadOnlyContext();
   const showBlockTypeFileGroup = useBlockTypeFileGroupVisible();
 
   return (
     <Toolbar
-      aria-label="格式工具栏"
+      aria-label={t('editor.toolbar.label')}
       isAttached
       className={styles.toolbar}
       onMouseDown={stopToolbarMouseDown}
@@ -127,7 +129,7 @@ function CustomFormattingToolbar({
           {showBlockTypeFileGroup ? (
             <>
               <ToolbarSeparator />
-              <ButtonGroup size="sm" variant="ghost" aria-label="块类型和文件">
+              <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.toolbar.blockAndFile')}>
                 <BlockTypeMenu />
                 <FileCaptionToolbarButton />
               </ButtonGroup>
@@ -146,14 +148,18 @@ function CustomFormattingToolbar({
           <ToolbarSeparator />
         </>
       ) : null}
-      <ButtonGroup size="sm" variant="ghost" aria-label="搜索、批注和 AI">
-        <ToolbarButton label="全文搜索" icon={<Search size={20} />} onPress={onOpenFind} />
+      <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.toolbar.searchCommentAi')}>
         <ToolbarButton
-          label="添加批注"
+          label={t('editor.toolbar.search')}
+          icon={<Search size={20} />}
+          onPress={onOpenFind}
+        />
+        <ToolbarButton
+          label={t('editor.toolbar.addComment')}
           icon={<MessageSquarePlus size={20} />}
           onPress={onAddComment}
         />
-        <ToolbarButton label="问 AI" icon={<Sparkles size={20} />} onPress={onAskAi} />
+        <ToolbarButton label={t('ai.toolbar')} icon={<Sparkles size={20} />} onPress={onAskAi} />
       </ButtonGroup>
     </Toolbar>
   );

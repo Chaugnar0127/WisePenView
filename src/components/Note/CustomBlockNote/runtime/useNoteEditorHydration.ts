@@ -3,6 +3,7 @@ import type { NoteAiDiffPreviewData } from '@/domains/Note';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useMemoizedFn, useMount, useUpdateEffect } from 'ahooks';
+import { useTranslation } from 'react-i18next';
 import type * as Y from 'yjs';
 
 import { getAiContentStore } from '../engines/aiDiff/store';
@@ -82,6 +83,7 @@ export function useNoteEditorHydration({
   aiDiffPreview: CustomBlockNoteProps['aiDiffPreview'];
   scheduleBodyContentHashRefresh: () => void;
 }) {
+  const { t } = useTranslation('note');
   const applyPendingMarkdownImport = useMemoizedFn(() => {
     if (!collaborationReady) {
       return;
@@ -98,10 +100,10 @@ export function useNoteEditorHydration({
         editor.replaceBlocks(editor.document, blocks);
       }
       usePendingNoteImportStore.getState().removePendingImport(resourceId);
-      toast.success(`已导入 ${pendingImport.sourceFileName}`);
+      toast.success(t('import.success', { fileName: pendingImport.sourceFileName }));
     } catch (error) {
       usePendingNoteImportStore.getState().removePendingImport(resourceId);
-      toast.danger(`Markdown 导入失败：${parseErrorMessage(error)}`);
+      toast.danger(t('import.failed', { message: parseErrorMessage(error) }));
     }
   });
 

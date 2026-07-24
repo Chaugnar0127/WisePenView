@@ -21,6 +21,7 @@ import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useCallback, useMemo, useState, type ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 import { mountResourceToFolderTag, resolveCurrentFolderTagId } from '../common/driveComponentModel';
 import type { DriveTableRow, TableDriveActionConfig } from './index.type';
 import type { CreateMenuItem } from './parts/CreateMenu/index.type';
@@ -67,6 +68,7 @@ export function useTableDriveActions({
   targetTagId,
   isTrashView = false,
 }: UseTableDriveActionsParams): UseTableDriveActionsReturn {
+  const { t } = useTranslation('drive');
   const openInWorkspace = useOpenInWorkspace();
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
   const noteService = useNoteService();
@@ -141,7 +143,7 @@ export function useTableDriveActions({
 
   const { loading: creatingNote, run: runCreateNote } = useRequest(
     async () => {
-      const { resourceId } = await noteService.createNote({ title: '未命名笔记' });
+      const { resourceId } = await noteService.createNote({ title: t('create.defaultNoteTitle') });
       if (!resourceId) {
         throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_CREATE_RESOURCE_ID_MISSING);
       }
@@ -355,26 +357,26 @@ export function useTableDriveActions({
     if (!showCreateMenu) return [];
     const items: CreateMenuItem[] = [];
     if (toolbarConfig.canCreateFolder) {
-      items.push({ id: 'folder', label: '新建文件夹' });
+      items.push({ id: 'folder', label: t('create.folder') });
     }
     if (canCreateInCurrentFolder && toolbarConfig.canCreateDrawio) {
-      items.push({ id: 'drawio', label: '新建图表' });
+      items.push({ id: 'drawio', label: t('create.drawio') });
     }
     if (canCreateInCurrentFolder && toolbarConfig.canCreateNote) {
-      items.push({ id: 'note', label: '新建笔记', disabled: creatingNote });
+      items.push({ id: 'note', label: t('create.note'), disabled: creatingNote });
       items.push({
         id: 'importNote',
-        label: '导入笔记',
+        label: t('create.importNote'),
         disabled: importingMarkdownNote,
       });
     }
     if (canCreateInCurrentFolder && toolbarConfig.canCreateSkill) {
-      items.push({ id: 'skill', label: '新建 Skill' });
+      items.push({ id: 'skill', label: t('create.skill') });
     }
     if (canCreateInCurrentFolder && toolbarConfig.canCreateAgent)
-      items.push({ id: 'agent', label: '新建 Agent' });
+      items.push({ id: 'agent', label: t('create.agent') });
     if (showUploadDocument) {
-      items.push({ id: 'upload', label: '上传文件' });
+      items.push({ id: 'upload', label: t('create.upload') });
     }
     return items;
   }, [
@@ -388,6 +390,7 @@ export function useTableDriveActions({
     toolbarConfig.canCreateNote,
     toolbarConfig.canCreateSkill,
     toolbarConfig.canCreateAgent,
+    t,
   ]);
 
   return {

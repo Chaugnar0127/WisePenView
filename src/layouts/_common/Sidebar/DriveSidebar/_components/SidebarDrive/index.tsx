@@ -38,6 +38,7 @@ import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
 import type { SidebarDriveCreateAction } from './SidebarDriveNodeTitle';
@@ -82,6 +83,7 @@ const isResourceNode = (
   node?.type === 'resource' || node?.type === 'link';
 
 function SidebarDrive() {
+  const { t } = useTranslation('drive');
   const location = useLocation();
   const driveService = useDriveService();
   const documentService = useDocumentService();
@@ -369,7 +371,9 @@ function SidebarDrive() {
           reason: '笔记创建目标不存在',
         });
       }
-      const { resourceId } = await noteService.createNote({ title: '未命名笔记' });
+      const { resourceId } = await noteService.createNote({
+        title: t('create.defaultNoteTitle'),
+      });
       if (!resourceId) {
         throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_CREATE_RESOURCE_ID_MISSING);
       }
@@ -464,7 +468,7 @@ function SidebarDrive() {
         </div>
       ) : showEmpty ? (
         <div className={styles.stateBlock}>
-          <Empty description="暂无内容" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          <Empty description={t('navigator.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
         </div>
       ) : (
         <Tree

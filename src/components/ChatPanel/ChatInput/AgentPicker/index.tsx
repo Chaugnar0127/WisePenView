@@ -12,6 +12,7 @@ import { ListBox, ListBoxItem, toast } from '@heroui/react';
 import { useMount, useRequest, useUpdateEffect } from 'ahooks';
 import { Bot, Check } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
 import styles from '../style.module.less';
 
@@ -33,6 +34,7 @@ function mergeAgentOptions(
 }
 
 function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
+  const { t } = useTranslation('chat');
   const chatService = useChatService();
   const store = useChatInputStoreApi();
   const selectedAgent = useChatInputStore((state) => state.selectedAgent);
@@ -92,20 +94,23 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
     setOpen(false);
   };
 
+  const getAgentLabel = (agent: ChatAgentOption): string =>
+    agent.isDefault ? t('input.agentPicker.defaultAgent') : agent.label;
+
   return (
     <AppPopover isOpen={open} onOpenChange={setOpen}>
       <AppIconButton
         icon={<Bot size={17} aria-hidden="true" />}
-        label="选择 Agent"
-        tooltip={{ content: selectedAgent.label }}
+        label={t('input.agentPicker.trigger')}
+        tooltip={{ content: getAgentLabel(selectedAgent) }}
         overlayTrigger={<AppPopover.Trigger />}
       />
-      <AppPopover.Content placement="top" title="Agent">
+      <AppPopover.Content placement="top" title={t('input.agentPicker.title')}>
         <AppPopover.DeferredContent fallback={<div className={styles.deferredPopoverPanel} />}>
           {() => (
             <div className={styles.popoverPanel}>
               <ListBox
-                aria-label="选择 Agent"
+                aria-label={t('input.agentPicker.trigger')}
                 selectionMode="single"
                 selectedKeys={[selectedAgent.agentId]}
                 className={styles.listBox}
@@ -114,16 +119,18 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
                   <ListBoxItem
                     key={agent.agentId}
                     id={agent.agentId}
-                    textValue={agent.label}
+                    textValue={getAgentLabel(agent)}
                     onPress={() => handleSelect(agent)}
                   >
                     <span className={styles.agentItem}>
                       <span className={styles.agentMain}>
                         <Bot size={14} />
-                        <span>{agent.label}</span>
+                        <span>{getAgentLabel(agent)}</span>
                       </span>
                       {agent.source === 'CURRENT_DRAFT' ? (
-                        <span className={styles.agentMeta}>当前草稿</span>
+                        <span className={styles.agentMeta}>
+                          {t('input.agentPicker.currentDraft')}
+                        </span>
                       ) : agent.agentType === 'GROUP' && agent.groupName ? (
                         <span className={styles.agentMeta}>{agent.groupName}</span>
                       ) : null}

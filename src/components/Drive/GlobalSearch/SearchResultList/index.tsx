@@ -9,6 +9,7 @@ import { toast } from '@heroui/react';
 import { useInfiniteScroll, useKeyPress, useUpdateEffect } from 'ahooks';
 import clsx from 'clsx';
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SearchResultListProps } from './index.type';
 import styles from './style.module.less';
 
@@ -62,6 +63,7 @@ function SearchHitRow({ item, active, flatIndex, onActivate, onOpen }: SearchHit
 
 /** 单列表渲染 + 无限滚动 + 键盘导航；activeIndex 渲染期 clamp 规避 effect 内 setState */
 function SearchResultList({ keyword, scope, onClose }: SearchResultListProps) {
+  const { t } = useTranslation('drive');
   const listRef = useRef<HTMLDivElement>(null);
   const openInWorkspace = useOpenInWorkspace();
   const resourceService = useResourceService();
@@ -178,13 +180,15 @@ function SearchResultList({ keyword, scope, onClose }: SearchResultListProps) {
               <Spin size="small" />
             </div>
           )}
-          {!loadingMore && noMore && <div className={styles.footerHint}>已展示全部结果</div>}
+          {!loadingMore && noMore && (
+            <div className={styles.footerHint}>{t('search.allResultsShown')}</div>
+          )}
         </>
       ) : (
         <div className={styles.emptyWrapper}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={hasKeyword ? '没有找到匹配结果' : '搜索文档、笔记和标签'}
+            description={hasKeyword ? t('search.noResults') : t('search.emptyHint')}
           />
         </div>
       )}

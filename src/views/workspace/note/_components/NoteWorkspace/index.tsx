@@ -3,6 +3,7 @@ import InlineComment from '@/components/InlineComment';
 import SegmentedTabs from '@/components/SegmentedTabs';
 import { useMemoizedFn, useRequest, useUnmount } from 'ahooks';
 import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import CustomBlockNote from '@/components/Note/CustomBlockNote';
 import type {
@@ -20,7 +21,6 @@ import type {
 } from '@/domains/Note';
 import {
   AI_DIFF_DISPLAY_MODE,
-  AI_DIFF_DISPLAY_MODE_LABELS,
   encodeNoteClientContentSignature,
   NoteInlineCommentSession,
   useNoteSession,
@@ -59,21 +59,6 @@ interface NoteWorkspaceProps {
 
 const INLINE_COMMENT_POLLING_INTERVAL = 8_000;
 
-const AI_DIFF_DISPLAY_OPTIONS: Array<{ value: AiDiffDisplayMode; label: string }> = [
-  {
-    value: AI_DIFF_DISPLAY_MODE.OLD_ONLY,
-    label: AI_DIFF_DISPLAY_MODE_LABELS[AI_DIFF_DISPLAY_MODE.OLD_ONLY],
-  },
-  {
-    value: AI_DIFF_DISPLAY_MODE.NEW_ONLY,
-    label: AI_DIFF_DISPLAY_MODE_LABELS[AI_DIFF_DISPLAY_MODE.NEW_ONLY],
-  },
-  {
-    value: AI_DIFF_DISPLAY_MODE.COMPARE,
-    label: AI_DIFF_DISPLAY_MODE_LABELS[AI_DIFF_DISPLAY_MODE.COMPARE],
-  },
-];
-
 const NOTE_COLLABORATION_COLORS = [
   '#2563eb',
   '#16a34a',
@@ -87,8 +72,8 @@ const NOTE_COLLABORATION_COLORS = [
   '#ea580c',
 ] as const;
 
-function getNoteCollaborationUserName(user?: User): string {
-  return user?.nickname?.trim() || user?.realName?.trim() || user?.username?.trim() || '当前用户';
+function getNoteCollaborationUserName(user: User | undefined, fallbackName: string): string {
+  return user?.nickname?.trim() || user?.realName?.trim() || user?.username?.trim() || fallbackName;
 }
 
 function pickNoteCollaborationColor(seed: string): string {
@@ -99,10 +84,10 @@ function pickNoteCollaborationColor(seed: string): string {
   return NOTE_COLLABORATION_COLORS[hash % NOTE_COLLABORATION_COLORS.length];
 }
 
-function sanitizeDownloadFileName(fileName: string): string {
+function sanitizeDownloadFileName(fileName: string, fallbackName: string): string {
   const normalizedName = fileName.trim().replace(/[\\/:*?"<>|]+/g, '_');
   const safeName = normalizedName.replace(/[.\s]+$/g, '');
-  return safeName || '未命名笔记';
+  return safeName || fallbackName;
 }
 
 function downloadTextArtifact(params: {
@@ -125,8 +110,11 @@ function downloadTextArtifact(params: {
   }
 }
 
-function buildNoteCollaborationUser(user?: User): NoteCollaborationUser {
-  const name = getNoteCollaborationUserName(user);
+function buildNoteCollaborationUser(
+  user: User | undefined,
+  fallbackName: string
+): NoteCollaborationUser {
+  const name = getNoteCollaborationUserName(user, fallbackName);
   const colorSeed = user?.id?.trim() || user?.username?.trim() || name;
   return {
     name,
@@ -146,14 +134,8 @@ function resolveNoteHeaderSaveStatus(
   return 'saved';
 }
 
-function formatNoteSaveStatus(status: NoteHeaderSaveStatus): string {
-  if (status === 'saving') return '保存中...';
-  if (status === 'waiting') return '等待网络同步';
-  if (status === 'failed') return '保存失败';
-  return '已自动保存';
-}
-
 function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteWorkspaceProps) {
+  const { t } = useTranslation('note');
   const aiDiffDisplayMode = useAiDiffDisplayStore((state) => state.displayMode);
   const setAiDiffDisplayMode = useAiDiffDisplayStore((state) => state.setDisplayMode);
   const { setChatContext } = useResourceHostChatContextActions();
@@ -210,7 +192,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   const blockLocalDocWrites = isConnected && !noteInfoDisplay.canCollaborativeEdit;
   const showFullPageSpin = (status === 'connecting' && !idbSynced) || shouldWaitCurrentUser;
   const middleOverlayText =
-    status === 'connecting' && !idbSynced ? '正在连接笔记服务...' : '正在加载用户信息...';
+    status === 'connecting' && !idbSynced ? t('workspace.connecting') : t('workspace.loadingUser');
   const fallbackNoteTitle = noteInfoDisplay.noteTitle;
   const [aiDiffBodyContentHash, setAiDiffBodyContentHash] = useState<string | undefined>(undefined);
   const noteClientContentSignature = useMemo(
@@ -221,10 +203,14 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
     [aiDiffBodyContentHash]
   );
   const isNoteClientContentSignaturePending = !aiDiffBodyContentHash;
-  const resourceName = useResourceDisplayName(resourceId, fallbackNoteTitle, '未命名笔记');
+  const untitledTitle = t('title.untitled');
+  const resourceName = useResourceDisplayName(resourceId, fallbackNoteTitle, untitledTitle);
   const headerSaveStatus = resolveNoteHeaderSaveStatus(saveStatus, titleSaveStatus);
-  const saveStatusText = formatNoteSaveStatus(headerSaveStatus);
-  const collaborationUser = useMemo(() => buildNoteCollaborationUser(currentUser), [currentUser]);
+  const saveStatusText = t(`save.${headerSaveStatus}`);
+  const collaborationUser = useMemo(
+    () => buildNoteCollaborationUser(currentUser, t('workspace.currentUser')),
+    [currentUser, t]
+  );
   const canRenderBodyEditor = !shouldWaitCurrentUser;
   const findMode = useNoteFindMode({
     editorRef: bodyEditorRef,
@@ -285,11 +271,11 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   const handlePrintPdf = useMemoizedFn(async () => {
     const bodyApi = bodyEditorRef.current;
     if (!bodyApi) {
-      toast.info('编辑器未就绪');
+      toast.info(t('export.editorNotReady'));
       return;
     }
     const titleApi = titleEditorRef.current;
-    const title = titleApi?.getPlainTitle() ?? fallbackNoteTitle ?? '未命名笔记';
+    const title = titleApi?.getPlainTitle() ?? fallbackNoteTitle ?? untitledTitle;
     const titleRoot = titleApi?.getProseMirrorRoot() ?? null;
     try {
       setExportPending(true);
@@ -304,19 +290,19 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   const handleDownloadMarkdown = useMemoizedFn(async () => {
     const bodyApi = bodyEditorRef.current;
     if (!bodyApi) {
-      toast.info('编辑器未就绪');
+      toast.info(t('export.editorNotReady'));
       return;
     }
     try {
       setExportPending(true);
-      const title = titleEditorRef.current?.getPlainTitle() ?? fallbackNoteTitle ?? '未命名笔记';
+      const title = titleEditorRef.current?.getPlainTitle() ?? fallbackNoteTitle ?? untitledTitle;
       const artifact = bodyApi.exportMarkdown();
       downloadTextArtifact({
         content: artifact.content,
         mimeType: artifact.mimeType,
-        fileName: `${sanitizeDownloadFileName(title)}.${artifact.extension}`,
+        fileName: `${sanitizeDownloadFileName(title, untitledTitle)}.${artifact.extension}`,
       });
-      toast.success('Markdown 下载已开始');
+      toast.success(t('export.markdownStarted'));
     } catch (err) {
       toast.danger(parseErrorMessage(err));
     } finally {
@@ -471,10 +457,14 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
           ),
           leadingActions: showAiDiffDisplayModeSwitch ? (
             <SegmentedTabs<AiDiffDisplayMode>
-              ariaLabel="AI 差异展示模式"
+              ariaLabel={t('aiDiff.displayMode')}
               selectedKey={aiDiffDisplayMode}
               className={styles.aiDiffDisplayModeSwitch}
-              items={AI_DIFF_DISPLAY_OPTIONS.map((option) => ({
+              items={[
+                { value: AI_DIFF_DISPLAY_MODE.OLD_ONLY, label: t('aiDiff.mode.oldOnly') },
+                { value: AI_DIFF_DISPLAY_MODE.NEW_ONLY, label: t('aiDiff.mode.newOnly') },
+                { value: AI_DIFF_DISPLAY_MODE.COMPARE, label: t('aiDiff.mode.compare') },
+              ].map((option) => ({
                 key: option.value,
                 label: option.label,
                 disabled: showFullPageSpin,
@@ -486,11 +476,12 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
             actions: [
               {
                 id: 'inline-comment-history',
-                label: `历史评论${
-                  inlineCommentSnapshot.resolvedThreads.length > 0
-                    ? ` (${inlineCommentSnapshot.resolvedThreads.length})`
-                    : ''
-                }`,
+                label: t('comments.history', {
+                  count:
+                    inlineCommentSnapshot.resolvedThreads.length > 0
+                      ? ` (${inlineCommentSnapshot.resolvedThreads.length})`
+                      : '',
+                }),
                 icon: History,
                 onAction: () => setIsInlineCommentHistoryOpen(true),
               },
@@ -498,7 +489,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
             onSearch: findMode.openFind,
             onPrint: handlePrintPdf,
             download: {
-              label: '下载为 Markdown',
+              label: t('export.downloadMarkdown'),
               onAction: handleDownloadMarkdown,
             },
             isPending: exportPending,
@@ -531,6 +522,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
       setAiDiffDisplayMode,
       showAiDiffDisplayModeSwitch,
       showFullPageSpin,
+      t,
     ]
   );
   useResourceHostLayoutConfig(resourceHostConfig);
@@ -572,9 +564,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
                   <Alert className={styles.wsAlert} status="warning">
                     <Alert.Indicator />
                     <Alert.Content>
-                      <Alert.Description>
-                        网络连接已断开，当前可继续本地编辑；网络恢复后会自动同步到云端。
-                      </Alert.Description>
+                      <Alert.Description>{t('workspace.disconnected')}</Alert.Description>
                     </Alert.Content>
                     <div className={styles.wsAlertAction}>
                       <Button
@@ -583,7 +573,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
                         isDisabled={status !== 'disconnected'}
                         onPress={reconnect}
                       >
-                        重试
+                        {t('workspace.retry')}
                       </Button>
                     </div>
                   </Alert>

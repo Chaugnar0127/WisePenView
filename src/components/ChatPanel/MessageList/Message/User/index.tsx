@@ -12,6 +12,7 @@ import {
 import type { MessageAttachmentSnapshot, WisePenUIMessage } from '@/domains/Chat';
 import { isTextUIPart } from 'ai';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ChatMessage from '../ChatMessage';
 import MessageContent from '../Content';
 import styles from './style.module.less';
@@ -20,12 +21,15 @@ import styles from './style.module.less';
 const VISIBLE_ATTACHMENT_COUNT_FULL_WIDTH = 2;
 const VISIBLE_ATTACHMENT_COUNT_PANEL = 1;
 
-function getAttachmentDescription(attachment: MessageAttachmentSnapshot): string {
-  if (!attachment.available) return '附件已不可用';
-  return attachment.kind === 'resource' ? '资源附件' : '附件';
+function getAttachmentDescriptionKey(attachment: MessageAttachmentSnapshot): string {
+  if (!attachment.available) return 'message.attachments.unavailable';
+  return attachment.kind === 'resource'
+    ? 'message.attachments.resource'
+    : 'message.attachments.attachment';
 }
 
 function UserAttachmentChip({ attachment }: { attachment: MessageAttachmentSnapshot }) {
+  const { t } = useTranslation('chat');
   return (
     <Attachment
       size="sm"
@@ -37,7 +41,7 @@ function UserAttachmentChip({ attachment }: { attachment: MessageAttachmentSnaps
       </AttachmentMedia>
       <AttachmentContent>
         <AttachmentTitle title={attachment.filename}>{attachment.filename}</AttachmentTitle>
-        <AttachmentDescription>{getAttachmentDescription(attachment)}</AttachmentDescription>
+        <AttachmentDescription>{t(getAttachmentDescriptionKey(attachment))}</AttachmentDescription>
       </AttachmentContent>
     </Attachment>
   );
@@ -50,23 +54,26 @@ function UserMessageAttachments({
   attachments: MessageAttachmentSnapshot[];
   visibleCount: number;
 }) {
+  const { t } = useTranslation('chat');
   const [moreOpen, setMoreOpen] = useState(false);
   const visibleAttachments = attachments.slice(0, visibleCount);
   const overflowCount = attachments.length - visibleAttachments.length;
 
   return (
-    <AttachmentGroup className={styles.attachments} aria-label="消息附件">
+    <AttachmentGroup className={styles.attachments} aria-label={t('message.attachments.groupAria')}>
       {visibleAttachments.map((attachment) => (
         <UserAttachmentChip key={attachment.attachmentId} attachment={attachment} />
       ))}
 
       {overflowCount > 0 ? (
         <AppPopover isOpen={moreOpen} onOpenChange={setMoreOpen} deferContent={false}>
-          <AppPopover.Trigger title={`查看全部 ${attachments.length} 个附件`}>
+          <AppPopover.Trigger
+            title={t('message.attachments.viewAll', { count: attachments.length })}
+          >
             <button
               type="button"
               className={styles.moreTrigger}
-              aria-label={`还有 ${overflowCount} 个附件`}
+              aria-label={t('message.attachments.remaining', { count: overflowCount })}
               aria-expanded={moreOpen}
             >
               +{overflowCount}
@@ -75,10 +82,10 @@ function UserMessageAttachments({
           <AppPopover.Content
             className={styles.morePopover}
             placement="bottom end"
-            title={`全部附件（${attachments.length}）`}
+            title={t('message.attachments.allTitle', { count: attachments.length })}
           >
             <div className={styles.morePanel}>
-              <ul className={styles.moreList} aria-label="全部附件">
+              <ul className={styles.moreList} aria-label={t('message.attachments.allAria')}>
                 {attachments.map((attachment) => (
                   <li key={attachment.attachmentId} className={styles.moreItem}>
                     <span className={styles.moreItemIcon} aria-hidden>
@@ -89,7 +96,7 @@ function UserMessageAttachments({
                         {attachment.filename}
                       </span>
                       <span className={styles.moreItemMeta}>
-                        {getAttachmentDescription(attachment)}
+                        {t(getAttachmentDescriptionKey(attachment))}
                       </span>
                     </span>
                   </li>

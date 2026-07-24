@@ -6,6 +6,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getDriveScopeGroupId, type DriveActionTarget } from '../../../common/driveComponentModel';
 import type { MoveNodeModalProps } from './index.type';
 import styles from './style.module.less';
@@ -55,6 +56,7 @@ function MoveNodeModal({
   onOpenChange,
   onSuccess,
 }: MoveNodeModalProps) {
+  const { t } = useTranslation(['drive', 'common']);
   const driveService = useDriveService();
   const [selectedTargetId, setSelectedTargetId] = useState<string>();
   const nodeIdsKey = nodes.map((node) => node.id).join('\u0000');
@@ -121,11 +123,15 @@ function MoveNodeModal({
       manual: true,
       onSuccess: (movedCount) => {
         if (movedCount === 0) {
-          toast.success('所选项已在目标文件夹');
+          toast.success(t('move.feedback.alreadyThere'));
           onOpenChange(false);
           return;
         }
-        toast.success(isTrashView ? `已移动 ${movedCount} 项到云盘` : `已移动 ${movedCount} 项`);
+        toast.success(
+          isTrashView
+            ? t('move.feedback.movedToDrive', { count: movedCount })
+            : t('move.feedback.moved', { count: movedCount })
+        );
         if (selectedTargetId) {
           onSuccess?.(selectedTargetId);
         }
@@ -151,13 +157,13 @@ function MoveNodeModal({
     <AppModal
       isOpen={isOpen && nodes.length > 0}
       onOpenChange={handleOpenChange}
-      title={isTrashView ? '移动到云盘' : '移动到文件夹'}
+      title={isTrashView ? t('move.titleToDrive') : t('move.titleToFolder')}
       size="md"
       isDismissable={!moving}
       actions={
         <>
           <Button variant="secondary" isDisabled={moving} onPress={() => handleOpenChange(false)}>
-            取消
+            {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button
             variant="primary"
@@ -165,16 +171,18 @@ function MoveNodeModal({
             aria-busy={moving || undefined}
             onPress={handleConfirm}
           >
-            确定
+            {t('actions.confirm', { ns: 'common' })}
           </Button>
         </>
       }
     >
       <div className={styles.wrapper}>
         {nodes.length === 1 ? (
-          <div className={styles.hint}>即将移动：{getNodeName(nodes[0])}</div>
+          <div className={styles.hint}>
+            {t('move.selectedItem', { name: getNodeName(nodes[0]) })}
+          </div>
         ) : (
-          <div className={styles.hint}>已选择 {nodes.length} 项</div>
+          <div className={styles.hint}>{t('move.selectedCount', { count: nodes.length })}</div>
         )}
         <div className={styles.treeWrap}>
           <DriveNavigator

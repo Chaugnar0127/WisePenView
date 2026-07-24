@@ -9,6 +9,7 @@ import { AppPopover } from '@/components/Overlay';
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
 import { Baseline } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   blockHasInlineContent,
   colorStyleExists,
@@ -19,6 +20,7 @@ import {
 import type { ButtonGroupChildProps } from './ToolbarButton';
 
 export function ColorMenu(_buttonGroupProps: ButtonGroupChildProps) {
+  const { t } = useTranslation('note');
   const editor = useBlockNoteEditor(blockNoteSchema);
   const [open, setOpen] = useState(false);
   const state = useEditorState({
@@ -77,7 +79,7 @@ export function ColorMenu(_buttonGroupProps: ButtonGroupChildProps) {
     <AppPopover isOpen={open} onOpenChange={setOpen} deferContent={false}>
       <AppIconButton
         icon={<Baseline size={20} className={selectedTextColor.textClassName} aria-hidden="true" />}
-        label="颜色"
+        label={t('editor.color.label')}
         size="sm"
         isActive={open}
         overlayTrigger={<AppPopover.Trigger />}

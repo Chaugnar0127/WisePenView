@@ -7,6 +7,7 @@ import { validateReservedName } from '@/utils/tag/validateReservedName';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { DriveActionTarget } from '../../../common/driveComponentModel';
 import type { RenameNodeModalProps } from './index.type';
 import styles from './style.module.less';
@@ -18,6 +19,7 @@ function getDefaultName(node: DriveActionTarget | null): string {
 }
 
 function RenameNodeModal({ isOpen, node, groupId, onOpenChange, onSuccess }: RenameNodeModalProps) {
+  const { t } = useTranslation('drive');
   const driveService = useDriveService();
   const [name, setName] = useState(getDefaultName(node));
   const [nameError, setNameError] = useState('');
@@ -41,7 +43,7 @@ function RenameNodeModal({ isOpen, node, groupId, onOpenChange, onSuccess }: Ren
     {
       manual: true,
       onSuccess: () => {
-        toast.success('重命名成功');
+        toast.success(t('rename.success'));
         onSuccess?.();
         onOpenChange(false);
       },
@@ -55,20 +57,20 @@ function RenameNodeModal({ isOpen, node, groupId, onOpenChange, onSuccess }: Ren
     if (!node) return;
     const trimmed = name.trim();
     if (!trimmed) {
-      setNameError('请输入名称');
+      setNameError(t('rename.required'));
       return;
     }
     if (node.type === 'folder') {
       const validation = validateReservedName(trimmed);
       if (!validation.valid) {
-        setNameError(validation.reason ?? '名称不可用');
+        setNameError(t('create.validation.reservedPrefix'));
         return;
       }
     }
     runRenameNode(trimmed);
   };
 
-  const title = node?.type === 'folder' ? '重命名文件夹' : '重命名文件';
+  const title = node?.type === 'folder' ? t('rename.folderTitle') : t('rename.fileTitle');
 
   return (
     <AppFormDialog
@@ -85,8 +87,8 @@ function RenameNodeModal({ isOpen, node, groupId, onOpenChange, onSuccess }: Ren
       isDismissable={!loading}
     >
       <FormField
-        aria-label="节点名称"
-        label="名称"
+        aria-label={t('rename.nodeNameAria')}
+        label={t('rename.nameLabel')}
         className={styles.input}
         value={name}
         autoFocus
@@ -97,7 +99,7 @@ function RenameNodeModal({ isOpen, node, groupId, onOpenChange, onSuccess }: Ren
         errorMessage={nameError}
         isRequired
       >
-        <Input placeholder="请输入新名称" />
+        <Input placeholder={t('rename.placeholder')} />
       </FormField>
     </AppFormDialog>
   );

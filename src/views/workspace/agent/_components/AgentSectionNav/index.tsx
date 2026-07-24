@@ -1,5 +1,6 @@
 import { useEffectForce } from '@/hooks/useEffectForce';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
 interface AgentSectionNavProps {
@@ -30,6 +31,7 @@ const getActiveSectionId = (root: HTMLElement, sections: HTMLElement[]) => {
 };
 
 function AgentSectionNav({ items, scrollContainerId }: AgentSectionNavProps) {
+  const { t } = useTranslation('agent');
   const [activeId, setActiveId] = useState(items[0]?.[0] ?? '');
   const pendingNavigationRef = useRef<{ id: string; top: number } | null>(null);
 
@@ -103,8 +105,8 @@ function AgentSectionNav({ items, scrollContainerId }: AgentSectionNavProps) {
   }, [items, scrollContainerId]);
 
   return (
-    <nav className={styles.nav} aria-label="Agent 配置导航">
-      <h2>Agent配置导航</h2>
+    <nav className={styles.nav} aria-label={t('navigation.aria')}>
+      <h2>{t('navigation.title')}</h2>
       {items.map(([id, label]) => (
         <button
           key={id}

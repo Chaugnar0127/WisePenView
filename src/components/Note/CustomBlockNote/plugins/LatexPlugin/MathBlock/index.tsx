@@ -9,6 +9,7 @@ import type {
 import { createReactBlockSpec } from '@blocknote/react';
 import type { ComponentType } from 'react';
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useEffectForce } from '@/hooks/useEffectForce';
 import 'katex/dist/katex.min.css';
@@ -67,6 +68,7 @@ function MathFormulaPreview({ expression, className }: { expression: string; cla
 }
 
 function MathBlockView(props: MathBlockRenderProps) {
+  const { t } = useTranslation('note');
   const readOnly = useNoteEditorReadOnlyContext();
   const [isEditing, setIsEditing] = useState(false);
   const isEditingRef = useRef(false);
@@ -214,7 +216,7 @@ function MathBlockView(props: MathBlockRenderProps) {
 
   const shellClass = `${styles.mathShell} ${styles.mathShellBlock}`;
   const previewClass = styles.mathPreview;
-  const editTitle = '编辑 LaTeX（独立）';
+  const editTitle = t('latex.blockTitle');
   const canEnterEdit = !readOnly && !isEditing;
   const rootClass = canEnterEdit
     ? styles.mathRoot
@@ -225,7 +227,7 @@ function MathBlockView(props: MathBlockRenderProps) {
       visible={Boolean(isEditing && popoverPos)}
       position={popoverPos}
       title={editTitle}
-      hint="Enter 确定 · Shift+Enter 换行 · Esc 取消"
+      hint={t('latex.blockHint')}
       textareaClassName={`${popoverStyles.inlineEditTextarea} ${styles.blockPopoverTextarea}`}
       value={value}
       onValueChange={setValue}
@@ -247,7 +249,7 @@ function MathBlockView(props: MathBlockRenderProps) {
         className={rootClass}
         role={canEnterEdit ? 'button' : undefined}
         tabIndex={canEnterEdit ? 0 : -1}
-        aria-label={canEnterEdit ? '编辑独立公式' : undefined}
+        aria-label={canEnterEdit ? t('latex.blockEdit') : undefined}
         onClick={() => {
           if (canEnterEdit) enterEdit();
         }}

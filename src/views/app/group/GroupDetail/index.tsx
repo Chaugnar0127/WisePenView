@@ -16,6 +16,7 @@ import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { ReactNode } from 'react';
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
 import { getGroupDisplayConfig } from '../_components/GroupDisplayConfig';
 import MemberList from '../_components/MemberList';
@@ -37,6 +38,7 @@ type GroupDetailTabItem = SegmentedTabItem<GroupDetailTabKey> & {
 };
 
 function GroupDetail() {
+  const { t } = useTranslation('group');
   const groupService = useGroupService();
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
@@ -55,7 +57,7 @@ function GroupDetail() {
       refreshDeps: [id],
       ready: Boolean(id),
       onError: () => {
-        toast.danger('获取小组详情失败');
+        toast.danger(t('detail.loadFailed'));
       },
     }
   );
@@ -88,7 +90,7 @@ function GroupDetail() {
     const items: GroupDetailTabItem[] = [
       {
         key: 'files',
-        label: '文件',
+        label: t('detail.tabs.files'),
         children: (
           <div className={`${layout.tabPane} ${page.fileTabPane}`}>
             <TableDrive
@@ -112,7 +114,7 @@ function GroupDetail() {
       },
       {
         key: 'members',
-        label: '成员列表',
+        label: t('detail.tabs.members'),
         children: (
           <div className={layout.tabPane}>
             <MemberList
@@ -133,7 +135,7 @@ function GroupDetail() {
     if (groupDisplayConfig.showWalletTabs) {
       items.push({
         key: 'wallet',
-        label: 'token 明细',
+        label: t('detail.tabs.wallet'),
         children: (
           <div className={layout.tabPane}>
             <ComputeWallet
@@ -148,7 +150,7 @@ function GroupDetail() {
       });
       items.push({
         key: 'token-transfer',
-        label: 'token 划拨',
+        label: t('detail.tabs.transfer'),
         children: (
           <div className={layout.tabPane}>
             <OwnerGroupTokenTransfer
@@ -164,7 +166,7 @@ function GroupDetail() {
 
     items.push({
       key: 'description',
-      label: '描述',
+      label: t('detail.tabs.description'),
       children: (
         <GroupDescriptionSettings
           key={gid}
@@ -178,7 +180,7 @@ function GroupDetail() {
     });
 
     return items;
-  }, [currentUserRole, group, groupDisplayConfig, id, initialNodeId, refresh, resConfig]);
+  }, [currentUserRole, group, groupDisplayConfig, id, initialNodeId, refresh, resConfig, t]);
 
   const detailTabKeys = useMemo(() => tabItems.map((item) => item.key), [tabItems]);
 
@@ -204,7 +206,7 @@ function GroupDetail() {
   }
 
   if (!group) {
-    return <div className={layout.pageContainer}>小组不存在</div>;
+    return <div className={layout.pageContainer}>{t('detail.notFound')}</div>;
   }
 
   const { groupName, ownerInfo, createTime } = group;
@@ -224,17 +226,17 @@ function GroupDetail() {
           <div className={layout.headerMeta}>
             {ownerInfo && (
               <div className={layout.headerMetaItem}>
-                <span>创建者：</span>
+                <span>{t('detail.creator')}</span>
                 <UserCapsule name={ownerName} avatar={ownerInfo.avatar} />
               </div>
             )}
-            <span>创建日期：{createTime ?? '暂无'}</span>
+            <span>{t('detail.createdAt', { date: createTime ?? t('detail.noDate') })}</span>
           </div>
         </div>
       </div>
 
       <SegmentedTabs<GroupDetailTabKey>
-        ariaLabel="小组详情"
+        ariaLabel={t('detail.aria')}
         className={layout.detailTabs}
         selectedKey={activeDetailTabKey}
         onSelectionChange={handleDetailTabChange}

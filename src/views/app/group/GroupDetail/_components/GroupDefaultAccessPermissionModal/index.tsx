@@ -21,7 +21,33 @@ import { Button, Checkbox, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Check, X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import GroupPolicyShellCard from '../GroupPolicyShellCard';
+
+const PRESET_LABEL_KEYS = {
+  private: 'permission.preset.private',
+  readonly: 'permission.preset.readonly',
+  shared: 'permission.preset.shared',
+} as const;
+
+const STRATEGY_LABEL_KEYS = {
+  note: 'permission.strategy.note',
+  file: 'permission.strategy.file',
+  drawio: 'permission.strategy.drawio',
+  aiAsset: 'permission.strategy.aiAsset',
+} as const;
+
+const ACTION_LABEL_KEYS = {
+  DISCOVER: 'permission.action.DISCOVER',
+  VIEW: 'permission.action.VIEW',
+  LOAD: 'permission.action.LOAD',
+  EDIT: 'permission.action.EDIT',
+  INLINE_COMMENT: 'permission.action.INLINE_COMMENT',
+  DOWNLOAD_WATERMARK: 'permission.action.DOWNLOAD_WATERMARK',
+  DOWNLOAD_ORIGINAL: 'permission.action.DOWNLOAD_ORIGINAL',
+  FORK: 'permission.action.FORK',
+  COMMENT: 'permission.action.COMMENT',
+} as const;
 
 interface GroupDefaultAccessPermissionModalProps {
   isOpen: boolean;
@@ -57,6 +83,7 @@ function GroupDefaultAccessPermissionModal({
   onOpenChange,
   onSuccess,
 }: GroupDefaultAccessPermissionModalProps) {
+  const { t } = useTranslation(['group', 'common']);
   const groupService = useGroupService();
   const [selectedActions, setSelectedActions] = useState<TagResourceAction[]>(() =>
     normalizeResourceActions(groupResConfig.defaultMemberActions)
@@ -73,7 +100,7 @@ function GroupDefaultAccessPermissionModal({
     {
       manual: true,
       onSuccess: () => {
-        toast.success('小组默认权限已保存');
+        toast.success(t('permission.saved'));
         onOpenChange(false);
         onSuccess();
       },
@@ -106,11 +133,16 @@ function GroupDefaultAccessPermissionModal({
     });
   };
 
+  const selectedPresetLabel =
+    selectedPresetKey === 'custom'
+      ? t('permission.custom')
+      : t(PRESET_LABEL_KEYS[selectedPresetKey]);
+
   return (
     <AppModal
       isOpen={isOpen}
       onOpenChange={handleOpenChange}
-      title="访问策略"
+      title={t('permission.accessTitle')}
       size="lg"
       containerClassName={styles.modalContainer}
       dialogClassName={styles.modalDialog}
@@ -118,21 +150,28 @@ function GroupDefaultAccessPermissionModal({
       actions={
         <>
           <Button variant="secondary" isDisabled={saving} onPress={() => handleOpenChange(false)}>
-            取消
+            {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button variant="primary" isPending={saving} onPress={() => runSave(selectedActions)}>
-            保存
+            {t('actions.save', { ns: 'common' })}
           </Button>
         </>
       }
     >
       <div className={styles.modalFormPadding}>
         <div className={styles.advancedAccessGrid}>
-          <GroupPolicyShellCard title="访问名单" />
-          <section className={styles.permissionCard} aria-label="资源权限动作">
+          <GroupPolicyShellCard title={t('permission.accessList')} />
+          <section
+            className={styles.permissionCard}
+            aria-label={t('permission.resourceActionsAria')}
+          >
             <div className={styles.presetBar}>
-              <span className={styles.presetLabel}>基于预设</span>
-              <div className={styles.presetButtons} role="group" aria-label="基于预设">
+              <span className={styles.presetLabel}>{t('permission.basedOnPreset')}</span>
+              <div
+                className={styles.presetButtons}
+                role="group"
+                aria-label={t('permission.basedOnPreset')}
+              >
                 {TAG_PERMISSION_ACTION_PRESET_OPTIONS.map((preset) => (
                   <Button
                     key={preset.key}
@@ -141,15 +180,12 @@ function GroupDefaultAccessPermissionModal({
                     isDisabled={saving}
                     onPress={() => handlePresetChange(preset.key)}
                   >
-                    {preset.label}
+                    {t(PRESET_LABEL_KEYS[preset.key])}
                   </Button>
                 ))}
               </div>
               <span className={styles.currentPreset}>
-                当前预设：
-                {TAG_PERMISSION_ACTION_PRESET_OPTIONS.find(
-                  (preset) => preset.key === selectedPresetKey
-                )?.label ?? '自定义'}
+                {t('permission.currentPreset', { preset: selectedPresetLabel })}
               </span>
             </div>
 
@@ -157,17 +193,21 @@ function GroupDefaultAccessPermissionModal({
               <table className={styles.permissionTable}>
                 <thead>
                   <tr>
-                    <th className={styles.actionHeader}>权限动作</th>
-                    <th className={styles.toggleHeader}>开启</th>
-                    {TAG_PERMISSION_RESOURCE_STRATEGIES.map((strategy) => (
-                      <th key={strategy.key} className={styles.resourceApplicabilityHeader}>
-                        {strategy.label}适用
-                      </th>
-                    ))}
+                    <th className={styles.actionHeader}>{t('permission.actionHeader')}</th>
+                    <th className={styles.toggleHeader}>{t('permission.enabledHeader')}</th>
+                    {TAG_PERMISSION_RESOURCE_STRATEGIES.map((strategy) => {
+                      const strategyLabel = t(STRATEGY_LABEL_KEYS[strategy.key]);
+                      return (
+                        <th key={strategy.key} className={styles.resourceApplicabilityHeader}>
+                          {t('permission.strategyApplicable', { strategy: strategyLabel })}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>
                   {TAG_PERMISSION_ACTION_ROWS.map((row) => {
+                    const actionLabel = t(ACTION_LABEL_KEYS[row.action.key]);
                     const selected = isTagPermissionListActionSelected(
                       { grantedActions: selectedActions },
                       row.action
@@ -180,7 +220,7 @@ function GroupDefaultAccessPermissionModal({
                               action={row.action.action}
                               className={styles.actionIcon}
                             />
-                            <span className={styles.actionText}>{row.label}</span>
+                            <span className={styles.actionText}>{actionLabel}</span>
                           </span>
                         </th>
                         <td
@@ -189,7 +229,7 @@ function GroupDefaultAccessPermissionModal({
                         >
                           <Checkbox
                             className={styles.permissionCheckbox}
-                            aria-label={row.label}
+                            aria-label={actionLabel}
                             isDisabled={saving}
                             isSelected={selected}
                             onChange={(isSelected) => handleActionToggle(row.action, isSelected)}
@@ -197,6 +237,7 @@ function GroupDefaultAccessPermissionModal({
                           />
                         </td>
                         {TAG_PERMISSION_RESOURCE_STRATEGIES.map((strategy) => {
+                          const strategyLabel = t(STRATEGY_LABEL_KEYS[strategy.key]);
                           const supported = row.supportedStrategyKeys.includes(strategy.key);
                           const cellClassName = !supported
                             ? styles.unsupportedCell
@@ -210,13 +251,19 @@ function GroupDefaultAccessPermissionModal({
                               ) : selected ? (
                                 <Check
                                   size={14}
-                                  aria-label={`${strategy.label}${row.label}已开启`}
+                                  aria-label={t('permission.actionEnabled', {
+                                    strategy: strategyLabel,
+                                    action: actionLabel,
+                                  })}
                                   className={styles.permissionStateIcon}
                                 />
                               ) : (
                                 <X
                                   size={14}
-                                  aria-label={`${strategy.label}${row.label}未开启`}
+                                  aria-label={t('permission.actionDisabled', {
+                                    strategy: strategyLabel,
+                                    action: actionLabel,
+                                  })}
                                   className={styles.permissionStateIcon}
                                 />
                               )}

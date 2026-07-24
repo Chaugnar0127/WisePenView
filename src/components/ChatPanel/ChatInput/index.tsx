@@ -4,6 +4,7 @@ import { TextArea } from '@heroui/react';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChatInputStoreProvider } from './_store/ChatInputStoreProvider';
 import AttachmentStrip from './AttachmentStrip';
 import { ChatInputFileProvider } from './ChatInputFileContext';
@@ -25,6 +26,7 @@ function ChatInputContent({
   preferredAgent,
   fullWidth = false,
 }: ChatInputProps) {
+  const { t } = useTranslation('chat');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const inputCardRef = useRef<HTMLDivElement>(null);
   const [compactModelTrigger, setCompactModelTrigger] = useState(false);
@@ -104,10 +106,10 @@ function ChatInputContent({
             <button
               type="button"
               className={styles.contextAttachmentClear}
-              aria-label="移除上下文"
+              aria-label={t('input.removeContext')}
               onClick={onClearContext}
             >
-              <X size={14} />
+              <X size={14} aria-hidden="true" />
             </button>
           </div>
         ) : null}
@@ -115,7 +117,7 @@ function ChatInputContent({
         <TextArea
           {...textAreaProps}
           ref={textareaRef}
-          placeholder="输入消息..."
+          placeholder={t('input.placeholder')}
           rows={1}
           className={styles.textarea}
         />
@@ -134,7 +136,7 @@ function ChatInputContent({
 
       <DocumentPickerModal />
 
-      <div className={styles.footerTip}>AI 内容仅供参考，请仔细甄别</div>
+      <div className={styles.footerTip}>{t('input.disclaimer')}</div>
     </div>
   );
 }

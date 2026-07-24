@@ -14,6 +14,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useMount, useRequest, useUpdateEffect } from 'ahooks';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import ChatInput from './ChatInput';
 import type { SendOptions } from './ChatInput/index.type';
@@ -37,6 +38,7 @@ function ChatPanel({
   agentDebug,
   showCollapseButton = true,
 }: ChatPanelProps) {
+  const { t } = useTranslation(['chat', 'common']);
   const navigate = useNavigate();
   const chatService = useChatService();
   const setChatPanelCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
@@ -118,7 +120,7 @@ function ChatPanel({
 
   const sending = status === 'submitted' || status === 'streaming';
   const hasResourceChatContext = Boolean(resourceChatContext);
-  const panelTitle = currentSessionTitle || '新对话';
+  const panelTitle = currentSessionTitle || t('panel.newChat');
 
   const resolveSessionAgentParams = (opts?: SendOptions): CreateSessionRequest | undefined => {
     const selectedAgent = opts?.selectedAgent;
@@ -216,7 +218,7 @@ function ChatPanel({
       return false;
     }
     if (resourceChatContext && resourceChatContext.providerKey !== resourceStateProvider?.key) {
-      toast.warning('所选上下文属于其他资源，请移除后在当前资源中重新选择');
+      toast.warning(t('panel.contextMismatch'));
       return false;
     }
     setCurrentModel(targetModel);
@@ -442,10 +444,10 @@ function ChatPanel({
         onOpenChange={(open) => {
           if (!open) handleCancelDebugSend();
         }}
-        title="保存后再调试？"
-        description="当前 Agent 配置有未保存修改。调试会使用已保存的草稿版本；如需测试当前改动，请先保存。"
-        cancelText="取消"
-        confirmText="保存并发送"
+        title={t('panel.debugSave.title')}
+        description={t('panel.debugSave.description')}
+        cancelText={t('actions.cancel', { ns: 'common' })}
+        confirmText={t('panel.debugSave.confirm')}
         isConfirmLoading={savingDebugDraft || agentDebug?.isSaving}
         onConfirm={() => void handleConfirmDebugSend()}
       />

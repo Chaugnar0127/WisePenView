@@ -2,6 +2,7 @@ import type { GroupResConfig } from '@/domains/Group';
 import { Button } from '@heroui/react';
 import { FolderInput, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import GroupDefaultAccessPermissionModal from '../GroupDefaultAccessPermissionModal';
 import GroupMountPermissionModal from '../GroupMountPermissionModal';
 import GroupSettingsSection from '../GroupSettingsSection';
@@ -18,20 +19,21 @@ function GroupPermissionSection({
   groupResConfig,
   onSuccess,
 }: GroupPermissionSectionProps) {
+  const { t } = useTranslation('group');
   const [accessPermissionOpen, setAccessPermissionOpen] = useState(false);
   const [mountPermissionOpen, setMountPermissionOpen] = useState(false);
 
   return (
     <>
-      <GroupSettingsSection title="权限" compact>
+      <GroupSettingsSection title={t('settings.permissions')} compact>
         <div className={styles.permissionActions}>
           <Button variant="secondary" onPress={() => setAccessPermissionOpen(true)}>
             <ShieldCheck size={16} aria-hidden="true" />
-            访问权限
+            {t('settings.accessPermission')}
           </Button>
           <Button variant="secondary" onPress={() => setMountPermissionOpen(true)}>
             <FolderInput size={16} aria-hidden="true" />
-            挂载权限
+            {t('settings.mountPermission')}
           </Button>
         </div>
       </GroupSettingsSection>

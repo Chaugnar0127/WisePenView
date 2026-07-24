@@ -7,6 +7,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { Alert, Button, Label, TextField, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { AssignQuotaModalProps } from './index.type';
 import styles from './style.module.less';
 import { useMemberEditGuard } from './useMemberEditGuard';
@@ -34,10 +35,11 @@ function QuotaInput({
   className,
   errorMessage,
 }: QuotaInputProps) {
+  const { t } = useTranslation('group');
   return (
     <div className={className}>
       <TextField
-        aria-label="配额限额"
+        aria-label={t('quota.assign.limitAria')}
         value={value != null ? String(value) : ''}
         onChange={(nextValue) => {
           if (nextValue === '') {
@@ -50,7 +52,7 @@ function QuotaInput({
         isDisabled={disabled}
         aria-invalid={Boolean(errorMessage)}
       >
-        <Label>配额限额</Label>
+        <Label>{t('quota.assign.limitLabel')}</Label>
         <Input type="number" min={min} max={max} step={1} placeholder={placeholder} />
       </TextField>
       {errorMessage ? <div className={styles.fieldError}>{errorMessage}</div> : null}
@@ -67,6 +69,8 @@ function AssignQuotaModal({
   members,
   groupDisplayConfig,
 }: AssignQuotaModalProps) {
+  const { i18n, t } = useTranslation(['group', 'common']);
+  const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
   const quotaService = useQuotaService();
   const [quotaValue, setQuotaValue] = useState<number | null>(null);
   const [quotaError, setQuotaError] = useState('');
@@ -94,7 +98,7 @@ function AssignQuotaModal({
     {
       manual: true,
       onSuccess: () => {
-        toast.success(`已为 ${memberIds.length} 位成员分配配额`);
+        toast.success(t('quota.assign.success', { count: memberIds.length }));
         setQuotaValue(null);
         setQuotaError('');
         onSuccess?.();
@@ -108,16 +112,18 @@ function AssignQuotaModal({
 
   const validateQuota = (value: number | null) => {
     if (value == null || !Number.isFinite(value)) {
-      return '请输入配额限额';
+      return t('quota.assign.required');
     }
     if (value <= 0) {
-      return '配额必须大于0';
+      return t('quota.assign.positive');
     }
     if (value < maxUsed) {
-      return `不能小于成员当前用量（最大：${maxUsed.toLocaleString()}）`;
+      return t('quota.assign.belowUsage', { used: maxUsed.toLocaleString(locale) });
     }
     if (value > GROUP_MEMBER_TOKEN_LIMIT_MAX) {
-      return `不能超过 ${GROUP_MEMBER_TOKEN_LIMIT_MAX.toLocaleString()}`;
+      return t('quota.assign.overLimit', {
+        limit: GROUP_MEMBER_TOKEN_LIMIT_MAX.toLocaleString(locale),
+      });
     }
     return '';
   };
@@ -153,13 +159,13 @@ function AssignQuotaModal({
     <AppModal
       isOpen={isOpen}
       onOpenChange={handleOpenChange}
-      title="分配配额"
+      title={t('quota.assign.title')}
       size="md"
       isDismissable={!loading}
       actions={
         <>
           <Button variant="secondary" isDisabled={loading} onPress={() => handleOpenChange(false)}>
-            取消
+            {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button
             variant="primary"
@@ -167,7 +173,7 @@ function AssignQuotaModal({
             aria-busy={loading || undefined}
             onPress={handleConfirm}
           >
-            确定
+            {t('actions.confirm', { ns: 'common' })}
           </Button>
         </>
       }
@@ -177,7 +183,7 @@ function AssignQuotaModal({
           <Alert status="danger" className={styles.alertBlock}>
             <Alert.Indicator />
             <Alert.Content>
-              <Alert.Description>您不能分配组长/管理员的配额。</Alert.Description>
+              <Alert.Description>{t('quota.assign.unauthorized')}</Alert.Description>
             </Alert.Content>
           </Alert>
         )}
@@ -186,14 +192,19 @@ function AssignQuotaModal({
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Description>
-                {`成员当前用量已超过允许设置的上限（${GROUP_MEMBER_TOKEN_LIMIT_MAX.toLocaleString()}），无法在此调整配额。`}
+                {t('quota.assign.usageOverLimit', {
+                  limit: GROUP_MEMBER_TOKEN_LIMIT_MAX.toLocaleString(locale),
+                })}
               </Alert.Description>
             </Alert.Content>
           </Alert>
         )}
         <div className={styles.quotaInfo}>
-          小组配额使用：{groupQuota.used.toLocaleString()} / {groupQuota.limit.toLocaleString()}{' '}
-          计算点（单成员限额不超过 {GROUP_MEMBER_TOKEN_LIMIT_MAX.toLocaleString()}）
+          {t('quota.assign.groupUsage', {
+            used: groupQuota.used.toLocaleString(locale),
+            limit: groupQuota.limit.toLocaleString(locale),
+            memberLimit: GROUP_MEMBER_TOKEN_LIMIT_MAX.toLocaleString(locale),
+          })}
         </div>
         <QuotaInput
           className={styles.fullWidth}
@@ -204,7 +215,7 @@ function AssignQuotaModal({
               setQuotaError(validateQuota(nextValue));
             }
           }}
-          placeholder="请输入整数"
+          placeholder={t('member.table.integerPlaceholder')}
           min={quotaOverGlobalMax ? 1 : quotaMin}
           max={GROUP_MEMBER_TOKEN_LIMIT_MAX}
           disabled={quotaOverGlobalMax}

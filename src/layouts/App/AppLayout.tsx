@@ -18,6 +18,7 @@ import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type {
   Layout,
   LayoutChangedMeta,
@@ -28,6 +29,7 @@ import { Outlet } from 'react-router-dom';
 import styles from './AppLayout.module.less';
 
 function AppLayout() {
+  const { t } = useTranslation('shell');
   const appNavigation = useAppNavigation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () =>
@@ -117,7 +119,7 @@ function AppLayout() {
           maxSize={sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MAX_WIDTH}
           groupResizeBehavior="preserve-pixel-size"
           className={styles.leftSider}
-          aria-label="应用侧边栏"
+          aria-label={t('navigation.appSidebar')}
           aria-hidden={sidebarCollapsed ? true : undefined}
           onResize={handleSidebarResize}
         >

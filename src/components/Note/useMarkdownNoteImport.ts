@@ -3,6 +3,7 @@ import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/u
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useCallback, useRef, type ChangeEvent, type RefObject } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePendingNoteImportStore } from './_store/usePendingNoteImportStore';
 
 export const MARKDOWN_NOTE_FILE_ACCEPT = '.md,.markdown,text/markdown,text/x-markdown';
@@ -30,9 +31,9 @@ function isMarkdownFile(fileName: string): boolean {
   return normalizedName.endsWith('.md') || normalizedName.endsWith('.markdown');
 }
 
-function resolveNoteTitle(fileName: string): string {
+function resolveNoteTitle(fileName: string, untitledTitle: string): string {
   const title = fileName.replace(/\.(?:md|markdown)$/i, '').trim();
-  return title || '未命名笔记';
+  return title || untitledTitle;
 }
 
 export function useMarkdownNoteImport({
@@ -40,6 +41,7 @@ export function useMarkdownNoteImport({
   onSuccess,
   onError,
 }: UseMarkdownNoteImportOptions): UseMarkdownNoteImportResult {
+  const { t } = useTranslation('note');
   const noteService = useNoteService();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,7 +51,7 @@ export function useMarkdownNoteImport({
         throw createClientError(FRONTEND_CLIENT_ERROR.DOCUMENT_UNSUPPORTED_TYPE);
       }
 
-      const title = resolveNoteTitle(file.name);
+      const title = resolveNoteTitle(file.name, t('title.untitled'));
       const markdown = (await file.text()).replace(/^\uFEFF/, '');
       const { resourceId } = await noteService.createNote({ title });
       if (!resourceId) {

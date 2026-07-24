@@ -19,6 +19,7 @@ import { Button, toast } from '@heroui/react';
 import { useEventListener, useRequest, useUnmount, useUpdateEffect } from 'ahooks';
 import { History, Save } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import styles from './style.module.less';
 
@@ -128,7 +129,7 @@ function readWisePenColorScheme(): string {
   return 'default';
 }
 
-function buildDrawioUrl(canEdit: boolean): string {
+function buildDrawioUrl(canEdit: boolean, language: string): string {
   const url = readDrawioEmbedUrl();
   const wisePenTheme = readWisePenTheme();
   const wisePenColorScheme = readWisePenColorScheme();
@@ -144,6 +145,7 @@ function buildDrawioUrl(canEdit: boolean): string {
   url.searchParams.set('wisepenTheme', wisePenTheme);
   url.searchParams.set('wisepenColorScheme', wisePenColorScheme);
   url.searchParams.set('dark', wisePenTheme === 'dark' ? '1' : '0');
+  url.searchParams.set('lang', language.startsWith('zh') ? 'zh' : 'en');
   if (!canEdit) {
     url.searchParams.set('noSaveBtn', '1');
   }
@@ -153,7 +155,7 @@ function buildDrawioUrl(canEdit: boolean): string {
 function DrawioLayoutConfig({
   children,
   resourceId,
-  resourceName = 'Draw.io 图',
+  resourceName,
   ownerId,
   currentActions,
   resourceInfo,
@@ -175,6 +177,8 @@ function DrawioLayoutConfig({
   titleMeta?: ReactNode;
   actions?: ReactNode;
 }) {
+  const { t } = useTranslation('workspace');
+  const displayResourceName = resourceName ?? t('drawio.defaultName');
   const frameConfig = useMemo<ResourceHostLayoutConfig>(
     () => ({
       className: styles.container,
@@ -182,7 +186,7 @@ function DrawioLayoutConfig({
       header: {
         resource: {
           resourceId,
-          resourceName,
+          resourceName: displayResourceName,
           resourceIconType: 'drawio',
           currentActions,
           copyVersion,
@@ -203,7 +207,7 @@ function DrawioLayoutConfig({
       ownerId,
       resourceId,
       resourceInfo,
-      resourceName,
+      displayResourceName,
       titleMeta,
     ]
   );
@@ -213,15 +217,8 @@ function DrawioLayoutConfig({
 }
 
 function SaveStatusText({ state }: { state: SaveState }) {
-  const text =
-    state === 'dirty'
-      ? '未保存'
-      : state === 'saving'
-        ? '保存中'
-        : state === 'failed'
-          ? '保存失败'
-          : '已保存';
-  return <span className={styles.saveStatus}>{text}</span>;
+  const { t } = useTranslation('workspace');
+  return <span className={styles.saveStatus}>{t(`drawio.status.${state}`)}</span>;
 }
 
 function VersionModal({
@@ -237,27 +234,29 @@ function VersionModal({
   versions?: NoteVersionListPage;
   onClose: () => void;
 }) {
+  const { t } = useTranslation(['workspace', 'common']);
+
   return (
     <AppDisplayDialog
       isOpen={open}
       onOpenChange={(visible) => !visible && onClose()}
-      title="版本记录"
+      title={t('drawio.versions')}
       size="md"
-      closeText="关闭"
+      closeText={t('actions.close', { ns: 'common' })}
     >
       {loading ? (
         <div className={styles.modalState}>
           <Spin />
-          <span>正在加载版本记录...</span>
+          <span>{t('drawio.versionsLoading')}</span>
         </div>
       ) : error ? (
         <ResultState
           status="warning"
-          title="版本记录加载失败"
+          title={t('drawio.versionsFailed')}
           subTitle={parseErrorMessage(error)}
         />
       ) : !versions || versions.list.length === 0 ? (
-        <ResultState status="info" title="暂无版本记录" />
+        <ResultState status="info" title={t('drawio.versionsEmpty')} />
       ) : (
         <div className={styles.versionList}>
           {versions.list.map((item) => (
@@ -274,6 +273,7 @@ function VersionModal({
 }
 
 function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioViewConnectedProps) {
+  const { i18n, t } = useTranslation(['workspace', 'common']);
   const { noteInfoDisplay, snapshot, initialXml } = data;
   const noteService = useNoteService();
   const userService = useUserService();
@@ -290,8 +290,11 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
   const [versionOpen, setVersionOpen] = useState(false);
   const canEdit = noteInfoDisplay.canCollaborativeEdit;
   const canViewVersions = Boolean(noteInfoDisplay.ownerId);
-  const title = useResourceDisplayName(resourceId, noteInfoDisplay.noteTitle, '未命名图表');
-  const drawioUrl = useMemo(() => buildDrawioUrl(canEdit), [canEdit]);
+  const title = useResourceDisplayName(resourceId, noteInfoDisplay.noteTitle, t('drawio.unnamed'));
+  const drawioUrl = useMemo(
+    () => buildDrawioUrl(canEdit, i18n.resolvedLanguage ?? 'zh-CN'),
+    [canEdit, i18n.resolvedLanguage]
+  );
   const drawioOrigin = readDrawioEmbedOrigin();
 
   const { data: currentUser } = useRequest(() => userService.getUserInfo(), {
@@ -316,7 +319,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
   const persistXml = useCallback(
     async (xml: string) => {
       if (!canEdit) {
-        toast.danger('你没有编辑权限');
+        toast.danger(t('drawio.noEditPermission'));
         return;
       }
 
@@ -333,28 +336,28 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
         lastSavedXmlRef.current = xml;
         setCurrentVersion(nextVersion);
         setSaveState('saved');
-        postToEditor({ action: 'status', message: '已保存', modified: false });
-        toast.success('已保存');
+        postToEditor({ action: 'status', message: t('drawio.status.saved'), modified: false });
+        toast.success(t('drawio.status.saved'));
       } catch (err) {
         setSaveState('failed');
-        postToEditor({ action: 'status', message: '保存失败', modified: true });
+        postToEditor({ action: 'status', message: t('drawio.status.failed'), modified: true });
         toast.danger(parseErrorMessage(err));
       }
     },
-    [canEdit, noteService, postToEditor, resourceId]
+    [canEdit, noteService, postToEditor, resourceId, t]
   );
 
   const requestEditorExport = useCallback(() => {
     if (!canEdit) {
-      toast.danger('你没有编辑权限');
+      toast.danger(t('drawio.noEditPermission'));
       return;
     }
     if (!editorLoaded) {
-      toast.info('编辑器未就绪');
+      toast.info(t('drawio.editorNotReady'));
       return;
     }
     if (saveState === 'saved') {
-      toast.info('当前内容已保存');
+      toast.info(t('drawio.alreadySaved'));
       return;
     }
 
@@ -365,9 +368,9 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     exportTimerRef.current = window.setTimeout(() => {
       pendingExportForSaveRef.current = false;
       setSaveState('failed');
-      toast.danger('保存失败，请稍后重试');
+      toast.danger(t('drawio.saveRetry'));
     }, 10000);
-  }, [canEdit, clearExportTimer, editorLoaded, postToEditor, saveState]);
+  }, [canEdit, clearExportTimer, editorLoaded, postToEditor, saveState, t]);
 
   useUpdateEffect(() => {
     currentVersionRef.current = Math.max(noteInfoDisplay.version ?? 0, snapshot.version ?? 0);
@@ -425,16 +428,16 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
           void persistXml(message.xml);
         } else {
           setSaveState('failed');
-          toast.danger('保存失败，请稍后重试');
+          toast.danger(t('drawio.saveRetry'));
         }
         return;
       }
 
       if (message.event === 'error') {
-        toast.danger(message.message || 'Draw.io 编辑器加载失败');
+        toast.danger(message.message || t('drawio.loadFailed'));
       }
     },
-    [canEdit, clearExportTimer, drawioOrigin, initialXml, persistXml, postToEditor, saveState]
+    [canEdit, clearExportTimer, drawioOrigin, initialXml, persistXml, postToEditor, saveState, t]
   );
 
   useEventListener('message', handleMessage);
@@ -469,9 +472,14 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     () => (
       <div className={styles.headerExtra}>
         {currentUser?.id === noteInfoDisplay.ownerId && canViewVersions ? (
-          <Button size="sm" variant="secondary" onPress={handleOpenVersions} aria-label="版本记录">
+          <Button
+            size="sm"
+            variant="secondary"
+            onPress={handleOpenVersions}
+            aria-label={t('drawio.versions')}
+          >
             <History size={16} />
-            <span>版本</span>
+            <span>{t('drawio.version')}</span>
           </Button>
         ) : null}
         {canEdit ? (
@@ -480,10 +488,14 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
             variant="primary"
             isDisabled={!editorLoaded || saveState === 'saved' || saveState === 'saving'}
             onPress={requestEditorExport}
-            aria-label="保存"
+            aria-label={t('actions.save', { ns: 'common' })}
           >
             <Save size={16} />
-            <span>{saveState === 'saving' ? '保存中' : '保存'}</span>
+            <span>
+              {saveState === 'saving'
+                ? t('drawio.status.saving')
+                : t('actions.save', { ns: 'common' })}
+            </span>
           </Button>
         ) : null}
       </div>
@@ -497,6 +509,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
       noteInfoDisplay.ownerId,
       requestEditorExport,
       saveState,
+      t,
     ]
   );
 
@@ -525,7 +538,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
         {(!editorReady || !editorLoaded) && (
           <div className={styles.loadingOverlay} aria-busy="true" aria-live="polite">
             <Spin size="large" />
-            <span>正在加载 Draw.io 编辑器...</span>
+            <span>{t('drawio.editorLoading')}</span>
           </div>
         )}
       </div>
@@ -541,6 +554,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
 }
 
 function DrawioView({ resourceId }: DrawioViewProps) {
+  const { t } = useTranslation('workspace');
   const noteService = useNoteService();
   const interactService = useInteractService();
   const {
@@ -578,10 +592,10 @@ function DrawioView({ resourceId }: DrawioViewProps) {
         <div className={styles.middleOverlay}>
           <ResultState
             status="warning"
-            title="无法打开 Draw.io 图"
+            title={t('drawio.cannotOpen')}
             extra={
               <Link to="/app/drive/personal">
-                <Button variant="secondary">返回云盘</Button>
+                <Button variant="secondary">{t('viewer.backToDrive')}</Button>
               </Link>
             }
           />
@@ -596,11 +610,11 @@ function DrawioView({ resourceId }: DrawioViewProps) {
         <div className={styles.middleOverlay}>
           <ResultState
             status="warning"
-            title="Draw.io 图加载失败"
+            title={t('drawio.loadFailed')}
             subTitle={parseErrorMessage(error)}
             extra={
               <Link to="/app/drive/personal">
-                <Button variant="secondary">返回云盘</Button>
+                <Button variant="secondary">{t('viewer.backToDrive')}</Button>
               </Link>
             }
           />
@@ -615,7 +629,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
         <div className={styles.middleOverlay} aria-busy="true" aria-live="polite">
           <div className={styles.middleOverlayLoading}>
             <Spin size="large" />
-            <span className={styles.middleOverlayText}>正在加载 Draw.io 图...</span>
+            <span className={styles.middleOverlayText}>{t('drawio.loading')}</span>
           </div>
         </div>
       </DrawioLayoutConfig>
@@ -626,7 +640,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
     return (
       <DrawioLayoutConfig resourceId={resourceId}>
         <div className={styles.middleOverlay}>
-          <ResultState status="warning" title="Draw.io 图信息为空" />
+          <ResultState status="warning" title={t('drawio.emptyInfo')} />
         </div>
       </DrawioLayoutConfig>
     );
@@ -637,7 +651,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
     return (
       <DrawioLayoutConfig resourceId={resourceId}>
         <div className={styles.middleOverlay}>
-          <ResultState status="warning" title="当前资源不是 Draw.io 图" />
+          <ResultState status="warning" title={t('drawio.wrongType')} />
         </div>
       </DrawioLayoutConfig>
     );

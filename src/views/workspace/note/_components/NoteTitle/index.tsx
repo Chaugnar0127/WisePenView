@@ -1,10 +1,11 @@
 import type { Block as BlockNoteBlock } from '@blocknote/core';
-import { zh } from '@blocknote/core/locales';
+import { en, zh } from '@blocknote/core/locales';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
 import { useMemoizedFn, useMount, useUnmount, useUpdateEffect } from 'ahooks';
 import { useImperativeHandle, useRef, type KeyboardEvent, type Ref } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useNewNoteStore } from '@/components/Note/_store/useNewNoteStore';
 import { getProseMirrorRoot } from '@/components/Note/CustomBlockNote/engines/editor/dom';
@@ -66,9 +67,12 @@ const DEFAULT_HEADING_BLOCK = [
   },
 ] as unknown as BlockNoteBlock[];
 
-function toHeadingBlockFromTitle(title?: string): BlockNoteBlock[] {
+function toHeadingBlockFromTitle(
+  title: string | undefined,
+  untitledTitle: string
+): BlockNoteBlock[] {
   const trimmedTitle = title?.trim();
-  if (trimmedTitle === '未命名笔记' || !trimmedTitle) {
+  if (trimmedTitle === untitledTitle || !trimmedTitle) {
     return DEFAULT_HEADING_BLOCK;
   }
   return [
@@ -88,6 +92,7 @@ function NoteTitle({
   onSaveStatusChange,
   ref,
 }: NoteTitleProps & { ref?: Ref<NoteTitleHandle> }) {
+  const { i18n, t } = useTranslation('note');
   const { resolvedTheme } = useAppTheme();
   const noteService = useNoteService();
   const latestIdRef = useRef(id);
@@ -98,6 +103,8 @@ function NoteTitle({
   const readOnlyRef = useRef(readOnly);
   const saveVersionRef = useRef(0);
   const emitSaveStatus = useMemoizedFn(onSaveStatusChange);
+  const untitledTitle = t('title.untitled');
+  const editorDictionary = i18n.resolvedLanguage === 'en-US' ? en : zh;
 
   useUpdateEffect(() => {
     latestIdRef.current = id;
@@ -105,12 +112,12 @@ function NoteTitle({
   }, [id, readOnly]);
 
   const editor = useCreateBlockNote({
-    initialContent: toHeadingBlockFromTitle(initialContent),
+    initialContent: toHeadingBlockFromTitle(initialContent, untitledTitle),
     dictionary: {
-      ...zh,
+      ...editorDictionary,
       placeholders: {
-        ...zh.placeholders,
-        heading: '请输入标题',
+        ...editorDictionary.placeholders,
+        heading: t('title.placeholder'),
       },
     },
     trailingBlock: false,
@@ -123,11 +130,11 @@ function NoteTitle({
         const firstBlock = editor.document[0];
         const raw = getBlockPlainText(firstBlock as { content?: unknown[] } | undefined);
         const trimmed = raw.trim();
-        return trimmed || '未命名笔记';
+        return trimmed || untitledTitle;
       },
       getProseMirrorRoot: () => getProseMirrorRoot(editor),
     }),
-    [editor]
+    [editor, untitledTitle]
   );
 
   useMount(() => {
@@ -169,7 +176,7 @@ function NoteTitle({
           titleDebounceTimerRef.current = null;
           const block = editor.document[0];
           const raw = getBlockPlainText(block as { content?: unknown[] } | undefined);
-          const nextTitle = raw.trim() || '未命名笔记';
+          const nextTitle = raw.trim() || untitledTitle;
           void noteService.syncTitle({ resourceId: currentId, newName: nextTitle }).then(
             () => {
               if (saveVersion === saveVersionRef.current) {

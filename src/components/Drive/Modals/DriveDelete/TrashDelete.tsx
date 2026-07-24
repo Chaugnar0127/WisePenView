@@ -5,6 +5,7 @@ import { useDriveService, useResourceService } from '@/domains';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
+import { useTranslation } from 'react-i18next';
 
 import type { DriveActionTarget } from '../../common/driveComponentModel';
 
@@ -15,12 +16,13 @@ export interface TrashDeleteProps {
   onSuccess?: () => void;
 }
 
-function getNodeName(node: DriveActionTarget | null): string {
-  if (!node) return '未命名';
+function getNodeName(node: DriveActionTarget | null, fallback: string): string {
+  if (!node) return fallback;
   return node.type === 'folder' ? node.name : node.title;
 }
 
 function TrashDelete({ isOpen, node, onOpenChange, onSuccess }: TrashDeleteProps) {
+  const { t } = useTranslation('drive');
   const driveService = useDriveService();
   const resourceService = useResourceService();
 
@@ -42,7 +44,7 @@ function TrashDelete({ isOpen, node, onOpenChange, onSuccess }: TrashDeleteProps
           clearNewNoteStore(node.resourceId);
           removePdfPreviewProgress(node.resourceId);
         }
-        toast.success('已永久删除');
+        toast.success(t('delete.feedback.permanentlyDeleted'));
         onSuccess?.();
         onOpenChange(false);
       },
@@ -52,20 +54,20 @@ function TrashDelete({ isOpen, node, onOpenChange, onSuccess }: TrashDeleteProps
     }
   );
 
-  const nodeName = getNodeName(node);
+  const nodeName = getNodeName(node, t('delete.unnamed'));
   const description =
     node?.type === 'folder'
-      ? `确定永久删除「${nodeName}」及其下属内容吗？此操作不可撤销。`
-      : `确定永久删除「${nodeName}」吗？此操作不可撤销。`;
+      ? t('delete.description.permanentFolder', { name: nodeName })
+      : t('delete.description.permanentResource', { name: nodeName });
 
   return (
     <AppAlertDialog
       type="danger"
       isOpen={isOpen && !!node}
       onOpenChange={onOpenChange}
-      title="永久删除"
+      title={t('delete.permanent')}
       description={description}
-      confirmText="永久删除"
+      confirmText={t('delete.permanent')}
       onConfirm={() => runDelete()}
       isConfirmLoading={loading}
       isDismissable={!loading}

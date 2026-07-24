@@ -36,6 +36,7 @@ import { Button } from '@heroui/react';
 import clsx from 'clsx';
 import { FolderOpen, PanelsTopLeft, X } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Layout, LayoutChangedMeta, PanelSize } from 'react-resizable-panels';
 import ZenResourceFrame from './_components/ZenResourceFrame';
 import {
@@ -76,6 +77,7 @@ function ZenResourcePane({
   onActivate,
   onRuntimeChange,
 }: ZenResourcePaneProps) {
+  const { t } = useTranslation(['workspace', 'common']);
   const setPaneTarget = useZenModeStore((state) => state.setPaneTarget);
   const setPaneLocation = useZenModeStore((state) => state.setPaneLocation);
   const clearPane = useZenModeStore((state) => state.clearPane);
@@ -198,7 +200,8 @@ function ZenResourcePane({
 
   const runtimeHeader =
     runtime.layoutConfig.header === false ? undefined : runtime.layoutConfig.header;
-  const paneTitle = target?.resourceName ?? runtimeHeader?.resource?.resourceName ?? '资源版面';
+  const paneTitle =
+    target?.resourceName ?? runtimeHeader?.resource?.resourceName ?? t('zen.resourcePane');
 
   return (
     <section
@@ -207,17 +210,17 @@ function ZenResourcePane({
       onPointerDown={() => onActivate(pane.paneId)}
     >
       <div className={styles.paneTitleBar}>
-        <span className={styles.paneTitle}>{target ? paneTitle : '空白版面'}</span>
+        <span className={styles.paneTitle}>{target ? paneTitle : t('zen.emptyPane')}</span>
         <span className={styles.paneActions}>
           <AppIconButton
             icon={<FolderOpen size={15} aria-hidden="true" />}
-            label={target ? '替换资源' : '选择资源'}
+            label={target ? t('zen.replaceResource') : t('zen.selectResource')}
             onPress={() => setPickerOpen(true)}
           />
           {target ? (
             <AppIconButton
               icon={<X size={15} aria-hidden="true" />}
-              label="关闭资源"
+              label={t('zen.closeResource')}
               onPress={handleClosePane}
             />
           ) : null}
@@ -242,7 +245,7 @@ function ZenResourcePane({
         ) : (
           <button type="button" className={styles.emptySlot} onClick={() => setPickerOpen(true)}>
             <FolderOpen size={24} aria-hidden="true" />
-            <span>从云盘选择文件</span>
+            <span>{t('zen.selectFromDrive')}</span>
           </button>
         )}
       </div>
@@ -250,7 +253,7 @@ function ZenResourcePane({
       <AppModal
         isOpen={pickerOpen}
         onOpenChange={handlePickerOpenChange}
-        title="选择版面资源"
+        title={t('zen.selectTitle')}
         size="md"
         contentMode="dialog"
       >
@@ -266,10 +269,10 @@ function ZenResourcePane({
         </AppModal.Body>
         <AppModal.Footer>
           <Button variant="secondary" onPress={() => handlePickerOpenChange(false)}>
-            取消
+            {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button variant="primary" isDisabled={!selectedResource} onPress={handleConfirmResource}>
-            打开
+            {t('actions.open', { ns: 'common' })}
           </Button>
         </AppModal.Footer>
       </AppModal>
@@ -278,6 +281,7 @@ function ZenResourcePane({
 }
 
 function ZenModeLayout() {
+  const { t } = useTranslation('workspace');
   const appNavigation = useAppNavigation();
   const panes = useZenModeStore((state) => state.panes);
   const activePaneId = useZenModeStore((state) => state.activePaneId);
@@ -355,7 +359,7 @@ function ZenModeLayout() {
       <header className={styles.zenBar}>
         <AppIconButton
           icon={<X size={17} aria-hidden="true" />}
-          label="退出 Zen Mode"
+          label={t('shell.exitZen')}
           onPress={appNavigation.goBack}
         />
         <PanelsTopLeft size={16} aria-hidden="true" />

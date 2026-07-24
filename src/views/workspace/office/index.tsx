@@ -21,6 +21,7 @@ import { DocumentEditor } from '@onlyoffice/document-editor-react';
 import { useRequest } from 'ahooks';
 import { FileText } from 'lucide-react';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useDocumentViewerSwitcher } from '../_hooks/useDocumentViewerSwitcher';
 import styles from './style.module.less';
@@ -54,6 +55,7 @@ function OfficeLayoutConfig({
   onResourceChanged,
   onViewerSwitch,
 }: OfficeLayoutConfigProps) {
+  const { t } = useTranslation('workspace');
   const frameConfig = useMemo<ResourceHostLayoutConfig>(
     () => ({
       className: styles.container,
@@ -73,7 +75,7 @@ function OfficeLayoutConfig({
                     actions: [
                       {
                         id: 'open-with-pdf-preview',
-                        label: '以 PDF 预览打开',
+                        label: t('office.openWithPdf'),
                         icon: FileText,
                         onAction: () => onViewerSwitch?.(RESOURCE_VIEWER.PDF_PREVIEW),
                       },
@@ -84,7 +86,7 @@ function OfficeLayoutConfig({
           }
         : {},
     }),
-    [documentType, onPermissionSuccess, onResourceChanged, onViewerSwitch, resourceInfo]
+    [documentType, onPermissionSuccess, onResourceChanged, onViewerSwitch, resourceInfo, t]
   );
   useResourceHostLayoutConfig(frameConfig);
 
@@ -138,6 +140,7 @@ function OfficeEditorHost({
 }
 
 function OfficeView({ resourceId }: OfficeViewProps = {}) {
+  const { t } = useTranslation('workspace');
   const documentService = useDocumentService();
   const interactService = useInteractService();
   const switchViewer = useDocumentViewerSwitcher(resourceId);
@@ -195,10 +198,10 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
           <div className={styles.middleOverlayInner}>
             <ResultState
               status="warning"
-              title="无法打开 Office 文档"
+              title={t('office.cannotOpen')}
               extra={
                 <Link to="/app/drive/personal">
-                  <Button variant="secondary">返回云盘</Button>
+                  <Button variant="secondary">{t('viewer.backToDrive')}</Button>
                 </Link>
               }
             />
@@ -215,11 +218,11 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
           <div className={styles.middleOverlayInner}>
             <ResultState
               status="warning"
-              title="ONLYOFFICE 编辑器加载失败"
+              title={t('office.loadFailed')}
               subTitle={parseErrorMessage(error)}
               extra={
                 <Link to="/app/drive/personal">
-                  <Button variant="secondary">返回云盘</Button>
+                  <Button variant="secondary">{t('viewer.backToDrive')}</Button>
                 </Link>
               }
             />
@@ -235,7 +238,7 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
         <div className={styles.middleOverlay} aria-busy="true" aria-live="polite">
           <div className={styles.middleOverlayLoading}>
             <Spin size="large" />
-            <span className={styles.middleOverlayText}>正在加载 Office 文档...</span>
+            <span className={styles.middleOverlayText}>{t('office.loading')}</span>
           </div>
         </div>
       </OfficeLayoutConfig>
@@ -247,7 +250,7 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
       <OfficeLayoutConfig>
         <div className={styles.middleOverlay}>
           <div className={styles.middleOverlayInner}>
-            <ResultState status="warning" title="ONLYOFFICE 编辑器配置为空" />
+            <ResultState status="warning" title={t('office.emptyConfig')} />
           </div>
         </div>
       </OfficeLayoutConfig>
@@ -277,14 +280,14 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
               <div className={styles.middleOverlayInner}>
                 <ResultState
                   status="warning"
-                  title="ONLYOFFICE 编辑器加载失败"
+                  title={t('office.loadFailed')}
                   subTitle={parseErrorMessage(editorError)}
                 />
               </div>
             ) : (
               <div className={styles.middleOverlayLoading}>
                 <Spin size="large" />
-                <span className={styles.middleOverlayText}>正在启动 ONLYOFFICE 编辑器...</span>
+                <span className={styles.middleOverlayText}>{t('office.starting')}</span>
               </div>
             )}
           </div>

@@ -61,7 +61,8 @@ function DataTable<T extends object>({
   sortDescriptor,
   onSortChange,
 }: DataTableProps<T>) {
-  const { t } = useTranslation('table');
+  const { t, i18n } = useTranslation('table');
+  const sortLocale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
   const resolvedEmptyText = emptyText ?? t('empty.noData');
   const scrollRef = useRef<HTMLDivElement>(null);
   const loadMoreLockRef = useRef(false);
@@ -122,11 +123,17 @@ function DataTable<T extends object>({
 
   const sortedItems = useMemo(
     () =>
-      sortTableRows(items, columns, sortDescriptor, (row) => ({
-        row,
-        rowId: String(row[rowKey]),
-      })),
-    [columns, items, rowKey, sortDescriptor]
+      sortTableRows(
+        items,
+        columns,
+        sortDescriptor,
+        (row) => ({
+          row,
+          rowId: String(row[rowKey]),
+        }),
+        { locale: sortLocale }
+      ),
+    [columns, items, rowKey, sortDescriptor, sortLocale]
   );
 
   return (

@@ -314,7 +314,8 @@ function FolderTable<T extends FolderTableRow>({
   checkboxSelection,
   selectionFooter,
 }: FolderTableProps<T>) {
-  const { t } = useTranslation('table');
+  const { t, i18n } = useTranslation('table');
+  const sortLocale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
   const resolvedEmptyText = emptyText ?? t('empty.folderEmpty');
   const resolvedEmptyDescription = emptyDescription ?? t('empty.folderDescription');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -348,9 +349,10 @@ function FolderTable<T extends FolderTableRow>({
         {
           isPinnedFirst,
           isPinnedLast: (row) => row.entryType === 'loading',
+          locale: sortLocale,
         }
       ),
-    [columns, isPinnedFirst, items, sortDescriptor]
+    [columns, isPinnedFirst, items, sortDescriptor, sortLocale]
   );
 
   const visibleRows = useMemo(
@@ -635,7 +637,7 @@ function FolderTable<T extends FolderTableRow>({
     ) => {
       if (column.isNameColumn) {
         if (row.entryType === 'loading') {
-          return <span className={styles.inlineLoadMoreButton}>{row.name || '正在加载...'}</span>;
+          return <span className={styles.inlineLoadMoreButton}>{row.name || t('loadMore')}</span>;
         }
 
         const expandable = folderRowHasChildren(row);
@@ -680,6 +682,7 @@ function FolderTable<T extends FolderTableRow>({
       onExpandedChange,
       renderNameContent,
       rowActions,
+      t,
     ]
   );
 

@@ -1,19 +1,21 @@
 import styles from '@/components/Drive/Modals/TagPermissionModal/style.module.less';
 import { ACCESS_CONTROL_SCOPE } from '@/domains/Tag';
 import { Tabs } from '@heroui/react';
+import { useTranslation } from 'react-i18next';
 
 interface GroupPolicyShellCardProps {
   title: string;
 }
 
 const POLICY_SCOPE_OPTIONS = [
-  { scope: ACCESS_CONTROL_SCOPE.ALL, label: '全部' },
-  { scope: ACCESS_CONTROL_SCOPE.ONLY_ADMIN, label: '仅管理员' },
-  { scope: ACCESS_CONTROL_SCOPE.BLACKLIST, label: '黑名单' },
-  { scope: ACCESS_CONTROL_SCOPE.WHITELIST, label: '白名单' },
+  { scope: ACCESS_CONTROL_SCOPE.ALL, labelKey: 'permission.scope.all' },
+  { scope: ACCESS_CONTROL_SCOPE.ONLY_ADMIN, labelKey: 'permission.scope.adminOnly' },
+  { scope: ACCESS_CONTROL_SCOPE.BLACKLIST, labelKey: 'permission.scope.blacklist' },
+  { scope: ACCESS_CONTROL_SCOPE.WHITELIST, labelKey: 'permission.scope.whitelist' },
 ] as const;
 
 function GroupPolicyShellCard({ title }: GroupPolicyShellCardProps) {
+  const { t } = useTranslation('group');
   return (
     <section className={styles.personnelCard} aria-label={title}>
       <div className={styles.personnelHeader}>
@@ -21,7 +23,10 @@ function GroupPolicyShellCard({ title }: GroupPolicyShellCardProps) {
       </div>
       <Tabs className={styles.scopeTabs} selectedKey={String(ACCESS_CONTROL_SCOPE.ALL)}>
         <Tabs.ListContainer className={styles.scopeTabsListContainer}>
-          <Tabs.List className={styles.scopeTabsList} aria-label={`${title}范围`}>
+          <Tabs.List
+            className={styles.scopeTabsList}
+            aria-label={t('permission.scopeAria', { title })}
+          >
             {POLICY_SCOPE_OPTIONS.map((option) => (
               <Tabs.Tab
                 key={option.scope}
@@ -29,14 +34,14 @@ function GroupPolicyShellCard({ title }: GroupPolicyShellCardProps) {
                 className={styles.scopeTab}
                 isDisabled
               >
-                {option.label}
+                {t(option.labelKey)}
                 <Tabs.Indicator />
               </Tabs.Tab>
             ))}
           </Tabs.List>
         </Tabs.ListContainer>
       </Tabs>
-      <div className={styles.memberState}>全部成员</div>
+      <div className={styles.memberState}>{t('permission.allMembers')}</div>
     </section>
   );
 }

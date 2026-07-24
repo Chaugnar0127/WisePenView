@@ -11,7 +11,7 @@ import { Checkbox, Input } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useTagService } from '@/domains';
 import { mapTagToFolderNode } from '@/domains/Drive/mapper/DriveServices.map';
-import { ROLE, type GroupMember } from '@/domains/Group';
+import type { GroupMember } from '@/domains/Group';
 import {
   ACCESS_CONTROL_SCOPE,
   buildTagPermissionListActionSelectionPatch,
@@ -28,8 +28,10 @@ import { useEffectForce } from '@/hooks/useEffectForce';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { Button, ListBox, Tabs, TextField, toast, type Selection } from '@heroui/react';
 import { useRequest } from 'ahooks';
+import type { TFunction } from 'i18next';
 import { Check, X } from 'lucide-react';
 import { useState, type Key } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   resolveDriveScope,
   toDriveSelectionItem,
@@ -76,10 +78,10 @@ const DEFAULT_FORM_VALUES: TagPermissionFormValues = {
 const GROUP_MEMBER_PAGE_SIZE = 100;
 const MAX_GROUP_MEMBER_PAGE_COUNT = 50;
 const PERSONNEL_SCOPE_OPTIONS = [
-  { scope: ACCESS_CONTROL_SCOPE.ALL, label: '全部' },
-  { scope: ACCESS_CONTROL_SCOPE.ONLY_ADMIN, label: '仅管理员' },
-  { scope: ACCESS_CONTROL_SCOPE.BLACKLIST, label: '黑名单' },
-  { scope: ACCESS_CONTROL_SCOPE.WHITELIST, label: '白名单' },
+  { scope: ACCESS_CONTROL_SCOPE.ALL, labelKey: 'permission.tag.scope.all' },
+  { scope: ACCESS_CONTROL_SCOPE.ONLY_ADMIN, labelKey: 'permission.tag.scope.onlyAdmin' },
+  { scope: ACCESS_CONTROL_SCOPE.BLACKLIST, labelKey: 'permission.tag.scope.blacklist' },
+  { scope: ACCESS_CONTROL_SCOPE.WHITELIST, labelKey: 'permission.tag.scope.whitelist' },
 ] as const;
 
 const isSpecifiedUserScope = (scope: AccessControlScope): boolean =>
@@ -109,22 +111,28 @@ const resolveActionPresetKey = (
 
 const getDisplayInitial = (name: string): string => name.trim().charAt(0).toUpperCase() || '?';
 
-const getMemberDisplayName = (member: GroupMember): string =>
-  member.realname?.trim() || member.nickname?.trim() || `用户 ${member.userId}`;
+const getMemberDisplayName = (member: GroupMember, t: TFunction<'resource'>): string =>
+  member.realname?.trim() ||
+  member.nickname?.trim() ||
+  t('permission.tag.memberFallback', { userId: member.userId });
 
 const getMemberAvatar = (member: GroupMember): string | undefined => {
   const avatar = member.avatar?.trim();
   return avatar || undefined;
 };
 
-const buildMemberOptions = (members: GroupMember[], selectedUserIds: string[]): MemberOption[] => {
+const buildMemberOptions = (
+  members: GroupMember[],
+  selectedUserIds: string[],
+  t: TFunction<'resource'>
+): MemberOption[] => {
   const allGroupMemberIds = new Set(members.map((member) => member.userId));
   const memberOptions = members
     .filter((member) => member.role === 'MEMBER')
     .map((member) => ({
       userId: member.userId,
-      name: getMemberDisplayName(member),
-      description: ROLE.keyLabels[member.role],
+      name: getMemberDisplayName(member, t),
+      description: t('permission.tag.memberRole'),
       avatar: getMemberAvatar(member),
     }));
   const existingIds = new Set(memberOptions.map((member) => member.userId));
@@ -132,8 +140,8 @@ const buildMemberOptions = (members: GroupMember[], selectedUserIds: string[]): 
     .filter((userId) => userId && !existingIds.has(userId) && !allGroupMemberIds.has(userId))
     .map((userId) => ({
       userId,
-      name: `用户 ${userId}`,
-      description: '已选择',
+      name: t('permission.tag.memberFallback', { userId }),
+      description: t('permission.tag.selected'),
     }));
   return [...memberOptions, ...missingSelectedOptions];
 };
@@ -227,6 +235,7 @@ const TagPolicyModalBase = ({
   onOpenChange,
   onSuccess,
 }: TagPolicyModalBaseProps) => {
+  const { t } = useTranslation(['resource', 'common']);
   const groupService = useGroupService();
   const tagService = useTagService();
   const [permissionForm, setPermissionForm] =
@@ -268,7 +277,7 @@ const TagPolicyModalBase = ({
       refreshDeps: [isOpen, groupId, groupService],
     }
   );
-  const memberOptions = buildMemberOptions(groupMembers, selectedUserIds);
+  const memberOptions = buildMemberOptions(groupMembers, selectedUserIds, t);
 
   const resetPermissionForm = () => {
     setPermissionForm(DEFAULT_FORM_VALUES);
@@ -486,11 +495,11 @@ const TagPolicyModalBase = ({
         <table className={styles.permissionTable}>
           <thead>
             <tr>
-              <th className={styles.actionHeader}>权限动作</th>
-              <th className={styles.toggleHeader}>开启</th>
+              <th className={styles.actionHeader}>{t('permission.tag.actionHeader')}</th>
+              <th className={styles.toggleHeader}>{t('permission.tag.toggleHeader')}</th>
               {TAG_PERMISSION_RESOURCE_STRATEGIES.map((strategy) => (
                 <th key={strategy.key} className={styles.resourceApplicabilityHeader}>
-                  {strategy.label}适用
+                  {t('permission.tag.applicable', { strategy: strategy.label })}
                 </th>
               ))}
             </tr>
@@ -535,13 +544,19 @@ const TagPolicyModalBase = ({
                         ) : selected ? (
                           <Check
                             size={14}
-                            aria-label={`${strategy.label}${row.label}已开启`}
+                            aria-label={t('permission.tag.enabledAria', {
+                              strategy: strategy.label,
+                              action: row.label,
+                            })}
                             className={styles.permissionStateIcon}
                           />
                         ) : (
                           <X
                             size={14}
-                            aria-label={`${strategy.label}${row.label}未开启`}
+                            aria-label={t('permission.tag.disabledAria', {
+                              strategy: strategy.label,
+                              action: row.label,
+                            })}
                             className={styles.permissionStateIcon}
                           />
                         )}
@@ -561,7 +576,7 @@ const TagPolicyModalBase = ({
     if (groupMemberLoading) {
       return (
         <div className={styles.memberState}>
-          <Spin size="large" tip="加载成员中" />
+          <Spin size="large" tip={t('permission.tag.loadingMembers')} />
         </div>
       );
     }
@@ -573,7 +588,7 @@ const TagPolicyModalBase = ({
     if (memberOptions.length === 0) {
       return (
         <div className={styles.memberState}>
-          <Empty description="暂无可选成员" />
+          <Empty description={t('permission.tag.noMembers')} />
         </div>
       );
     }
@@ -582,7 +597,7 @@ const TagPolicyModalBase = ({
     if (visibleMemberOptions.length === 0) {
       return (
         <div className={styles.memberState}>
-          <Empty description="没有匹配的成员" />
+          <Empty description={t('permission.tag.noMatchingMembers')} />
         </div>
       );
     }
@@ -594,7 +609,7 @@ const TagPolicyModalBase = ({
 
     return (
       <ListBox
-        aria-label={`${policy.title}名单成员`}
+        aria-label={t('permission.tag.memberListAria', { title: policy.title })}
         selectionMode="multiple"
         selectedKeys={new Set(visibleSelectedUserIds)}
         onSelectionChange={(keys) =>
@@ -634,7 +649,9 @@ const TagPolicyModalBase = ({
         <div className={styles.personnelHeader}>
           <div className={styles.personnelTitle}>{policy.title}</div>
           {shouldShowMemberPicker ? (
-            <div className={styles.personnelCount}>已选 {policy.specifiedUsers.length} 人</div>
+            <div className={styles.personnelCount}>
+              {t('permission.tag.selectedCount', { count: policy.specifiedUsers.length })}
+            </div>
           ) : null}
         </div>
         <Tabs
@@ -643,14 +660,17 @@ const TagPolicyModalBase = ({
           onSelectionChange={(key) => handlePersonnelScopeChange(policy.target, key)}
         >
           <Tabs.ListContainer className={styles.scopeTabsListContainer}>
-            <Tabs.List className={styles.scopeTabsList} aria-label={`${policy.title}范围`}>
+            <Tabs.List
+              className={styles.scopeTabsList}
+              aria-label={t('permission.tag.rangeAria', { title: policy.title })}
+            >
               {PERSONNEL_SCOPE_OPTIONS.map((option) => (
                 <Tabs.Tab
                   key={String(option.scope)}
                   id={String(option.scope)}
                   className={styles.scopeTab}
                 >
-                  {option.label}
+                  {t(option.labelKey)}
                   <Tabs.Indicator />
                 </Tabs.Tab>
               ))}
@@ -660,26 +680,33 @@ const TagPolicyModalBase = ({
         {shouldShowMemberPicker ? (
           <>
             <TextField
-              aria-label={`${policy.title}搜索成员`}
+              aria-label={t('permission.tag.searchAria', { title: policy.title })}
               value={policy.searchValue}
               onChange={(value) => handlePersonnelSearchChange(policy.target, value)}
             >
-              <Input placeholder="搜索成员" className={styles.memberSearchInput} />
+              <Input
+                placeholder={t('permission.tag.searchPlaceholder')}
+                className={styles.memberSearchInput}
+              />
             </TextField>
             {renderMemberList(policy)}
           </>
         ) : (
-          <div className={styles.memberState}>当前策略无需配置名单</div>
+          <div className={styles.memberState}>{t('permission.tag.noListNeeded')}</div>
         )}
       </section>
     );
   };
 
   const renderPermissionPanel = () => (
-    <section className={styles.permissionCard} aria-label="资源权限动作">
+    <section className={styles.permissionCard} aria-label={t('permission.editor.actionsAria')}>
       <div className={styles.presetBar}>
-        <span className={styles.presetLabel}>基于预设</span>
-        <div className={styles.presetButtons} role="group" aria-label="基于预设">
+        <span className={styles.presetLabel}>{t('permission.tag.basedOnPreset')}</span>
+        <div
+          className={styles.presetButtons}
+          role="group"
+          aria-label={t('permission.tag.basedOnPreset')}
+        >
           {TAG_PERMISSION_ACTION_PRESET_OPTIONS.map((preset) => (
             <Button
               key={preset.key}
@@ -692,9 +719,12 @@ const TagPolicyModalBase = ({
           ))}
         </div>
         <span className={styles.currentPreset}>
-          当前预设：
-          {TAG_PERMISSION_ACTION_PRESET_OPTIONS.find((preset) => preset.key === selectedPresetKey)
-            ?.label ?? '自定义'}
+          {t('permission.tag.currentPreset', {
+            preset:
+              TAG_PERMISSION_ACTION_PRESET_OPTIONS.find(
+                (preset) => preset.key === selectedPresetKey
+              )?.label ?? t('permission.tag.preset.custom.label'),
+          })}
         </span>
       </div>
       {renderPermissionTable()}
@@ -704,7 +734,7 @@ const TagPolicyModalBase = ({
   const renderAccessPolicyPanel = () => {
     const accessPolicy: PersonnelPolicyConfig = {
       target: 'resourceGrant',
-      title: '访问名单',
+      title: t('permission.tag.accessList'),
       scope: permissionForm.taggedResourceAclGrantScope,
       specifiedUsers: permissionForm.taggedResourceAclGrantSpecifiedUsers,
       searchValue: accessMemberSearchValue,
@@ -721,7 +751,7 @@ const TagPolicyModalBase = ({
   const renderMountPolicyPanel = () => {
     const mountPolicy: PersonnelPolicyConfig = {
       target: 'tagMount',
-      title: '挂载名单',
+      title: t('permission.tag.mountList'),
       scope: permissionForm.tagMountPermissionScope,
       specifiedUsers: permissionForm.tagMountSpecifiedUsers,
       searchValue: mountMemberSearchValue,
@@ -737,7 +767,7 @@ const TagPolicyModalBase = ({
     <AppModal
       isOpen={isOpen}
       onOpenChange={handleOpenChange}
-      title={mode === 'access' ? '访问策略' : '挂载策略'}
+      title={mode === 'access' ? t('permission.tag.accessTitle') : t('permission.tag.mountTitle')}
       size="lg"
       containerClassName={mode === 'mount' ? styles.mountModalContainer : styles.modalContainer}
       dialogClassName={mode === 'mount' ? styles.mountModalDialog : styles.modalDialog}
@@ -745,7 +775,7 @@ const TagPolicyModalBase = ({
       actions={
         <>
           <Button variant="secondary" isDisabled={saving} onPress={() => handleOpenChange(false)}>
-            取消
+            {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button
             variant="primary"
@@ -753,7 +783,7 @@ const TagPolicyModalBase = ({
             aria-busy={saving || undefined}
             onPress={handleSubmit}
           >
-            保存
+            {t('actions.save', { ns: 'common' })}
           </Button>
         </>
       }
@@ -762,7 +792,7 @@ const TagPolicyModalBase = ({
         <div className={styles.wrapper}>
           {showTagTree ? (
             <div className={styles.leftPane}>
-              <div className={styles.leftTitle}>选择标签</div>
+              <div className={styles.leftTitle}>{t('permission.tag.selectTag')}</div>
               <DriveNavigator
                 scope={groupId ? { type: 'group', groupId } : undefined}
                 selectableTypes={['folder']}
@@ -778,16 +808,16 @@ const TagPolicyModalBase = ({
             {!selectedTag ? (
               <div className={styles.emptyState}>
                 {showTagTree ? (
-                  <Empty description="请选择一个标签" />
+                  <Empty description={t('permission.tag.selectTagHint')} />
                 ) : (
-                  <Spin size="large" tip="加载标签权限中" />
+                  <Spin size="large" tip={t('permission.tag.loadingTagPermission')} />
                 )}
               </div>
             ) : (
               <>
                 {initialTagLoading ? (
                   <div className={styles.emptyState}>
-                    <Spin size="large" tip="加载标签权限中" />
+                    <Spin size="large" tip={t('permission.tag.loadingTagPermission')} />
                   </div>
                 ) : (
                   renderAdvancedPolicyPanel()

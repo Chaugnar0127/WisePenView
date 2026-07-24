@@ -41,6 +41,7 @@ import {
 } from '@dnd-kit/core';
 import { Button, ToggleButton, ToggleButtonGroup, toast, type SortDescriptor } from '@heroui/react';
 import { useMount, useRequest, useUpdateEffect } from 'ahooks';
+import type { TFunction } from 'i18next';
 import {
   FolderInput,
   FolderOpen,
@@ -59,6 +60,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   getDriveNodeLabel,
   isDriveActionTarget,
@@ -75,10 +77,10 @@ import styles from './style.module.less';
 import { useTableDrive } from './useTableDrive';
 import { useTableDriveActions } from './useTableDriveActions';
 
-const DRIVE_TABLE_COLUMNS: FolderTableColumn<DriveTableRow>[] = [
+const buildDriveTableColumns = (t: TFunction<'drive'>): FolderTableColumn<DriveTableRow>[] => [
   {
     id: 'name',
-    label: '名称',
+    label: t('table.columns.name'),
     width: 'fill',
     align: 'start',
     isRowHeader: true,
@@ -89,13 +91,13 @@ const DRIVE_TABLE_COLUMNS: FolderTableColumn<DriveTableRow>[] = [
   },
   {
     id: 'size',
-    label: '大小',
+    label: t('table.columns.size'),
     width: 'folderSize',
     renderCell: (row) => (row.entryType === 'loading' ? '' : (row.sizeLabel ?? '—')),
   },
   {
     id: 'type',
-    label: '类型',
+    label: t('table.columns.type'),
     width: 'folderType',
     allowsSorting: true,
     getSortValue: (row) => row.typeLabel,
@@ -103,22 +105,22 @@ const DRIVE_TABLE_COLUMNS: FolderTableColumn<DriveTableRow>[] = [
   },
   {
     id: 'actions',
-    label: '操作',
+    label: t('table.columns.actions'),
     width: 'folderAction',
     isActionColumn: true,
   },
 ];
 
-function getTypeLabel(node: DriveNode): string {
+function getTypeLabel(node: DriveNode, t: TFunction<'drive'>): string {
   switch (node.type) {
     case 'root':
-      return '云盘';
+      return t('node.drive');
     case 'folder':
-      return '文件夹';
+      return t('node.folder');
     case 'resource':
-      return node.resourceType ?? '资源';
+      return node.resourceType ?? t('node.resource');
     case 'link':
-      return '链接';
+      return t('node.link');
     case 'loading':
       return '';
   }
@@ -131,11 +133,11 @@ function formatDriveNodeSizeLabel(node: DriveNode): string {
   return node.size == null ? '—' : formatFileSize(node.size);
 }
 
-function toDriveTableRow(node: DriveRow): DriveTableRow {
+function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTableRow {
   if (node.type === 'loading') {
     return {
       id: node.id,
-      name: node.label || '正在加载...',
+      name: node.label || t('node.loading'),
       entryType: 'loading',
       typeLabel: '',
       node,
@@ -151,9 +153,9 @@ function toDriveTableRow(node: DriveRow): DriveTableRow {
     resourceIconType:
       node.type === 'resource' || node.type === 'link' ? node.resourceIconType : undefined,
     sizeLabel: formatDriveNodeSizeLabel(node),
-    typeLabel: getTypeLabel(node),
+    typeLabel: getTypeLabel(node, t),
     isExpandable: node.type === 'root' || node.type === 'folder',
-    children: node.children?.map((child) => toDriveTableRow(child)),
+    children: node.children?.map((child) => toDriveTableRow(child, t)),
     node,
   };
 }
@@ -277,6 +279,7 @@ function DriveDroppableBreadcrumb({
 }
 
 function DriveDragOverlay({ row, count }: { row: DriveTableRow; count: number }) {
+  const { t } = useTranslation('drive');
   return (
     <div className={styles.dragOverlay}>
       <span className={styles.dragOverlayIcon}>
@@ -288,7 +291,7 @@ function DriveDragOverlay({ row, count }: { row: DriveTableRow; count: number })
         />
       </span>
       <span className={styles.dragOverlayName}>{row.name}</span>
-      <span className={styles.dragOverlayCount}>共选中 {count} 项</span>
+      <span className={styles.dragOverlayCount}>{t('table.dragSelected', { count })}</span>
     </div>
   );
 }
@@ -324,6 +327,7 @@ function DriveDetailPanel({
   onOpenTagMountPermission,
   onOpenResourcePermission,
 }: DriveDetailPanelProps) {
+  const { t } = useTranslation(['drive', 'resource', 'common']);
   const [selectedViewer, setSelectedViewer] = useState<ResourceViewer>(() => {
     if (selectedRow && (selectedRow.node.type === 'resource' || selectedRow.node.type === 'link')) {
       return (
@@ -338,10 +342,10 @@ function DriveDetailPanel({
     return (
       <div className={styles.detailContent}>
         <div className={styles.detailHeader}>
-          <span className={styles.detailTitle}>编辑模式</span>
+          <span className={styles.detailTitle}>{t('table.editMode')}</span>
         </div>
         <div className={styles.detailBody}>
-          <p className={styles.detailHint}>已选中 {selectedCount} 项，可在表格底部执行批量操作。</p>
+          <p className={styles.detailHint}>{t('table.editModeHint', { count: selectedCount })}</p>
         </div>
       </div>
     );
@@ -351,9 +355,9 @@ function DriveDetailPanel({
     return (
       <div className={styles.detailContent}>
         <div className={styles.detailHeader}>
-          <span className={styles.detailTitle}>详情</span>
+          <span className={styles.detailTitle}>{t('table.details')}</span>
         </div>
-        <div className={styles.detailEmpty}>单击文件或文件夹以查看详情</div>
+        <div className={styles.detailEmpty}>{t('table.detailsEmpty')}</div>
       </div>
     );
   }
@@ -362,14 +366,16 @@ function DriveDetailPanel({
   const modifiableActionTarget =
     actionTarget && !isDriveSystemFolderNode(actionTarget) ? actionTarget : undefined;
   const activateLabel =
-    selectedRow.node.type === 'root' || selectedRow.node.type === 'folder' ? '进入' : '打开';
+    selectedRow.node.type === 'root' || selectedRow.node.type === 'folder'
+      ? t('table.enter')
+      : t('table.open');
   const deleteLabel = groupId
-    ? '移除'
+    ? t('delete.remove')
     : isTrashView
-      ? '永久删除'
+      ? t('delete.permanent')
       : selectedRow.node.type === 'link'
-        ? '删除链接'
-        : '移入回收站';
+        ? t('delete.deleteLink')
+        : t('delete.moveToTrash');
   const resourceKind =
     selectedRow.node.type === 'resource' || selectedRow.node.type === 'link'
       ? resolveResourceKind(selectedRow.node.resourceType)
@@ -401,15 +407,17 @@ function DriveDetailPanel({
       <div className={styles.detailBody}>
         <Accordion multiple defaultValue={['details']} className={styles.detailAccordion}>
           <AccordionItem value="details" className={styles.detailSection}>
-            <AccordionTrigger className={styles.detailSectionTrigger}>详情</AccordionTrigger>
+            <AccordionTrigger className={styles.detailSectionTrigger}>
+              {t('table.details')}
+            </AccordionTrigger>
             <AccordionContent className={styles.detailSectionContent}>
               <dl className={styles.detailMeta}>
                 <div>
-                  <dt>节点 ID</dt>
+                  <dt>{t('table.nodeId')}</dt>
                   <dd>{selectedRow.node.id}</dd>
                 </div>
                 <div>
-                  <dt>大小</dt>
+                  <dt>{t('table.columns.size')}</dt>
                   <dd>{selectedRow.sizeLabel ?? '—'}</dd>
                 </div>
               </dl>
@@ -418,7 +426,9 @@ function DriveDetailPanel({
 
           {permissionTarget ? (
             <AccordionItem value="permission" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>权限</AccordionTrigger>
+              <AccordionTrigger className={styles.detailSectionTrigger}>
+                {t('table.permission')}
+              </AccordionTrigger>
               <AccordionContent className={styles.detailSectionContent}>
                 {permissionTarget.type === 'folder' ? (
                   <div className={styles.detailSectionActions}>
@@ -428,7 +438,7 @@ function DriveDetailPanel({
                       onPress={() => onOpenTagAccessPermission(permissionTarget.tagId)}
                     >
                       <ShieldCheck size={16} aria-hidden="true" />
-                      访问权限
+                      {t('permission.accessPermission', { ns: 'resource' })}
                     </Button>
                     <Button
                       variant="secondary"
@@ -436,7 +446,7 @@ function DriveDetailPanel({
                       onPress={() => onOpenTagMountPermission(permissionTarget.tagId)}
                     >
                       <FolderInput size={16} aria-hidden="true" />
-                      挂载权限
+                      {t('permission.mountPermission', { ns: 'resource' })}
                     </Button>
                   </div>
                 ) : (
@@ -454,7 +464,7 @@ function DriveDetailPanel({
                     }
                   >
                     <ShieldCheck size={16} aria-hidden="true" />
-                    资源权限
+                    {t('permission.resourcePermission', { ns: 'resource' })}
                   </Button>
                 )}
               </AccordionContent>
@@ -463,7 +473,9 @@ function DriveDetailPanel({
 
           {modifiableActionTarget ? (
             <AccordionItem value="operations" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>操作</AccordionTrigger>
+              <AccordionTrigger className={styles.detailSectionTrigger}>
+                {t('table.operations')}
+              </AccordionTrigger>
               <AccordionContent className={styles.detailSectionContent}>
                 <div className={styles.detailSectionActions}>
                   {modifiableActionTarget.type !== 'link' ? (
@@ -473,7 +485,7 @@ function DriveDetailPanel({
                       onPress={() => onRename(modifiableActionTarget)}
                     >
                       <Pencil size={16} aria-hidden="true" />
-                      重命名
+                      {t('actions.rename', { ns: 'common' })}
                     </Button>
                   ) : null}
                   <Button
@@ -482,7 +494,7 @@ function DriveDetailPanel({
                     onPress={() => onMove(modifiableActionTarget)}
                   >
                     <FolderInput size={16} aria-hidden="true" />
-                    {isTrashView ? '移动到云盘' : '移动'}
+                    {isTrashView ? t('move.titleToDrive') : t('table.move')}
                   </Button>
                 </div>
               </AccordionContent>
@@ -491,10 +503,12 @@ function DriveDetailPanel({
 
           {isFileResource ? (
             <AccordionItem value="open-with" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>打开方式</AccordionTrigger>
+              <AccordionTrigger className={styles.detailSectionTrigger}>
+                {t('table.openWith')}
+              </AccordionTrigger>
               <AccordionContent className={styles.detailSectionContent}>
                 <ToggleButtonGroup
-                  aria-label="打开方式"
+                  aria-label={t('table.openWith')}
                   selectionMode="single"
                   selectedKeys={new Set([selectedViewer])}
                   onSelectionChange={(keys) => {
@@ -507,7 +521,9 @@ function DriveDetailPanel({
                   disallowEmptySelection
                   className={styles.openWithOptions}
                 >
-                  <ToggleButton id={RESOURCE_VIEWER.PDF_PREVIEW}>PDF 预览</ToggleButton>
+                  <ToggleButton id={RESOURCE_VIEWER.PDF_PREVIEW}>
+                    {t('table.pdfPreview')}
+                  </ToggleButton>
                   <ToggleButton id={RESOURCE_VIEWER.OFFICE}>Office</ToggleButton>
                 </ToggleButtonGroup>
               </AccordionContent>
@@ -548,6 +564,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
   },
   ref
 ) {
+  const { t } = useTranslation(['drive', 'resource', 'common']);
   const driveService = useDriveService();
   const resolvedScope = useMemo(
     () => resolveDriveScope(scope, groupId, rootId),
@@ -629,7 +646,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
   const handleClickNode = useClickNode({
     enterFolder: handleEnterFolder,
   });
-  const rows = useMemo(() => dataSource.map((node) => toDriveTableRow(node)), [dataSource]);
+  const rows = useMemo(() => dataSource.map((node) => toDriveTableRow(node, t)), [dataSource, t]);
   const rowMap = useMemo(() => buildDriveTableRowMap(rows), [rows]);
   const selectedRow = selectedRowId ? rowMap.get(selectedRowId) : undefined;
   const selectedActionTargets = useMemo(() => {
@@ -672,7 +689,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
     {
       manual: true,
       onSuccess: () => {
-        toast.success(`已删除 ${checkedRowKeys.size} 项`);
+        toast.success(t('table.batchDeleted', { count: checkedRowKeys.size }));
         setCheckedRowKeys(new Set());
         refreshDrive();
       },
@@ -754,9 +771,9 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
         handleClearSelection();
         refreshDrive();
         if (movedCount > 1) {
-          toast.success(`已移动 ${movedCount} 项`);
+          toast.success(t('move.feedback.moved', { count: movedCount }));
         } else if (movedCount === 1) {
-          toast.success('已移动');
+          toast.success(t('table.movedSingle'));
         }
       },
       onError: (error) => {
@@ -785,7 +802,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
       <div className={styles.selectionActions}>
         {canBatchMove ? (
           <Button variant="secondary" size="sm" onPress={handleOpenBatchMove}>
-            移动
+            {t('table.move')}
           </Button>
         ) : null}
         {!isTrashView ? (
@@ -795,11 +812,11 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
             isDisabled={batchDeleting}
             onPress={() => runBatchDelete()}
           >
-            删除
+            {t('actions.delete', { ns: 'common' })}
           </Button>
         ) : null}
         <Button variant="secondary" size="sm" onPress={handleClearSelection}>
-          清除选择
+          {t('table.clearSelection')}
         </Button>
       </div>
     );
@@ -811,6 +828,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
     handleOpenBatchMove,
     isTrashView,
     runBatchDelete,
+    t,
   ]);
   const isEditMode = checkedRowKeys.size > 0;
   const openTrash = useCallback(async () => {
@@ -828,7 +846,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
     try {
       const resolvedTrashFolderNodeId = trashFolderNodeId ?? (await resolveTrashFolderNodeId());
       if (!resolvedTrashFolderNodeId) {
-        toast.danger('未找到回收站');
+        toast.danger(t('table.trashNotFound'));
         return;
       }
       beforeTrashNodeIdRef.current = currentNodeId;
@@ -844,6 +862,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
     isTrashView,
     resolveTrashFolderNodeId,
     trashFolderNodeId,
+    t,
   ]);
 
   useImperativeHandle(ref, () => ({ openTrash }), [openTrash]);
@@ -889,13 +908,13 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
         ) : null}
         {!isEditMode && showUploadToGroup ? (
           <Button variant="secondary" size="sm" onPress={openUploadToGroup}>
-            从个人云盘添加
+            {t('table.addFromPersonal')}
           </Button>
         ) : null}
         {!isEditMode && showToolbarTrash && canOpenTrash ? (
           <Button variant={isTrashView ? 'primary' : 'secondary'} size="sm" onPress={openTrash}>
             <Trash2 size={16} aria-hidden="true" />
-            {isTrashView ? '返回云盘' : '回收站'}
+            {isTrashView ? t('page.backToDrive') : t('node.trash')}
           </Button>
         ) : null}
         <AppIconButton
@@ -906,7 +925,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
               <PanelRightClose size={16} aria-hidden="true" />
             )
           }
-          label={isDetailPanelCollapsed ? '展开详情侧栏' : '收起详情侧栏'}
+          label={isDetailPanelCollapsed ? t('table.expandDetails') : t('table.collapseDetails')}
           size="sm"
           className={styles.detailPanelToggle}
           onPress={() => setIsDetailPanelCollapsed((collapsed) => !collapsed)}
@@ -925,6 +944,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
       showCreateMenu,
       showUploadToGroup,
       showToolbarTrash,
+      t,
     ]
   );
 
@@ -974,12 +994,12 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
         actionTarget.type === 'folder'
           ? {
               key: 'enter',
-              label: '进入',
+              label: t('table.enter'),
               onPress: () => handleEnterFolder(actionTarget.id),
             }
           : {
               key: 'open',
-              label: '打开',
+              label: t('table.open'),
               onPress: () => handleClickNode(row.node),
             };
 
@@ -990,19 +1010,19 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
           actions.push(
             {
               key: 'tag-access-permission',
-              label: '访问权限',
+              label: t('permission.accessPermission', { ns: 'resource' }),
               onPress: () => openTagAccessPermission(actionTarget.tagId),
             },
             {
               key: 'tag-mount-permission',
-              label: '挂载权限',
+              label: t('permission.mountPermission', { ns: 'resource' }),
               onPress: () => openTagMountPermission(actionTarget.tagId),
             }
           );
         } else if (actionTarget.type === 'resource') {
           actions.push({
             key: 'resource-permission',
-            label: '资源权限',
+            label: t('permission.resourcePermission', { ns: 'resource' }),
             onPress: () =>
               openResourcePermission({
                 resourceId: actionTarget.resourceId,
@@ -1021,7 +1041,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
       if (actionTarget.type !== 'link') {
         actions.push({
           key: 'rename',
-          label: '重命名',
+          label: t('actions.rename', { ns: 'common' }),
           onPress: () => handleOpenRename(actionTarget),
         });
       }
@@ -1029,19 +1049,19 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
       actions.push(
         {
           key: 'move',
-          label: isTrashView ? '移动到云盘' : '移动',
+          label: isTrashView ? t('move.titleToDrive') : t('table.move'),
           onPress: () => handleOpenMove(actionTarget),
         },
         {
           key: 'delete',
           label:
             finalGroupId != null
-              ? '移除'
+              ? t('delete.remove')
               : isTrashView
-                ? '永久删除'
+                ? t('delete.permanent')
                 : actionTarget.type === 'link'
-                  ? '删除链接'
-                  : '移入回收站',
+                  ? t('delete.deleteLink')
+                  : t('delete.moveToTrash'),
           variant: 'danger',
           onPress: () => handleOpenDelete(actionTarget),
         }
@@ -1062,6 +1082,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
       openTagAccessPermission,
       openTagMountPermission,
       showManagePermission,
+      t,
     ]
   );
 
@@ -1191,9 +1212,9 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
           <div className={styles.driveBody}>
             <div className={styles.tablePanel}>
               <FolderTable<DriveTableRow>
-                ariaLabel="云盘文件列表"
+                ariaLabel={t('table.aria')}
                 items={rows}
-                columns={DRIVE_TABLE_COLUMNS}
+                columns={buildDriveTableColumns(t)}
                 loading={loading}
                 breadcrumb={breadcrumb}
                 toolbar={toolbar}
@@ -1204,7 +1225,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
                 onRowActivate={handleRowActivate}
                 renderNameContent={renderNameContent}
                 totalCount={currentDirectoryItemCount}
-                summary={`当前目录共 ${currentDirectoryItemCount} 项`}
+                summary={t('table.summary', { count: currentDirectoryItemCount })}
                 className={styles.table}
                 sortDescriptor={sortDescriptor}
                 onSortChange={handleSortChange}
@@ -1218,7 +1239,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
             <aside
               className={styles.detailPanel}
               data-collapsed={isDetailPanelCollapsed ? 'true' : undefined}
-              aria-label="节点详情侧栏"
+              aria-label={t('table.detailsAsideAria')}
             >
               {!isDetailPanelCollapsed ? (
                 <DriveDetailPanel

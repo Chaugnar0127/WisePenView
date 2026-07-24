@@ -5,6 +5,7 @@ import ProviderLogo from '@/components/Icons/ProviderLogo';
 import type { WisePenUIMessage } from '@/domains/Chat';
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from 'ai';
 import { ThumbsDown, ThumbsUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import ChatMessage from '../ChatMessage';
 import MessageContent from '../Content';
 import MessageLoader from '../Loader';
@@ -19,6 +20,7 @@ interface AssistantMessageProps {
 }
 
 function AssistantMessage({ message, model, streaming }: AssistantMessageProps) {
+  const { t } = useTranslation('chat');
   const textContent = message.parts
     .filter(isTextUIPart)
     .map((part) => part.text)
@@ -36,7 +38,7 @@ function AssistantMessage({ message, model, streaming }: AssistantMessageProps) 
   const showLoadingSkeleton = streaming && !hasVisibleContent;
   // TODO: 后端历史透出 metadata.provider / modelName 后优先用消息级快照
   const displayProvider = model?.provider || 'openai';
-  const displayModelName = model?.name || 'AI 助手';
+  const displayModelName = model?.name || t('message.assistant');
 
   return (
     <ChatMessage.Assistant>
@@ -84,13 +86,13 @@ function AssistantMessage({ message, model, streaming }: AssistantMessageProps) 
             <CopyButton text={textContent} />
             <AppIconButton
               icon={<ThumbsUp size={MESSAGE_ACTION_ICON_SIZE} aria-hidden="true" />}
-              label="点赞"
+              label={t('message.like')}
               className={styles.actionButton}
               tooltip={{ delay: 0 }}
             />
             <AppIconButton
               icon={<ThumbsDown size={MESSAGE_ACTION_ICON_SIZE} aria-hidden="true" />}
-              label="点踩"
+              label={t('message.dislike')}
               className={styles.actionButton}
               tooltip={{ delay: 0 }}
             />

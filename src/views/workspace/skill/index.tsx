@@ -25,9 +25,11 @@ import {
 } from '@/views/workspace/ResourceHostContext';
 import { Button, Tabs, toast } from '@heroui/react';
 import { useRequest, useUnmount } from 'ahooks';
+import type { TFunction } from 'i18next';
 import { FolderPlus, Pencil, Plus, Save, Settings, Upload } from 'lucide-react';
 import type { editor as MonacoEditor } from 'monaco-editor';
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useBeforeUnload, useBlocker, useNavigate } from 'react-router-dom';
 import SkillSaveQueueDock from './_components/SkillSaveQueueDock';
 import type { SkillSaveQueueItem } from './_components/SkillSaveQueueDock/index.type';
@@ -698,11 +700,14 @@ function SkillLayoutConfig({ children, config }: SkillLayoutConfigProps) {
   return <>{children}</>;
 }
 
-function formatSaveStatus(status?: SkillEditorSavePhase): string | null {
-  if (status === 'dirty') return '有未保存修改';
-  if (status === 'saving') return '保存中...';
-  if (status === 'failed') return '保存失败';
-  if (status === 'clean') return '已经保存到云端';
+function formatSaveStatus(
+  status: SkillEditorSavePhase | undefined,
+  t: TFunction<'skill'>
+): string | null {
+  if (status === 'dirty') return t('saveStatus.dirty');
+  if (status === 'saving') return t('saveStatus.saving');
+  if (status === 'failed') return t('saveStatus.failed');
+  if (status === 'clean') return t('saveStatus.clean');
   return null;
 }
 
@@ -717,6 +722,7 @@ function SkillConfigPanel({
   onReset,
   onSave,
 }: SkillConfigPanelProps) {
+  const { t } = useTranslation('skill');
   const nameMissing = name.trim().length === 0;
   const descriptionMissing = description.trim().length === 0;
   const hasMissingConfig = nameMissing || descriptionMissing;
@@ -724,44 +730,42 @@ function SkillConfigPanel({
   return (
     <>
       <header className={styles.editorHeader}>
-        <span className={styles.editorFileName}>Config</span>
+        <span className={styles.editorFileName}>{t('config.title')}</span>
       </header>
       <div className={styles.editorBody}>
-        <section className={styles.configPage} aria-label="Skill 配置">
+        <section className={styles.configPage} aria-label={t('config.ariaLabel')}>
           <div className={styles.configForm}>
             <div className={styles.configFormHint}>
-              <strong>Skill Info</strong>
-              <span>
-                请填写 name 和 description。它们用于帮助模型识别这个 Skill 的用途；缺失时不能发布。
-              </span>
+              <strong>{t('config.introTitle')}</strong>
+              <span>{t('config.intro')}</span>
             </div>
             <FormField
-              aria-label="Skill name"
+              aria-label={t('config.nameAriaLabel')}
               value={name}
               onChange={onNameChange}
               isDisabled={!canEdit || isLoading}
               isRequired
-              label="name"
-              description="用于模型识别 Skill，建议使用稳定的英文名，例如 planning_with_files。"
-              errorMessage={nameMissing ? '请填写 name。' : undefined}
+              label={t('config.nameLabel')}
+              description={t('config.nameDescription')}
+              errorMessage={nameMissing ? t('config.nameRequired') : undefined}
             >
-              <Input placeholder="planning_with_files" />
+              <Input placeholder={t('config.namePlaceholder')} />
             </FormField>
 
             <FormField
-              aria-label="Skill description"
+              aria-label={t('config.descriptionAriaLabel')}
               value={description}
               onChange={onDescriptionChange}
               isDisabled={!canEdit || isLoading}
               isRequired
-              label="description"
-              description="说明这个 Skill 适合处理什么任务。描述越清晰，模型越容易正确选择。"
-              errorMessage={descriptionMissing ? '请填写 description。' : undefined}
+              label={t('config.descriptionLabel')}
+              description={t('config.descriptionHelp')}
+              errorMessage={descriptionMissing ? t('config.descriptionRequired') : undefined}
             >
               <TextArea
                 className={styles.configDescriptionInput}
                 rows={5}
-                placeholder="说明这个 Skill 适合处理什么任务"
+                placeholder={t('config.descriptionPlaceholder')}
               />
             </FormField>
           </div>
@@ -769,15 +773,15 @@ function SkillConfigPanel({
           <footer className={styles.configFooter}>
             <span className={styles.configFooterText}>
               {hasMissingConfig
-                ? '补全 name 和 description 后，才允许发布 Skill。'
+                ? t('config.publishBlocked')
                 : isDirty
-                  ? '配置修改尚未更新'
-                  : '配置已更新'}
+                  ? t('config.dirty')
+                  : t('config.saved')}
             </span>
             {canEdit ? (
               <span className={styles.configFooterActions}>
                 <Button variant="secondary" isDisabled={!isDirty || isLoading} onPress={onReset}>
-                  重置
+                  {t('config.reset')}
                 </Button>
                 <Button
                   variant="primary"
@@ -785,7 +789,7 @@ function SkillConfigPanel({
                   aria-busy={isLoading || undefined}
                   onPress={onSave}
                 >
-                  更新配置
+                  {t('config.update')}
                 </Button>
               </span>
             ) : null}
@@ -797,6 +801,7 @@ function SkillConfigPanel({
 }
 
 function SkillView({ resourceId = '' }: SkillViewProps = {}) {
+  const { t } = useTranslation('skill');
   const navigate = useNavigate();
   const { getNavigationScope, openResource } = useResourceHostContext();
   const skillService = useSkillService();
@@ -934,7 +939,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
           : null;
         restoreDraft(snapshot, skill);
         setDraftCacheReady(true);
-        toast.warning('已恢复上次未保存的 Skill 草稿');
+        toast.warning(t('toast.draftRestored'));
       })
       .catch(() => {
         if (!disposed) setDraftCacheReady(true);
@@ -1121,7 +1126,11 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
   const hasSavedConfigMissing =
     savedConfigName.trim().length === 0 || savedConfigDescription.trim().length === 0;
   const hasMissingConfig = canEdit && hasConfigValuesMissing;
-  const configTreeBadgeText = hasConfigValuesMissing ? '必填' : isConfigDirty ? '未保存' : '完成';
+  const configTreeBadgeText = hasConfigValuesMissing
+    ? t('config.badge.required')
+    : isConfigDirty
+      ? t('config.badge.unsaved')
+      : t('config.badge.complete');
   const configTreeNodes = useMemo<DataNode[]>(
     () => [
       {
@@ -1134,14 +1143,14 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
               <span className={styles.configTreeIcon} aria-hidden="true">
                 <Settings size={14} />
               </span>
-              <span className={styles.configTreeName}>Config</span>
+              <span className={styles.configTreeName}>{t('config.title')}</span>
             </span>
             <span className={styles.configTreeBadge}>{configTreeBadgeText}</span>
           </span>
         ),
       },
     ],
-    [configTreeBadgeText]
+    [configTreeBadgeText, t]
   );
   const isSaveQueueActive = saveQueueItems.some(
     (item) => item.phase === 'preparing' || item.phase === 'uploading'
@@ -1344,7 +1353,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
 
   const handleConfigSelect = () => {
     if (isSaveQueueActive) {
-      toast.warning('正在保存 Skill，请稍后再切换配置');
+      toast.warning(t('toast.savingSwitchConfig'));
       return;
     }
     if (isConfigSelected) return;
@@ -1361,7 +1370,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
       return;
     }
     if (isSaveQueueActive) {
-      toast.warning('正在保存 Skill，请稍后再切换文件');
+      toast.warning(t('toast.savingSwitchFile'));
       return;
     }
     const node = findFile(activeFiles, nodeId);
@@ -1371,7 +1380,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         setPendingIntent({ type: 'switchFile', fileId: node.id });
         return;
       }
-      toast.warning('请先更新或重置配置后再切换目录');
+      toast.warning(t('toast.updateConfigBeforeDirectory'));
       return;
     }
     if (node.kind === 'file' && node.id !== selectedFileId && isDirty) {
@@ -1567,7 +1576,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
           const result = resultById.get(item.id);
           if (!result) {
             if (item.phase === 'preparing' || item.phase === 'uploading') {
-              return { ...item, phase: 'failed', errorMessage: '保存结果缺失，请重试' };
+              return { ...item, phase: 'failed', errorMessage: t('queue.resultMissing') };
             }
             return item;
           }
@@ -1603,7 +1612,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         setEditing(false);
         if (skill) void clearDraftCache(skill.resourceId);
         if (result.options?.showToast !== false) {
-          toast.success('保存成功');
+          toast.success(t('toast.saveSuccess'));
         }
         if (result.options?.refresh === true) {
           void refreshSkill();
@@ -1646,7 +1655,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         setSavedConfigName(result.name);
         setSavedConfigDescription(result.description);
         if (result.options?.showToast !== false) {
-          toast.success('配置已更新');
+          toast.success(t('toast.configUpdated'));
         }
       },
       onError: (err) => {
@@ -1673,7 +1682,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     {
       manual: true,
       onSuccess: () => {
-        toast.success('发布成功');
+        toast.success(t('toast.publishSuccess'));
         void refreshSkill();
       },
       onError: (err) => {
@@ -1723,7 +1732,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         if (removeIds.has(selectedFileId)) setSelectedFileId('');
         if (removeIds.has(selectedTreeNodeId)) setSelectedTreeNodeId('');
         setDeleteTarget(null);
-        toast.success('删除成功');
+        toast.success(t('toast.deleteSuccess'));
         void refreshSkill();
       },
       onError: (err) => {
@@ -1747,16 +1756,16 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
 
   const handlePublish = useCallback(() => {
     if (isSaveQueueActive) {
-      toast.warning('正在保存 Skill，请稍后再发布');
+      toast.warning(t('toast.savingPublish'));
       return;
     }
     const mainSkillFile = findRootMainSkillFile(activeFiles);
     if (!mainSkillFile) {
-      toast.warning('发布前需要在根目录下创建并保存大写的 SKILL.md');
+      toast.warning(t('toast.missingMainFile'));
       return;
     }
     if (hasMissingConfig) {
-      toast.warning('发布前需要填写 Config 中的 name 和 description');
+      toast.warning(t('toast.missingConfig'));
       if (!isDirty) applyConfigSelection();
       return;
     }
@@ -1775,6 +1784,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     isSaveQueueActive,
     runPublish,
     setPendingIntent,
+    t,
   ]);
 
   const handleSaveAndPublish = async () => {
@@ -1792,7 +1802,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     if (skill) void clearDraftCache(skill.resourceId);
     if (hasSavedConfigMissing) {
       setPendingIntent(null);
-      toast.warning('发布前需要填写 Config 中的 name 和 description');
+      toast.warning(t('toast.missingConfig'));
       if (!isDirty) applyConfigSelection();
       return;
     }
@@ -1874,7 +1884,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     (version: number) => {
       if (version === viewingVersion) return;
       if (isSaveQueueActive) {
-        toast.warning('正在保存 Skill，请稍后再切换版本');
+        toast.warning(t('toast.savingSwitchVersion'));
         return;
       }
       if (hasUnsafeNavigation) {
@@ -1883,7 +1893,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
       }
       runSwitchVersion(version);
     },
-    [hasUnsafeNavigation, isSaveQueueActive, runSwitchVersion, setPendingIntent, viewingVersion]
+    [hasUnsafeNavigation, isSaveQueueActive, runSwitchVersion, setPendingIntent, t, viewingVersion]
   );
 
   const handleDiscardAndSwitchVersion = () => {
@@ -1989,7 +1999,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
           setSelectedFileId((prev) => result.idMap.get(prev) ?? prev);
           setSelectedTreeNodeId((prev) => result.idMap.get(prev) ?? prev);
         }
-        toast.success('移动成功');
+        toast.success(t('toast.moveSuccess'));
       },
       onError: (err) => {
         toast.danger(parseErrorMessage(err));
@@ -2024,14 +2034,14 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
   const handleAddLocalFiles = async (files: File[]) => {
     if (!canEditTree || files.length === 0) return;
     if (isDirty) {
-      toast.warning('请先保存或放弃当前修改后再上传文件');
+      toast.warning(t('toast.saveBeforeUpload'));
       return;
     }
 
     const zipFiles = files.filter(isSkillZipFile);
     if (zipFiles.length > 0) {
       if (files.length > 1 || zipFiles.length > 1) {
-        toast.warning('导入 zip 压缩包时请单独上传一个文件');
+        toast.warning(t('toast.uploadSingleZip'));
         return;
       }
       try {
@@ -2069,7 +2079,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
           setSelectedTreeNodeId(selectedZipFile.id);
           setEditing(false);
         }
-        toast.success('zip 压缩包已导入，保存后生效');
+        toast.success(t('toast.zipImported'));
       } catch (err) {
         toast.danger(parseErrorMessage(err));
       }
@@ -2140,15 +2150,15 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     if (!(target instanceof HTMLElement)) return;
     if (target.closest('.wisepen-tree__item')) return;
     if (isSaveQueueActive) {
-      toast.warning('正在保存 Skill，请稍后再取消选择');
+      toast.warning(t('toast.savingClearSelection'));
       return;
     }
     if (isDirty) {
-      toast.warning('请先保存或放弃当前修改后再取消选择');
+      toast.warning(t('toast.saveBeforeClearSelection'));
       return;
     }
     if (isConfigSelected && isConfigDirty) {
-      toast.warning('请先更新或重置配置后再取消选择');
+      toast.warning(t('toast.updateConfigBeforeClearSelection'));
       return;
     }
     setSelectedTreeNodeId('');
@@ -2200,7 +2210,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     }
   };
 
-  const headerSaveStatusText = formatSaveStatus(canEdit ? savePhase : undefined);
+  const headerSaveStatusText = formatSaveStatus(canEdit ? savePhase : undefined, t);
 
   const headerConfig = useMemo<ResourceHostLayoutConfig>(
     () => ({
@@ -2210,7 +2220,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
       header: {
         resource: {
           resourceId: skill?.resourceId ?? resourceId,
-          resourceName: skill?.title || 'Skill',
+          resourceName: skill?.title || t('page.resourceFallbackName'),
           resourceIconType: 'skill',
           currentActions: skill?.currentActions,
           copyVersion: skill?.version,
@@ -2243,7 +2253,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                     }
                   >
                     <Pencil size={16} />
-                    <span>{editing ? '取消' : '编辑'}</span>
+                    <span>{t(editing ? 'header.cancelEditing' : 'header.edit')}</span>
                   </Button>
                   {editing || hasSaveableChanges ? (
                     <Button
@@ -2259,7 +2269,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                       }
                     >
                       <Save size={16} />
-                      <span>保存</span>
+                      <span>{t('header.save')}</span>
                     </Button>
                   ) : null}
                   <Button
@@ -2275,7 +2285,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                     }
                   >
                     <Upload size={16} />
-                    <span>发布</span>
+                    <span>{t('header.publish')}</span>
                   </Button>
                 </>
               ) : null}
@@ -2311,6 +2321,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
       savePhase,
       saveLoading,
       skill,
+      t,
       versionItems,
     ]
   );
@@ -2321,10 +2332,10 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         <div className={styles.middleOverlay}>
           <ResultState
             status="info"
-            title="创建 Skill"
+            title={t('page.createTitle')}
             extra={
               <Button variant="primary" onPress={() => setCreateModalOpen(true)}>
-                创建新 Skill
+                {t('page.createAction')}
               </Button>
             }
           />
@@ -2345,11 +2356,11 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         <div className={styles.middleOverlay}>
           <ResultState
             status="warning"
-            title="无法打开 Skill"
+            title={t('page.openFailed')}
             subTitle={parseErrorMessage(error)}
             extra={
               <Link to="/app/drive/personal">
-                <Button variant="secondary">返回云盘</Button>
+                <Button variant="secondary">{t('page.backToDrive')}</Button>
               </Link>
             }
           />
@@ -2364,7 +2375,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         <div className={styles.middleOverlay} aria-busy="true" aria-live="polite">
           <div className={styles.middleOverlayLoading}>
             <Spin size="large" />
-            <span>正在加载 Skill...</span>
+            <span>{t('page.loading')}</span>
           </div>
         </div>
       </SkillLayoutConfig>
@@ -2380,26 +2391,26 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
               <div className={styles.middlePanelSlot}>
                 <section className={styles.middlePanel}>
                   <div className={styles.middlePanelHeader}>
-                    <span className={styles.middlePanelLabel}>文件</span>
+                    <span className={styles.middlePanelLabel}>{t('fileTree.title')}</span>
                     {canEditTree ? (
                       <div className={styles.middlePanelActions}>
                         <AppIconButton
                           icon={<FolderPlus size={14} aria-hidden="true" />}
-                          label="新建文件夹"
+                          label={t('fileTree.newFolder')}
                           size="sm"
                           className={styles.iconBtnSm}
                           onClick={() => handleStartCreate('folder')}
                         />
                         <AppIconButton
                           icon={<Plus size={14} aria-hidden="true" />}
-                          label="新建文件"
+                          label={t('fileTree.newFile')}
                           size="sm"
                           className={styles.iconBtnSm}
                           onClick={() => handleStartCreate('file')}
                         />
                         <AppIconButton
                           icon={<Upload size={14} aria-hidden="true" />}
-                          label="上传文件"
+                          label={t('fileTree.upload')}
                           size="sm"
                           className={styles.iconBtnSm}
                           onClick={() => fileInputRef.current?.click()}
@@ -2415,7 +2426,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                     onClick={handleTreeWrapClick}
                   >
                     {canEditTree && isTreeDragOver ? (
-                      <div className={styles.treeDropHint}>释放以上传文件或 zip 压缩包</div>
+                      <div className={styles.treeDropHint}>{t('fileTree.dropHint')}</div>
                     ) : null}
                     <SkillFileTree
                       files={activeFiles}
@@ -2434,7 +2445,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                     {activeFiles.length === 0 && !pendingCreate ? (
                       <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description={canEdit ? '暂无文件，请上传或新建' : '暂无文件'}
+                        description={t(canEdit ? 'fileTree.emptyEditable' : 'fileTree.empty')}
                         className={styles.emptyBlock}
                       />
                     ) : null}
@@ -2470,14 +2481,14 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                             <Tabs.ListContainer>
                               <Tabs.List
                                 className={styles.editorTabsList}
-                                aria-label="Markdown 展示模式"
+                                aria-label={t('preview.markdownMode')}
                               >
                                 <Tabs.Tab id="preview" className={styles.editorTab}>
-                                  预览
+                                  {t('preview.preview')}
                                   <Tabs.Indicator />
                                 </Tabs.Tab>
                                 <Tabs.Tab id="markdown" className={styles.editorTab}>
-                                  Markdown
+                                  {t('preview.markdown')}
                                   <Tabs.Indicator />
                                 </Tabs.Tab>
                               </Tabs.List>
@@ -2527,7 +2538,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                         ) : (
                           <Empty
                             image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            description="该文件类型暂不支持预览，保存时会保留原文件内容"
+                            description={t('preview.unsupported')}
                             className={styles.emptyBlock}
                           />
                         )}
@@ -2536,7 +2547,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                   ) : (
                     <Empty
                       image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description="请选择文件进行编辑"
+                      description={t('preview.selectFile')}
                       className={styles.emptyBlock}
                     />
                   )}
@@ -2545,7 +2556,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
             </div>
           ) : (
             <div className={styles.middleOverlay}>
-              <ResultState status="warning" title="无法打开 Skill" />
+              <ResultState status="warning" title={t('page.openFailed')} />
             </div>
           )}
         </div>
@@ -2555,13 +2566,13 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         type="danger"
         isOpen={!!deleteTarget}
         onOpenChange={() => setDeleteTarget(null)}
-        title={deleteTarget?.kind === 'folder' ? '删除文件夹' : '删除文件'}
+        title={t(deleteTarget?.kind === 'folder' ? 'delete.folderTitle' : 'delete.fileTitle')}
         description={
           deleteTarget?.kind === 'folder'
-            ? `确定删除该文件夹「${deleteTarget?.name}」及其所有内容吗？此操作不可撤销。`
-            : `确定删除该文件「${deleteTarget?.name}」吗？此操作不可撤销。`
+            ? t('delete.folderDescription', { name: deleteTarget?.name })
+            : t('delete.fileDescription', { name: deleteTarget?.name })
         }
-        confirmText="删除"
+        confirmText={t('delete.confirm')}
         onConfirm={() => {
           if (deleteTarget) runDelete(deleteTarget);
         }}

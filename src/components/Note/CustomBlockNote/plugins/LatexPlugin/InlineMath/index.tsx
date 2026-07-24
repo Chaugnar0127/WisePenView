@@ -6,6 +6,7 @@ import type { Transaction } from '@tiptap/pm/state';
 import { TextSelection } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useEffectForce } from '@/hooks/useEffectForce';
 import 'katex/dist/katex.min.css';
@@ -103,6 +104,7 @@ function placeCaretAfterInlineMathNode(editor: EditorForPmCaret, shell: HTMLElem
 function InlineMathView(
   props: ReactCustomInlineContentRenderProps<typeof inlineMathConfig, DefaultStyleSchema>
 ) {
+  const { t } = useTranslation('note');
   const { contentRef, updateInlineContent, inlineContent, editor } = props;
   const readOnly = useNoteEditorReadOnlyContext();
   const expression = inlineContent.props.expression as string;
@@ -234,8 +236,8 @@ function InlineMathView(
     <LatexEditPopover
       visible={Boolean(isEditing && popoverPos)}
       position={popoverPos}
-      title="编辑 LaTeX（行内）"
-      hint="Enter / Shift+Enter 确定 · Esc 取消 · 不可换行"
+      title={t('latex.inlineTitle')}
+      hint={t('latex.inlineHint')}
       textareaClassName={popoverStyles.inlineEditTextarea}
       value={value}
       onValueChange={(nextValue) => setValue(nextValue.replace(/\n/g, ''))}
@@ -266,7 +268,7 @@ function InlineMathView(
         role={canEnterEdit ? 'button' : undefined}
         tabIndex={canEnterEdit ? 0 : -1}
         aria-readonly={readOnly || undefined}
-        aria-label={canEnterEdit ? '编辑行内公式' : undefined}
+        aria-label={canEnterEdit ? t('latex.inlineEdit') : undefined}
         onClick={() => {
           if (canEnterEdit) enterEdit();
         }}

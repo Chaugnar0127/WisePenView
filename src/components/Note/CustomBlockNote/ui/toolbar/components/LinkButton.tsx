@@ -13,6 +13,7 @@ import { Button, Input } from '@heroui/react';
 import { useEventListener, useUnmount } from 'ahooks';
 import { Link } from 'lucide-react';
 import { useCallback, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
 import { blockHasInlineContent, getSelectedBlocks } from '../utils';
 import { ToolbarButton, type ButtonGroupChildProps } from './ToolbarButton';
@@ -28,6 +29,7 @@ function normalizeUrl(url: string) {
 }
 
 export function CreateLinkToolbarButton(buttonGroupProps: ButtonGroupChildProps) {
+  const { t } = useTranslation(['note', 'common']);
   const editor = useBlockNoteEditor(blockNoteSchema);
   const formattingToolbar = useExtension(FormattingToolbarExtension);
   const { editLink } = useExtension(LinkToolbarExtension);
@@ -128,20 +130,24 @@ export function CreateLinkToolbarButton(buttonGroupProps: ButtonGroupChildProps)
   return (
     <AppPopover isOpen={open} onOpenChange={handleOpenChange} deferContent={false}>
       <AppPopover.Trigger>
-        <ToolbarButton {...buttonGroupProps} label="添加链接" icon={<Link size={20} />} />
+        <ToolbarButton
+          {...buttonGroupProps}
+          label={t('editor.link.add')}
+          icon={<Link size={20} />}
+        />
       </AppPopover.Trigger>
       <AppPopover.Content className={styles.formPopover} placement="bottom">
         <div className={styles.formPanel} onMouseDown={(event) => event.stopPropagation()}>
           <Input
             autoFocus
-            aria-label="链接地址"
-            placeholder="输入链接地址"
+            aria-label={t('editor.link.address')}
+            placeholder={t('editor.link.placeholder')}
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             onKeyDown={handleKeyDown}
           />
           <Button size="sm" variant="primary" onPress={saveLink}>
-            确定
+            {t('actions.confirm', { ns: 'common' })}
           </Button>
         </div>
       </AppPopover.Content>

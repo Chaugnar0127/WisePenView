@@ -7,6 +7,7 @@ import { validateReservedName } from '@/utils/tag/validateReservedName';
 import { Button, Label, TextField, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import styles from './style.module.less';
 
@@ -23,8 +24,6 @@ export interface DriveCreateProps {
   onSuccess: (createdId: string, type: DriveCreateType) => void | Promise<void>;
 }
 
-const DEFAULT_DRAWIO_TITLE = '未命名图表';
-
 function DriveCreate({
   type,
   isOpen,
@@ -35,6 +34,7 @@ function DriveCreate({
   onOpenChange,
   onSuccess,
 }: DriveCreateProps) {
+  const { t } = useTranslation(['drive', 'common']);
   const agentService = useAgentService();
   const driveService = useDriveService();
   const noteService = useNoteService();
@@ -64,7 +64,7 @@ function DriveCreate({
           break;
         case 'drawio': {
           const result = await noteService.createNote({
-            title: title.trim() || DEFAULT_DRAWIO_TITLE,
+            title: title.trim() || t('create.defaultDrawioTitle'),
             resourceType: 'DRAWIO',
           });
           if (!result.resourceId) {
@@ -76,7 +76,7 @@ function DriveCreate({
         case 'folder':
           if (!parentId) {
             throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
-              reason: '新建文件夹目标不存在',
+              reason: t('create.targetMissing'),
             });
           }
           createdId = await driveService.createFolder({
@@ -98,7 +98,7 @@ function DriveCreate({
     {
       manual: true,
       onSuccess: () => {
-        if (type === 'folder') toast.success('新建成功');
+        if (type === 'folder') toast.success(t('create.success'));
         reset();
       },
       onError: (error) => {
@@ -112,16 +112,16 @@ function DriveCreate({
       case 'folder': {
         const trimmed = title.trim();
         if (!trimmed) {
-          setTitleError('请输入文件夹名称');
+          setTitleError(t('create.validation.folderRequired'));
           return;
         }
         const validation = validateReservedName(trimmed);
         if (!validation.valid) {
-          setTitleError(validation.reason ?? '文件夹名称不合法');
+          setTitleError(t('create.validation.reservedPrefix'));
           return;
         }
         if (existingFolderNames.includes(trimmed)) {
-          setTitleError('当前目录下已存在同名文件夹');
+          setTitleError(t('create.validation.duplicateFolder'));
           return;
         }
         runCreate();
@@ -148,18 +148,20 @@ function DriveCreate({
         <AppFormDialog
           isOpen={isOpen}
           onOpenChange={handleOpenChange}
-          title="新建文件夹"
-          confirmText="创建"
+          title={t('create.folder')}
+          confirmText={t('actions.create', { ns: 'common' })}
           onSubmit={handleSubmit}
           isSubmitting={loading}
           isDismissable={!loading}
         >
           <div className={styles.pathHint}>
-            {parentLabel ? `创建到「${parentLabel}」下` : '当前目录'}
+            {parentLabel
+              ? t('create.createUnder', { parent: parentLabel })
+              : t('create.currentDirectory')}
           </div>
           <FormField
-            aria-label="文件夹名称"
-            label="文件夹名称"
+            aria-label={t('create.folderName')}
+            label={t('create.folderName')}
             value={title}
             onChange={(value) => {
               setTitle(value);
@@ -168,7 +170,7 @@ function DriveCreate({
             errorMessage={titleError}
             isRequired
           >
-            <Input placeholder="请输入文件夹名称" autoFocus />
+            <Input placeholder={t('create.folderPlaceholder')} autoFocus />
           </FormField>
         </AppFormDialog>
       );
@@ -177,14 +179,19 @@ function DriveCreate({
         <AppFormDialog
           isOpen={isOpen}
           onOpenChange={handleOpenChange}
-          title="新建图表"
-          confirmText="创建"
+          title={t('create.drawio')}
+          confirmText={t('actions.create', { ns: 'common' })}
           onSubmit={handleSubmit}
           isSubmitting={loading}
           isDismissable={!loading}
         >
-          <FormField aria-label="图表名称" label="图表名称" value={title} onChange={setTitle}>
-            <Input placeholder={DEFAULT_DRAWIO_TITLE} autoFocus />
+          <FormField
+            aria-label={t('create.drawioName')}
+            label={t('create.drawioName')}
+            value={title}
+            onChange={setTitle}
+          >
+            <Input placeholder={t('create.defaultDrawioTitle')} autoFocus />
           </FormField>
         </AppFormDialog>
       );
@@ -193,7 +200,7 @@ function DriveCreate({
         <AppModal
           isOpen={isOpen}
           onOpenChange={handleOpenChange}
-          title="创建新 Agent"
+          title={t('create.asset.agentTitle')}
           size="lg"
           isDismissable={!loading}
           actions={
@@ -203,7 +210,7 @@ function DriveCreate({
                 isDisabled={loading}
                 onPress={() => handleOpenChange(false)}
               >
-                取消
+                {t('actions.cancel', { ns: 'common' })}
               </Button>
               <Button
                 variant="primary"
@@ -211,23 +218,32 @@ function DriveCreate({
                 aria-busy={loading || undefined}
                 onPress={handleSubmit}
               >
-                创建
+                {t('actions.create', { ns: 'common' })}
               </Button>
             </>
           }
         >
           <div className={styles.form}>
-            <TextField aria-label="文件名（显示用）" value={title} onChange={setTitle} isRequired>
-              <Label>文件名（显示用）</Label>
-              <Input autoFocus placeholder="例如：课程研究助手" />
+            <TextField
+              aria-label={t('create.asset.displayName')}
+              value={title}
+              onChange={setTitle}
+              isRequired
+            >
+              <Label>{t('create.asset.displayName')}</Label>
+              <Input autoFocus placeholder={t('create.asset.agentDisplayPlaceholder')} />
             </TextField>
-            <TextField aria-label="Agent 名称（模型用）" value={name} onChange={setName}>
-              <Label>Agent 名称（模型用）</Label>
+            <TextField aria-label={t('create.asset.agentName')} value={name} onChange={setName}>
+              <Label>{t('create.asset.agentName')}</Label>
               <Input placeholder="course_research_assistant" />
             </TextField>
-            <TextField aria-label="描述（模型用）" value={description} onChange={setDescription}>
-              <Label>描述（模型用）</Label>
-              <TextArea rows={3} placeholder="描述这个 Agent 适合处理的任务" />
+            <TextField
+              aria-label={t('create.asset.description')}
+              value={description}
+              onChange={setDescription}
+            >
+              <Label>{t('create.asset.description')}</Label>
+              <TextArea rows={3} placeholder={t('create.asset.agentDescriptionPlaceholder')} />
             </TextField>
           </div>
         </AppModal>
@@ -237,7 +253,7 @@ function DriveCreate({
         <AppModal
           isOpen={isOpen}
           onOpenChange={handleOpenChange}
-          title="创建新 Skill"
+          title={t('create.asset.skillTitle')}
           size="lg"
           isDismissable={!loading}
           actions={
@@ -247,7 +263,7 @@ function DriveCreate({
                 isDisabled={loading}
                 onPress={() => handleOpenChange(false)}
               >
-                取消
+                {t('actions.cancel', { ns: 'common' })}
               </Button>
               <Button
                 variant="primary"
@@ -255,23 +271,32 @@ function DriveCreate({
                 aria-busy={loading || undefined}
                 onPress={handleSubmit}
               >
-                创建
+                {t('actions.create', { ns: 'common' })}
               </Button>
             </>
           }
         >
           <div className={styles.form}>
-            <TextField aria-label="文件名（显示用）" value={title} onChange={setTitle} isRequired>
-              <Label>文件名（显示用）</Label>
-              <Input autoFocus placeholder="例如：论文精读助手" />
+            <TextField
+              aria-label={t('create.asset.displayName')}
+              value={title}
+              onChange={setTitle}
+              isRequired
+            >
+              <Label>{t('create.asset.displayName')}</Label>
+              <Input autoFocus placeholder={t('create.asset.skillDisplayPlaceholder')} />
             </TextField>
-            <TextField aria-label="Skill 名称（模型用）" value={name} onChange={setName}>
-              <Label>Skill 名称（模型用）</Label>
+            <TextField aria-label={t('create.asset.skillName')} value={name} onChange={setName}>
+              <Label>{t('create.asset.skillName')}</Label>
               <Input placeholder="paper_reading_assistant" />
             </TextField>
-            <TextField aria-label="描述（模型用）" value={description} onChange={setDescription}>
-              <Label>描述（模型用）</Label>
-              <TextArea rows={3} placeholder="描述这个 Skill 适合处理的任务" />
+            <TextField
+              aria-label={t('create.asset.description')}
+              value={description}
+              onChange={setDescription}
+            >
+              <Label>{t('create.asset.description')}</Label>
+              <TextArea rows={3} placeholder={t('create.asset.skillDescriptionPlaceholder')} />
             </TextField>
           </div>
         </AppModal>

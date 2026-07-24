@@ -15,6 +15,7 @@ import {
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import clsx from 'clsx';
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type {
   Layout,
   LayoutChangedMeta,
@@ -25,6 +26,7 @@ import { Outlet } from 'react-router-dom';
 import styles from './AdminLayout.module.less';
 
 function AdminLayout() {
+  const { t } = useTranslation('shell');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const storedSidebarWidth = useSystemLayoutStore((state) => state.adminSidebarWidth);
   const setSidebarWidth = useSystemLayoutStore((state) => state.setAdminSidebarWidth);
@@ -85,7 +87,7 @@ function AdminLayout() {
         maxSize={sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MAX_WIDTH}
         groupResizeBehavior="preserve-pixel-size"
         className={styles.leftSider}
-        aria-label="管理侧边栏"
+        aria-label={t('navigation.adminSidebar')}
         onResize={handleSidebarResize}
       >
         <AdminSidebar collapsed={sidebarCollapsed} onToggle={handleSidebarToggle} />

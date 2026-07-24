@@ -19,6 +19,7 @@ import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
 import { ButtonGroup, ToggleButtonGroup } from '@heroui/react';
 import { Paintbrush, PanelLeft, PanelTop, TableCellsMerge, TableCellsSplit } from 'lucide-react';
 import { Fragment, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getSelectedBlocks, stopToolbarMouseDown, toBlockUpdate } from '../utils';
 import { ToolbarToggleButton } from './ToolbarButton';
 
@@ -39,6 +40,7 @@ function isMergedCell(cell: TableCellValue) {
 }
 
 export function TableCellButtons() {
+  const { t } = useTranslation('note');
   const editor = useBlockNoteEditor(blockNoteSchema);
   const railSelection = useTableRailSelectionState();
   const [colorOpen, setColorOpen] = useState(false);
@@ -209,7 +211,7 @@ export function TableCellButtons() {
     <>
       {toggleButtons.length ? (
         <ToggleButtonGroup
-          aria-label="表格单元格"
+          aria-label={t('table.cells')}
           selectionMode="multiple"
           selectedKeys={selectedKeys}
           orientation="horizontal"
@@ -221,7 +223,7 @@ export function TableCellButtons() {
               {button === 'merge' ? (
                 <ToolbarToggleButton
                   id={isSplitAction ? 'split-cell' : 'merge-cells'}
-                  label={isSplitAction ? '取消合并' : '合并单元格'}
+                  label={t(isSplitAction ? 'table.unmerge' : 'table.merge')}
                   icon={
                     isSplitAction ? <TableCellsSplit size={20} /> : <TableCellsMerge size={20} />
                   }
@@ -246,7 +248,7 @@ export function TableCellButtons() {
               {button === 'header-row' ? (
                 <ToolbarToggleButton
                   id="table-header-row"
-                  label={state.isHeaderRow ? '取消标题行' : '设置为标题行'}
+                  label={t(state.isHeaderRow ? 'table.unsetHeaderRow' : 'table.setHeaderRow')}
                   icon={<PanelTop size={20} />}
                   onPress={() => toggleHeader('row')}
                 />
@@ -254,7 +256,9 @@ export function TableCellButtons() {
               {button === 'header-column' ? (
                 <ToolbarToggleButton
                   id="table-header-column"
-                  label={state.isHeaderColumn ? '取消标题列' : '设置为标题列'}
+                  label={t(
+                    state.isHeaderColumn ? 'table.unsetHeaderColumn' : 'table.setHeaderColumn'
+                  )}
                   icon={<PanelLeft size={20} />}
                   onPress={() => toggleHeader('column')}
                 />
@@ -263,11 +267,11 @@ export function TableCellButtons() {
           ))}
         </ToggleButtonGroup>
       ) : null}
-      <ButtonGroup size="sm" variant="ghost" aria-label="表格颜色">
+      <ButtonGroup size="sm" variant="ghost" aria-label={t('table.colors')}>
         <AppPopover isOpen={colorOpen} onOpenChange={setColorOpen} deferContent={false}>
           <AppIconButton
             icon={<Paintbrush size={20} aria-hidden="true" />}
-            label="单元格背景色"
+            label={t('editor.color.cellBackground')}
             size="sm"
             isActive={colorOpen}
             overlayTrigger={<AppPopover.Trigger />}

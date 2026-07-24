@@ -12,6 +12,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { usePagination, useRequest, useUnmount } from 'ahooks';
 import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import { useTranslation } from 'react-i18next';
 import RechargeModal from '../RechargeModal';
 import type { ComputeWalletProps, ComputeWalletRef } from './index.type';
 import styles from './style.module.less';
@@ -30,6 +31,7 @@ function ComputeWallet({
   surface = 'card',
   ref,
 }: ComputeWalletProps & { ref?: Ref<ComputeWalletRef> }) {
+  const { t } = useTranslation('wallet');
   const walletService = useWalletService();
   const groupService = useGroupService();
   const effectiveGroupId = targetType === WALLET_TARGET_TYPE.GROUP ? (targetId ?? '').trim() : '';
@@ -193,7 +195,7 @@ function ComputeWallet({
       manual: true,
       onSuccess: async () => {
         const from = displayBalanceRef.current;
-        toast.success('充值成功');
+        toast.success(t('recharge.success'));
         await loadBalance({ animateFrom: from, silent: true });
         onTxPageChange(1, PAGE_SIZE);
         setFlashFirstRow(true);

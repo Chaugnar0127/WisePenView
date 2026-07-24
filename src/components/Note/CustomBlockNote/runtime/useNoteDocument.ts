@@ -6,6 +6,7 @@ import { toast } from '@heroui/react';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { useMemoizedFn, useMount, useUnmount, useUpdateEffect } from 'ahooks';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { CustomBlockNoteProps } from '../index.type';
 import type { CustomBlockNoteEditor } from '../registry/noteEditorComposition';
@@ -62,6 +63,7 @@ export function useNoteDocument({
   onAskAi: CustomBlockNoteProps['onAskAi'];
   onAiDiffBodyContentHashChange: CustomBlockNoteProps['onAiDiffBodyContentHashChange'];
 }) {
+  const { t } = useTranslation('note');
   const bodyOnChangeCleanupRef = useRef<(() => void) | null>(null);
   const selectionRangeSnapshotRef = useRef<NoteSelectionRangeSnapshot | null>(null);
   const bodyContentHashTimerRef = useRef<number | null>(null);
@@ -169,7 +171,7 @@ export function useNoteDocument({
     const snapshot = selection ? buildSelectionSnapshot(selection) : null;
     const selectedText = snapshot?.text.trim() ?? '';
     if (!selectedText) {
-      toast.info('请先选中一段文字再问 AI');
+      toast.info(t('ai.selectTextFirst'));
       return;
     }
 

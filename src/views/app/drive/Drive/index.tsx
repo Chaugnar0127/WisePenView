@@ -12,6 +12,7 @@ import {
 import { Button } from '@heroui/react';
 import { Trash2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import FavoritesTab from '../_components/FavoritesTab';
@@ -20,17 +21,12 @@ import styles from './style.module.less';
 
 export type DriveViewMode = 'uploadQueue' | 'tableDrive' | 'favorites';
 
-const VIEW_TABS: { key: DriveViewMode; label: string }[] = [
-  { key: 'tableDrive', label: '云盘' },
-  { key: 'uploadQueue', label: '上传队列' },
-  { key: 'favorites', label: '我的收藏' },
-];
-
 interface DriveProps {
   viewMode?: DriveViewMode;
 }
 
 function Drive({ viewMode = 'tableDrive' }: DriveProps) {
+  const { t } = useTranslation('drive');
   const navigate = useNavigate();
   const { folderId, groupId } = useParams();
   const driveLocation = useMemo(
@@ -81,8 +77,8 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
     <div className={styles.pageContainer}>
       <div className={styles.pageHeaderWithActions}>
         <div>
-          <h1 className={styles.pageTitle}>文档与云盘</h1>
-          <span className={styles.pageSubtitle}>管理您的项目和文档</span>
+          <h1 className={styles.pageTitle}>{t('page.title')}</h1>
+          <span className={styles.pageSubtitle}>{t('page.subtitle')}</span>
         </div>
         {viewMode === 'tableDrive' ? (
           <div className={styles.actionsRow}>
@@ -92,17 +88,21 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
               onPress={() => void tableDriveRef.current?.openTrash()}
             >
               <Trash2 size={16} aria-hidden="true" />
-              {isTrashView ? '返回云盘' : '回收站'}
+              {isTrashView ? t('page.backToDrive') : t('node.trash')}
             </Button>
           </div>
         ) : null}
       </div>
 
       <SegmentedTabs<DriveViewMode>
-        ariaLabel="云盘视图"
+        ariaLabel={t('page.viewAria')}
         selectedKey={viewMode}
         onSelectionChange={handleViewModeChange}
-        items={VIEW_TABS}
+        items={[
+          { key: 'tableDrive', label: t('page.tabs.drive') },
+          { key: 'uploadQueue', label: t('page.tabs.uploadQueue') },
+          { key: 'favorites', label: t('page.tabs.favorites') },
+        ]}
         className={styles.detailTabs}
       />
 

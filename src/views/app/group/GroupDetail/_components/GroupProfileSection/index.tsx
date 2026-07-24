@@ -10,6 +10,7 @@ import { Button, Label, TextField, toast, Tooltip } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Pencil } from 'lucide-react';
 import { useRef, useState, type SyntheticEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import GroupSettingsSection from '../GroupSettingsSection';
 import styles from './style.module.less';
 
@@ -35,6 +36,7 @@ const buildProfileDraft = (group: Group): GroupProfileDraft => ({
 });
 
 function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfileSectionProps) {
+  const { t } = useTranslation(['group', 'common']);
   const groupService = useGroupService();
   const imageService = useImageService();
   const [draft, setDraft] = useState<GroupProfileDraft>(() => buildProfileDraft(group));
@@ -76,7 +78,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
         coverPreviewRequestRef.current += 1;
         setSavedDraft(nextSavedDraft);
         setDraft(nextSavedDraft);
-        toast.success('小组资料已保存');
+        toast.success(t('profile.saved'));
         onSuccess();
       },
       onError: (error: unknown) => {
@@ -125,7 +127,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
 
   const handleConfirmCover = () => {
     if (!modalCoverFile) {
-      toast.warning('请选择封面图片');
+      toast.warning(t('profile.selectCover'));
       return;
     }
 
@@ -145,7 +147,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
   const handleSave = () => {
     const groupName = draft.groupName.trim();
     if (!groupName) {
-      toast.warning('请输入小组名称');
+      toast.warning(t('create.nameRequired'));
       return;
     }
     runSave({ ...draft, groupName, groupDesc: draft.groupDesc.trim() });
@@ -162,12 +164,12 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
   return (
     <>
       <GroupSettingsSection
-        title="小组资料"
+        title={t('profile.title')}
         actions={
           canEdit ? (
             <>
               <Button variant="secondary" isDisabled={saving} onPress={handleRestore}>
-                还原
+                {t('profile.restore')}
               </Button>
               <Button
                 variant="primary"
@@ -175,7 +177,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
                 aria-busy={saving || undefined}
                 onPress={handleSave}
               >
-                保存
+                {t('actions.save', { ns: 'common' })}
               </Button>
             </>
           ) : undefined
@@ -186,53 +188,53 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
             {canEdit ? (
               <>
                 <TextField
-                  aria-label="小组名称"
+                  aria-label={t('fields.name')}
                   value={draft.groupName}
                   onChange={(value) => updateDraft('groupName', value)}
                   isRequired
                 >
-                  <Label>小组名称</Label>
-                  <Input placeholder="请输入小组名称" />
+                  <Label>{t('fields.name')}</Label>
+                  <Input placeholder={t('fields.namePlaceholder')} />
                 </TextField>
                 <TextField
-                  aria-label="小组描述"
+                  aria-label={t('fields.description')}
                   value={draft.groupDesc}
                   onChange={(value) => updateDraft('groupDesc', value)}
                 >
-                  <Label>小组描述</Label>
-                  <TextArea rows={5} placeholder="请输入小组描述" />
+                  <Label>{t('fields.description')}</Label>
+                  <TextArea rows={5} placeholder={t('fields.descriptionPlaceholder')} />
                 </TextField>
               </>
             ) : (
               <dl className={styles.readonlyFields}>
                 <div>
-                  <dt>小组名称</dt>
+                  <dt>{t('fields.name')}</dt>
                   <dd>{group.groupName || '-'}</dd>
                 </div>
                 <div>
-                  <dt>小组描述</dt>
-                  <dd>{group.groupDesc || '暂无描述'}</dd>
+                  <dt>{t('fields.description')}</dt>
+                  <dd>{group.groupDesc || t('profile.noDescription')}</dd>
                 </div>
               </dl>
             )}
           </div>
 
           <div className={styles.coverField}>
-            <span className={styles.coverLabel}>小组封面</span>
+            <span className={styles.coverLabel}>{t('profile.cover')}</span>
             {canEdit ? (
               <Tooltip>
                 <Tooltip.Trigger>
                   <button
                     className={styles.coverButton}
                     type="button"
-                    aria-label="更换小组封面"
+                    aria-label={t('profile.changeCover')}
                     disabled={saving}
                     onClick={handleCoverModalOpen}
                   >
                     <img
                       className={styles.coverImage}
                       src={coverUrl}
-                      alt={`${draft.groupName || group.groupName} 小组封面`}
+                      alt={t('profile.coverAlt', { name: draft.groupName || group.groupName })}
                       onError={handleCoverImageError}
                     />
                     <span className={styles.coverEditAffordance}>
@@ -240,14 +242,14 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
                     </span>
                   </button>
                 </Tooltip.Trigger>
-                <Tooltip.Content>更换封面</Tooltip.Content>
+                <Tooltip.Content>{t('profile.changeCoverShort')}</Tooltip.Content>
               </Tooltip>
             ) : (
               <div className={styles.coverReadonly}>
                 <img
                   className={styles.coverImage}
                   src={coverUrl}
-                  alt={`${group.groupName} 小组封面`}
+                  alt={t('profile.coverAlt', { name: group.groupName })}
                   onError={handleCoverImageError}
                 />
               </div>
@@ -259,7 +261,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
       <AppModal
         isOpen={coverModalOpen}
         onOpenChange={handleCoverModalOpenChange}
-        title="更换小组封面"
+        title={t('profile.changeCover')}
         isDismissable={!saving}
         actions={
           <>
@@ -268,14 +270,14 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
               isDisabled={saving}
               onPress={() => handleCoverModalOpenChange(false)}
             >
-              取消
+              {t('actions.cancel', { ns: 'common' })}
             </Button>
             <Button
               variant="primary"
               isDisabled={!modalCoverFile || saving}
               onPress={handleConfirmCover}
             >
-              确定
+              {t('actions.confirm', { ns: 'common' })}
             </Button>
           </>
         }
@@ -284,7 +286,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
           file={modalCoverFile}
           disabled={saving}
           accept="image/*"
-          label="点击或拖拽封面图片到此区域"
+          label={t('fields.coverUpload')}
           onFileChange={handleModalCoverFileChange}
         />
       </AppModal>

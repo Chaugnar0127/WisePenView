@@ -1,6 +1,7 @@
 import styles from '@/components/Drive/Modals/TagPermissionModal/style.module.less';
 import AppModal from '@/components/Overlay/AppModal';
 import { Button } from '@heroui/react';
+import { useTranslation } from 'react-i18next';
 import GroupPolicyShellCard from '../GroupPolicyShellCard';
 
 interface GroupMountPermissionModalProps {
@@ -9,28 +10,29 @@ interface GroupMountPermissionModalProps {
 }
 
 function GroupMountPermissionModal({ isOpen, onOpenChange }: GroupMountPermissionModalProps) {
+  const { t } = useTranslation(['group', 'common']);
   return (
     <AppModal
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title="挂载策略"
+      title={t('permission.mountTitle')}
       size="lg"
       containerClassName={styles.mountModalContainer}
       dialogClassName={styles.mountModalDialog}
       actions={
         <>
           <Button variant="secondary" onPress={() => onOpenChange(false)}>
-            取消
+            {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button variant="primary" isDisabled>
-            保存
+            {t('actions.save', { ns: 'common' })}
           </Button>
         </>
       }
     >
       <div className={styles.modalFormPadding}>
         <div className={styles.advancedMountGrid}>
-          <GroupPolicyShellCard title="挂载名单" />
+          <GroupPolicyShellCard title={t('permission.mountList')} />
         </div>
       </div>
     </AppModal>

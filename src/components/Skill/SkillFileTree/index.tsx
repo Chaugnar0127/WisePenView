@@ -4,6 +4,7 @@ import Tree from '@/components/Tree';
 import type { SkillFileNode } from '@/domains/Skill';
 import { FileCode2, FileText, Folder, X } from 'lucide-react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { SkillFileTreeProps, SkillPendingCreate } from './index.type';
 import styles from './style.module.less';
@@ -13,6 +14,7 @@ const PENDING_KEY = '__pending_create__';
 interface BuildTreeOptions {
   isOwner: boolean;
   onDeleteFile: (id: string) => void;
+  getDeleteLabel: (name: string) => string;
 }
 
 function buildTreeData(nodes: SkillFileNode[], opts: BuildTreeOptions): DataNode[] {
@@ -39,7 +41,7 @@ function buildTreeData(nodes: SkillFileNode[], opts: BuildTreeOptions): DataNode
           {opts.isOwner ? (
             <AppIconButton
               icon={<X size={12} aria-hidden="true" />}
-              label={`删除 ${node.name}`}
+              label={opts.getDeleteLabel(node.name)}
               size="sm"
               variant="danger"
               className={styles.deleteBtn}
@@ -154,9 +156,10 @@ function SkillFileTree({
   onDeleteFile,
   onMoveFile,
 }: SkillFileTreeProps) {
+  const { t } = useTranslation('skill');
   const opts = useMemo<BuildTreeOptions>(
-    () => ({ isOwner, onDeleteFile }),
-    [isOwner, onDeleteFile]
+    () => ({ isOwner, onDeleteFile, getDeleteLabel: (name) => t('fileTree.deleteItem', { name }) }),
+    [isOwner, onDeleteFile, t]
   );
 
   const treeData = useMemo(() => {

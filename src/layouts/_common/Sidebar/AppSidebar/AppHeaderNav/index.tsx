@@ -9,11 +9,13 @@ import {
 import { ListBox, ListBoxItem } from '@heroui/react';
 import clsx from 'clsx';
 import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { AppHeaderNavProps } from './index.type';
 import styles from './style.module.less';
 
 function AppHeaderNav({ collapsed }: AppHeaderNavProps) {
+  const { t } = useTranslation('shell');
   const navigate = useNavigate();
   const location = useLocation();
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
@@ -88,25 +90,26 @@ function AppHeaderNav({ collapsed }: AppHeaderNavProps) {
     >
       <div ref={indicatorRef} className={styles.indicator} />
       <ListBox
-        aria-label="应用导航"
+        aria-label={t('navigation.appAria')}
         selectionMode="single"
         selectedKeys={selectedKeys}
         className={clsx(styles.headerMenu, collapsed && styles.headerMenuCollapsed)}
       >
         {APP_HEADER_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
+          const label = t(item.labelKey);
           return (
             <ListBoxItem
               key={item.key}
               ref={setItemRef(item.key)}
-              textValue={item.label}
+              textValue={label}
               className={clsx(styles.menuItem, collapsed && styles.menuItemCollapsed)}
               onPress={() => handleNavItemPress(item.key)}
             >
               <span className={styles.menuIcon}>
                 <Icon size={18} />
               </span>
-              {!collapsed && <span className={styles.menuLabel}>{item.label}</span>}
+              {!collapsed && <span className={styles.menuLabel}>{label}</span>}
             </ListBoxItem>
           );
         })}

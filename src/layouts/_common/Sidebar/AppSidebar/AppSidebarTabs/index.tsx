@@ -13,6 +13,7 @@ import { useUpdateEffect } from 'ahooks';
 import clsx from 'clsx';
 import { FolderOpen, MessageSquare } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import SessionListGroup, { type SessionListGroupRef } from '../SessionListGroup';
 import type { AppSidebarTabsProps } from './index.type';
@@ -29,6 +30,7 @@ const resolveSidebarTab = (activeNavKey: AppHeaderNavKey | undefined): SidebarTa
   activeNavKey === APP_HEADER_NAV_KEY.CHAT ? SIDEBAR_TAB.SESSIONS : SIDEBAR_TAB.DRIVE;
 
 function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
+  const { t } = useTranslation('shell');
   const location = useLocation();
   const sessionListGroupRef = useRef<SessionListGroupRef>(null);
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
@@ -69,21 +71,29 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
       >
         <Tabs.ListContainer className={styles.tabListContainer}>
           <div className={styles.tabToolbar}>
-            <Tabs.List className={styles.tabList} aria-label="侧边栏内容">
-              <Tabs.Tab id={SIDEBAR_TAB.SESSIONS} className={styles.tab} aria-label="会话历史">
+            <Tabs.List className={styles.tabList} aria-label={t('sidebar.contentAria')}>
+              <Tabs.Tab
+                id={SIDEBAR_TAB.SESSIONS}
+                className={styles.tab}
+                aria-label={t('sidebar.sessions')}
+              >
                 <Tooltip>
                   <Tooltip.Trigger className={styles.tabTooltipTrigger}>
                     <MessageSquare size={18} aria-hidden="true" />
                   </Tooltip.Trigger>
-                  <Tooltip.Content placement="bottom">会话历史</Tooltip.Content>
+                  <Tooltip.Content placement="bottom">{t('sidebar.sessions')}</Tooltip.Content>
                 </Tooltip>
               </Tabs.Tab>
-              <Tabs.Tab id={SIDEBAR_TAB.DRIVE} className={styles.tab} aria-label="云盘">
+              <Tabs.Tab
+                id={SIDEBAR_TAB.DRIVE}
+                className={styles.tab}
+                aria-label={t('sidebar.drive')}
+              >
                 <Tooltip>
                   <Tooltip.Trigger className={styles.tabTooltipTrigger}>
                     <FolderOpen size={18} aria-hidden="true" />
                   </Tooltip.Trigger>
-                  <Tooltip.Content placement="bottom">云盘</Tooltip.Content>
+                  <Tooltip.Content placement="bottom">{t('sidebar.drive')}</Tooltip.Content>
                 </Tooltip>
               </Tabs.Tab>
             </Tabs.List>

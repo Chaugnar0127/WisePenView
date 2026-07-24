@@ -7,7 +7,9 @@ import type { FetchGroupListRequest, Group, IGroupService } from '@/domains/Grou
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
+import type { TFunction } from 'i18next';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   buildDriveTreeData,
   isDriveNodeSelectable,
@@ -56,6 +58,7 @@ function buildTreeKey(scopeKey: string, nodeId: string): string {
 
 function buildScopeOption(
   scope: DriveScope | undefined,
+  t: TFunction<'drive'>,
   label?: string
 ): DriveNavigatorScopeOption {
   const resolved = resolveDriveScope(scope);
@@ -66,7 +69,9 @@ function buildScopeOption(
 
   return {
     scopeKey: buildScopeKey(resolved.scope),
-    label: label ?? (resolved.scope.type === 'group' ? '小组云盘' : '个人云盘'),
+    label:
+      label ??
+      (resolved.scope.type === 'group' ? t('navigator.groupDrive') : t('navigator.personalDrive')),
     scope: finalScope,
     rootId: resolved.rootId,
     groupId: resolved.groupId,
@@ -76,6 +81,7 @@ function buildScopeOption(
 function buildSingleScopeOption(
   scope: DriveNodeScope,
   rootId: string,
+  t: TFunction<'drive'>,
   groupId?: string
 ): DriveNavigatorScopeOption {
   const finalScope: DriveScope =
@@ -83,7 +89,7 @@ function buildSingleScopeOption(
 
   return {
     scopeKey: buildScopeKey(scope),
-    label: scope.type === 'group' ? '小组云盘' : '个人云盘',
+    label: scope.type === 'group' ? t('navigator.groupDrive') : t('navigator.personalDrive'),
     scope: finalScope,
     rootId,
     groupId,
@@ -130,7 +136,8 @@ function mergeScopeGroups(groups: Group[]): Group[] {
 async function fetchAllScopeOptions(
   groupService: IGroupService,
   includePersonal: boolean,
-  excludedGroupIds: Set<string>
+  excludedGroupIds: Set<string>,
+  t: TFunction<'drive'>
 ): Promise<DriveNavigatorScopeOption[]> {
   const [joinedGroups, managedGroups] = await Promise.all([
     fetchGroupsByRole(groupService, 'JOINED'),
@@ -141,9 +148,13 @@ async function fetchAllScopeOptions(
   );
 
   return [
-    ...(includePersonal ? [buildScopeOption({ type: 'personal' }, '个人云盘')] : []),
+    ...(includePersonal ? [buildScopeOption({ type: 'personal' }, t)] : []),
     ...groups.map((group) =>
-      buildScopeOption({ type: 'group', groupId: group.groupId }, group.groupName || '未命名小组')
+      buildScopeOption(
+        { type: 'group', groupId: group.groupId },
+        t,
+        group.groupName || t('navigator.unnamedGroup')
+      )
     ),
   ];
 }
@@ -167,6 +178,7 @@ function DriveNavigator({
   onChange,
   onNodeChange,
 }: DriveNavigatorProps) {
+  const { t } = useTranslation('drive');
   const driveService = useDriveService();
   const groupService = useGroupService();
   const singleScope = useMemo(
@@ -345,14 +357,15 @@ function DriveNavigator({
         const scopeOptions = await fetchAllScopeOptions(
           groupService,
           scopeMode === 'all',
-          excludedGroupIdSet
+          excludedGroupIdSet,
+          t
         );
         const rootNodes = await Promise.all(scopeOptions.map(loadRootNode));
         return buildChildrenData(rootNodes);
       }
 
       const rootNode = await loadRootNode(
-        buildSingleScopeOption(singleScope.scope, finalRootId, finalGroupId)
+        buildSingleScopeOption(singleScope.scope, finalRootId, t, finalGroupId)
       );
       const baseRoot = buildChildrenData([rootNode])[0];
       if (!baseRoot) return [];
@@ -380,6 +393,7 @@ function DriveNavigator({
         isNodeDisabled,
         loadChildrenForNode,
         loadRootNode,
+        t,
       ],
       onSuccess: (data) => {
         setTreeData(data);
@@ -446,7 +460,7 @@ function DriveNavigator({
     return (
       <div className={styles.wrapper}>
         <div className={styles.stateBlock}>
-          <Empty description="暂无内容" />
+          <Empty description={t('navigator.empty')} />
         </div>
       </div>
     );

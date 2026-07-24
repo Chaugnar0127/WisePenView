@@ -4,6 +4,7 @@ import { useUnmount, useUpdateEffect } from 'ahooks';
 import { isTextUIPart } from 'ai';
 import clsx from 'clsx';
 import { useLayoutEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
 const PREVIEW_LENGTH = 28;
@@ -20,7 +21,12 @@ interface UserMessageAnchor {
   preview: string;
 }
 
-function getMessagePreview(message: WisePenUIMessage, maxLength: number): string {
+function getMessagePreview(
+  message: WisePenUIMessage,
+  maxLength: number,
+  emptyPreview: string,
+  attachmentPreview: string
+): string {
   const text = message.parts
     .filter(isTextUIPart)
     .map((part) => part.text)
@@ -29,18 +35,22 @@ function getMessagePreview(message: WisePenUIMessage, maxLength: number): string
     .trim();
 
   if (!text) {
-    return message.metadata?.selectedAttachments?.length ? '附件消息' : '空消息';
+    return message.metadata?.selectedAttachments?.length ? attachmentPreview : emptyPreview;
   }
 
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 }
 
-function useUserMessageAnchors(messages: WisePenUIMessage[]) {
+function useUserMessageAnchors(
+  messages: WisePenUIMessage[],
+  emptyPreview: string,
+  attachmentPreview: string
+) {
   return messages
     .filter((message) => message.role === 'user')
     .map((message) => ({
       id: message.id,
-      preview: getMessagePreview(message, PREVIEW_LENGTH),
+      preview: getMessagePreview(message, PREVIEW_LENGTH, emptyPreview, attachmentPreview),
     }));
 }
 
@@ -75,7 +85,12 @@ function MessageHistoryNavigator({
   messages,
   scrollAnchorOffsetRatio,
 }: MessageHistoryNavigatorProps) {
-  const anchors = useUserMessageAnchors(messages);
+  const { t } = useTranslation('chat');
+  const anchors = useUserMessageAnchors(
+    messages,
+    t('message.history.emptyPreview'),
+    t('message.history.attachmentPreview')
+  );
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLButtonElement>(null);
@@ -172,7 +187,7 @@ function MessageHistoryNavigator({
           ref={railRef}
           type="button"
           className={styles.historyNavigatorRailTrigger}
-          aria-label="历史提问"
+          aria-label={t('message.history.aria')}
           aria-expanded={open}
           aria-controls="chat-history-navigator-panel"
           tabIndex={open ? -1 : 0}
@@ -196,7 +211,7 @@ function MessageHistoryNavigator({
         id="chat-history-navigator-panel"
         className={styles.historyNavigatorRailPanel}
         role="listbox"
-        aria-label="历史提问"
+        aria-label={t('message.history.aria')}
         aria-hidden={!open}
         inert={!open}
         data-open={open ? 'true' : 'false'}

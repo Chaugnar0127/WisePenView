@@ -24,10 +24,6 @@ export interface TableDriveActionConfig {
   };
 }
 
-export interface TableDriveHandle {
-  openTrash: () => Promise<void>;
-}
-
 export interface TableDriveProps {
   /** 个人云盘不传；小组云盘传 groupId */
   groupId?: string;
@@ -40,8 +36,4 @@ export interface TableDriveProps {
   /** 面包屑区域由页面提供的附加控件，避免表格依赖具体布局实现。 */
   breadcrumbExtra?: ReactNode;
   actions?: TableDriveActionConfig;
-  /** 回收站视图变化时通知页面级 header 按钮状态 */
-  onTrashViewChange?: (isTrashView: boolean) => void;
-  /** 是否在表头工具栏展示回收站按钮；页面级 header 接管时为 false */
-  showToolbarTrash?: boolean;
 }

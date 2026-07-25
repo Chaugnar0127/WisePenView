@@ -1,11 +1,9 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/_shadcn';
 import AppIconButton from '@/components/Button/AppIconButton';
 import {
   DriveDelete,
   MoveNodeModal,
   RenameNodeModal,
   TrashDelete,
-  type ResourcePermissionModalTarget,
 } from '@/components/Drive/Modals';
 import EntryIcon from '@/components/Icons/EntryIcon';
 import {
@@ -18,13 +16,7 @@ import { useDriveService } from '@/domains';
 import type { DriveNode } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
 import { formatFileSize } from '@/utils/format/formatFileSize';
-import {
-  RESOURCE_KIND,
-  RESOURCE_VIEWER,
-  resolveResourceKind,
-  resolveResourceViewer,
-  type ResourceViewer,
-} from '@/utils/navigation/resourceTarget';
+import { resolveResourceKind, type ResourceViewer } from '@/utils/navigation/resourceTarget';
 import { findTreeNodeById } from '@/utils/tree/findTreeNodeById';
 import {
   DndContext,
@@ -38,27 +30,11 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { Button, ToggleButton, ToggleButtonGroup, toast, type SortDescriptor } from '@heroui/react';
-import { useMount, useRequest, useUpdateEffect } from 'ahooks';
+import { Button, toast, type SortDescriptor } from '@heroui/react';
+import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
-import {
-  FolderInput,
-  FolderOpen,
-  PanelRightClose,
-  PanelRightOpen,
-  Pencil,
-  ShieldCheck,
-  Trash2,
-} from 'lucide-react';
-import {
-  forwardRef,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   getDriveNodeLabel,
@@ -70,8 +46,9 @@ import {
   type DriveActionTarget,
 } from '../common/driveComponentModel';
 import { useClickNode } from '../common/useClickNode';
-import type { DriveRow, DriveTableRow, TableDriveHandle, TableDriveProps } from './index.type';
+import type { DriveRow, DriveTableRow, TableDriveProps } from './index.type';
 import CreateMenu from './parts/CreateMenu';
+import DriveDetailPanel from './parts/DriveDetailPanel';
 import styles from './style.module.less';
 import { useTableDrive } from './useTableDrive';
 import { useTableDriveActions } from './useTableDriveActions';
@@ -295,275 +272,15 @@ function DriveDragOverlay({ row, count }: { row: DriveTableRow; count: number })
   );
 }
 
-interface DriveDetailPanelProps {
-  selectedRow?: DriveTableRow;
-  isEditMode: boolean;
-  selectedCount: number;
-  groupId?: string;
-  isTrashView: boolean;
-  showManagePermission: boolean;
-  onActivate: (row: DriveTableRow, viewer?: ResourceViewer) => void;
-  onRename: (node: DriveActionTarget) => void;
-  onMove: (node: DriveActionTarget) => void;
-  onDelete: (node: DriveActionTarget) => void;
-  onOpenTagAccessPermission: (tagId: string) => void;
-  onOpenTagMountPermission: (tagId: string) => void;
-  onOpenResourcePermission: (target: ResourcePermissionModalTarget) => void;
-}
-
-function DriveDetailPanel({
-  selectedRow,
-  isEditMode,
-  selectedCount,
+function TableDrive({
   groupId,
-  isTrashView,
-  showManagePermission,
-  onActivate,
-  onRename,
-  onMove,
-  onDelete,
-  onOpenTagAccessPermission,
-  onOpenTagMountPermission,
-  onOpenResourcePermission,
-}: DriveDetailPanelProps) {
-  const { t } = useTranslation(['drive', 'resource', 'common']);
-  const [selectedViewer, setSelectedViewer] = useState<ResourceViewer>(() => {
-    if (selectedRow && (selectedRow.node.type === 'resource' || selectedRow.node.type === 'link')) {
-      return (
-        resolveResourceViewer({ resourceType: selectedRow.node.resourceType }) ??
-        RESOURCE_VIEWER.PDF_PREVIEW
-      );
-    }
-    return RESOURCE_VIEWER.PDF_PREVIEW;
-  });
-
-  if (isEditMode) {
-    return (
-      <div className={styles.detailContent}>
-        <div className={styles.detailHeader}>
-          <span className={styles.detailTitle}>{t('table.editMode')}</span>
-        </div>
-        <div className={styles.detailBody}>
-          <p className={styles.detailHint}>{t('table.editModeHint', { count: selectedCount })}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!selectedRow || selectedRow.node.type === 'loading') {
-    return (
-      <div className={styles.detailContent}>
-        <div className={styles.detailHeader}>
-          <span className={styles.detailTitle}>{t('table.details')}</span>
-        </div>
-        <div className={styles.detailEmpty}>{t('table.detailsEmpty')}</div>
-      </div>
-    );
-  }
-
-  const actionTarget = toDriveActionTarget(selectedRow.node);
-  const modifiableActionTarget =
-    actionTarget && !isDriveSystemFolderNode(actionTarget) ? actionTarget : undefined;
-  const activateLabel =
-    selectedRow.node.type === 'root' || selectedRow.node.type === 'folder'
-      ? t('table.enter')
-      : t('table.open');
-  const deleteLabel = groupId
-    ? t('delete.remove')
-    : isTrashView
-      ? t('delete.permanent')
-      : selectedRow.node.type === 'link'
-        ? t('delete.deleteLink')
-        : t('delete.moveToTrash');
-  const resourceKind =
-    selectedRow.node.type === 'resource' || selectedRow.node.type === 'link'
-      ? resolveResourceKind(selectedRow.node.resourceType)
-      : undefined;
-  const isFileResource = resourceKind === RESOURCE_KIND.FILE;
-  const permissionTarget =
-    showManagePermission &&
-    !isTrashView &&
-    (actionTarget?.type === 'folder' || actionTarget?.type === 'resource')
-      ? actionTarget
-      : undefined;
-
-  return (
-    <div className={styles.detailContent}>
-      <div className={styles.detailHeader}>
-        <span className={styles.detailIcon} aria-hidden="true">
-          <EntryIcon
-            entryType={selectedRow.entryType}
-            folderIconType={selectedRow.folderIconType}
-            resourceType={selectedRow.resourceType}
-            resourceIconType={selectedRow.resourceIconType}
-          />
-        </span>
-        <div className={styles.detailTitleBlock}>
-          <span className={styles.detailTitle}>{selectedRow.name}</span>
-          <span className={styles.detailType}>{selectedRow.typeLabel}</span>
-        </div>
-      </div>
-      <div className={styles.detailBody}>
-        <Accordion multiple defaultValue={['details']} className={styles.detailAccordion}>
-          <AccordionItem value="details" className={styles.detailSection}>
-            <AccordionTrigger className={styles.detailSectionTrigger}>
-              {t('table.details')}
-            </AccordionTrigger>
-            <AccordionContent className={styles.detailSectionContent}>
-              <dl className={styles.detailMeta}>
-                <div>
-                  <dt>{t('table.nodeId')}</dt>
-                  <dd>{selectedRow.node.id}</dd>
-                </div>
-                <div>
-                  <dt>{t('table.columns.size')}</dt>
-                  <dd>{selectedRow.sizeLabel ?? '—'}</dd>
-                </div>
-              </dl>
-            </AccordionContent>
-          </AccordionItem>
-
-          {permissionTarget ? (
-            <AccordionItem value="permission" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>
-                {t('table.permission')}
-              </AccordionTrigger>
-              <AccordionContent className={styles.detailSectionContent}>
-                {permissionTarget.type === 'folder' ? (
-                  <div className={styles.detailSectionActions}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onPress={() => onOpenTagAccessPermission(permissionTarget.tagId)}
-                    >
-                      <ShieldCheck size={16} aria-hidden="true" />
-                      {t('permission.accessPermission', { ns: 'resource' })}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onPress={() => onOpenTagMountPermission(permissionTarget.tagId)}
-                    >
-                      <FolderInput size={16} aria-hidden="true" />
-                      {t('permission.mountPermission', { ns: 'resource' })}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className={styles.detailSectionButton}
-                    onPress={() =>
-                      onOpenResourcePermission({
-                        resourceId: permissionTarget.resourceId,
-                        resourceType: resolveResourceKind(permissionTarget.resourceType),
-                        resourceName: selectedRow.name,
-                        fallbackTagId: permissionTarget.folderTagId,
-                      })
-                    }
-                  >
-                    <ShieldCheck size={16} aria-hidden="true" />
-                    {t('permission.resourcePermission', { ns: 'resource' })}
-                  </Button>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          ) : null}
-
-          {modifiableActionTarget ? (
-            <AccordionItem value="operations" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>
-                {t('table.operations')}
-              </AccordionTrigger>
-              <AccordionContent className={styles.detailSectionContent}>
-                <div className={styles.detailSectionActions}>
-                  {modifiableActionTarget.type !== 'link' ? (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onPress={() => onRename(modifiableActionTarget)}
-                    >
-                      <Pencil size={16} aria-hidden="true" />
-                      {t('actions.rename', { ns: 'common' })}
-                    </Button>
-                  ) : null}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onPress={() => onMove(modifiableActionTarget)}
-                  >
-                    <FolderInput size={16} aria-hidden="true" />
-                    {isTrashView ? t('move.titleToDrive') : t('table.move')}
-                  </Button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ) : null}
-
-          {isFileResource ? (
-            <AccordionItem value="open-with" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>
-                {t('table.openWith')}
-              </AccordionTrigger>
-              <AccordionContent className={styles.detailSectionContent}>
-                <ToggleButtonGroup
-                  aria-label={t('table.openWith')}
-                  selectionMode="single"
-                  selectedKeys={new Set([selectedViewer])}
-                  onSelectionChange={(keys) => {
-                    const [key] = [...keys];
-                    if (key != null) setSelectedViewer(String(key) as ResourceViewer);
-                  }}
-                  orientation="horizontal"
-                  size="sm"
-                  fullWidth
-                  disallowEmptySelection
-                  className={styles.openWithOptions}
-                >
-                  <ToggleButton id={RESOURCE_VIEWER.PDF_PREVIEW}>
-                    {t('table.pdfPreview')}
-                  </ToggleButton>
-                  <ToggleButton id={RESOURCE_VIEWER.OFFICE}>Office</ToggleButton>
-                </ToggleButtonGroup>
-              </AccordionContent>
-            </AccordionItem>
-          ) : null}
-        </Accordion>
-      </div>
-      <div className={styles.detailActions}>
-        <Button
-          variant="primary"
-          size="sm"
-          onPress={() => onActivate(selectedRow, isFileResource ? selectedViewer : undefined)}
-        >
-          <FolderOpen size={16} aria-hidden="true" />
-          {activateLabel}
-        </Button>
-        {modifiableActionTarget ? (
-          <Button variant="danger" size="sm" onPress={() => onDelete(modifiableActionTarget)}>
-            <Trash2 size={16} aria-hidden="true" />
-            {deleteLabel}
-          </Button>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableDrive(
-  {
-    groupId,
-    rootId,
-    initialNodeId,
-    onCurrentNodeChange,
-    scope,
-    breadcrumbExtra,
-    actions,
-    onTrashViewChange,
-    showToolbarTrash = true,
-  },
-  ref
-) {
+  rootId,
+  initialNodeId,
+  onCurrentNodeChange,
+  scope,
+  breadcrumbExtra,
+  actions,
+}: TableDriveProps) {
   const { t } = useTranslation(['drive', 'resource', 'common']);
   const driveService = useDriveService();
   const resolvedScope = useMemo(
@@ -628,10 +345,6 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
     setCheckedRowKeys(new Set());
   }, []);
 
-  const refreshDrive = useCallback(() => {
-    refresh();
-  }, [refresh]);
-
   const handleEnterFolder = useCallback(
     (nodeId: string) => {
       setCheckedRowKeys(new Set());
@@ -691,7 +404,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
       onSuccess: () => {
         toast.success(t('table.batchDeleted', { count: checkedRowKeys.size }));
         setCheckedRowKeys(new Set());
-        refreshDrive();
+        refresh();
       },
       onError: (err) => {
         toast.danger(parseErrorMessage(err));
@@ -724,8 +437,8 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
 
   const handleNodeActionSuccess = useCallback(() => {
     handleClearSelection();
-    refreshDrive();
-  }, [handleClearSelection, refreshDrive]);
+    refresh();
+  }, [handleClearSelection, refresh]);
 
   const handleOpenRename = useCallback((node: DriveActionTarget) => {
     setRenameTarget(node);
@@ -769,7 +482,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
           return;
         }
         handleClearSelection();
-        refreshDrive();
+        refresh();
         if (movedCount > 1) {
           toast.success(t('move.feedback.moved', { count: movedCount }));
         } else if (movedCount === 1) {
@@ -865,16 +578,6 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
     t,
   ]);
 
-  useImperativeHandle(ref, () => ({ openTrash }), [openTrash]);
-
-  useMount(() => {
-    onTrashViewChange?.(isTrashView);
-  });
-
-  useUpdateEffect(() => {
-    onTrashViewChange?.(isTrashView);
-  }, [isTrashView, onTrashViewChange]);
-
   const targetTagId = useMemo(
     () => resolveCurrentFolderTagId(currentNodeId, pathNodes),
     [currentNodeId, pathNodes]
@@ -896,7 +599,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
     currentRows: rows,
     scope: resolvedScope.scope,
     actions,
-    refresh: refreshDrive,
+    refresh,
     targetTagId,
     isTrashView,
   });
@@ -911,7 +614,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
             {t('table.addFromPersonal')}
           </Button>
         ) : null}
-        {!isEditMode && showToolbarTrash && canOpenTrash ? (
+        {!isEditMode && canOpenTrash ? (
           <Button variant={isTrashView ? 'primary' : 'secondary'} size="sm" onPress={openTrash}>
             <Trash2 size={16} aria-hidden="true" />
             {isTrashView ? t('page.backToDrive') : t('node.trash')}
@@ -943,7 +646,6 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
       canOpenTrash,
       showCreateMenu,
       showUploadToGroup,
-      showToolbarTrash,
       t,
     ]
   );
@@ -1270,7 +972,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
           onOpenChange={(open) => {
             if (!open) setRenameTarget(null);
           }}
-          onSuccess={refreshDrive}
+          onSuccess={refresh}
         />
         <MoveNodeModal
           isOpen={moveNodes.length > 0}
@@ -1307,6 +1009,6 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
       </DragOverlay>
     </DndContext>
   );
-});
+}
 
 export default TableDrive;

@@ -98,7 +98,6 @@ function GroupDetail() {
               scope={{ type: 'group', groupId: gid }}
               breadcrumbExtra={<SidebarDriveScopeSwitcher />}
               initialNodeId={initialNodeId}
-              showToolbarTrash={false}
               actions={{
                 toolbar: {
                   canCreateFolder: groupDisplayConfig.canCreateTag,

@@ -1,6 +1,7 @@
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
+import { findTreeNodeById } from '@/utils/tree/findTreeNodeById';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { startTransition, useCallback, useMemo, useRef, useState } from 'react';
@@ -22,14 +23,14 @@ interface UseTableDriveReturn {
   expandedRowKeys: string[];
   /** 进入容器目录（root / folder 调用） */
   enterFolder: (nodeId: string) => void;
-  /** Table 的 onExpand 回调 */
-  handleExpand: (expanded: boolean, record: DriveRow) => Promise<void>;
+  /** Table 展开行变更回调 */
+  handleExpandedChange: (keys: string[]) => Promise<void>;
   /** 重新拉取当前层级 children（移动 / 重命名 / 删除 等操作后调用） */
   refresh: () => void;
 }
 
 interface DrivePathResult {
-  navigationKey: string;
+  locationKey: string;
   nodes: DriveNode[];
 }
 
@@ -127,7 +128,7 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
   // 派生 breadcrumb 路径
   const { data: pathResult } = useRequest(
     async (): Promise<DrivePathResult> => ({
-      navigationKey: `${navigationKey}\u0000${currentNodeId}`,
+      locationKey,
       nodes: await driveService.getNodePath({ nodeId: currentNodeId, groupId }),
     }),
     {
@@ -140,8 +141,7 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
       },
     }
   );
-  const pathNodes =
-    pathResult?.navigationKey === `${navigationKey}\u0000${currentNodeId}` ? pathResult.nodes : [];
+  const pathNodes = pathResult?.locationKey === locationKey ? pathResult.nodes : [];
 
   const enterFolder = useCallback(
     (nodeId: string) => {
@@ -152,7 +152,7 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
     [navigationKey]
   );
 
-  const handleExpand = useCallback(
+  const updateExpandedRow = useCallback(
     async (expanded: boolean, record: DriveRow) => {
       if (!expanded || (record.type !== 'root' && record.type !== 'folder')) {
         updateExpandedRowKeys((keys) => keys.filter((k) => k !== record.id));
@@ -171,6 +171,28 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
     return rows.map((row) => attachChildren(row, childrenMap));
   }, [rows, childrenMap]);
 
+  const handleExpandedChange = useCallback(
+    async (keys: string[]) => {
+      const addedKey = keys.find((key) => !expandedRowKeys.includes(key));
+      if (addedKey) {
+        const row = findTreeNodeById(dataSource, addedKey);
+        if (row) {
+          await updateExpandedRow(true, row);
+          return;
+        }
+      }
+
+      const removedKey = expandedRowKeys.find((key) => !keys.includes(key));
+      if (!removedKey) return;
+
+      const row = findTreeNodeById(dataSource, removedKey);
+      if (row) {
+        await updateExpandedRow(false, row);
+      }
+    },
+    [dataSource, expandedRowKeys, updateExpandedRow]
+  );
+
   return {
     currentNodeId,
     dataSource,
@@ -178,7 +200,7 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
     loading,
     expandedRowKeys,
     enterFolder,
-    handleExpand,
+    handleExpandedChange,
     refresh,
   };
 }

@@ -29,7 +29,7 @@ interface DriveDetailPanelProps {
   showManagePermission: boolean;
   onActivate: (row: DriveTableRow, viewer?: ResourceViewer) => void;
   onRename: (node: DriveActionTarget) => void;
-  onMove: (node: DriveActionTarget) => void;
+  onMoveNodes: (nodes: DriveActionTarget[]) => void;
   onDelete: (node: DriveActionTarget) => void;
   onOpenTagAccessPermission: (tagId: string) => void;
   onOpenTagMountPermission: (tagId: string) => void;
@@ -45,7 +45,7 @@ function DriveDetailPanel({
   showManagePermission,
   onActivate,
   onRename,
-  onMove,
+  onMoveNodes,
   onDelete,
   onOpenTagAccessPermission,
   onOpenTagMountPermission,
@@ -215,7 +215,7 @@ function DriveDetailPanel({
                   <Button
                     variant="secondary"
                     size="sm"
-                    onPress={() => onMove(modifiableActionTarget)}
+                    onPress={() => onMoveNodes([modifiableActionTarget])}
                   >
                     <FolderInput size={16} aria-hidden="true" />
                     {isTrashView ? t('move.titleToDrive') : t('table.move')}

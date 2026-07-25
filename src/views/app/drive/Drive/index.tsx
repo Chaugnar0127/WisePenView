@@ -3,6 +3,7 @@ import type { TableDriveHandle } from '@/components/Drive/TableDrive/index.type'
 import SegmentedTabs from '@/components/SegmentedTabs';
 import { useEffectForce } from '@/hooks/useEffectForce';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
+import SidebarDriveScopeSwitcher from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive/SidebarDriveScopeSwitcher';
 import {
   buildDrivePath,
   DRIVE_FAVORITES_PATH,
@@ -112,6 +113,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
             key={tableDriveLocationKey}
             ref={tableDriveRef}
             scope={driveLocation.scope}
+            breadcrumbExtra={<SidebarDriveScopeSwitcher />}
             initialNodeId={driveLocation.initialNodeId}
             onCurrentNodeChange={handleCurrentNodeChange}
             showToolbarTrash={false}

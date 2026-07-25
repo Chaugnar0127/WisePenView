@@ -22,36 +22,6 @@
   max-width: min(560px, calc(100vw - 24px));
 }
 
-.wrapper {
-  display: flex;
-  gap: var(--space-lg);
-  min-height: 430px;
-}
-
-.leftPane {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  width: 260px;
-  padding: var(--space-md);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-}
-
-.leftTitle {
-  color: var(--muted);
-  font-size: var(--font-size-sm);
-}
-
-.rightPane {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--space-md);
-  min-width: 0;
-}
-
 .advancedAccessGrid {
   display: grid;
   flex: 1;
@@ -97,13 +67,6 @@
   white-space: nowrap;
 }
 
-.personnelCount {
-  flex-shrink: 0;
-  color: var(--muted);
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-}
-
 .scopeTabs,
 .scopeTabsListContainer,
 .scopeTabsList {
@@ -137,87 +100,7 @@
   line-height: var(--line-height-sm);
 }
 
-.memberSearchInput {
-  width: 100%;
-}
-
-.memberList {
-  min-height: 0;
-  max-height: 300px;
-  overflow: auto;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-}
-
-.permissionCard {
-  display: flex;
-  min-width: 0;
-  min-height: 420px;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.memberItem {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.memberAvatar {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-}
-
-.memberMeta {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.memberName {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--foreground);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-sm);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.memberDescription {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--muted);
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.emptyState {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  min-height: 280px;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-}
-
 @media (max-width: 860px) {
-  .wrapper {
-    flex-direction: column;
-  }
-
-  .leftPane {
-    width: 100%;
-    min-height: 220px;
-  }
-
   .advancedAccessGrid {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -16,7 +16,6 @@ import {
 } from '@/components/Table';
 import { useDriveService } from '@/domains';
 import type { DriveNode } from '@/domains/Drive';
-import SidebarDriveScopeSwitcher from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive/SidebarDriveScopeSwitcher';
 import { parseErrorMessage } from '@/utils/error';
 import { formatFileSize } from '@/utils/format/formatFileSize';
 import {
@@ -558,6 +557,7 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
     initialNodeId,
     onCurrentNodeChange,
     scope,
+    breadcrumbExtra,
     actions,
     onTrashViewChange,
     showToolbarTrash = true,
@@ -1180,10 +1180,10 @@ const TableDrive = forwardRef<TableDriveHandle, TableDriveProps>(function TableD
           onJump={handleEnterFolder}
           renderItem={renderBreadcrumbItem}
         />
-        <SidebarDriveScopeSwitcher />
+        {breadcrumbExtra}
       </>
     ),
-    [breadcrumbItems, handleEnterFolder, renderBreadcrumbItem]
+    [breadcrumbExtra, breadcrumbItems, handleEnterFolder, renderBreadcrumbItem]
   );
 
   const renderNameContent = useCallback(

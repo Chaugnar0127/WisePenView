@@ -1,26 +1,20 @@
 import AppAvatar from '@/components/Avatar';
-import DriveNavigator from '@/components/Drive/DriveNavigator';
-import ResourcePermissionActionIcon from '@/components/Drive/common/resourcePermissionActionIcon';
 import {
   TAG_PERMISSION_ACTION_PRESET_OPTIONS,
-  TAG_PERMISSION_ACTION_ROWS,
-  TAG_PERMISSION_RESOURCE_STRATEGIES,
+  type TagPermissionResourceStrategy,
 } from '@/components/Drive/common/tagPermissionPreset';
+import DriveNavigator from '@/components/Drive/DriveNavigator';
+import TagPermissionActionEditor from '@/components/Drive/PermissionActionEditor';
 import { Empty, Spin } from '@/components/Feedback';
-import { Checkbox, Input } from '@/components/Input';
+import { Input } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useTagService } from '@/domains';
 import { mapTagToFolderNode } from '@/domains/Drive/mapper/DriveServices.map';
 import type { GroupMember } from '@/domains/Group';
 import {
   ACCESS_CONTROL_SCOPE,
-  buildTagPermissionListActionSelectionPatch,
-  getTagPermissionPresetValues,
-  isTagPermissionListActionSelected,
   normalizeResourceActions,
   type AccessControlScope,
-  type TagPermissionListAction,
-  type TagPermissionPresetKey,
   type TagResourceAction,
   type TagTreeNode,
 } from '@/domains/Tag';
@@ -29,7 +23,6 @@ import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/u
 import { Button, ListBox, Tabs, TextField, toast, type Selection } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
-import { Check, X } from 'lucide-react';
 import { useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -89,25 +82,6 @@ const isSpecifiedUserScope = (scope: AccessControlScope): boolean =>
 
 const normalizeSpecifiedUsersByScope = (scope: AccessControlScope, userIds: string[]): string[] =>
   isSpecifiedUserScope(scope) ? userIds : [];
-
-const isSameActionSet = (
-  left: TagResourceAction[] | undefined,
-  right: TagResourceAction[] | undefined
-): boolean => {
-  const leftSet = new Set(normalizeResourceActions(left));
-  const rightSet = new Set(normalizeResourceActions(right));
-  if (leftSet.size !== rightSet.size) return false;
-  return [...leftSet].every((action) => rightSet.has(action));
-};
-
-const resolveActionPresetKey = (
-  values: TagPermissionFormValues
-): Exclude<TagPermissionPresetKey, 'custom'> | 'custom' => {
-  const matchedPreset = TAG_PERMISSION_ACTION_PRESET_OPTIONS.find((preset) =>
-    isSameActionSet(preset.values.grantedActions, values.grantedActions)
-  );
-  return matchedPreset?.key ?? 'custom';
-};
 
 const getDisplayInitial = (name: string): string => name.trim().charAt(0).toUpperCase() || '?';
 
@@ -246,7 +220,6 @@ const TagPolicyModalBase = ({
   const [accessMemberSearchValue, setAccessMemberSearchValue] = useState('');
   const [mountMemberSearchValue, setMountMemberSearchValue] = useState('');
   const showTagTree = !initialTagId;
-  const selectedPresetKey = resolveActionPresetKey(permissionForm);
   const selectedUserIds = Array.from(
     new Set([
       ...permissionForm.taggedResourceAclGrantSpecifiedUsers,
@@ -281,15 +254,6 @@ const TagPolicyModalBase = ({
 
   const resetPermissionForm = () => {
     setPermissionForm(DEFAULT_FORM_VALUES);
-  };
-
-  const applyPresetToForm = (presetKey: TagPermissionPresetKey) => {
-    const presetValues = getTagPermissionPresetValues(presetKey);
-    if (!presetValues) return;
-    setPermissionForm((prev) => ({
-      ...prev,
-      grantedActions: presetValues.grantedActions,
-    }));
   };
 
   const applyTagToForm = (tag: TagTreeNode) => {
@@ -420,13 +384,6 @@ const TagPolicyModalBase = ({
     }
   };
 
-  const handleActionToggle = (action: TagPermissionListAction, checked: boolean) => {
-    setPermissionForm((prev) => ({
-      ...prev,
-      ...buildTagPermissionListActionSelectionPatch(prev, action, checked),
-    }));
-  };
-
   const handlePersonnelScopeChange = (target: PersonnelPolicyTarget, nextKey: Key) => {
     const nextScope = Number(nextKey) as AccessControlScope;
     setPermissionForm((prev) => {
@@ -488,89 +445,6 @@ const TagPolicyModalBase = ({
     if (!isOpen) return;
     handleModalShow();
   }, [isOpen]);
-
-  const renderPermissionTable = () => {
-    return (
-      <div className={styles.permissionTableShell}>
-        <table className={styles.permissionTable}>
-          <thead>
-            <tr>
-              <th className={styles.actionHeader}>{t('permission.tag.actionHeader')}</th>
-              <th className={styles.toggleHeader}>{t('permission.tag.toggleHeader')}</th>
-              {TAG_PERMISSION_RESOURCE_STRATEGIES.map((strategy) => (
-                <th key={strategy.key} className={styles.resourceApplicabilityHeader}>
-                  {t('permission.tag.applicable', { strategy: strategy.label })}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {TAG_PERMISSION_ACTION_ROWS.map((row) => {
-              const selected = isTagPermissionListActionSelected(permissionForm, row.action);
-              return (
-                <tr key={row.key}>
-                  <th className={styles.actionCell}>
-                    <span className={styles.actionName}>
-                      <ResourcePermissionActionIcon
-                        action={row.action.action}
-                        className={styles.actionIcon}
-                      />
-                      <span className={styles.actionText}>{row.label}</span>
-                    </span>
-                  </th>
-                  <td
-                    className={styles.permissionToggleCell}
-                    onClick={() => handleActionToggle(row.action, !selected)}
-                  >
-                    <Checkbox
-                      className={styles.permissionCheckbox}
-                      aria-label={row.label}
-                      isSelected={selected}
-                      onChange={(isSelected) => handleActionToggle(row.action, isSelected)}
-                      onClick={(event) => event.stopPropagation()}
-                    />
-                  </td>
-                  {TAG_PERMISSION_RESOURCE_STRATEGIES.map((strategy) => {
-                    const supported = row.supportedStrategyKeys.includes(strategy.key);
-                    const cellClassName = !supported
-                      ? styles.unsupportedCell
-                      : selected
-                        ? styles.supportedCell
-                        : styles.deniedCell;
-                    return (
-                      <td key={strategy.key} className={cellClassName}>
-                        {!supported ? (
-                          <span aria-hidden="true">-</span>
-                        ) : selected ? (
-                          <Check
-                            size={14}
-                            aria-label={t('permission.tag.enabledAria', {
-                              strategy: strategy.label,
-                              action: row.label,
-                            })}
-                            className={styles.permissionStateIcon}
-                          />
-                        ) : (
-                          <X
-                            size={14}
-                            aria-label={t('permission.tag.disabledAria', {
-                              strategy: strategy.label,
-                              action: row.label,
-                            })}
-                            className={styles.permissionStateIcon}
-                          />
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
 
   const renderMemberList = (policy: PersonnelPolicyConfig) => {
     if (groupMemberLoading) {
@@ -699,36 +573,29 @@ const TagPolicyModalBase = ({
   };
 
   const renderPermissionPanel = () => (
-    <section className={styles.permissionCard} aria-label={t('permission.editor.actionsAria')}>
-      <div className={styles.presetBar}>
-        <span className={styles.presetLabel}>{t('permission.tag.basedOnPreset')}</span>
-        <div
-          className={styles.presetButtons}
-          role="group"
-          aria-label={t('permission.tag.basedOnPreset')}
-        >
-          {TAG_PERMISSION_ACTION_PRESET_OPTIONS.map((preset) => (
-            <Button
-              key={preset.key}
-              variant={selectedPresetKey === preset.key ? 'primary' : 'secondary'}
-              size="sm"
-              onPress={() => applyPresetToForm(preset.key)}
-            >
-              {preset.label}
-            </Button>
-          ))}
-        </div>
-        <span className={styles.currentPreset}>
-          {t('permission.tag.currentPreset', {
-            preset:
-              TAG_PERMISSION_ACTION_PRESET_OPTIONS.find(
-                (preset) => preset.key === selectedPresetKey
-              )?.label ?? t('permission.tag.preset.custom.label'),
-          })}
-        </span>
-      </div>
-      {renderPermissionTable()}
-    </section>
+    <TagPermissionActionEditor
+      ariaLabel={t('permission.editor.actionsAria')}
+      actions={permissionForm.grantedActions}
+      labels={{
+        actionHeader: t('permission.tag.actionHeader'),
+        applicable: (strategy: TagPermissionResourceStrategy) =>
+          t('permission.tag.applicable', { strategy: strategy.label }),
+        basedOnPreset: t('permission.tag.basedOnPreset'),
+        currentPreset: (preset) => t('permission.tag.currentPreset', { preset }),
+        customPreset: t('permission.tag.preset.custom.label'),
+        disabled: (strategy, action) =>
+          t('permission.tag.disabledAria', { strategy: strategy.label, action }),
+        enabled: (strategy, action) =>
+          t('permission.tag.enabledAria', { strategy: strategy.label, action }),
+        getActionLabel: (action) => action.label,
+        getPresetLabel: (preset) =>
+          TAG_PERMISSION_ACTION_PRESET_OPTIONS.find((item) => item.key === preset)?.label ?? preset,
+        toggleHeader: t('permission.tag.toggleHeader'),
+      }}
+      onActionsChange={(actions) => {
+        setPermissionForm((prev) => ({ ...prev, grantedActions: actions }));
+      }}
+    />
   );
 
   const renderAccessPolicyPanel = () => {

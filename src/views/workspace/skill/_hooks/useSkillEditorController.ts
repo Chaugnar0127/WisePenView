@@ -15,7 +15,7 @@ export type SkillEditorPendingIntent =
   | { type: 'switchVersion'; version: number }
   | null;
 
-interface SkillEditorState {
+export interface SkillEditorState {
   files: SkillFileNode[];
   selectedFileId: string;
   selectedTreeNodeId: string;
@@ -29,6 +29,25 @@ interface SkillEditorState {
   savedConfigDescription: string;
   saveQueueItems: SkillSaveQueueItem[];
   pendingIntent: SkillEditorPendingIntent;
+}
+
+export interface SkillEditorActions {
+  setFiles: (value: SetStateAction<SkillFileNode[]>) => void;
+  setSelectedFileId: (value: SetStateAction<string>) => void;
+  setSelectedTreeNodeId: (value: SetStateAction<string>) => void;
+  setViewingVersion: (value: SetStateAction<number | null>) => void;
+  setEditing: (value: SetStateAction<boolean>) => void;
+  setEditorContent: (value: SetStateAction<string>) => void;
+  setSavedContent: (value: SetStateAction<string>) => void;
+  setConfigName: (value: SetStateAction<string>) => void;
+  setConfigDescription: (value: SetStateAction<string>) => void;
+  setSavedConfigName: (value: SetStateAction<string>) => void;
+  setSavedConfigDescription: (value: SetStateAction<string>) => void;
+  setSaveQueueItems: (value: SetStateAction<SkillSaveQueueItem[]>) => void;
+  setPendingIntent: (intent: SkillEditorPendingIntent) => void;
+  initialize: (skill: SkillDetail) => void;
+  restoreDraft: (snapshot: SkillDraftCacheSnapshot, skill: SkillDetail) => void;
+  discardLocalChanges: (skill: SkillDetail) => void;
 }
 
 type SkillEditorAction =
@@ -146,7 +165,7 @@ export function resolveSkillEditorSavePhase({
 
 export function useSkillEditorController() {
   const [state, dispatch] = useReducer(skillEditorReducer, INITIAL_STATE);
-  const actions = useMemo(() => {
+  const actions = useMemo<SkillEditorActions>(() => {
     const setField = <K extends Exclude<keyof SkillEditorState, 'pendingIntent'>>(
       field: K,
       value: SetStateAction<SkillEditorState[K]>

@@ -1,4 +1,4 @@
-import { DriveCreate } from '@/components/Drive/Modals';
+import { DriveCreateModal } from '@/components/Drive/Modals';
 import { ResultState, Spin } from '@/components/Feedback';
 import { UnsavedChangesDialog } from '@/components/Overlay';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
@@ -379,7 +379,7 @@ export default function AgentView({ resourceId }: Props) {
             </Button>
           }
         />
-        <DriveCreate
+        <DriveCreateModal
           type="agent"
           isOpen={createOpen}
           onOpenChange={(open) => {

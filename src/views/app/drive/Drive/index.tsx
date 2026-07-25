@@ -1,17 +1,15 @@
 import TableDrive from '@/components/Drive/TableDrive';
-import type { TableDriveHandle } from '@/components/Drive/TableDrive/index.type';
 import SegmentedTabs from '@/components/SegmentedTabs';
 import { useEffectForce } from '@/hooks/useEffectForce';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
+import SidebarDriveScopeSwitcher from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive/SidebarDriveScopeSwitcher';
 import {
   buildDrivePath,
   DRIVE_FAVORITES_PATH,
   DRIVE_UPLOAD_QUEUE_PATH,
   parseDriveRouteLocation,
 } from '@/utils/navigation/driveRoute';
-import { Button } from '@heroui/react';
-import { Trash2 } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -34,8 +32,6 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
     [folderId, groupId]
   );
   const workspaceScope = useWorkspaceNavigationStore((state) => state.location.scope);
-  const tableDriveRef = useRef<TableDriveHandle>(null);
-  const [isTrashView, setIsTrashView] = useState(false);
 
   /**
    * URL 在浏览器前进、后退和外部链接进入时变化，侧栏仍依赖 workspace store，
@@ -75,24 +71,10 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
 
   return (
     <div className={styles.pageContainer}>
-      <div className={styles.pageHeaderWithActions}>
-        <div>
-          <h1 className={styles.pageTitle}>{t('page.title')}</h1>
-          <span className={styles.pageSubtitle}>{t('page.subtitle')}</span>
-        </div>
-        {viewMode === 'tableDrive' ? (
-          <div className={styles.actionsRow}>
-            <Button
-              variant="primary"
-              className={styles.pageTrashButton}
-              onPress={() => void tableDriveRef.current?.openTrash()}
-            >
-              <Trash2 size={16} aria-hidden="true" />
-              {isTrashView ? t('page.backToDrive') : t('node.trash')}
-            </Button>
-          </div>
-        ) : null}
-      </div>
+      <header className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>{t('page.title')}</h1>
+        <span className={styles.pageSubtitle}>{t('page.subtitle')}</span>
+      </header>
 
       <SegmentedTabs<DriveViewMode>
         ariaLabel={t('page.viewAria')}
@@ -110,12 +92,10 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
         {viewMode === 'tableDrive' && (
           <TableDrive
             key={tableDriveLocationKey}
-            ref={tableDriveRef}
             scope={driveLocation.scope}
+            breadcrumbExtra={<SidebarDriveScopeSwitcher />}
             initialNodeId={driveLocation.initialNodeId}
             onCurrentNodeChange={handleCurrentNodeChange}
-            showToolbarTrash={false}
-            onTrashViewChange={setIsTrashView}
           />
         )}
         {viewMode === 'uploadQueue' && <UploadQueueTab />}

@@ -1,13 +1,11 @@
 import { useChatSessionHistoryRefreshStore } from '@/components/ChatPanel/_store/useChatSessionHistoryRefreshStore';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
-import GlobalSearch from '@/components/Drive/GlobalSearch';
 import {
   APP_HEADER_NAV_KEY,
   resolveAppHeaderNavKey,
   type AppHeaderNavKey,
 } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive';
-import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
 import { Tabs, Tooltip } from '@heroui/react';
 import { useUpdateEffect } from 'ahooks';
 import clsx from 'clsx';
@@ -15,6 +13,7 @@ import { FolderOpen, MessageSquare } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import GlobalSearch from '../_components/GlobalSearch';
 import SessionListGroup, { type SessionListGroupRef } from '../SessionListGroup';
 import type { AppSidebarTabsProps } from './index.type';
 import styles from './style.module.less';
@@ -35,7 +34,6 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
   const sessionListGroupRef = useRef<SessionListGroupRef>(null);
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
-  const driveScope = useWorkspaceNavigationStore((state) => state.location.scope);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
   const [selectedTab, setSelectedTab] = useState<SidebarTabKey>(() =>
     resolveSidebarTab(activeNavKey)
@@ -97,7 +95,7 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
                 </Tooltip>
               </Tabs.Tab>
             </Tabs.List>
-            <GlobalSearch scope={driveScope} />
+            <GlobalSearch />
           </div>
         </Tabs.ListContainer>
 

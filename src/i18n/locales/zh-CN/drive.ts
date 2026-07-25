@@ -38,17 +38,6 @@ const zhCNDrive = {
     loadingGroups: '正在加载小组...',
     noGroups: '暂无可切换小组',
   },
-  search: {
-    action: '全局搜索',
-    tooltip: '全局搜索（{{shortcut}}）',
-    inputAria: '搜索文档、笔记和标签',
-    placeholder: '搜索文档、笔记和标签...',
-    clear: '清空搜索',
-    close: '关闭搜索',
-    allResultsShown: '已展示全部结果',
-    noResults: '没有找到匹配结果',
-    emptyHint: '搜索文档、笔记和标签',
-  },
   uploadQueue: {
     aria: '上传队列',
     empty: '暂无上传队列',

@@ -97,7 +97,7 @@ LaTeX 编辑浮层因依赖编辑器选区和手工测量位置，不迁移 Hero
 
 | 文件                                                                        | 业务                                         |
 | --------------------------------------------------------------------------- | -------------------------------------------- |
-| `src/components/Drive/Modals/DriveCreate/index.tsx`                         | 创建 Agent、Skill，多字段输入和描述编辑。    |
+| `src/components/Drive/Modals/DriveCreateModal/index.tsx`                    | 创建 Agent、Skill，多字段输入和描述编辑。    |
 | `src/views/workspace/note/_components/NotePermissionModal/index.tsx`        | 笔记权限配置，权限模式、用户选择、保存。     |
 | `src/views/app/profile/_components/Account/AccountHeader/index.tsx`         | 更换头像，上传图片并保存。                   |
 | `src/views/app/profile/_components/Account/AccountVerification/index.tsx`   | 账号验证发起，邮箱/UIS tabs 表单。           |
@@ -109,14 +109,14 @@ LaTeX 编辑浮层因依赖编辑器选区和手工测量位置，不迁移 Hero
 | `src/components/ChatPanel/ChatInput/OtherSkillModal/index.tsx`              | 选择其他 Skill，树结构选择和确认。           |
 | `src/components/Drive/Modals/UploadDocumentModal/index.tsx`                 | 上传文档，上传队列和挂载信息。               |
 | `src/components/Drive/Modals/TagPermissionModal/index.tsx`                  | 标签权限管理，标签树、权限模式、用户权限。   |
-| `src/components/Drive/Modals/Node/MoveNodeModal/index.tsx`                  | 移动文件/文件夹，目标目录选择。              |
+| `src/components/Drive/Modals/MoveNodeModal/index.tsx`                       | 移动文件/文件夹，目标目录选择。              |
 | `src/components/Drive/Modals/UploadFileToGroupModal/index.tsx`              | 上传个人文件到小组，选择文件和目标小组目录。 |
 
 ## 底层 Modal 例外
 
-| 文件                                                      | 业务                       | 原因                                                                                   |
-| --------------------------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------- |
-| `src/components/Drive/GlobalSearch/SearchModal/index.tsx` | 全局搜索 command palette。 | 搜索浮层结构和交互更接近 Spotlight，需要完全自定义容器、body、异步结果区域和键盘体验。 |
+| 文件                                                                                    | 业务                       | 原因                                                                                   |
+| --------------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------- |
+| `src/layouts/_common/Sidebar/AppSidebar/_components/GlobalSearch/SearchModal/index.tsx` | 全局搜索 command palette。 | 搜索浮层结构和交互更接近 Spotlight，需要完全自定义容器、body、异步结果区域和键盘体验。 |
 
 ## 新增 Overlay 的判断顺序
 

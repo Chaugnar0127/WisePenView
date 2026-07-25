@@ -1,8 +1,8 @@
-import styles from '@/components/Drive/Modals/TagPermissionModal/style.module.less';
 import AppModal from '@/components/Overlay/AppModal';
 import { Button } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 import GroupPolicyShellCard from '../GroupPolicyShellCard';
+import styles from '../style.module.less';
 
 interface GroupMountPermissionModalProps {
   isOpen: boolean;

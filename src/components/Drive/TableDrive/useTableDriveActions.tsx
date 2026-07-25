@@ -1,5 +1,5 @@
 import {
-  DriveCreate,
+  DriveCreateModal,
   ResourcePermissionModal,
   TagMountPermissionModal,
   TagPermissionModal,
@@ -22,21 +22,21 @@ import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useCallback, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { mountResourceToFolderTag, resolveCurrentFolderTagId } from '../common/driveComponentModel';
+import { mountResourceToFolderTag } from '../common/driveComponentModel';
 import type { DriveTableRow, TableDriveActionConfig } from './index.type';
 import type { CreateMenuItem } from './parts/CreateMenu/index.type';
 
-export interface UseTableDriveActionsParams {
+interface UseTableDriveActionsParams {
   currentNodeId: string;
   currentRows: DriveTableRow[];
   scope: DriveNodeScope;
   actions?: TableDriveActionConfig;
   refresh: () => void;
-  targetTagId?: string;
-  isTrashView?: boolean;
+  mountTagId: string | undefined;
+  isTrashView: boolean;
 }
 
-export interface UseTableDriveActionsReturn {
+interface UseTableDriveActionsReturn {
   showCreateMenu: boolean;
   showUploadToGroup: boolean;
   showManagePermission: boolean;
@@ -65,8 +65,8 @@ export function useTableDriveActions({
   scope,
   actions,
   refresh,
-  targetTagId,
-  isTrashView = false,
+  mountTagId,
+  isTrashView,
 }: UseTableDriveActionsParams): UseTableDriveActionsReturn {
   const { t } = useTranslation('drive');
   const openInWorkspace = useOpenInWorkspace();
@@ -88,11 +88,6 @@ export function useTableDriveActions({
   const existingFolderNames = useMemo(
     () => currentRows.filter((row) => row.node.type === 'folder').map((row) => row.name.trim()),
     [currentRows]
-  );
-
-  const mountTagId = useMemo(
-    () => resolveCurrentFolderTagId(currentNodeId, []) ?? targetTagId,
-    [currentNodeId, targetTagId]
   );
 
   const mountCreatedResource = useCallback(
@@ -249,7 +244,7 @@ export function useTableDriveActions({
           />
         ) : null}
         {driveCreateType ? (
-          <DriveCreate
+          <DriveCreateModal
             type={driveCreateType}
             isOpen
             parentId={currentNodeId}
@@ -280,24 +275,8 @@ export function useTableDriveActions({
     ]
   );
 
-  const openUploadDocument = useCallback(() => {
-    setUploadDocumentOpen(true);
-  }, []);
-
   const openUploadToGroup = useCallback(() => {
     setUploadOpen(true);
-  }, []);
-
-  const openTagAccessPermission = useCallback((tagId: string) => {
-    setTagAccessPermissionTagId(tagId);
-  }, []);
-
-  const openTagMountPermission = useCallback((tagId: string) => {
-    setTagMountPermissionTagId(tagId);
-  }, []);
-
-  const openResourcePermission = useCallback((target: ResourcePermissionModalTarget) => {
-    setResourcePermissionTarget(target);
   }, []);
 
   const handleCreateNote = useCallback(() => {
@@ -330,11 +309,11 @@ export function useTableDriveActions({
           openMarkdownFilePicker();
           break;
         case 'upload':
-          openUploadDocument();
+          setUploadDocumentOpen(true);
           break;
       }
     },
-    [handleCreateNote, openMarkdownFilePicker, openUploadDocument]
+    [handleCreateNote, openMarkdownFilePicker]
   );
 
   const showUploadDocument =
@@ -400,9 +379,9 @@ export function useTableDriveActions({
     createMenuItems,
     handleCreateMenuSelect,
     openUploadToGroup,
-    openTagAccessPermission,
-    openTagMountPermission,
-    openResourcePermission,
+    openTagAccessPermission: setTagAccessPermissionTagId,
+    openTagMountPermission: setTagMountPermissionTagId,
+    openResourcePermission: setResourcePermissionTarget,
     ModalHost,
   };
 }

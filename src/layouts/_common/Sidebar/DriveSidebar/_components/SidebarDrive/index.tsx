@@ -10,10 +10,10 @@ import {
   type DriveActionTarget,
 } from '@/components/Drive/common/driveComponentModel';
 import {
-  DriveCreate,
-  DriveDelete,
+  DriveCreateModal,
+  DriveDeleteModal,
   RenameNodeModal,
-  TrashDelete,
+  TrashDeleteModal,
   UploadDocumentModal,
   type DriveCreateType,
 } from '@/components/Drive/Modals';
@@ -488,7 +488,7 @@ function SidebarDrive() {
         <UploadDocumentModal isOpen onOpenChange={setUploadDocumentOpen} onSuccess={refreshTree} />
       ) : null}
       {driveCreateTarget ? (
-        <DriveCreate
+        <DriveCreateModal
           type={driveCreateTarget.type}
           isOpen
           parentId={driveCreateTarget.target.id}
@@ -525,7 +525,7 @@ function SidebarDrive() {
         onSuccess={refreshTree}
       />
       {isDeleteTargetInTrash ? (
-        <TrashDelete
+        <TrashDeleteModal
           isOpen={Boolean(deleteTarget)}
           node={deleteTarget}
           onOpenChange={(open) => {
@@ -534,7 +534,7 @@ function SidebarDrive() {
           onSuccess={refreshTree}
         />
       ) : (
-        <DriveDelete
+        <DriveDeleteModal
           isOpen={Boolean(deleteTarget)}
           node={deleteTarget}
           groupId={groupId}

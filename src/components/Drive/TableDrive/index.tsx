@@ -9,13 +9,11 @@ import EntryIcon from '@/components/Icons/EntryIcon';
 import {
   FolderTable,
   type FolderTableBreadcrumbItem,
-  type FolderTableColumn,
   type FolderTableRowAction,
 } from '@/components/Table';
 import { useDriveService } from '@/domains';
 import type { DriveNode } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
-import { formatFileSize } from '@/utils/format/formatFileSize';
 import { resolveResourceKind, type ResourceViewer } from '@/utils/navigation/resourceTarget';
 import { findTreeNodeById } from '@/utils/tree/findTreeNodeById';
 import {
@@ -32,7 +30,6 @@ import {
 } from '@dnd-kit/core';
 import { Button, toast, type SortDescriptor } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import type { TFunction } from 'i18next';
 import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -46,95 +43,14 @@ import {
   type DriveActionTarget,
 } from '../common/driveComponentModel';
 import { useClickNode } from '../common/useClickNode';
-import type { DriveRow, DriveTableRow, TableDriveProps } from './index.type';
+import type { DriveTableRow, TableDriveProps } from './index.type';
 import CreateMenu from './parts/CreateMenu';
 import DriveDetailPanel from './parts/DriveDetailPanel';
 import styles from './style.module.less';
+import { buildDriveTableColumns } from './tableColumns';
+import { buildDriveTableRowMap, isDrivePinnedFirstRow, toDriveTableRow } from './tableRows';
 import { useTableDrive } from './useTableDrive';
 import { useTableDriveActions } from './useTableDriveActions';
-
-const buildDriveTableColumns = (t: TFunction<'drive'>): FolderTableColumn<DriveTableRow>[] => [
-  {
-    id: 'name',
-    label: t('table.columns.name'),
-    width: 'fill',
-    align: 'start',
-    isRowHeader: true,
-    isNameColumn: true,
-    allowsSorting: true,
-    sortFolderGroup: true,
-    getSortValue: (row) => row.name,
-  },
-  {
-    id: 'size',
-    label: t('table.columns.size'),
-    width: 'folderSize',
-    renderCell: (row) => (row.entryType === 'loading' ? '' : (row.sizeLabel ?? '—')),
-  },
-  {
-    id: 'type',
-    label: t('table.columns.type'),
-    width: 'folderType',
-    allowsSorting: true,
-    getSortValue: (row) => row.typeLabel,
-    renderCell: (row) => (row.entryType === 'loading' ? '' : row.typeLabel),
-  },
-  {
-    id: 'actions',
-    label: t('table.columns.actions'),
-    width: 'folderAction',
-    isActionColumn: true,
-  },
-];
-
-function getTypeLabel(node: DriveNode, t: TFunction<'drive'>): string {
-  switch (node.type) {
-    case 'root':
-      return t('node.drive');
-    case 'folder':
-      return t('node.folder');
-    case 'resource':
-      return node.resourceType ?? t('node.resource');
-    case 'link':
-      return t('node.link');
-    case 'loading':
-      return '';
-  }
-}
-
-function formatDriveNodeSizeLabel(node: DriveNode): string {
-  if (node.type !== 'resource' && node.type !== 'link') {
-    return '—';
-  }
-  return node.size == null ? '—' : formatFileSize(node.size);
-}
-
-function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTableRow {
-  if (node.type === 'loading') {
-    return {
-      id: node.id,
-      name: node.label || t('node.loading'),
-      entryType: 'loading',
-      typeLabel: '',
-      node,
-    };
-  }
-
-  return {
-    id: node.id,
-    name: getDriveNodeLabel(node),
-    entryType: node.type,
-    folderIconType: isDriveSharedFolderNode(node) ? 'shared' : undefined,
-    resourceType: node.type === 'resource' ? node.resourceType : undefined,
-    resourceIconType:
-      node.type === 'resource' || node.type === 'link' ? node.resourceIconType : undefined,
-    sizeLabel: formatDriveNodeSizeLabel(node),
-    typeLabel: getTypeLabel(node, t),
-    isExpandable: node.type === 'root' || node.type === 'folder',
-    children: node.children?.map((child) => toDriveTableRow(child, t)),
-    node,
-  };
-}
 
 function toBreadcrumbItems(pathNodes: DriveNode[]): FolderTableBreadcrumbItem[] {
   return pathNodes
@@ -146,34 +62,12 @@ function toBreadcrumbItems(pathNodes: DriveNode[]): FolderTableBreadcrumbItem[] 
     }));
 }
 
-function buildDriveTableRowMap(rows: DriveTableRow[]): Map<string, DriveTableRow> {
-  const map = new Map<string, DriveTableRow>();
-  const visit = (row: DriveTableRow) => {
-    map.set(row.id, row);
-    row.children?.forEach(visit);
-  };
-  rows.forEach(visit);
-  return map;
-}
-
-function toDriveActionTarget(node: DriveNode): DriveActionTarget | null {
-  return isDriveActionTarget(node) ? node : null;
-}
-
 function isDriveDragSource(row: DriveTableRow): boolean {
   return isDriveActionTarget(row.node) && !isDriveSharedFolderNode(row.node);
 }
 
-function isDriveMoveTarget(row: DriveTableRow): boolean {
-  return isDriveMoveTargetNode(row.node);
-}
-
 function isDriveMoveTargetNode(node: DriveNode): boolean {
   return (node.type === 'folder' || node.type === 'root') && !isDriveSharedFolderNode(node);
-}
-
-function isDrivePinnedFirstRow(row: DriveTableRow): boolean {
-  return isDriveSharedFolderNode(row.node);
 }
 
 interface DriveDndNameContentProps {
@@ -687,9 +581,8 @@ function TableDrive({
 
   const resolveRowActions = useCallback(
     (row: DriveTableRow): FolderTableRowAction<DriveTableRow>[] => {
-      if (isEditMode) return [];
-      const actionTarget = toDriveActionTarget(row.node);
-      if (!actionTarget) return [];
+      if (isEditMode || !isDriveActionTarget(row.node)) return [];
+      const actionTarget = row.node;
       if (actionTarget.type === 'folder' && actionTarget.systemType === 'shared') return [];
 
       const openAction: FolderTableRowAction<DriveTableRow> =
@@ -893,7 +786,9 @@ function TableDrive({
       <DriveDndNameContent
         row={row}
         draggableDisabled={movingByDrag || !isDriveDragSource(row)}
-        droppableDisabled={movingByDrag || draggingRowKeys.size === 0 || !isDriveMoveTarget(row)}
+        droppableDisabled={
+          movingByDrag || draggingRowKeys.size === 0 || !isDriveMoveTargetNode(row.node)
+        }
       >
         {content}
       </DriveDndNameContent>

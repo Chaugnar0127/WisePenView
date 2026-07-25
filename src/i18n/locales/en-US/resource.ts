@@ -36,6 +36,17 @@ const enUSResource = {
       confirm: 'Share',
     },
   },
+  search: {
+    action: 'Global search',
+    tooltip: 'Global search ({{shortcut}})',
+    inputAria: 'Search documents, notes, and tags',
+    placeholder: 'Search documents, notes, and tags...',
+    clear: 'Clear search',
+    close: 'Close search',
+    allResultsShown: 'All results shown',
+    noResults: 'No matching results',
+    emptyHint: 'Search documents, notes, and tags',
+  },
   sidePanel: {
     annotation: 'Annotations',
     comments: 'Comments',

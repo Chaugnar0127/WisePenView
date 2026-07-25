@@ -36,6 +36,17 @@ const zhCNResource = {
       confirm: '分享',
     },
   },
+  search: {
+    action: '全局搜索',
+    tooltip: '全局搜索（{{shortcut}}）',
+    inputAria: '搜索文档、笔记和标签',
+    placeholder: '搜索文档、笔记和标签...',
+    clear: '清空搜索',
+    close: '关闭搜索',
+    allResultsShown: '已展示全部结果',
+    noResults: '没有找到匹配结果',
+    emptyHint: '搜索文档、笔记和标签',
+  },
   sidePanel: {
     annotation: '批注',
     comments: '评论',

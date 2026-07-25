@@ -4,6 +4,7 @@ import { useResourceService } from '@/domains';
 import type { SearchHitItem, SearchResultPage } from '@/domains/Resource';
 import { SEARCH_SCOPE } from '@/domains/Resource';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
+import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useInfiniteScroll, useKeyPress, useUpdateEffect } from 'ahooks';
@@ -62,8 +63,8 @@ function SearchHitRow({ item, active, flatIndex, onActivate, onOpen }: SearchHit
 }
 
 /** 单列表渲染 + 无限滚动 + 键盘导航；activeIndex 渲染期 clamp 规避 effect 内 setState */
-function SearchResultList({ keyword, scope, onClose }: SearchResultListProps) {
-  const { t } = useTranslation('drive');
+function SearchResultList({ keyword, onClose }: SearchResultListProps) {
+  const { t } = useTranslation('resource');
   const listRef = useRef<HTMLDivElement>(null);
   const openInWorkspace = useOpenInWorkspace();
   const resourceService = useResourceService();
@@ -119,7 +120,7 @@ function SearchResultList({ keyword, scope, onClose }: SearchResultListProps) {
       resourceId: item.resourceId,
       resourceType: item.resourceType,
       resourceName: item.resourceName,
-      driveLocation: { scope },
+      driveLocation: { scope: useWorkspaceNavigationStore.getState().location.scope },
     });
   };
 

@@ -5,13 +5,12 @@ import { Search } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SearchModal from './SearchModal';
-import type { GlobalSearchProps } from './index.type';
 
 const SHORTCUT_LABEL = `${getModKeyLabel()}+K`;
 
 /** 侧边栏图标按钮触发器 + 受控 Modal；监听 ctrl/⌘+K 打开 */
-function GlobalSearch({ scope }: GlobalSearchProps) {
-  const { t } = useTranslation('drive');
+function GlobalSearch() {
+  const { t } = useTranslation('resource');
   const [open, setOpen] = useState(false);
 
   useKeyPress(
@@ -34,7 +33,7 @@ function GlobalSearch({ scope }: GlobalSearchProps) {
         }}
         onPress={() => setOpen(true)}
       />
-      <SearchModal isOpen={open} scope={scope} onOpenChange={setOpen} />
+      <SearchModal isOpen={open} onOpenChange={setOpen} />
     </>
   );
 }

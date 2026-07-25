@@ -38,17 +38,6 @@ const enUSDrive = {
     loadingGroups: 'Loading groups...',
     noGroups: 'No groups available',
   },
-  search: {
-    action: 'Global search',
-    tooltip: 'Global search ({{shortcut}})',
-    inputAria: 'Search documents, notes, and tags',
-    placeholder: 'Search documents, notes, and tags...',
-    clear: 'Clear search',
-    close: 'Close search',
-    allResultsShown: 'All results shown',
-    noResults: 'No matching results',
-    emptyHint: 'Search documents, notes, and tags',
-  },
   uploadQueue: {
     aria: 'Upload queue',
     empty: 'No uploads',

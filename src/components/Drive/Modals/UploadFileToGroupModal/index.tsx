@@ -9,8 +9,8 @@ import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveSelectionItem } from '../../common/driveComponentModel';
-import styles from './index.module.less';
 import type { UploadFileToGroupModalProps } from './index.type';
+import styles from './style.module.less';
 
 function UploadFileToGroupModal({
   isOpen,

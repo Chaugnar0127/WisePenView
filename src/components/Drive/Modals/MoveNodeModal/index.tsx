@@ -7,7 +7,7 @@ import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getDriveScopeGroupId, type DriveActionTarget } from '../../../common/driveComponentModel';
+import { getDriveScopeGroupId, type DriveActionTarget } from '../../common/driveComponentModel';
 import type { MoveNodeModalProps } from './index.type';
 import styles from './style.module.less';
 

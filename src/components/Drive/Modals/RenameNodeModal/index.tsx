@@ -8,7 +8,7 @@ import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { DriveActionTarget } from '../../../common/driveComponentModel';
+import type { DriveActionTarget } from '../../common/driveComponentModel';
 import type { RenameNodeModalProps } from './index.type';
 import styles from './style.module.less';
 

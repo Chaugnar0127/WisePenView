@@ -8,20 +8,14 @@ import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 
 import type { DriveActionTarget } from '../../common/driveComponentModel';
-
-export interface TrashDeleteProps {
-  isOpen: boolean;
-  node: DriveActionTarget | null;
-  onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
-}
+import type { TrashDeleteModalProps } from './index.type';
 
 function getNodeName(node: DriveActionTarget | null, fallback: string): string {
   if (!node) return fallback;
   return node.type === 'folder' ? node.name : node.title;
 }
 
-function TrashDelete({ isOpen, node, onOpenChange, onSuccess }: TrashDeleteProps) {
+function TrashDeleteModal({ isOpen, node, onOpenChange, onSuccess }: TrashDeleteModalProps) {
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
   const resourceService = useResourceService();
@@ -75,4 +69,4 @@ function TrashDelete({ isOpen, node, onOpenChange, onSuccess }: TrashDeleteProps
   );
 }
 
-export default TrashDelete;
+export default TrashDeleteModal;

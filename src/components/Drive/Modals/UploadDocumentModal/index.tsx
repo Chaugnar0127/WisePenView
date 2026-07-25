@@ -19,8 +19,8 @@ import { CloudUpload, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import styles from './index.module.less';
 import type { UploadDocumentModalProps } from './index.type';
+import styles from './style.module.less';
 
 const DOCUMENT_ALLOWED_EXTENSION_SET = new Set<string>(DOCUMENT_ALLOWED_EXTENSIONS);
 const ACCEPT_DOCUMENT_TYPES = DOCUMENT_ALLOWED_EXTENSIONS.map((extension) => `.${extension}`).join(

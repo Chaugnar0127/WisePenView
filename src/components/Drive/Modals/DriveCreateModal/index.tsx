@@ -9,22 +9,10 @@ import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { DriveCreateModalProps } from './index.type';
 import styles from './style.module.less';
 
-export type DriveCreateType = 'agent' | 'drawio' | 'folder' | 'skill';
-
-export interface DriveCreateProps {
-  type: DriveCreateType;
-  isOpen: boolean;
-  parentId?: string;
-  groupId?: string;
-  parentLabel?: string;
-  existingFolderNames?: string[];
-  onOpenChange: (open: boolean) => void;
-  onSuccess: (createdId: string, type: DriveCreateType) => void | Promise<void>;
-}
-
-function DriveCreate({
+function DriveCreateModal({
   type,
   isOpen,
   parentId,
@@ -33,7 +21,7 @@ function DriveCreate({
   existingFolderNames = [],
   onOpenChange,
   onSuccess,
-}: DriveCreateProps) {
+}: DriveCreateModalProps) {
   const { t } = useTranslation(['drive', 'common']);
   const agentService = useAgentService();
   const driveService = useDriveService();
@@ -304,4 +292,4 @@ function DriveCreate({
   }
 }
 
-export default DriveCreate;
+export default DriveCreateModal;

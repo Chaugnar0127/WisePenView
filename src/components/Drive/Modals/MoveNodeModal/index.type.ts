@@ -1,4 +1,4 @@
-import type { DriveActionTarget } from '../../../common/driveComponentModel';
+import type { DriveActionTarget } from '../../common/driveComponentModel';
 
 export interface MoveNodeModalProps {
   isOpen: boolean;

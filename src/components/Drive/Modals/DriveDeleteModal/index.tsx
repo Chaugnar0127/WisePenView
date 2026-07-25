@@ -6,21 +6,20 @@ import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 
 import type { DriveActionTarget } from '../../common/driveComponentModel';
-
-export interface DriveDeleteProps {
-  isOpen: boolean;
-  node: DriveActionTarget | null;
-  groupId?: string;
-  onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
-}
+import type { DriveDeleteModalProps } from './index.type';
 
 function getNodeName(node: DriveActionTarget | null, fallback: string): string {
   if (!node) return fallback;
   return node.type === 'folder' ? node.name : node.title;
 }
 
-function DriveDelete({ isOpen, node, groupId, onOpenChange, onSuccess }: DriveDeleteProps) {
+function DriveDeleteModal({
+  isOpen,
+  node,
+  groupId,
+  onOpenChange,
+  onSuccess,
+}: DriveDeleteModalProps) {
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
   const isGroupNode = Boolean(groupId && node);
@@ -98,4 +97,4 @@ function DriveDelete({ isOpen, node, groupId, onOpenChange, onSuccess }: DriveDe
   );
 }
 
-export default DriveDelete;
+export default DriveDeleteModal;

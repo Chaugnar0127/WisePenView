@@ -1,9 +1,9 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import {
-  DriveDelete,
+  DriveDeleteModal,
   MoveNodeModal,
   RenameNodeModal,
-  TrashDelete,
+  TrashDeleteModal,
 } from '@/components/Drive/Modals';
 import { FolderTable, type FolderTableBreadcrumbItem } from '@/components/Table';
 import { useDriveService } from '@/domains';
@@ -485,14 +485,14 @@ function TableDrive({
           onSuccess={handleNodeActionSuccess}
         />
         {isTrashView ? (
-          <TrashDelete
+          <TrashDeleteModal
             isOpen={Boolean(deleteTarget)}
             node={deleteTarget}
             onOpenChange={handleDeleteModalOpenChange}
             onSuccess={handleNodeActionSuccess}
           />
         ) : (
-          <DriveDelete
+          <DriveDeleteModal
             isOpen={Boolean(deleteTarget)}
             node={deleteTarget}
             groupId={finalGroupId}

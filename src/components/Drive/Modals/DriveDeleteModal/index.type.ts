@@ -1,6 +1,6 @@
-import type { DriveActionTarget } from '../../../common/driveComponentModel';
+import type { DriveActionTarget } from '../../common/driveComponentModel';
 
-export interface RenameNodeModalProps {
+export interface DriveDeleteModalProps {
   isOpen: boolean;
   node: DriveActionTarget | null;
   groupId?: string;

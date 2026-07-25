@@ -1,5 +1,5 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { DriveCreate } from '@/components/Drive/Modals';
+import { DriveCreateModal } from '@/components/Drive/Modals';
 import { Empty, ResultState, Spin } from '@/components/Feedback';
 import Markdown from '@/components/Markdown';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
@@ -453,7 +453,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
             }
           />
         </div>
-        <DriveCreate
+        <DriveCreateModal
           type="skill"
           isOpen={createModalOpen}
           onOpenChange={handleCloseCreateModal}
@@ -699,7 +699,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         hidden
         onChange={(event) => void handleFileChange(event)}
       />
-      <DriveCreate
+      <DriveCreateModal
         type="skill"
         isOpen={createModalOpen}
         onOpenChange={handleCloseCreateModal}

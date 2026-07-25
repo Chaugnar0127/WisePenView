@@ -1,5 +1,5 @@
 import {
-  DriveCreate,
+  DriveCreateModal,
   ResourcePermissionModal,
   TagMountPermissionModal,
   TagPermissionModal,
@@ -244,7 +244,7 @@ export function useTableDriveActions({
           />
         ) : null}
         {driveCreateType ? (
-          <DriveCreate
+          <DriveCreateModal
             type={driveCreateType}
             isOpen
             parentId={currentNodeId}

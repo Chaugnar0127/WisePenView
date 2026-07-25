@@ -2,7 +2,7 @@ import {
   isDriveTrashFolderNode,
   type DriveSelectionItem,
 } from '@/components/Drive/common/driveComponentModel';
-import { DriveDelete, MoveNodeModal, TrashDelete } from '@/components/Drive/Modals';
+import { DriveDeleteModal, MoveNodeModal, TrashDeleteModal } from '@/components/Drive/Modals';
 import {
   useDocumentService,
   useDriveService,
@@ -327,14 +327,14 @@ function ResourceHeaderOperations({
         onSuccess={handleMoveSuccess}
       />
       {isTrashView ? (
-        <TrashDelete
+        <TrashDeleteModal
           isOpen={deleteOpen}
           node={node ?? null}
           onOpenChange={setDeleteOpen}
           onSuccess={handleDeleteSuccess}
         />
       ) : (
-        <DriveDelete
+        <DriveDeleteModal
           isOpen={deleteOpen}
           node={node ?? null}
           groupId={groupId}

@@ -8,7 +8,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   buildDriveTreeData,
@@ -181,10 +181,7 @@ function DriveNavigator({
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
   const groupService = useGroupService();
-  const singleScope = useMemo(
-    () => resolveDriveScope(scope, groupId, rootId),
-    [scope, groupId, rootId]
-  );
+  const singleScope = resolveDriveScope(scope, groupId, rootId);
   const finalRootId = singleScope.rootId;
   const finalGroupId = singleScope.groupId;
   const nodeMapRef = useRef<Map<string, DriveNode>>(new Map());
@@ -195,158 +192,115 @@ function DriveNavigator({
   const selectableTypeKey = [...selectableTypes].sort().join('\u0001');
   const disabledNodeIdKey = [...(disabledNodeIds ?? [])].sort().join('\u0001');
   const excludedGroupIdKey = [...(excludedGroupIds ?? [])].sort().join('\u0001');
-  const excludedGroupIdSet = useMemo(
-    () => buildSetFromStableKey(excludedGroupIdKey),
-    [excludedGroupIdKey]
-  );
+  const excludedGroupIdSet = buildSetFromStableKey(excludedGroupIdKey);
 
-  const renderableTypeSet = useMemo(
-    () => buildSetFromStableKey<DriveItemKind>(renderableTypeKey),
-    [renderableTypeKey]
-  );
-  const selectableTypeSet = useMemo(
-    () => buildSetFromStableKey<DriveItemKind>(selectableTypeKey),
-    [selectableTypeKey]
-  );
+  const renderableTypeSet = buildSetFromStableKey<DriveItemKind>(renderableTypeKey);
+  const selectableTypeSet = buildSetFromStableKey<DriveItemKind>(selectableTypeKey);
   const showsResources = renderableTypeSet.has('resource') || renderableTypeSet.has('link');
   const selectsResources = selectableTypeSet.has('resource') || selectableTypeSet.has('link');
   const effectiveResourceLimit =
     showsResources && !selectsResources ? resourcePreviewLimit : undefined;
-  const disabledNodeIdSet = useMemo(
-    () => buildSetFromStableKey(disabledNodeIdKey),
-    [disabledNodeIdKey]
-  );
+  const disabledNodeIdSet = buildSetFromStableKey(disabledNodeIdKey);
 
-  const getTreeKey = useCallback((node: DriveNode): string => {
+  const getTreeKey = (node: DriveNode): string => {
     return buildTreeKey(buildScopeKey(node.scope), node.id);
-  }, []);
+  };
 
-  const renderTitle = useCallback((node: DriveNode) => {
+  const renderTitle = (node: DriveNode) => {
     return <DriveNavigatorNodeTitle node={node} displayName={rootLabelRef.current.get(node.id)} />;
-  }, []);
+  };
 
-  const buildChildrenData = useCallback(
-    (nodes: DriveNode[]): DataNode[] =>
-      buildDriveTreeData(
-        nodes,
-        {
-          renderableTypes: renderableTypeSet,
-          selectableTypes: selectableTypeSet,
-          disabledNodeIds: disabledNodeIdSet,
-          getTreeKey,
-          renderTitle,
-          isNodeSelectable,
-          isNodeDisabled,
-        },
-        nodeMapRef.current
-      ),
-    [
-      disabledNodeIdSet,
-      getTreeKey,
-      isNodeDisabled,
-      isNodeSelectable,
-      renderTitle,
-      renderableTypeSet,
-      selectableTypeSet,
-    ]
-  );
+  const buildChildrenData = (nodes: DriveNode[]): DataNode[] =>
+    buildDriveTreeData(
+      nodes,
+      {
+        renderableTypes: renderableTypeSet,
+        selectableTypes: selectableTypeSet,
+        disabledNodeIds: disabledNodeIdSet,
+        getTreeKey,
+        renderTitle,
+        isNodeSelectable,
+        isNodeDisabled,
+      },
+      nodeMapRef.current
+    );
 
-  const loadChildrenForNode = useCallback(
-    async (node: DriveNode): Promise<DriveNode[]> => {
-      if (node.type !== 'root' && node.type !== 'folder') return [];
-      try {
-        return await driveService.listNodeChildren({
-          nodeId: node.id,
-          groupId: getDriveScopeGroupId(node.scope),
-          resourceLimit: effectiveResourceLimit,
-        });
-      } catch (err) {
-        toast.danger(parseErrorMessage(err));
-        return [];
-      }
-    },
-    [driveService, effectiveResourceLimit]
-  );
+  const loadChildrenForNode = async (node: DriveNode): Promise<DriveNode[]> => {
+    if (node.type !== 'root' && node.type !== 'folder') return [];
+    try {
+      return await driveService.listNodeChildren({
+        nodeId: node.id,
+        groupId: getDriveScopeGroupId(node.scope),
+        resourceLimit: effectiveResourceLimit,
+      });
+    } catch (err) {
+      toast.danger(parseErrorMessage(err));
+      return [];
+    }
+  };
 
-  const resolveInputKey = useCallback((key: string): string | undefined => {
+  const resolveInputKey = (key: string): string | undefined => {
     if (nodeMapRef.current.has(key)) return key;
     for (const [treeKey, node] of nodeMapRef.current.entries()) {
       if (node.id === key) return treeKey;
     }
     return undefined;
-  }, []);
+  };
 
-  const normalizeSelectableKeys = useCallback(
-    (keys: string[]) => {
-      return keys
-        .map((key) => resolveInputKey(key))
-        .filter((key): key is string => {
-          if (!key) return false;
-          const node = nodeMapRef.current.get(key);
-          return (
-            node != null &&
-            isDriveNodeSelectable(node, {
-              selectableTypes: selectableTypeSet,
-              disabledNodeIds: disabledNodeIdSet,
-              isNodeSelectable,
-              isNodeDisabled,
-            })
-          );
-        });
-    },
-    [disabledNodeIdSet, isNodeDisabled, isNodeSelectable, resolveInputKey, selectableTypeSet]
-  );
+  const normalizeSelectableKeys = (keys: string[]) => {
+    return keys
+      .map((key) => resolveInputKey(key))
+      .filter((key): key is string => {
+        if (!key) return false;
+        const node = nodeMapRef.current.get(key);
+        return (
+          node != null &&
+          isDriveNodeSelectable(node, {
+            selectableTypes: selectableTypeSet,
+            disabledNodeIds: disabledNodeIdSet,
+            isNodeSelectable,
+            isNodeDisabled,
+          })
+        );
+      });
+  };
 
-  const toNavigatorSelectionItem = useCallback((node: DriveNode): DriveSelectionItem | null => {
+  const toNavigatorSelectionItem = (node: DriveNode): DriveSelectionItem | null => {
     const item = toDriveSelectionItem(node);
     if (!item) return null;
     const label = node.type === 'root' ? rootLabelRef.current.get(node.id) : undefined;
     return label ? { ...item, label } : item;
-  }, []);
+  };
 
-  const emitSelectionChange = useCallback(
-    (keys: string[]) => {
-      const selectedNodes = keys
-        .map((key) => nodeMapRef.current.get(key))
-        .filter(
-          (node): node is DriveNode =>
-            node != null &&
-            isDriveNodeSelectable(node, {
-              selectableTypes: selectableTypeSet,
-              disabledNodeIds: disabledNodeIdSet,
-              isNodeSelectable,
-              isNodeDisabled,
-            })
-        );
-      onNodeChange?.(selectedNodes);
-      onChange?.(
-        selectedNodes
-          .map(toNavigatorSelectionItem)
-          .filter((item): item is DriveSelectionItem => item != null)
+  const emitSelectionChange = (keys: string[]) => {
+    const selectedNodes = keys
+      .map((key) => nodeMapRef.current.get(key))
+      .filter(
+        (node): node is DriveNode =>
+          node != null &&
+          isDriveNodeSelectable(node, {
+            selectableTypes: selectableTypeSet,
+            disabledNodeIds: disabledNodeIdSet,
+            isNodeSelectable,
+            isNodeDisabled,
+          })
       );
-    },
-    [
-      disabledNodeIdSet,
-      isNodeDisabled,
-      isNodeSelectable,
-      onChange,
-      onNodeChange,
-      selectableTypeSet,
-      toNavigatorSelectionItem,
-    ]
-  );
+    onNodeChange?.(selectedNodes);
+    onChange?.(
+      selectedNodes
+        .map(toNavigatorSelectionItem)
+        .filter((item): item is DriveSelectionItem => item != null)
+    );
+  };
 
-  const loadRootNode = useCallback(
-    async (option: DriveNavigatorScopeOption): Promise<DriveNode> => {
-      const rootNode = await driveService.getRootNode({
-        rootId: option.rootId,
-        groupId: option.groupId,
-      });
-      rootLabelRef.current.set(rootNode.id, option.label);
-      return rootNode;
-    },
-    [driveService]
-  );
+  const loadRootNode = async (option: DriveNavigatorScopeOption): Promise<DriveNode> => {
+    const rootNode = await driveService.getRootNode({
+      rootId: option.rootId,
+      groupId: option.groupId,
+    });
+    rootLabelRef.current.set(rootNode.id, option.label);
+    return rootNode;
+  };
 
   const { loading } = useRequest(
     async (): Promise<DataNode[]> => {
@@ -421,27 +375,24 @@ function DriveNavigator({
     setTreeData((prev) => replaceDriveTreeNodeChildren(prev, key, childData));
   };
 
-  const handleSelect = useCallback(
-    (keys: React.Key[], info: { node: DataNode; selected: boolean }) => {
-      if (disabled) return;
-      const clickedKey = String(info.node.key);
-      if (multiple) {
-        if (normalizeSelectableKeys([clickedKey]).length === 0) return;
-        const normalized = normalizeSelectableKeys(keys.map(String));
-        setSelectedKeys(normalized);
-        emitSelectionChange(normalized);
-        return;
-      }
+  const handleSelect = (keys: React.Key[], info: { node: DataNode; selected: boolean }) => {
+    if (disabled) return;
+    const clickedKey = String(info.node.key);
+    if (multiple) {
+      if (normalizeSelectableKeys([clickedKey]).length === 0) return;
+      const normalized = normalizeSelectableKeys(keys.map(String));
+      setSelectedKeys(normalized);
+      emitSelectionChange(normalized);
+      return;
+    }
 
-      const rawKeys = keys.map(String);
-      const nextKeys = info.selected ? rawKeys : [clickedKey];
-      const normalized = normalizeSelectableKeys(nextKeys);
-      const next = normalized.length > 0 ? [normalized[0]!] : [];
-      setSelectedKeys(next);
-      emitSelectionChange(next);
-    },
-    [disabled, emitSelectionChange, multiple, normalizeSelectableKeys]
-  );
+    const rawKeys = keys.map(String);
+    const nextKeys = info.selected ? rawKeys : [clickedKey];
+    const normalized = normalizeSelectableKeys(nextKeys);
+    const next = normalized.length > 0 ? [normalized[0]!] : [];
+    setSelectedKeys(next);
+    emitSelectionChange(next);
+  };
 
   const defaultExpandedKeys =
     scopeMode === 'single' && treeData[0] ? [String(treeData[0].key)] : undefined;

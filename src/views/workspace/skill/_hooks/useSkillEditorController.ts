@@ -1,6 +1,6 @@
 import type { SkillDetail, SkillFileNode } from '@/domains/Skill';
 import i18n from '@/i18n';
-import { useMemo, useReducer, type SetStateAction } from 'react';
+import { useReducer, useState, type SetStateAction } from 'react';
 
 import type { SkillSaveQueueItem } from '../_components/SkillSaveQueueDock/index.type';
 import type { SkillDraftCacheSnapshot } from '../utils/skillDraftCache';
@@ -165,7 +165,7 @@ export function resolveSkillEditorSavePhase({
 
 export function useSkillEditorController() {
   const [state, dispatch] = useReducer(skillEditorReducer, INITIAL_STATE);
-  const actions = useMemo<SkillEditorActions>(() => {
+  const [actions] = useState<SkillEditorActions>(() => {
     const setField = <K extends Exclude<keyof SkillEditorState, 'pendingIntent'>>(
       field: K,
       value: SetStateAction<SkillEditorState[K]>
@@ -203,7 +203,7 @@ export function useSkillEditorController() {
         dispatch({ type: 'restoreDraft', snapshot, skill }),
       discardLocalChanges: (skill: SkillDetail) => dispatch({ type: 'discardLocalChanges', skill }),
     };
-  }, []);
+  });
 
   return { state, actions };
 }

@@ -8,8 +8,8 @@ import { useEffectForce } from '@/hooks/useEffectForce';
 import i18n from '@/i18n';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useMemoizedFn, useRequest } from 'ahooks';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SkillSaveQueueItem } from '../_components/SkillSaveQueueDock/index.type';
@@ -105,20 +105,19 @@ export function useSkillSave({
     setSelectedTreeNodeId,
   } = actions;
 
-  const invalidateDraftCacheWrites = useCallback(() => {
+  const invalidateDraftCacheWrites = useMemoizedFn(() => {
     draftCacheWriteVersionRef.current += 1;
-  }, []);
+  });
 
-  const clearDraftCache = useCallback(
-    (targetResourceId: string) => {
-      invalidateDraftCacheWrites();
-      return clearSkillDraftCache(targetResourceId).catch(() => undefined);
-    },
-    [invalidateDraftCacheWrites]
-  );
+  const clearDraftCache = useMemoizedFn((targetResourceId: string) => {
+    invalidateDraftCacheWrites();
+    return clearSkillDraftCache(targetResourceId).catch(() => undefined);
+  });
 
   /**
-   * Skill 详情变化时重建编辑状态并异步恢复同一草稿版本；cleanup 防止旧资源恢复结果覆盖新页面。
+   * 执行时机：Skill 详情或草稿版本变化时初始化编辑状态并恢复匹配的本地草稿。
+   * 不可替代原因：草稿保存在异步 IndexedDB，读取结果需要写入当前编辑器控制器。
+   * cleanup：标记本轮读取已失效，防止旧资源异步结果覆盖新页面。
    */
   useEffectForce(() => {
     if (!skill) return;
@@ -155,7 +154,7 @@ export function useSkillSave({
     };
   }, [initialize, invalidateDraftCacheWrites, restoreDraft, skill]);
 
-  const localAssetNodes = useMemo(() => collectLocalAssetNodes(files), [files]);
+  const localAssetNodes = collectLocalAssetNodes(files);
   const isDirty = canEdit && editorContent !== savedContent;
   const isConfigDirty =
     canEdit && (configName !== savedConfigName || configDescription !== savedConfigDescription);
@@ -174,23 +173,21 @@ export function useSkillSave({
     canEdit && (isDirty || hasUnsavedLocalAssets || hasFailedSaveItems);
   const hasUnsafeNavigation = hasUnsavedSkillChanges || isConfigDirty || isSaveQueueActive;
   const hasRecoverableDraft = hasUnsavedSkillChanges || isConfigDirty;
-  const pendingLocalSaveQueueItems = useMemo<SkillSaveQueueItem[]>(
-    () =>
-      localAssetNodes.map((file) => ({
-        id: file.id,
-        name: file.name,
-        path: file.path,
-        size: file.size,
-        phase: 'pending',
-        progress: 0,
-      })),
-    [localAssetNodes]
-  );
+  const pendingLocalSaveQueueItems = localAssetNodes.map((file) => ({
+    id: file.id,
+    name: file.name,
+    path: file.path,
+    size: file.size,
+    phase: 'pending',
+    progress: 0,
+  })) satisfies SkillSaveQueueItem[];
   const visibleSaveQueueItems =
     saveQueueItems.length > 0 ? saveQueueItems : pendingLocalSaveQueueItems;
 
   /**
-   * 可恢复草稿包含本地 Blob，必须随编辑状态防抖写入 IndexedDB；cleanup 取消过期写入。
+   * 执行时机：可恢复编辑状态变化后防抖写入本地草稿快照。
+   * 不可替代原因：IndexedDB 与 Blob 持久化属于 React 外部异步存储。
+   * cleanup：取消尚未开始的防抖写入，并通过版本令牌废弃已过期任务。
    */
   useEffectForce(() => {
     if (!skill || !draftCacheReady || !canEdit || !hasRecoverableDraft) return;
@@ -256,21 +253,23 @@ export function useSkillSave({
   ]);
 
   /**
-   * 草稿回到干净状态后清除 IndexedDB 快照，避免再次进入页面恢复过期内容。
+   * 执行时机：草稿缓存就绪且编辑状态恢复干净时删除本地快照。
+   * 不可替代原因：IndexedDB 是 React 外部持久化存储，必须显式执行删除命令。
+   * cleanup：删除操作幂等且由缓存层管理，无额外订阅需要清理。
    */
   useEffectForce(() => {
     if (!skill || !draftCacheReady || hasRecoverableDraft) return;
     void clearDraftCache(skill.resourceId);
   }, [clearDraftCache, draftCacheReady, hasRecoverableDraft, skill]);
 
-  const consumeRestoredEditorDraft = useCallback((fileId: string) => {
+  const consumeRestoredEditorDraft = useMemoizedFn((fileId: string) => {
     const restoredDraft = restoredEditorDraftRef.current;
     if (!restoredDraft || restoredDraft.fileId !== fileId) return null;
     restoredEditorDraftRef.current = null;
     return restoredDraft;
-  }, []);
+  });
 
-  const buildAllSaveTargets = useCallback((): SaveSkillFileTarget[] => {
+  const buildAllSaveTargets = (): SaveSkillFileTarget[] => {
     if (!canEdit) return [];
     const targetMap = new Map<string, SaveSkillFileTarget>();
 
@@ -289,9 +288,9 @@ export function useSkillSave({
     }
 
     return [...targetMap.values()];
-  }, [canEdit, editorContent, isDirty, localAssetNodes, selectedFile]);
+  };
 
-  const buildCurrentSaveTarget = useCallback((): SaveSkillFileTarget[] => {
+  const buildCurrentSaveTarget = (): SaveSkillFileTarget[] => {
     if (!selectedFile || !canEdit) return [];
     if (!isDirty && !isLocalAssetNode(selectedFile)) return [];
     if (!canPreviewSkillFile(selectedFile)) {
@@ -299,7 +298,7 @@ export function useSkillSave({
       return [{ file: selectedFile, content: selectedFile.contentBlob }];
     }
     return [{ file: selectedFile, content: editorContent }];
-  }, [canEdit, editorContent, isDirty, selectedFile]);
+  };
 
   const { loading: saveLoading, runAsync: runSaveTargetsAsync } = useRequest(
     async (targets: SaveSkillFileTarget[], options?: SaveAssetOptions) => {
@@ -436,18 +435,15 @@ export function useSkillSave({
     }
   );
 
-  const saveTargets = useCallback(
-    async (targets: SaveSkillFileTarget[], options?: SaveAssetOptions) => {
-      if (targets.length === 0) {
-        setSaveQueueItems((current) =>
-          current.some((item) => item.phase === 'failed') ? [] : current
-        );
-        return;
-      }
-      await runSaveTargetsAsync(targets, options);
-    },
-    [runSaveTargetsAsync, setSaveQueueItems]
-  );
+  const saveTargets = async (targets: SaveSkillFileTarget[], options?: SaveAssetOptions) => {
+    if (targets.length === 0) {
+      setSaveQueueItems((current) =>
+        current.some((item) => item.phase === 'failed') ? [] : current
+      );
+      return;
+    }
+    await runSaveTargetsAsync(targets, options);
+  };
 
   const { loading: configLoading, runAsync: runUpdateConfigAsync } = useRequest(
     async (options?: SaveSkillConfigOptions) => {
@@ -476,35 +472,31 @@ export function useSkillSave({
     }
   );
 
-  const savePendingChanges = useCallback(
+  const savePendingChanges = useMemoizedFn(
     async (options?: SaveAssetOptions & SaveSkillConfigOptions) => {
       if (isConfigDirty) await runUpdateConfigAsync(options);
       await saveTargets(buildAllSaveTargets(), options);
-    },
-    [buildAllSaveTargets, isConfigDirty, runUpdateConfigAsync, saveTargets]
+    }
   );
 
-  const saveCurrentFile = useCallback(
-    async (options?: SaveAssetOptions) => {
-      if (!canEdit) return;
-      await saveTargets(buildCurrentSaveTarget(), options);
-    },
-    [buildCurrentSaveTarget, canEdit, saveTargets]
-  );
+  const saveCurrentFile = useMemoizedFn(async (options?: SaveAssetOptions) => {
+    if (!canEdit) return;
+    await saveTargets(buildCurrentSaveTarget(), options);
+  });
 
-  const handleSave = useCallback(() => {
+  const handleSave = useMemoizedFn(() => {
     if (!canEdit) return;
     void saveTargets(buildAllSaveTargets());
-  }, [buildAllSaveTargets, canEdit, saveTargets]);
+  });
 
-  const resetConfigDraft = useCallback(() => {
+  const resetConfigDraft = useMemoizedFn(() => {
     setConfigName(savedConfigName);
     setConfigDescription(savedConfigDescription);
-  }, [savedConfigDescription, savedConfigName, setConfigDescription, setConfigName]);
+  });
 
-  const discardLocalSkillChanges = useCallback(() => {
+  const discardLocalSkillChanges = useMemoizedFn(() => {
     if (skill) discardLocalChanges(skill);
-  }, [discardLocalChanges, skill]);
+  });
 
   const savePhase = resolveSkillEditorSavePhase({
     isFileDirty: isDirty,

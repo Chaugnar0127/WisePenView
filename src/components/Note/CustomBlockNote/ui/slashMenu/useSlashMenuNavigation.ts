@@ -163,8 +163,9 @@ export function useSlashMenuNavigation({
   };
 
   /**
-   * 菜单挂载时在编辑器外层捕获导航键，原因是 BlockNote 内部索引无法同步鼠标 hover 起点。
-   * 同一生命周期还需观察可视区尺寸并维护上下边缘虚化；cleanup 负责移除监听与观察器。
+   * 执行时机：斜杠菜单挂载或候选项变化时绑定键盘导航与可视区观察。
+   * 不可替代原因：BlockNote 键盘事件、滚动位置和 ResizeObserver 都属于外部 DOM 状态。
+   * cleanup：移除事件监听、断开观察器并取消待执行帧。
    */
   useEffectForce(() => {
     const viewport = viewportRef.current;

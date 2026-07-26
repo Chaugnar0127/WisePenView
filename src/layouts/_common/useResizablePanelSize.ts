@@ -1,5 +1,5 @@
-import { useMount, useUnmount, useUpdateEffect } from 'ahooks';
-import { useRef, type RefObject } from 'react';
+import { useEffectForce } from '@/hooks/useEffectForce';
+import type { RefObject } from 'react';
 import type { PanelImperativeHandle } from 'react-resizable-panels';
 
 type ResizablePanelSize = number | string;
@@ -16,35 +16,16 @@ export function useResizablePanelSize({
   size,
   enabled = true,
 }: UseResizablePanelSizeOptions) {
-  const resizeFrameRef = useRef<number | null>(null);
-
-  const cancelDeferredResize = () => {
-    if (resizeFrameRef.current === null) return;
-    window.cancelAnimationFrame(resizeFrameRef.current);
-    resizeFrameRef.current = null;
-  };
-
-  const resizePanel = () => {
+  /**
+   * 执行时机：受控尺寸或启用状态变化时，同步命令式面板尺寸。
+   * 不可替代原因：react-resizable-panels 通过 imperative handle 管理布局，不属于 React 渲染输出。
+   * cleanup：取消下一帧的补偿 resize，避免卸载或新尺寸生效后执行过期命令。
+   */
+  useEffectForce(() => {
     if (!enabled) return;
-    panelRef.current?.resize(size);
-  };
-
-  const syncPanelSize = () => {
-    cancelDeferredResize();
+    const resizePanel = () => panelRef.current?.resize(size);
     resizePanel();
-    resizeFrameRef.current = window.requestAnimationFrame(() => {
-      resizeFrameRef.current = null;
-      resizePanel();
-    });
-  };
-
-  useMount(() => {
-    syncPanelSize();
-  });
-
-  useUpdateEffect(() => {
-    syncPanelSize();
-  }, [enabled, size]);
-
-  useUnmount(cancelDeferredResize);
+    const resizeFrame = window.requestAnimationFrame(resizePanel);
+    return () => window.cancelAnimationFrame(resizeFrame);
+  }, [enabled, panelRef, size]);
 }

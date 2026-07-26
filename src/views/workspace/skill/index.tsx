@@ -9,7 +9,6 @@ import type { DataNode } from '@/components/Tree';
 import VersionDropdown from '@/components/VersionDropdown';
 import { useInteractService, useSkillService } from '@/domains';
 import { SkillServicesMap } from '@/domains/Skill';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import {
@@ -21,7 +20,7 @@ import { Button, Tabs } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { FolderPlus, Pencil, Plus, Save, Settings, Upload } from 'lucide-react';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useState, type DependencyList, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import SkillConfigPanel from './_components/SkillConfigPanel';
@@ -44,17 +43,15 @@ interface SkillViewProps {
 interface SkillLayoutConfigProps {
   children: ReactNode;
   config?: ResourceHostLayoutConfig;
+  deps: DependencyList;
 }
 
-function SkillLayoutConfig({ children, config }: SkillLayoutConfigProps) {
-  const frameConfig = useMemo<ResourceHostLayoutConfig>(
-    () => ({
-      className: styles.pageWrap,
-      ...(config ?? {}),
-    }),
-    [config]
-  );
-  useResourceHostLayoutConfig(frameConfig);
+function SkillLayoutConfig({ children, config, deps }: SkillLayoutConfigProps) {
+  const frameConfig = {
+    className: styles.pageWrap,
+    ...(config ?? {}),
+  } satisfies ResourceHostLayoutConfig;
+  useResourceHostLayoutConfig(() => frameConfig, deps);
 
   return <>{children}</>;
 }
@@ -89,7 +86,16 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     configDescription,
   } = editorState;
   const { setEditing, setEditorContent, setConfigName, setConfigDescription } = editorActions;
-  const [createModalOpen, setCreateModalOpen] = useState(!resourceId);
+  const [createModalState, setCreateModalState] = useState(() => ({
+    resourceId,
+    open: !resourceId,
+  }));
+  let createModalOpen = createModalState.open;
+  if (createModalState.resourceId !== resourceId) {
+    createModalOpen = !resourceId;
+    setCreateModalState({ resourceId, open: createModalOpen });
+  }
+  const setCreateModalOpen = (open: boolean) => setCreateModalState({ resourceId, open });
 
   const {
     data: skill,
@@ -108,18 +114,11 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
 
   const activeFiles = localFiles;
   const isConfigSelected = selectedTreeNodeId === SKILL_CONFIG_NODE_ID;
-  const selectedFile = useMemo(() => {
+  const selectedFile = (() => {
     if (isConfigSelected) return null;
     if (selectedFileId) return findFile(activeFiles, selectedFileId);
     return getFirstFile(activeFiles);
-  }, [activeFiles, isConfigSelected, selectedFileId]);
-  /**
-   * 进入无 resourceId 的兼容路由时自动打开创建弹窗；关闭时回到云盘。
-   */
-  useEffectForce(() => {
-    if (!resourceId) setCreateModalOpen(true);
-  }, [resourceId]);
-
+  })();
   const isViewingDraft = skill ? viewingVersion === skill.draftVersion : false;
   const canEdit = Boolean(skill?.isOwner && isViewingDraft);
   const canPreviewSelectedFile = selectedFile ? canPreviewSkillFile(selectedFile) : false;
@@ -198,27 +197,24 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     : isConfigDirty
       ? t('config.badge.unsaved')
       : t('config.badge.complete');
-  const configTreeNodes = useMemo<DataNode[]>(
-    () => [
-      {
-        key: SKILL_CONFIG_NODE_ID,
-        draggable: false,
-        isLeaf: true,
-        title: (
-          <span className={styles.configTreeNode}>
-            <span className={styles.configTreeTitle}>
-              <span className={styles.configTreeIcon} aria-hidden="true">
-                <Settings size={14} />
-              </span>
-              <span className={styles.configTreeName}>{t('config.title')}</span>
+  const configTreeNodes = [
+    {
+      key: SKILL_CONFIG_NODE_ID,
+      draggable: false,
+      isLeaf: true,
+      title: (
+        <span className={styles.configTreeNode}>
+          <span className={styles.configTreeTitle}>
+            <span className={styles.configTreeIcon} aria-hidden="true">
+              <Settings size={14} />
             </span>
-            <span className={styles.configTreeBadge}>{configTreeBadgeText}</span>
+            <span className={styles.configTreeName}>{t('config.title')}</span>
           </span>
-        ),
-      },
-    ],
-    [configTreeBadgeText, t]
-  );
+          <span className={styles.configTreeBadge}>{configTreeBadgeText}</span>
+        </span>
+      ),
+    },
+  ] satisfies DataNode[];
   const {
     handleCancelPendingIntent,
     handleConfirmPendingIntent,
@@ -256,7 +252,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     state: editorState,
   });
 
-  const versionItems = useMemo(() => {
+  const versionItems = (() => {
     if (!skill) return [];
     const items = [
       {
@@ -273,12 +269,11 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
       });
     }
     return items;
-  }, [skill, viewingVersion]);
+  })();
 
-  const disabledVersionKeys = useMemo(
-    () => (skill?.isOwner ? new Set<string>() : new Set(versionItems.map((item) => item.key))),
-    [skill?.isOwner, versionItems]
-  );
+  const disabledVersionKeys = skill?.isOwner
+    ? new Set<string>()
+    : new Set(versionItems.map((item) => item.key));
 
   const handleCreateSuccess = (newResourceId: string) => {
     setCreateModalOpen(false);
@@ -307,14 +302,14 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     viewingVersion: viewingVersion ?? undefined,
   });
 
-  const handleToggleEditing = useCallback(() => {
+  const handleToggleEditing = () => {
     if (editing) {
       setEditorContent(savedContent);
       setEditing(false);
       return;
     }
     setEditing(true);
-  }, [editing, savedContent, setEditing, setEditorContent]);
+  };
 
   const handleCloseCreateModal = (open: boolean) => {
     setCreateModalOpen(open);
@@ -325,39 +320,54 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
 
   const headerSaveStatusText = formatSaveStatus(canEdit ? savePhase : undefined, t);
 
-  const headerConfig = useMemo<ResourceHostLayoutConfig>(
-    () => ({
-      sidePanel: skill?.resourceInfo
-        ? { resource: skill.resourceInfo, onResourceChanged: refreshSkill }
-        : undefined,
-      header: {
-        resource: {
-          resourceId: skill?.resourceId ?? resourceId,
-          resourceName: skill?.title || t('page.resourceFallbackName'),
-          resourceIconType: 'skill',
-          currentActions: skill?.currentActions,
-          copyVersion: skill?.version,
-          permissionResourceType: RESOURCE_KIND.SKILL,
-          ownerId: skill?.ownerId,
-          onPermissionSuccess: refreshSkill,
-          titleMeta: headerSaveStatusText ? (
-            <span
-              className={`${styles.toolbarSaveStatus} ${
-                savePhase === 'dirty' || savePhase === 'failed' ? styles.toolbarSaveStatusDirty : ''
-              }`}
-            >
-              {headerSaveStatusText}
-            </span>
-          ) : undefined,
-          actions: skill ? (
-            <div className={styles.topBarActions}>
-              {canEdit ? (
-                <>
+  const headerConfig = {
+    sidePanel: skill?.resourceInfo
+      ? { resource: skill.resourceInfo, onResourceChanged: refreshSkill }
+      : undefined,
+    header: {
+      resource: {
+        resourceId: skill?.resourceId ?? resourceId,
+        resourceName: skill?.title || t('page.resourceFallbackName'),
+        resourceIconType: 'skill',
+        currentActions: skill?.currentActions,
+        copyVersion: skill?.version,
+        permissionResourceType: RESOURCE_KIND.SKILL,
+        ownerId: skill?.ownerId,
+        onPermissionSuccess: refreshSkill,
+        titleMeta: headerSaveStatusText ? (
+          <span
+            className={`${styles.toolbarSaveStatus} ${
+              savePhase === 'dirty' || savePhase === 'failed' ? styles.toolbarSaveStatusDirty : ''
+            }`}
+          >
+            {headerSaveStatusText}
+          </span>
+        ) : undefined,
+        actions: skill ? (
+          <div className={styles.topBarActions}>
+            {canEdit ? (
+              <>
+                <Button
+                  variant="secondary"
+                  onPress={handleToggleEditing}
+                  isDisabled={
+                    !canPreviewSelectedFile ||
+                    contentLoading ||
+                    saveLoading ||
+                    configLoading ||
+                    isSaveQueueActive ||
+                    moveLoading
+                  }
+                >
+                  <Pencil size={16} />
+                  <span>{t(editing ? 'header.cancelEditing' : 'header.edit')}</span>
+                </Button>
+                {editing || hasSaveableChanges ? (
                   <Button
                     variant="secondary"
-                    onPress={handleToggleEditing}
+                    onPress={handleSave}
                     isDisabled={
-                      !canPreviewSelectedFile ||
+                      !hasSaveableChanges ||
                       contentLoading ||
                       saveLoading ||
                       configLoading ||
@@ -365,83 +375,60 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
                       moveLoading
                     }
                   >
-                    <Pencil size={16} />
-                    <span>{t(editing ? 'header.cancelEditing' : 'header.edit')}</span>
+                    <Save size={16} />
+                    <span>{t('header.save')}</span>
                   </Button>
-                  {editing || hasSaveableChanges ? (
-                    <Button
-                      variant="secondary"
-                      onPress={handleSave}
-                      isDisabled={
-                        !hasSaveableChanges ||
-                        contentLoading ||
-                        saveLoading ||
-                        configLoading ||
-                        isSaveQueueActive ||
-                        moveLoading
-                      }
-                    >
-                      <Save size={16} />
-                      <span>{t('header.save')}</span>
-                    </Button>
-                  ) : null}
-                  <Button
-                    variant="primary"
-                    onPress={handlePublish}
-                    isDisabled={
-                      publishLoading ||
-                      contentLoading ||
-                      saveLoading ||
-                      configLoading ||
-                      isSaveQueueActive ||
-                      moveLoading
-                    }
-                  >
-                    <Upload size={16} />
-                    <span>{t('header.publish')}</span>
-                  </Button>
-                </>
-              ) : null}
-              <VersionDropdown
-                items={versionItems}
-                disabledKeys={disabledVersionKeys}
-                formatVersion={SkillServicesMap.formatVersion}
-                onSelect={handleVersionSelect}
-              />
-            </div>
-          ) : undefined,
-        },
+                ) : null}
+                <Button
+                  variant="primary"
+                  onPress={handlePublish}
+                  isDisabled={
+                    publishLoading ||
+                    contentLoading ||
+                    saveLoading ||
+                    configLoading ||
+                    isSaveQueueActive ||
+                    moveLoading
+                  }
+                >
+                  <Upload size={16} />
+                  <span>{t('header.publish')}</span>
+                </Button>
+              </>
+            ) : null}
+            <VersionDropdown
+              items={versionItems}
+              disabledKeys={disabledVersionKeys}
+              formatVersion={SkillServicesMap.formatVersion}
+              onSelect={handleVersionSelect}
+            />
+          </div>
+        ) : undefined,
       },
-    }),
-    [
-      canEdit,
-      canPreviewSelectedFile,
-      configLoading,
-      contentLoading,
-      disabledVersionKeys,
-      editing,
-      handlePublish,
-      handleSave,
-      handleToggleEditing,
-      handleVersionSelect,
-      hasSaveableChanges,
-      headerSaveStatusText,
-      isSaveQueueActive,
-      moveLoading,
-      publishLoading,
-      refreshSkill,
-      resourceId,
-      savePhase,
-      saveLoading,
-      skill,
-      t,
-      versionItems,
-    ]
-  );
+    },
+  } satisfies ResourceHostLayoutConfig;
+  const layoutConfigDeps = [
+    canEdit,
+    canPreviewSelectedFile,
+    configLoading,
+    contentLoading,
+    editing,
+    hasSaveableChanges,
+    headerSaveStatusText,
+    isSaveQueueActive,
+    moveLoading,
+    publishLoading,
+    resourceId,
+    saveLoading,
+    savePhase,
+    skill,
+    t,
+    viewingVersion,
+  ];
 
   if (!resourceId) {
     return (
-      <SkillLayoutConfig config={headerConfig}>
+      <SkillLayoutConfig config={headerConfig} deps={layoutConfigDeps}>
         <div className={styles.middleOverlay}>
           <ResultState
             status="info"
@@ -465,7 +452,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
 
   if (error) {
     return (
-      <SkillLayoutConfig config={headerConfig}>
+      <SkillLayoutConfig config={headerConfig} deps={layoutConfigDeps}>
         <div className={styles.middleOverlay}>
           <ResultState
             status="warning"
@@ -484,7 +471,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
 
   if (loading && !skill) {
     return (
-      <SkillLayoutConfig config={headerConfig}>
+      <SkillLayoutConfig config={headerConfig} deps={layoutConfigDeps}>
         <div className={styles.middleOverlay} aria-busy="true" aria-live="polite">
           <div className={styles.middleOverlayLoading}>
             <Spin size="large" />
@@ -496,7 +483,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
   }
 
   return (
-    <SkillLayoutConfig config={headerConfig}>
+    <SkillLayoutConfig config={headerConfig} deps={layoutConfigDeps}>
       <div className={styles.page}>
         <div className={styles.mainArea}>
           {skill ? (

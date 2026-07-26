@@ -1,10 +1,11 @@
 import { TextSelection } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
-import { useLatest, useMount, useUnmount, useUpdateEffect } from 'ahooks';
+import { useLatest, useMount, useUnmount } from 'ahooks';
 import { useRef, useState } from 'react';
 
 import { getRootDomSelection } from '@/components/Note/CustomBlockNote/engines/editor/dom';
 import type { CustomBlockNoteEditor } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
+import { useEffectForce } from '@/hooks/useEffectForce';
 
 type FloatingToolbarGeometry = {
   visible: boolean;
@@ -163,7 +164,12 @@ export function useFloatingToolbarState(
     syncToolbarState();
   };
 
-  useUpdateEffect(() => {
+  /**
+   * 执行时机：工具栏禁用状态变化时隐藏或重新读取编辑器选区位置。
+   * 不可替代原因：位置来自 ProseMirror view 与 DOM Selection 的外部可变状态。
+   * cleanup：帧和卸载延时由 hook 统一卸载清理；本轮没有独立订阅。
+   */
+  useEffectForce(() => {
     if (disabled) {
       hideToolbar();
       return;

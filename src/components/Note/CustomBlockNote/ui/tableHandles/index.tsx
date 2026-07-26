@@ -1,6 +1,7 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import { useNoteEditorReadOnlyContext } from '@/components/Note/CustomBlockNote/engines/editor/readOnly';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
+import { useEffectForce } from '@/hooks/useEffectForce';
 import {
   isTableCellSelection,
   mapTableCell,
@@ -17,7 +18,7 @@ import {
   useExtensionState,
   type TableCellButtonProps,
 } from '@blocknote/react';
-import { useEventListener, useMount, useUnmount, useUpdateEffect } from 'ahooks';
+import { useEventListener, useMount, useUnmount } from 'ahooks';
 import { Plus, Table2 } from 'lucide-react';
 import { useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from 'react';
 import { createPortal } from 'react-dom';
@@ -119,7 +120,12 @@ function MountedTableInsertHandles() {
     tableHandles?.unfreezeHandles();
   });
 
-  useUpdateEffect(() => {
+  /**
+   * 执行时机：ProseMirror 表格单元格选择结束后清理行列轨道的临时选择状态。
+   * 不可替代原因：选择状态同时存在于编辑器扩展、模块级 rail store 和拖拽 ref 中。
+   * cleanup：没有订阅或延迟任务；组件卸载路径会再次清空相同外部状态。
+   */
+  useEffectForce(() => {
     if (isSelectingTableCells) {
       return;
     }
@@ -399,10 +405,6 @@ function MountedTableInsertHandles() {
     });
   };
 
-  const holdSelectionHandles = () => {
-    tableHandles.freezeHandles();
-  };
-
   const getRailReferenceRect = (target: SelectionTarget, endIndex = target.index) => {
     const startIndex = Math.min(target.index, endIndex);
     const lastIndex = Math.max(target.index, endIndex);
@@ -442,7 +444,7 @@ function MountedTableInsertHandles() {
       return;
     }
     hoveredSelectionKeyRef.current = getSelectionTargetKey(target);
-    holdSelectionHandles();
+    tableHandles.freezeHandles();
     const dragTarget = dragSelectionRef.current;
     if (dragTarget?.orientation === target.orientation) {
       if (dragTarget.index !== target.index) {

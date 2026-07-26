@@ -5,7 +5,7 @@ import { createReactInlineContentSpec } from '@blocknote/react';
 import type { Transaction } from '@tiptap/pm/state';
 import { TextSelection } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useEffectForce } from '@/hooks/useEffectForce';
@@ -53,6 +53,11 @@ function InlineMathFormulaPreview({
 }) {
   const mathRef = useRef<HTMLSpanElement>(null);
 
+  /**
+   * 执行时机：行内公式表达式变化后重新渲染 KaTeX DOM。
+   * 不可替代原因：KaTeX 通过命令式 API 写入真实 DOM，不能由 React JSX 直接表达。
+   * cleanup：下一次渲染会覆盖旧内容，没有订阅或异步任务需要清理。
+   */
   useEffectForce(() => {
     const el = mathRef.current;
     if (!el) return;
@@ -122,11 +127,11 @@ function InlineMathView(
     left: number;
     width: number;
   } | null>(null);
-  const clearPopoverPos = useCallback(() => {
+  const clearPopoverPos = () => {
     setPopoverPos(null);
-  }, []);
+  };
 
-  const measurePopoverPosition = useCallback(() => {
+  const measurePopoverPosition = () => {
     const el = shellRef.current;
     if (!el) {
       return false;
@@ -140,20 +145,19 @@ function InlineMathView(
       computeLatexPopoverPlacement(r, { minWidth: 260, maxWidth: 360, estHeight: 200 })
     );
     return true;
-  }, []);
+  };
 
   useLatexPopoverAnchorSync(isEditing, shellRef, measurePopoverPosition, clearPopoverPos);
 
   const canEnterEdit = !readOnly && !isEditing;
 
-  // TODO: 重构，不使用useEffect，使用更合适的语义以增加可读性，但是latexSupport有完全重构的可能，因此暂时保留
-  useEffectForce(() => {
-    if (isEditing) return;
-    setValue(sanitizeLatexInput(expression));
-  }, [expression, isEditing]);
-
   const displayLatex = isEditing ? value : expression;
 
+  /**
+   * 执行时机：BlockNote 插件把 autoOpenEdit 置为 true 后拉起一次公式编辑。
+   * 不可替代原因：该标记来自编辑器外部文档状态，还需用命令式事务消费并复位。
+   * cleanup：事务同步完成且标记立即复位，无需额外清理。
+   */
   useEffectForce(() => {
     if (readOnly) return;
     if (!autoOpenEdit) return;
@@ -224,13 +228,10 @@ function InlineMathView(
     setIsEditing(true);
   };
 
-  const setShellRef = useCallback(
-    (el: HTMLSpanElement | null) => {
-      shellRef.current = el;
-      contentRef(el);
-    },
-    [contentRef]
-  );
+  const setShellRef = (el: HTMLSpanElement | null) => {
+    shellRef.current = el;
+    contentRef(el);
+  };
 
   const editPopover = (
     <LatexEditPopover

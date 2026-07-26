@@ -1,6 +1,6 @@
 import EntryIcon from '@/components/Icons/EntryIcon';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
-import { useCallback, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveTableRow } from '../../index.type';
 import styles from '../../style.module.less';
@@ -31,14 +31,11 @@ export function DriveDndNameContent({
   const setDraggableNodeRef = draggable.setNodeRef;
   const setActivatorNodeRef = draggable.setActivatorNodeRef;
   const setDroppableNodeRef = droppable.setNodeRef;
-  const setNodeRef = useCallback(
-    (node: HTMLElement | null) => {
-      setDraggableNodeRef(node);
-      setActivatorNodeRef(node);
-      setDroppableNodeRef(node?.closest<HTMLElement>('[data-folder-row-id]') ?? null);
-    },
-    [setActivatorNodeRef, setDraggableNodeRef, setDroppableNodeRef]
-  );
+  const setNodeRef = (node: HTMLElement | null) => {
+    setDraggableNodeRef(node);
+    setActivatorNodeRef(node);
+    setDroppableNodeRef(node?.closest<HTMLElement>('[data-folder-row-id]') ?? null);
+  };
 
   return (
     <span

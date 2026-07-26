@@ -1,7 +1,6 @@
 import type { ResourcePermissionModalTarget } from '@/components/Drive/Modals';
 import type { FolderTableRowAction } from '@/components/Table';
 import { resolveResourceKind } from '@/utils/navigation/resourceTarget';
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   isDriveActionTarget,
@@ -41,104 +40,87 @@ export function useTableDriveRowActions({
 }: UseTableDriveRowActionsParams) {
   const { t } = useTranslation(['drive', 'resource', 'common']);
 
-  return useCallback(
-    (row: DriveTableRow): FolderTableRowAction<DriveTableRow>[] => {
-      if (isEditMode || !isDriveActionTarget(row.node)) return [];
+  return (row: DriveTableRow): FolderTableRowAction<DriveTableRow>[] => {
+    if (isEditMode || !isDriveActionTarget(row.node)) return [];
 
-      const actionTarget = row.node;
-      if (actionTarget.type === 'folder' && actionTarget.systemType === 'shared') return [];
+    const actionTarget = row.node;
+    if (actionTarget.type === 'folder' && actionTarget.systemType === 'shared') return [];
 
-      const openAction: FolderTableRowAction<DriveTableRow> =
-        actionTarget.type === 'folder'
-          ? {
-              key: 'enter',
-              label: t('table.enter'),
-              onPress: () => onEnterFolder(actionTarget.id),
-            }
-          : {
-              key: 'open',
-              label: t('table.open'),
-              onPress: () => onOpenNode(actionTarget),
-            };
+    const openAction: FolderTableRowAction<DriveTableRow> =
+      actionTarget.type === 'folder'
+        ? {
+            key: 'enter',
+            label: t('table.enter'),
+            onPress: () => onEnterFolder(actionTarget.id),
+          }
+        : {
+            key: 'open',
+            label: t('table.open'),
+            onPress: () => onOpenNode(actionTarget),
+          };
 
-      const actions: FolderTableRowAction<DriveTableRow>[] = [openAction];
+    const actions: FolderTableRowAction<DriveTableRow>[] = [openAction];
 
-      if (showManagePermission && !isTrashView) {
-        if (actionTarget.type === 'folder') {
-          actions.push(
-            {
-              key: 'tag-access-permission',
-              label: t('permission.accessPermission', { ns: 'resource' }),
-              onPress: () => onOpenTagAccessPermission(actionTarget.tagId),
-            },
-            {
-              key: 'tag-mount-permission',
-              label: t('permission.mountPermission', { ns: 'resource' }),
-              onPress: () => onOpenTagMountPermission(actionTarget.tagId),
-            }
-          );
-        } else if (actionTarget.type === 'resource') {
-          actions.push({
-            key: 'resource-permission',
-            label: t('permission.resourcePermission', { ns: 'resource' }),
-            onPress: () =>
-              onOpenResourcePermission({
-                resourceId: actionTarget.resourceId,
-                resourceType: resolveResourceKind(actionTarget.resourceType),
-                resourceName: row.name,
-                fallbackTagId: actionTarget.folderTagId,
-              }),
-          });
-        }
-      }
-
-      if (isDriveSystemFolderNode(actionTarget)) return actions;
-
-      if (actionTarget.type !== 'link') {
+    if (showManagePermission && !isTrashView) {
+      if (actionTarget.type === 'folder') {
+        actions.push(
+          {
+            key: 'tag-access-permission',
+            label: t('permission.accessPermission', { ns: 'resource' }),
+            onPress: () => onOpenTagAccessPermission(actionTarget.tagId),
+          },
+          {
+            key: 'tag-mount-permission',
+            label: t('permission.mountPermission', { ns: 'resource' }),
+            onPress: () => onOpenTagMountPermission(actionTarget.tagId),
+          }
+        );
+      } else if (actionTarget.type === 'resource') {
         actions.push({
-          key: 'rename',
-          label: t('actions.rename', { ns: 'common' }),
-          onPress: () => onRename(actionTarget),
+          key: 'resource-permission',
+          label: t('permission.resourcePermission', { ns: 'resource' }),
+          onPress: () =>
+            onOpenResourcePermission({
+              resourceId: actionTarget.resourceId,
+              resourceType: resolveResourceKind(actionTarget.resourceType),
+              resourceName: row.name,
+              fallbackTagId: actionTarget.folderTagId,
+            }),
         });
       }
+    }
 
-      actions.push(
-        {
-          key: 'move',
-          label: isTrashView ? t('move.titleToDrive') : t('table.move'),
-          onPress: () => onMoveNodes([actionTarget]),
-        },
-        {
-          key: 'delete',
-          label:
-            groupId != null
-              ? t('delete.remove')
-              : isTrashView
-                ? t('delete.permanent')
-                : actionTarget.type === 'link'
-                  ? t('delete.deleteLink')
-                  : t('delete.moveToTrash'),
-          variant: 'danger',
-          onPress: () => onDelete(actionTarget),
-        }
-      );
+    if (isDriveSystemFolderNode(actionTarget)) return actions;
 
-      return actions;
-    },
-    [
-      groupId,
-      isEditMode,
-      isTrashView,
-      onDelete,
-      onEnterFolder,
-      onMoveNodes,
-      onOpenNode,
-      onOpenResourcePermission,
-      onOpenTagAccessPermission,
-      onOpenTagMountPermission,
-      onRename,
-      showManagePermission,
-      t,
-    ]
-  );
+    if (actionTarget.type !== 'link') {
+      actions.push({
+        key: 'rename',
+        label: t('actions.rename', { ns: 'common' }),
+        onPress: () => onRename(actionTarget),
+      });
+    }
+
+    actions.push(
+      {
+        key: 'move',
+        label: isTrashView ? t('move.titleToDrive') : t('table.move'),
+        onPress: () => onMoveNodes([actionTarget]),
+      },
+      {
+        key: 'delete',
+        label:
+          groupId != null
+            ? t('delete.remove')
+            : isTrashView
+              ? t('delete.permanent')
+              : actionTarget.type === 'link'
+                ? t('delete.deleteLink')
+                : t('delete.moveToTrash'),
+        variant: 'danger',
+        onPress: () => onDelete(actionTarget),
+      }
+    );
+
+    return actions;
+  };
 }

@@ -40,6 +40,11 @@ function ReasoningBlock({
     label = t('message.reasoning.duration', { count: displayDuration });
   }
 
+  /**
+   * 执行时机：推理流开始或结束时记录耗时、调整展开态并校正消息滚动位置。
+   * 不可替代原因：流状态来自外部消息运行时，耗时依赖时钟，滚动器也是命令式外部对象。
+   * cleanup：没有订阅或延迟任务，无需清理。
+   */
   useEffectForce(() => {
     const wasLoading = previousLoadingRef.current;
     previousLoadingRef.current = loading;
@@ -82,9 +87,7 @@ function ReasoningBlock({
           aria-hidden="true"
           size={14}
         />
-        <span className={loading ? styles.shimmerLabel : undefined}>
-          {label}
-        </span>
+        <span className={loading ? styles.shimmerLabel : undefined}>{label}</span>
         <ChevronDown
           size={14}
           aria-hidden="true"

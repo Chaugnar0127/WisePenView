@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/core';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isDriveActionTarget, isDriveSharedFolderNode } from '../common/driveComponentModel';
 import type { DriveTableRow } from './index.type';
@@ -81,15 +81,15 @@ export function useTableDriveDnd({
     })
   );
 
-  const driveNodeMap = useMemo(() => buildDriveNodeMap(rowMap, pathNodes), [pathNodes, rowMap]);
+  const driveNodeMap = buildDriveNodeMap(rowMap, pathNodes);
   const activeDragRow = activeDragRowId ? rowMap.get(activeDragRowId) : undefined;
   const draggingCount = draggingRowKeys.size;
 
-  const clearDragState = useCallback(() => {
+  const clearDragState = () => {
     draggingRowKeysRef.current = new Set();
     setDraggingRowKeys(new Set());
     setActiveDragRowId(null);
-  }, []);
+  };
 
   const { loading: movingByDrag, run: runMoveRowsByDrag } = useRequest(
     async ({
@@ -123,77 +123,65 @@ export function useTableDriveDnd({
     }
   );
 
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const rowId = event.active.data.current?.rowId;
-      if (typeof rowId !== 'string' || movingByDrag) return;
+  const handleDragStart = (event: DragStartEvent) => {
+    const rowId = event.active.data.current?.rowId;
+    if (typeof rowId !== 'string' || movingByDrag) return;
 
-      const row = rowMap.get(rowId);
-      if (!row) return;
+    const row = rowMap.get(rowId);
+    if (!row) return;
 
-      const sourceRowIds = resolveDragSourceIds(row, checkedRowKeys, rowMap);
-      if (sourceRowIds.length === 0) return;
+    const sourceRowIds = resolveDragSourceIds(row, checkedRowKeys, rowMap);
+    if (sourceRowIds.length === 0) return;
 
-      const nextDraggingRowKeys = new Set(sourceRowIds);
-      draggingRowKeysRef.current = nextDraggingRowKeys;
-      setDraggingRowKeys(nextDraggingRowKeys);
-      setActiveDragRowId(row.id);
-    },
-    [checkedRowKeys, movingByDrag, rowMap]
-  );
+    const nextDraggingRowKeys = new Set(sourceRowIds);
+    draggingRowKeysRef.current = nextDraggingRowKeys;
+    setDraggingRowKeys(nextDraggingRowKeys);
+    setActiveDragRowId(row.id);
+  };
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const targetNodeId = event.over?.data.current?.targetNodeId;
-      const sourceRowIds = [...draggingRowKeysRef.current];
-      const targetNode =
-        typeof targetNodeId === 'string' ? driveNodeMap.get(targetNodeId) : undefined;
+  const handleDragEnd = (event: DragEndEvent) => {
+    const targetNodeId = event.over?.data.current?.targetNodeId;
+    const sourceRowIds = [...draggingRowKeysRef.current];
+    const targetNode =
+      typeof targetNodeId === 'string' ? driveNodeMap.get(targetNodeId) : undefined;
 
-      if (
-        targetNode &&
-        isDriveMoveTarget(targetNode) &&
-        sourceRowIds.length > 0 &&
-        !sourceRowIds.includes(targetNode.id)
-      ) {
-        runMoveRowsByDrag({
-          sourceRowIds,
-          targetFolderNodeId: targetNode.id,
-        });
-      }
+    if (
+      targetNode &&
+      isDriveMoveTarget(targetNode) &&
+      sourceRowIds.length > 0 &&
+      !sourceRowIds.includes(targetNode.id)
+    ) {
+      runMoveRowsByDrag({
+        sourceRowIds,
+        targetFolderNodeId: targetNode.id,
+      });
+    }
 
-      clearDragState();
-    },
-    [clearDragState, driveNodeMap, runMoveRowsByDrag]
-  );
+    clearDragState();
+  };
 
-  const renderBreadcrumbItem = useCallback(
-    (content: ReactNode, item: FolderTableBreadcrumbItem) => {
-      const targetNode = driveNodeMap.get(item.id);
-      if (!targetNode) return content;
+  const renderBreadcrumbItem = (content: ReactNode, item: FolderTableBreadcrumbItem) => {
+    const targetNode = driveNodeMap.get(item.id);
+    if (!targetNode) return content;
 
-      return (
-        <DriveDroppableBreadcrumb
-          targetNodeId={targetNode.id}
-          disabled={movingByDrag || draggingCount === 0 || !isDriveMoveTarget(targetNode)}
-        >
-          {content}
-        </DriveDroppableBreadcrumb>
-      );
-    },
-    [draggingCount, driveNodeMap, movingByDrag]
-  );
-
-  const renderNameContent = useCallback(
-    (content: ReactNode, row: DriveTableRow) => (
-      <DriveDndNameContent
-        row={row}
-        draggableDisabled={movingByDrag || !isDriveDragSource(row)}
-        droppableDisabled={movingByDrag || draggingCount === 0 || !isDriveMoveTarget(row.node)}
+    return (
+      <DriveDroppableBreadcrumb
+        targetNodeId={targetNode.id}
+        disabled={movingByDrag || draggingCount === 0 || !isDriveMoveTarget(targetNode)}
       >
         {content}
-      </DriveDndNameContent>
-    ),
-    [draggingCount, movingByDrag]
+      </DriveDroppableBreadcrumb>
+    );
+  };
+
+  const renderNameContent = (content: ReactNode, row: DriveTableRow) => (
+    <DriveDndNameContent
+      row={row}
+      draggableDisabled={movingByDrag || !isDriveDragSource(row)}
+      droppableDisabled={movingByDrag || draggingCount === 0 || !isDriveMoveTarget(row.node)}
+    >
+      {content}
+    </DriveDndNameContent>
   );
 
   return {

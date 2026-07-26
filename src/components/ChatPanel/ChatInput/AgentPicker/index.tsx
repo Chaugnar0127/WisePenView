@@ -7,11 +7,12 @@ import {
   buildDefaultPersonalAgent,
   resolveChatInputSelectedAgent,
 } from '@/domains/Chat';
+import { useEffectForce } from '@/hooks/useEffectForce';
 import { parseErrorMessage } from '@/utils/error';
 import { ListBox, ListBoxItem, toast } from '@heroui/react';
-import { useMount, useRequest, useUpdateEffect } from 'ahooks';
+import { useRequest } from 'ahooks';
 import { Bot, Check } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
 import styles from '../style.module.less';
@@ -53,21 +54,14 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
     },
     onError: (error) => toast.danger(parseErrorMessage(error)),
   });
-  const displayAgents = useMemo(
-    () => buildChatInputAgentOptions(mergeAgentOptions(agents, injectedAgents), selectedAgent),
-    [agents, injectedAgents, selectedAgent]
+  const displayAgents = buildChatInputAgentOptions(
+    mergeAgentOptions(agents, injectedAgents),
+    selectedAgent
   );
-  const injectedAgentKey = useMemo(
-    () =>
-      (injectedAgents ?? [])
-        .map((agent) => `${agent.agentId}:${agent.agentVersion ?? ''}`)
-        .join('|'),
-    [injectedAgents]
-  );
-  const injectedAgentIds = useMemo(
-    () => new Set((injectedAgents ?? []).map((agent) => agent.agentId)),
-    [injectedAgents]
-  );
+  const injectedAgentKey = (injectedAgents ?? [])
+    .map((agent) => `${agent.agentId}:${agent.agentVersion ?? ''}`)
+    .join('|');
+  const injectedAgentIds = new Set((injectedAgents ?? []).map((agent) => agent.agentId));
 
   const syncPreferredAgent = () => {
     const currentAgent = store.getState().selectedAgent;
@@ -86,8 +80,12 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
     setSelectedAgent(preferredAgent);
   };
 
-  useMount(syncPreferredAgent);
-  useUpdateEffect(syncPreferredAgent, [injectedAgentKey, preferredAgent?.agentId]);
+  /**
+   * 执行时机：外部注入的 Agent 集合或首选 Agent 变化时校正聊天输入 store。
+   * 不可替代原因：选中 Agent 保存在独立 Zustand store，不能由当前组件 JSX 直接派生。
+   * cleanup：没有订阅或异步任务，无需清理。
+   */
+  useEffectForce(syncPreferredAgent, [injectedAgentKey, preferredAgent?.agentId]);
 
   const handleSelect = (agent: ChatAgentOption) => {
     setSelectedAgent(agent);

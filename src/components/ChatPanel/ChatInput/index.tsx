@@ -3,7 +3,7 @@ import { useEffectForce } from '@/hooks/useEffectForce';
 import { TextArea } from '@heroui/react';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChatInputStoreProvider } from './_store/ChatInputStoreProvider';
 import AttachmentStrip from './AttachmentStrip';
@@ -37,16 +37,16 @@ function ChatInputContent({
       sending,
     });
 
-  const syncCompactModelTrigger = useCallback((width: number) => {
-    setCompactModelTrigger(width < FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH);
-  }, []);
-
   /**
    * 执行时机：fullWidth 挂载后，以及输入卡片尺寸变化时。
    * 不可替代原因：模型按钮是否展示文案取决于输入区实宽，无法仅靠 fullWidth 判断。
    * cleanup：断开 ResizeObserver。
    */
   useEffectForce(() => {
+    const syncCompactModelTrigger = (width: number) => {
+      setCompactModelTrigger(width < FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH);
+    };
+
     if (!fullWidth) {
       setCompactModelTrigger(false);
       return;
@@ -66,7 +66,7 @@ function ChatInputContent({
     observer.observe(inputCard);
     syncCompactModelTrigger(inputCard.getBoundingClientRect().width);
     return () => observer.disconnect();
-  }, [fullWidth, syncCompactModelTrigger]);
+  }, [fullWidth]);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;

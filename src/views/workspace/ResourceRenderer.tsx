@@ -46,7 +46,7 @@ function UnsupportedResource({
   onClose,
 }: UnsupportedResourceProps) {
   const { t } = useTranslation('workspace');
-  useResourceHostLayoutConfig(HEADERLESS_LAYOUT_CONFIG);
+  useResourceHostLayoutConfig(() => HEADERLESS_LAYOUT_CONFIG, []);
 
   const readableType = resourceType
     ? t('renderer.resourceType', { type: resourceType })
@@ -75,7 +75,7 @@ function UnsupportedResource({
 function FileViewerResolver({ target, onTargetChange, onClose }: ResourceRendererProps) {
   const { t } = useTranslation('workspace');
   const documentService = useDocumentService();
-  useResourceHostLayoutConfig(HEADERLESS_LAYOUT_CONFIG);
+  useResourceHostLayoutConfig(() => HEADERLESS_LAYOUT_CONFIG, []);
 
   const { resourceId = '' } = target;
   const {

@@ -42,7 +42,7 @@
 - 只写函数组件和 Hooks，不使用 `React.FC` / `FC`，不新增 `any`。
 - 默认不直接使用 `useEffect`；请求用 `useRequest`，交互逻辑放事件处理函数，生命周期语义优先用已有 hook。
 - 必须使用 effect 时，走 `useEffectForce`，并用中文 JSDoc 说明执行时机、不可替代原因和 cleanup。
-- 不滥用 `useMemo`、`useCallback`、`React.memo`；只有计算昂贵或引用稳定有实际收益时再使用。
+- 业务代码默认禁止 `useMemo`、`useCallback`、`useUpdateEffect`；确有必要时只能使用 `useMemoForce` / `useCallbackForce`，并在调用点用带 `@wisepen-manual-memo` 标记的中文 JSDoc 说明为什么、收益和失效条件。原生 hook 只在统一封装文件中放行。
 - 样式使用 Less CSS Modules，类名用 camelCase，避免非必要内联样式。
 - 业务弹窗优先使用 `AppAlertDialog`、`AppFormDialog`、`AppDisplayDialog`、`AppModal`；普通业务代码不直接使用底层 `Modal` / `AlertDialog`。
 

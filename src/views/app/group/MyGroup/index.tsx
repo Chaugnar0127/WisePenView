@@ -6,7 +6,7 @@ import { GROUP_ROLE_FILTER_MAP } from '@/domains/Group';
 import { Button, Pagination, toast } from '@heroui/react';
 import { usePagination } from 'ahooks';
 import { Plus, UserPlus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import GroupCard from '../_components/GroupCard';
@@ -80,7 +80,7 @@ function MyGroup() {
   const groups: Group[] = groupsData?.list ?? [];
   const total = groupsData?.total ?? 0;
   const totalPages = Math.max(Math.ceil(total / size), 1);
-  const pages = useMemo(() => buildPaginationItems(pageNum, totalPages), [pageNum, totalPages]);
+  const pages = buildPaginationItems(pageNum, totalPages);
   const start = total === 0 ? 0 : (pageNum - 1) * size + 1;
   const end = Math.min(pageNum * size, total);
 

@@ -35,26 +35,39 @@
 - 统一使用 `useEffectForce`。
 - `useEffectForce` 上方必须写 JSDoc 风格中文注释。
 - 注释必须说明执行时机、为什么不能用事件驱动或状态派生实现、cleanup 的作用。
+- 禁止使用 `useUpdateEffect` 规避首次执行；它仍是 effect，不能解决错误的数据流设计。
 
 ## 四、useMemo 与 useCallback
 
-不要预先优化。只在以下情况使用：
+业务代码默认禁止 `useMemo` 和 `useCallback`，ESLint 会同时拦截命名导入和
+`React.useMemo` / `React.useCallback` 属性调用。React 函数组件应先保证没有缓存也能正确工作。
 
-- 缓存结果或函数会作为 props 传给 `React.memo` 子组件。
-- 计算开销很大，例如复杂数据处理、递归计算。
-- 第三方库明确要求稳定引用，否则会重复注册或销毁资源。
+确有必要时，统一使用 `src/hooks/useMemoForce.ts` 或
+`src/hooks/useCallbackForce.ts`。这两个薄封装是原生 hook 的唯一放行入口，不代表每个调用都有性能收益。
+
+只有以下情况才允许使用受控封装：
+
+- React Profiler 或可重复基准明确证明计算或子树重渲染构成实际性能瓶颈。
+- 第三方命令式 API 明确把引用身份作为注册、取消注册或资源生命周期契约。
+- 缓存值是其它已批准 memoization 的必要依赖，且无法通过移动对象创建位置消除。
+
+例外要求：
+
+- 每个调用点上方必须紧邻中文 JSDoc，并包含 `@wisepen-manual-memo` 标记，以及“为什么：”“收益：”“失效条件：”三项说明。该标记只放行本项目的 memo 治理规则，不是通用 `eslint-disable`。
+- `useMemo` / `useCallback` 只是性能优化，删除后行为必须保持正确。
+- `useMemoizedFn` 只用于“稳定函数身份 + 始终读取最新闭包”的真实命令式契约，不得替代普通事件函数。
 
 不要缓存：
 
 - 简单运算，例如 `a + b`。
 - 每次渲染都会因为不稳定依赖而变化的函数。
-- 只是为了“看起来性能更好”的普通 JSX 片段。
+- 只是为了“看起来性能更好”的普通 JSX 片段或 context value。
 
 ## 五、JSX
 
 - 列表渲染必须使用稳定且唯一的 key，优先使用数据中的 id。
 - 禁止用数组索引作为 key，除非列表完全静态且不会增删、排序。
-- 避免在 JSX 中写复杂逻辑，复杂条件、循环、数组操作抽到组件外函数、局部变量或必要的 `useMemo`。
+- 避免在 JSX 中写复杂逻辑，复杂条件、循环、数组操作抽到组件外函数或局部变量。
 - 避免 `{count && <Component />}` 这类可能渲染 `0` 的写法，使用 `{count ? <Component /> : null}`。
 - 不要在组件内部定义其它组件。
 - 避免超过两层的三元表达式嵌套，优先早期 return 或拆变量。
@@ -93,7 +106,8 @@
 - [ ] Hooks 调用位置合法。
 - [ ] 没有直接使用 `useEffect`。
 - [ ] 必要副作用使用 `useEffectForce` 并写清楚 JSDoc。
-- [ ] 没有无收益的 memoization。
+- [ ] 没有 `useUpdateEffect`。
+- [ ] 没有 `useMemo` / `useCallback`；获批例外只通过 `useMemoForce` / `useCallbackForce`，并有带标记的 why 注释。
 - [ ] JSX key 稳定唯一。
 - [ ] state 更新保持不可变。
 - [ ] 未新增 `any`。

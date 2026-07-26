@@ -6,7 +6,7 @@ import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import AdminPageHeader from '@/views/admin/_common/AdminPageHeader';
 import { Button, Chip, ListBox, Select, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
 import CreateAnnouncementModal from './CreateAnnouncementModal';
@@ -43,89 +43,86 @@ function AnnouncementManagement() {
     }
   );
 
-  const columns = useMemo<DataTableColumn<AdminMessage>[]>(
-    () => [
-      {
-        id: 'title',
-        label: t('announcement.column.title'),
-        width: 'lg',
-        isRowHeader: true,
-        align: 'start',
-        renderCell: (record) => (
-          <DataTable.TextCell emphasis title={formatOptionalText(record.title)}>
-            {formatOptionalText(record.title)}
-          </DataTable.TextCell>
-        ),
-      },
-      {
-        id: 'messageType',
-        label: t('announcement.column.type'),
-        width: 'sm',
-        renderCell: (record) => {
-          const type = formatOptionalText(record.messageType);
-          return (
-            <Chip size="sm" variant="soft">
-              <Chip.Label>{t(`announcement.type.${type}`, { defaultValue: type })}</Chip.Label>
-            </Chip>
-          );
-        },
-      },
-      {
-        id: 'deliveryScope',
-        label: t('announcement.column.scope'),
-        width: 'sm',
-        renderCell: (record) => {
-          const scope = formatOptionalText(record.deliveryScope);
-          return (
-            <Chip size="sm" variant="soft">
-              <Chip.Label>{t(`announcement.scope.${scope}`, { defaultValue: scope })}</Chip.Label>
-            </Chip>
-          );
-        },
-      },
-      {
-        id: 'readStatus',
-        label: t('announcement.column.status'),
-        width: 'sm',
-        renderCell: (record) => (
-          <Chip size="sm" variant="soft" className={pageStyles.statusRead}>
-            <Chip.Label>{t('announcement.readCount', { count: record.readCount ?? 0 })}</Chip.Label>
+  const columns = [
+    {
+      id: 'title',
+      label: t('announcement.column.title'),
+      width: 'lg',
+      isRowHeader: true,
+      align: 'start',
+      renderCell: (record) => (
+        <DataTable.TextCell emphasis title={formatOptionalText(record.title)}>
+          {formatOptionalText(record.title)}
+        </DataTable.TextCell>
+      ),
+    },
+    {
+      id: 'messageType',
+      label: t('announcement.column.type'),
+      width: 'sm',
+      renderCell: (record) => {
+        const type = formatOptionalText(record.messageType);
+        return (
+          <Chip size="sm" variant="soft">
+            <Chip.Label>{t(`announcement.type.${type}`, { defaultValue: type })}</Chip.Label>
           </Chip>
-        ),
+        );
       },
-      {
-        id: 'content',
-        label: t('announcement.column.content'),
-        width: 'fill',
-        align: 'start',
-        renderCell: (record) => (
-          <DataTable.TextCell title={formatOptionalText(record.content)}>
-            {formatOptionalText(record.content)}
-          </DataTable.TextCell>
-        ),
+    },
+    {
+      id: 'deliveryScope',
+      label: t('announcement.column.scope'),
+      width: 'sm',
+      renderCell: (record) => {
+        const scope = formatOptionalText(record.deliveryScope);
+        return (
+          <Chip size="sm" variant="soft">
+            <Chip.Label>{t(`announcement.scope.${scope}`, { defaultValue: scope })}</Chip.Label>
+          </Chip>
+        );
       },
-      {
-        id: 'jumpUrl',
-        label: t('announcement.column.jumpUrl'),
-        width: 'lg',
-        align: 'start',
-        renderCell: (record) => (
-          <DataTable.TextCell muted title={formatOptionalText(record.jumpUrl)}>
-            {formatOptionalText(record.jumpUrl)}
-          </DataTable.TextCell>
-        ),
-      },
-      {
-        id: 'createTime',
-        label: t('announcement.column.createTime'),
-        width: 'lg',
-        renderCell: (record) => (
-          <DataTable.TextCell>{formatDateTime(record.createTime)}</DataTable.TextCell>
-        ),
-      },
-    ],
-    [t]
-  );
+    },
+    {
+      id: 'readStatus',
+      label: t('announcement.column.status'),
+      width: 'sm',
+      renderCell: (record) => (
+        <Chip size="sm" variant="soft" className={pageStyles.statusRead}>
+          <Chip.Label>{t('announcement.readCount', { count: record.readCount ?? 0 })}</Chip.Label>
+        </Chip>
+      ),
+    },
+    {
+      id: 'content',
+      label: t('announcement.column.content'),
+      width: 'fill',
+      align: 'start',
+      renderCell: (record) => (
+        <DataTable.TextCell title={formatOptionalText(record.content)}>
+          {formatOptionalText(record.content)}
+        </DataTable.TextCell>
+      ),
+    },
+    {
+      id: 'jumpUrl',
+      label: t('announcement.column.jumpUrl'),
+      width: 'lg',
+      align: 'start',
+      renderCell: (record) => (
+        <DataTable.TextCell muted title={formatOptionalText(record.jumpUrl)}>
+          {formatOptionalText(record.jumpUrl)}
+        </DataTable.TextCell>
+      ),
+    },
+    {
+      id: 'createTime',
+      label: t('announcement.column.createTime'),
+      width: 'lg',
+      renderCell: (record) => (
+        <DataTable.TextCell>{formatDateTime(record.createTime)}</DataTable.TextCell>
+      ),
+    },
+  ] satisfies DataTableColumn<AdminMessage>[];
 
   const messages = data?.messages ?? [];
   const total = data?.total ?? 0;

@@ -17,7 +17,7 @@ import { Button, ProgressBar, toast } from '@heroui/react';
 import { useInterval, useMount, useRequest, useUnmount } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { CircleAlert, CircleCheck } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -171,80 +171,74 @@ function UploadQueueTab() {
     cancelPolling();
   });
 
-  const items = useMemo(
-    () => buildUploadQueueRows(localUploads, pendingItems, completedRows, t),
-    [completedRows, localUploads, pendingItems, t]
-  );
+  const items = buildUploadQueueRows(localUploads, pendingItems, completedRows, t);
 
-  const columns = useMemo<DataTableColumn<UploadQueueRow>[]>(
-    () => [
-      {
-        id: 'filename',
-        label: t('uploadQueue.columns.filename'),
-        width: 'fill',
-        isRowHeader: true,
-        renderCell: (row) => (
-          <span className={styles.nameText}>{row.documentName || t('node.unnamedDocument')}</span>
-        ),
+  const columns = [
+    {
+      id: 'filename',
+      label: t('uploadQueue.columns.filename'),
+      width: 'fill',
+      isRowHeader: true,
+      renderCell: (row) => (
+        <span className={styles.nameText}>{row.documentName || t('node.unnamedDocument')}</span>
+      ),
+    },
+    {
+      id: 'fileType',
+      label: t('uploadQueue.columns.type'),
+      width: 'sm',
+      renderCell: (row) => formatFileType(row.fileType),
+    },
+    {
+      id: 'size',
+      label: t('uploadQueue.columns.size'),
+      width: 'sm',
+      renderCell: (row) => formatFileSize(row.size),
+    },
+    {
+      id: 'progress',
+      label: t('uploadQueue.columns.progress'),
+      width: 'lg',
+      renderCell: (row) => <UploadProgressCell row={row} />,
+    },
+    {
+      id: 'action',
+      label: '',
+      width: 'md',
+      align: 'end',
+      renderCell: (row) => {
+        if (!row.retryable && !row.cancelable) return null;
+        return (
+          <div className={styles.actionGroup}>
+            {row.retryable ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                isDisabled={retryingId === row.documentId}
+                onPress={() => {
+                  if (row.documentId) runRetryPendingDoc(row.documentId);
+                }}
+              >
+                {t('actions.retry', { ns: 'common' })}
+              </Button>
+            ) : null}
+            {row.cancelable ? (
+              <Button
+                variant="danger"
+                size="sm"
+                isDisabled={cancelingId === row.documentId}
+                onPress={() => {
+                  if (row.documentId) runCancelPendingDoc(row.documentId);
+                }}
+              >
+                {t('actions.cancel', { ns: 'common' })}
+              </Button>
+            ) : null}
+          </div>
+        );
       },
-      {
-        id: 'fileType',
-        label: t('uploadQueue.columns.type'),
-        width: 'sm',
-        renderCell: (row) => formatFileType(row.fileType),
-      },
-      {
-        id: 'size',
-        label: t('uploadQueue.columns.size'),
-        width: 'sm',
-        renderCell: (row) => formatFileSize(row.size),
-      },
-      {
-        id: 'progress',
-        label: t('uploadQueue.columns.progress'),
-        width: 'lg',
-        renderCell: (row) => <UploadProgressCell row={row} />,
-      },
-      {
-        id: 'action',
-        label: '',
-        width: 'md',
-        align: 'end',
-        renderCell: (row) => {
-          if (!row.retryable && !row.cancelable) return null;
-          return (
-            <div className={styles.actionGroup}>
-              {row.retryable ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  isDisabled={retryingId === row.documentId}
-                  onPress={() => {
-                    if (row.documentId) runRetryPendingDoc(row.documentId);
-                  }}
-                >
-                  {t('actions.retry', { ns: 'common' })}
-                </Button>
-              ) : null}
-              {row.cancelable ? (
-                <Button
-                  variant="danger"
-                  size="sm"
-                  isDisabled={cancelingId === row.documentId}
-                  onPress={() => {
-                    if (row.documentId) runCancelPendingDoc(row.documentId);
-                  }}
-                >
-                  {t('actions.cancel', { ns: 'common' })}
-                </Button>
-              ) : null}
-            </div>
-          );
-        },
-      },
-    ],
-    [cancelingId, retryingId, runCancelPendingDoc, runRetryPendingDoc, t]
-  );
+    },
+  ] satisfies DataTableColumn<UploadQueueRow>[];
 
   return (
     <div className={styles.wrapper}>

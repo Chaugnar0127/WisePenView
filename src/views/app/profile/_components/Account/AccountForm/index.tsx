@@ -8,7 +8,7 @@ import type { ProfileFieldKey } from '@/views/app/profile/profile.config';
 import { Button, Form, Label, ListBox, TextField, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Pencil, X } from 'lucide-react';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buildProfileFormValues } from './buildProfileFormValues';
 import type { AccountFormProps } from './index.type';
@@ -64,10 +64,7 @@ function AccountForm({
   const userService = useUserService();
   const [editMode, setEditMode] = useState(false);
   const [formDraft, setFormDraft] = useState<FormDraft | null>(null);
-  const userFormValues = useMemo<UpdateUserInfoRequest>(
-    () => (user ? buildProfileFormValues(user) : {}),
-    [user]
-  );
+  const userFormValues = (user ? buildProfileFormValues(user) : {}) satisfies UpdateUserInfoRequest;
   const formValues = editMode && formDraft?.user === user ? formDraft.values : userFormValues;
 
   const { loading: saving, runAsync: runSave } = useRequest(

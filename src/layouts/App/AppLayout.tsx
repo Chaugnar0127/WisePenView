@@ -17,7 +17,7 @@ import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -43,14 +43,14 @@ function AppLayout() {
   const sidebarWidth = clampSidebarWidth(storedSidebarWidth);
   const sidebarPanelSize = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : sidebarWidth;
 
-  const persistSidebarWidthFromPanel = useCallback(() => {
+  const persistSidebarWidthFromPanel = () => {
     const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
     if (currentWidth == null) return;
     const nextSidebarWidth = clampSidebarWidth(currentWidth);
     if (nextSidebarWidth > SIDEBAR_MIN_WIDTH || sidebarWidth === SIDEBAR_MIN_WIDTH) {
       setSidebarWidth(nextSidebarWidth);
     }
-  }, [setSidebarWidth, sidebarWidth]);
+  };
 
   const { density, markSidebarUserOverride } = useCompactSidebarCollapse({
     sidebarCollapsed,
@@ -63,7 +63,7 @@ function AppLayout() {
     size: sidebarPanelSize,
   });
 
-  const handleSidebarToggle = useCallback(() => {
+  const handleSidebarToggle = () => {
     markSidebarUserOverride();
     setSidebarCollapsed((collapsed) => {
       if (!collapsed) {
@@ -71,25 +71,19 @@ function AppLayout() {
       }
       return !collapsed;
     });
-  }, [markSidebarUserOverride, persistSidebarWidthFromPanel]);
+  };
 
-  const handleSidebarResize = useCallback(
-    (panelSize: PanelSize) => {
-      if (sidebarCollapsed) return;
-      pendingSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
-    },
-    [sidebarCollapsed]
-  );
+  const handleSidebarResize = (panelSize: PanelSize) => {
+    if (sidebarCollapsed) return;
+    pendingSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
+  };
 
-  const handleLayoutChanged = useCallback(
-    (_layout: Layout, meta: LayoutChangedMeta) => {
-      const pendingSidebarWidth = pendingSidebarWidthRef.current;
-      pendingSidebarWidthRef.current = null;
-      if (sidebarCollapsed || !meta.isUserInteraction || pendingSidebarWidth == null) return;
-      setSidebarWidth(pendingSidebarWidth);
-    },
-    [setSidebarWidth, sidebarCollapsed]
-  );
+  const handleLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const pendingSidebarWidth = pendingSidebarWidthRef.current;
+    pendingSidebarWidthRef.current = null;
+    if (sidebarCollapsed || !meta.isUserInteraction || pendingSidebarWidth == null) return;
+    setSidebarWidth(pendingSidebarWidth);
+  };
 
   return (
     <div className={styles.root} data-layout-density={density}>

@@ -1,5 +1,6 @@
 import { useChatSessionHistoryRefreshStore } from '@/components/ChatPanel/_store/useChatSessionHistoryRefreshStore';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
+import { useEffectForce } from '@/hooks/useEffectForce';
 import {
   APP_HEADER_NAV_KEY,
   resolveAppHeaderNavKey,
@@ -7,7 +8,6 @@ import {
 } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive';
 import { Tabs, Tooltip } from '@heroui/react';
-import { useUpdateEffect } from 'ahooks';
 import clsx from 'clsx';
 import { FolderOpen, MessageSquare } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -35,22 +35,33 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
-  const [selectedTab, setSelectedTab] = useState<SidebarTabKey>(() =>
-    resolveSidebarTab(activeNavKey)
-  );
+  const [tabState, setTabState] = useState(() => ({
+    observedNavKey: activeNavKey,
+    selectedTab: resolveSidebarTab(activeNavKey),
+  }));
+  const previousRefreshVersionRef = useRef(refreshVersion);
+
+  let selectedTab = tabState.selectedTab;
+  if (tabState.observedNavKey !== activeNavKey) {
+    selectedTab = resolveSidebarTab(activeNavKey);
+    setTabState({ observedNavKey: activeNavKey, selectedTab });
+  }
 
   const selectedKeys =
     activeNavKey === APP_HEADER_NAV_KEY.CHAT && currentSessionId
       ? [`session-${currentSessionId}`]
       : [];
 
-  useUpdateEffect(() => {
+  /**
+   * 执行时机：聊天会话列表的外部刷新版本递增时，请求已挂载列表重新加载。
+   * 不可替代原因：ref 暴露的 refresh 是子组件命令式接口，不能由 JSX 派生。
+   * cleanup：没有持续订阅；仅记录已处理版本，卸载时无需额外清理。
+   */
+  useEffectForce(() => {
+    if (previousRefreshVersionRef.current === refreshVersion) return;
+    previousRefreshVersionRef.current = refreshVersion;
     void sessionListGroupRef.current?.refresh();
   }, [refreshVersion]);
-
-  useUpdateEffect(() => {
-    setSelectedTab(resolveSidebarTab(activeNavKey));
-  }, [activeNavKey]);
 
   return (
     <div
@@ -63,7 +74,7 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
         onSelectionChange={(key) => {
           const nextTab = String(key);
           if (nextTab === SIDEBAR_TAB.SESSIONS || nextTab === SIDEBAR_TAB.DRIVE) {
-            setSelectedTab(nextTab);
+            setTabState({ observedNavKey: activeNavKey, selectedTab: nextTab });
           }
         }}
       >

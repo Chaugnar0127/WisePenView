@@ -16,7 +16,7 @@ import type { ComputeWalletRef } from '@/views/app/_common/Wallet/ComputeWallet/
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { ReactNode } from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
 import { getGroupDisplayConfig } from '../_components/GroupDisplayConfig';
@@ -43,7 +43,7 @@ function GroupDetail() {
   const groupService = useGroupService();
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const initialNodeId = useMemo(() => parseDriveInitialNodeId(location.search), [location.search]);
+  const initialNodeId = parseDriveInitialNodeId(location.search);
 
   const { loading, data, refresh } = useRequest(
     async (): Promise<GroupDetailLoaded> => {
@@ -66,12 +66,12 @@ function GroupDetail() {
   // 解包 data, 默认 currentUserRole 为 MEMBER
   const { group, currentUserRole = 'MEMBER', resConfig } = data ?? {};
 
-  const groupDisplayConfig = useMemo(() => {
+  const groupDisplayConfig = (() => {
     if (!group) {
       return null;
     }
     return getGroupDisplayConfig(group.groupType, currentUserRole);
-  }, [group, currentUserRole]);
+  })();
 
   const walletRef = useRef<ComputeWalletRef | null>(null);
 
@@ -82,7 +82,7 @@ function GroupDetail() {
    * Tab 配置必须在任意 early return 之前计算，以符合 Hooks 规则。
    * group/groupDisplayConfig 为空时返回空数组（加载中或无效态不会渲染到 Tab）。
    */
-  const tabItems = useMemo<GroupDetailTabItem[]>(() => {
+  const tabItems = (() => {
     if (!group || !resConfig || !groupDisplayConfig) {
       return [];
     }
@@ -181,9 +181,9 @@ function GroupDetail() {
     });
 
     return items;
-  }, [currentUserRole, group, groupDisplayConfig, id, initialNodeId, refresh, resConfig, t]);
+  })() satisfies GroupDetailTabItem[];
 
-  const detailTabKeys = useMemo(() => tabItems.map((item) => item.key), [tabItems]);
+  const detailTabKeys = tabItems.map((item) => item.key);
 
   const handleDetailTabChange = (nextKey: GroupDetailTabKey) => {
     if (detailTabKeys.includes(nextKey)) {

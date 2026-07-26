@@ -1,7 +1,6 @@
 import AppAvatar from '@/components/Avatar';
 import type { GroupMember } from '@/domains/Group';
 import { ListBox, ListBoxItem } from '@heroui/react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SelectedMemberListProps } from './index.type';
 import styles from './style.module.less';
@@ -23,11 +22,8 @@ function SelectedMemberList({ members, isReadOnly = true }: SelectedMemberListPr
     return parts.join(' ') || undefined;
   };
 
-  const dataSource = useMemo(() => members ?? [], [members]);
-  const disabledKeys = useMemo(
-    () => (isReadOnly ? dataSource.map((member) => member.userId) : []),
-    [dataSource, isReadOnly]
-  );
+  const dataSource = members ?? [];
+  const disabledKeys = isReadOnly ? dataSource.map((member) => member.userId) : [];
 
   if (!dataSource.length) return null;
 

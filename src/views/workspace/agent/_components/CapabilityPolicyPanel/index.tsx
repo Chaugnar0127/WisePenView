@@ -10,7 +10,7 @@ import {
   type Key,
 } from '@heroui/react';
 import { Plus, Sparkles, Trash2, Wrench } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -55,10 +55,9 @@ export default function CapabilityPolicyPanel({
   const { t } = useTranslation('agent');
   const { contains } = useFilter({ sensitivity: 'base' });
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const optionMap = useMemo(() => new Map(options.map((option) => [option.id, option])), [options]);
-  const disabledIds = useMemo(
-    () => new Set(options.filter((option) => option.disabled).map((option) => option.id)),
-    [options]
+  const optionMap = new Map(options.map((option) => [option.id, option]));
+  const disabledIds = new Set(
+    options.filter((option) => option.disabled).map((option) => option.id)
   );
   const selectedOptions = selectedIds.map(
     (id) =>

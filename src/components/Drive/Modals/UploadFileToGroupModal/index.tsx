@@ -2,7 +2,6 @@ import DriveNavigator from '@/components/Drive/DriveNavigator';
 import AppModal from '@/components/Overlay/AppModal';
 import StepDots from '@/components/StepDots';
 import { useResourceService } from '@/domains';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -29,6 +28,12 @@ function UploadFileToGroupModal({
     setStep(0);
     setSelectedFileIds([]);
     setSelectedTargetTagId(undefined);
+  };
+
+  const closeModal = () => {
+    resetState();
+    setNavRefreshKey((key) => key + 1);
+    onOpenChange(false);
   };
 
   const handleFilesChange = (nodes: DriveSelectionItem[]) => {
@@ -58,7 +63,7 @@ function UploadFileToGroupModal({
       onSuccess: (count) => {
         toast.success(t('upload.group.success', { count }));
         onSuccess?.();
-        onOpenChange(false);
+        closeModal();
       },
       onError: (err) => {
         toast.danger(parseErrorMessage(err));
@@ -74,22 +79,10 @@ function UploadFileToGroupModal({
   const canNext = selectedFileIds.length > 0;
   const canSubmit = canNext && Boolean(selectedTargetTagId);
 
-  /**
-   * 弹窗每次打开都需要清空上次选择并刷新两棵选择树；
-   * 这里依赖打开态变化触发，不能放到提交或关闭事件中，否则重新打开会短暂显示旧选择。
-   * 本 effect 不注册外部订阅，因此不需要 cleanup。
-   */
-  useEffectForce(() => {
-    if (!isOpen) return;
-    resetState();
-    setNavRefreshKey((k) => k + 1);
-  }, [isOpen]);
-
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       if (submitting) return;
-      resetState();
-      onOpenChange(false);
+      closeModal();
     }
   };
 
@@ -102,7 +95,7 @@ function UploadFileToGroupModal({
       isDismissable={!submitting}
       actions={
         <>
-          <Button variant="secondary" onPress={() => onOpenChange(false)} isDisabled={submitting}>
+          <Button variant="secondary" onPress={closeModal} isDisabled={submitting}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
           {step === 1 && (

@@ -1,4 +1,4 @@
-import { useUpdateEffect } from 'ahooks';
+import { useEffectForce } from '@/hooks/useEffectForce';
 import { type RefObject } from 'react';
 
 /**
@@ -9,7 +9,12 @@ export function useFocusPopoverTextarea(
   popoverPos: { top: number; left: number; width: number } | null,
   inputRef: RefObject<HTMLTextAreaElement | null>
 ): void {
-  useUpdateEffect(() => {
+  /**
+   * 执行时机：公式浮层完成定位且进入编辑态后，在下一帧聚焦输入框。
+   * 不可替代原因：焦点与文本选区属于浏览器 DOM 状态，只能在提交后命令式设置。
+   * cleanup：取消尚未执行的 animation frame，避免过期浮层抢占焦点。
+   */
+  useEffectForce(() => {
     if (!isEditing || popoverPos === null) return;
     const id = window.requestAnimationFrame(() => {
       const el = inputRef.current;

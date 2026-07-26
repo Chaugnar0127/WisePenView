@@ -4,7 +4,7 @@ import { createClientError, FRONTEND_CLIENT_ERROR, isWisePenError } from '@/util
 import { PDFViewer as EmbedPdfViewer } from '@embedpdf/react-pdf-viewer';
 import { useMount, useUnmount } from 'ahooks';
 import clsx from 'clsx';
-import React, { useMemo, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PdfViewerProps } from './index.type';
 import { DEFAULT_PDF_VIEWER_CONFIG } from './pdf.config';
@@ -67,7 +67,8 @@ function PdfViewer({ resourceId, config, className, onLoadError }: PdfViewerProp
   const pdfLocale = i18n.resolvedLanguage === 'en-US' ? 'en' : 'zh-CN';
   const viewerRef = useRef<PdfViewerHandle | null>(null);
   const onDocumentErrorCleanupRef = useRef<(() => void) | null>(null);
-  const viewerConfig = useMemo(() => createViewerConfig(config, pdfLocale), [config, pdfLocale]);
+  // EmbedPDF 只在实例初始化时读取 config；用惰性状态保存该次初始化快照。
+  const [viewerConfig] = useState(() => createViewerConfig(config, pdfLocale));
 
   const syncViewerLocale = async () => {
     if (!viewerRef.current) return;
@@ -126,7 +127,11 @@ function PdfViewer({ resourceId, config, className, onLoadError }: PdfViewerProp
     void loadDocument();
   });
 
-  /** 应用语言可在 PDF Viewer 挂载后切换，第三方插件只能通过命令式 API 同步。 */
+  /**
+   * 执行时机：应用语言变化后同步 PDF Viewer 的本地化配置。
+   * 不可替代原因：第三方 Viewer 仅提供命令式语言 API，不能由 JSX 属性更新。
+   * cleanup：没有订阅或延迟任务，无需清理。
+   */
   useEffectForce(() => {
     void syncViewerLocale();
   }, [pdfLocale]);

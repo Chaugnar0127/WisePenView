@@ -6,7 +6,7 @@ import {
 } from '@/layouts/_common/SystemResizable';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import clsx from 'clsx';
-import { useCallback, useRef, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -52,22 +52,16 @@ function WorkspaceResourceSidePanel({
 
   useResizablePanelSize({ panelRef: sidePanelRef, size: panelSize });
 
-  const handleResize = useCallback(
-    (panelSize: PanelSize) => {
-      if (!open) return;
-      pendingWidthRef.current = panelSize.inPixels;
-    },
-    [open]
-  );
+  const handleResize = (panelSize: PanelSize) => {
+    if (!open) return;
+    pendingWidthRef.current = panelSize.inPixels;
+  };
 
-  const handleLayoutChanged = useCallback(
-    (_layout: Layout, meta: LayoutChangedMeta) => {
-      const pendingWidth = pendingWidthRef.current;
-      pendingWidthRef.current = null;
-      if (meta.isUserInteraction && open && pendingWidth != null) setWidth(pendingWidth);
-    },
-    [open, setWidth]
-  );
+  const handleLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const pendingWidth = pendingWidthRef.current;
+    pendingWidthRef.current = null;
+    if (meta.isUserInteraction && open && pendingWidth != null) setWidth(pendingWidth);
+  };
 
   const panelContent =
     activeMode === 'inlineComment' ? (

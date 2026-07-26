@@ -8,7 +8,7 @@ import type {
 } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
 import type { ComponentType } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useEffectForce } from '@/hooks/useEffectForce';
@@ -58,6 +58,11 @@ type MathBlockRenderProps = {
 function MathFormulaPreview({ expression, className }: { expression: string; className: string }) {
   const mathRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * 执行时机：块级公式表达式变化后重新渲染 KaTeX DOM。
+   * 不可替代原因：KaTeX 通过命令式 API 写入真实 DOM，不能由 React JSX 直接表达。
+   * cleanup：下一次渲染会覆盖旧内容，没有订阅或异步任务需要清理。
+   */
   useEffectForce(() => {
     const el = mathRef.current;
     if (!el) return;
@@ -84,11 +89,11 @@ function MathBlockView(props: MathBlockRenderProps) {
     width: number;
   } | null>(null);
 
-  const clearPopoverPos = useCallback(() => {
+  const clearPopoverPos = () => {
     setPopoverPos(null);
-  }, []);
+  };
 
-  const measurePopoverPosition = useCallback(() => {
+  const measurePopoverPosition = () => {
     const el = shellRef.current;
     if (!el) {
       return false;
@@ -102,18 +107,17 @@ function MathBlockView(props: MathBlockRenderProps) {
     const estHeight = 220;
     setPopoverPos(computeLatexPopoverPlacement(r, { minWidth: minW, maxWidth: maxW, estHeight }));
     return true;
-  }, []);
+  };
 
   useLatexPopoverAnchorSync(isEditing, shellRef, measurePopoverPosition, clearPopoverPos);
 
-  // TODO: 重构，不使用useEffect，使用更合适的语义以增加可读性，但是latexSupport有完全重构的可能，因此暂时保留
-  useEffectForce(() => {
-    if (isEditing) return;
-    setValue(sanitizeLatexInput(props.block.props.expression));
-  }, [props.block.props.expression, isEditing]);
-
   useFocusPopoverTextarea(isEditing, popoverPos, inputRef);
 
+  /**
+   * 执行时机：BlockNote 块属性把 autoEdit 置为 true 后拉起一次公式编辑。
+   * 不可替代原因：该标记来自编辑器外部文档状态，还需用命令式事务消费并复位。
+   * cleanup：事务同步完成且标记立即复位，无需额外清理。
+   */
   useEffectForce(() => {
     if (readOnly) return;
     if (!props.block.props.autoEdit) return;

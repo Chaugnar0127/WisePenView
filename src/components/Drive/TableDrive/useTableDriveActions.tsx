@@ -20,7 +20,7 @@ import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/u
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useCallback, useMemo, useState, type ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { mountResourceToFolderTag } from '../common/driveComponentModel';
 import type { DriveTableRow, TableDriveActionConfig } from './index.type';
@@ -85,38 +85,34 @@ export function useTableDriveActions({
     useState<ResourcePermissionModalTarget | null>(null);
   const [driveCreateType, setDriveCreateType] = useState<DriveCreateType | null>(null);
 
-  const existingFolderNames = useMemo(
-    () => currentRows.filter((row) => row.node.type === 'folder').map((row) => row.name.trim()),
-    [currentRows]
-  );
+  const existingFolderNames = currentRows
+    .filter((row) => row.node.type === 'folder')
+    .map((row) => row.name.trim());
 
-  const mountCreatedResource = useCallback(
-    async (resourceId: string) => {
-      if (!mountTagId) return;
-      if (groupId) {
-        const sharedTagId = await driveService.ensureSharedFolder();
-        await mountResourceToFolderTag({
-          resourceId,
-          targetTagId: sharedTagId,
-          documentService,
-          resourceService,
-        });
-        await resourceService.mountResourcesToGroupTag({
-          resourceIds: [resourceId],
-          groupId,
-          tagId: mountTagId,
-        });
-        return;
-      }
+  const mountCreatedResource = async (resourceId: string) => {
+    if (!mountTagId) return;
+    if (groupId) {
+      const sharedTagId = await driveService.ensureSharedFolder();
       await mountResourceToFolderTag({
         resourceId,
-        targetTagId: mountTagId,
+        targetTagId: sharedTagId,
         documentService,
         resourceService,
       });
-    },
-    [documentService, driveService, groupId, mountTagId, resourceService]
-  );
+      await resourceService.mountResourcesToGroupTag({
+        resourceIds: [resourceId],
+        groupId,
+        tagId: mountTagId,
+      });
+      return;
+    }
+    await mountResourceToFolderTag({
+      resourceId,
+      targetTagId: mountTagId,
+      documentService,
+      resourceService,
+    });
+  };
 
   const {
     fileInputRef: markdownFileInputRef,
@@ -162,124 +158,104 @@ export function useTableDriveActions({
     }
   );
 
-  const handleDriveCreateSuccess = useCallback(
-    async (createdId: string, type: DriveCreateType) => {
-      if (type === 'folder') {
-        setDriveCreateType(null);
-        refresh();
-        return;
-      }
-      await mountCreatedResource(createdId);
+  const handleDriveCreateSuccess = async (createdId: string, type: DriveCreateType) => {
+    if (type === 'folder') {
       setDriveCreateType(null);
       refresh();
-      openInWorkspace({
-        resourceId: createdId,
-        resourceType: type,
-        driveLocation: { scope, parentNodeId: currentNodeId },
-      });
-    },
-    [currentNodeId, mountCreatedResource, openInWorkspace, refresh, scope]
-  );
+      return;
+    }
+    await mountCreatedResource(createdId);
+    setDriveCreateType(null);
+    refresh();
+    openInWorkspace({
+      resourceId: createdId,
+      resourceType: type,
+      driveLocation: { scope, parentNodeId: currentNodeId },
+    });
+  };
 
-  const ModalHost = useMemo(
-    () => (
-      <>
-        <input
-          ref={markdownFileInputRef}
-          type="file"
-          accept={MARKDOWN_NOTE_FILE_ACCEPT}
-          onChange={handleMarkdownFileChange}
-          hidden
-        />
-        <UploadDocumentModal
-          isOpen={uploadDocumentOpen}
-          onOpenChange={setUploadDocumentOpen}
+  const ModalHost = (
+    <>
+      <input
+        ref={markdownFileInputRef}
+        type="file"
+        accept={MARKDOWN_NOTE_FILE_ACCEPT}
+        onChange={handleMarkdownFileChange}
+        hidden
+      />
+      <UploadDocumentModal
+        isOpen={uploadDocumentOpen}
+        onOpenChange={setUploadDocumentOpen}
+        onSuccess={refresh}
+      />
+      {groupId && uploadOpen ? (
+        <UploadFileToGroupModal
+          isOpen={uploadOpen}
+          groupId={groupId}
+          onOpenChange={setUploadOpen}
           onSuccess={refresh}
         />
-        {groupId && uploadOpen ? (
-          <UploadFileToGroupModal
-            isOpen={uploadOpen}
-            groupId={groupId}
-            onOpenChange={setUploadOpen}
-            onSuccess={refresh}
-          />
-        ) : null}
-        {groupId && tagAccessPermissionTagId ? (
-          <TagPermissionModal
-            isOpen={Boolean(tagAccessPermissionTagId)}
-            groupId={groupId}
-            initialTagId={tagAccessPermissionTagId}
-            onOpenChange={(open) => {
-              if (!open) {
-                setTagAccessPermissionTagId(undefined);
-              }
-            }}
-            onSuccess={refresh}
-          />
-        ) : null}
-        {groupId && tagMountPermissionTagId ? (
-          <TagMountPermissionModal
-            isOpen={Boolean(tagMountPermissionTagId)}
-            groupId={groupId}
-            initialTagId={tagMountPermissionTagId}
-            onOpenChange={(open) => {
-              if (!open) {
-                setTagMountPermissionTagId(undefined);
-              }
-            }}
-            onSuccess={refresh}
-          />
-        ) : null}
-        {groupId && resourcePermissionTarget ? (
-          <ResourcePermissionModal
-            isOpen={Boolean(resourcePermissionTarget)}
-            groupId={groupId}
-            target={resourcePermissionTarget}
-            onOpenChange={(open) => {
-              if (!open) {
-                setResourcePermissionTarget(null);
-              }
-            }}
-            onSuccess={refresh}
-          />
-        ) : null}
-        {driveCreateType ? (
-          <DriveCreateModal
-            type={driveCreateType}
-            isOpen
-            parentId={currentNodeId}
-            groupId={groupId}
-            existingFolderNames={existingFolderNames}
-            onOpenChange={(open) => {
-              if (!open) setDriveCreateType(null);
-            }}
-            onSuccess={handleDriveCreateSuccess}
-          />
-        ) : null}
-      </>
-    ),
-    [
-      currentNodeId,
-      driveCreateType,
-      existingFolderNames,
-      groupId,
-      handleDriveCreateSuccess,
-      handleMarkdownFileChange,
-      markdownFileInputRef,
-      refresh,
-      resourcePermissionTarget,
-      tagAccessPermissionTagId,
-      tagMountPermissionTagId,
-      uploadDocumentOpen,
-      uploadOpen,
-    ]
+      ) : null}
+      {groupId && tagAccessPermissionTagId ? (
+        <TagPermissionModal
+          isOpen={Boolean(tagAccessPermissionTagId)}
+          groupId={groupId}
+          initialTagId={tagAccessPermissionTagId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setTagAccessPermissionTagId(undefined);
+            }
+          }}
+          onSuccess={refresh}
+        />
+      ) : null}
+      {groupId && tagMountPermissionTagId ? (
+        <TagMountPermissionModal
+          isOpen={Boolean(tagMountPermissionTagId)}
+          groupId={groupId}
+          initialTagId={tagMountPermissionTagId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setTagMountPermissionTagId(undefined);
+            }
+          }}
+          onSuccess={refresh}
+        />
+      ) : null}
+      {groupId && resourcePermissionTarget ? (
+        <ResourcePermissionModal
+          isOpen={Boolean(resourcePermissionTarget)}
+          groupId={groupId}
+          target={resourcePermissionTarget}
+          onOpenChange={(open) => {
+            if (!open) {
+              setResourcePermissionTarget(null);
+            }
+          }}
+          onSuccess={refresh}
+        />
+      ) : null}
+      {driveCreateType ? (
+        <DriveCreateModal
+          type={driveCreateType}
+          isOpen
+          parentId={currentNodeId}
+          groupId={groupId}
+          existingFolderNames={existingFolderNames}
+          onOpenChange={(open) => {
+            if (!open) setDriveCreateType(null);
+          }}
+          onSuccess={handleDriveCreateSuccess}
+        />
+      ) : null}
+    </>
   );
 
-  const openUploadToGroup = useCallback(() => {
+  const openUploadToGroup = () => {
     setUploadOpen(true);
-  }, []);
+  };
 
-  const handleCreateNote = useCallback(() => {
+  const handleCreateNote = () => {
     if (creatingNote) return;
     const pendingNewNoteId = useNewNoteStore.getState().newNoteResourceId;
     if (!groupId && pendingNewNoteId) {
@@ -291,30 +267,27 @@ export function useTableDriveActions({
       return;
     }
     runCreateNote();
-  }, [creatingNote, currentNodeId, groupId, openInWorkspace, runCreateNote, scope]);
+  };
 
-  const handleCreateMenuSelect = useCallback(
-    (id: CreateMenuItem['id']) => {
-      switch (id) {
-        case 'folder':
-        case 'drawio':
-        case 'skill':
-        case 'agent':
-          setDriveCreateType(id);
-          break;
-        case 'note':
-          handleCreateNote();
-          break;
-        case 'importNote':
-          openMarkdownFilePicker();
-          break;
-        case 'upload':
-          setUploadDocumentOpen(true);
-          break;
-      }
-    },
-    [handleCreateNote, openMarkdownFilePicker]
-  );
+  const handleCreateMenuSelect = (id: CreateMenuItem['id']) => {
+    switch (id) {
+      case 'folder':
+      case 'drawio':
+      case 'skill':
+      case 'agent':
+        setDriveCreateType(id);
+        break;
+      case 'note':
+        handleCreateNote();
+        break;
+      case 'importNote':
+        openMarkdownFilePicker();
+        break;
+      case 'upload':
+        setUploadDocumentOpen(true);
+        break;
+    }
+  };
 
   const showUploadDocument =
     scope.type === 'personal' && currentNodeId === scope.rootId && !isTrashView;
@@ -332,7 +305,7 @@ export function useTableDriveActions({
           showUploadDocument)))
   );
 
-  const createMenuItems = useMemo<CreateMenuItem[]>(() => {
+  const createMenuItems = (() => {
     if (!showCreateMenu) return [];
     const items: CreateMenuItem[] = [];
     if (toolbarConfig.canCreateFolder) {
@@ -358,19 +331,7 @@ export function useTableDriveActions({
       items.push({ id: 'upload', label: t('create.upload') });
     }
     return items;
-  }, [
-    canCreateInCurrentFolder,
-    creatingNote,
-    importingMarkdownNote,
-    showCreateMenu,
-    showUploadDocument,
-    toolbarConfig.canCreateDrawio,
-    toolbarConfig.canCreateFolder,
-    toolbarConfig.canCreateNote,
-    toolbarConfig.canCreateSkill,
-    toolbarConfig.canCreateAgent,
-    t,
-  ]);
+  })() satisfies CreateMenuItem[];
 
   return {
     showCreateMenu,

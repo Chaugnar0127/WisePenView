@@ -20,7 +20,7 @@ import type { Config } from '@onlyoffice/doceditor-types';
 import { DocumentEditor } from '@onlyoffice/document-editor-react';
 import { useRequest } from 'ahooks';
 import { FileText } from 'lucide-react';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useDocumentViewerSwitcher } from '../_hooks/useDocumentViewerSwitcher';
@@ -56,39 +56,39 @@ function OfficeLayoutConfig({
   onViewerSwitch,
 }: OfficeLayoutConfigProps) {
   const { t } = useTranslation('workspace');
-  const frameConfig = useMemo<ResourceHostLayoutConfig>(
-    () => ({
-      className: styles.container,
-      sidePanel: resourceInfo ? { resource: resourceInfo, onResourceChanged } : undefined,
-      header: resourceInfo
-        ? {
-            resource: {
-              resourceId: resourceInfo.resourceId,
-              resourceName: resourceInfo.resourceName,
-              resourceType: resourceInfo.resourceType,
-              currentActions: resourceInfo.currentActions,
-              permissionResourceType: RESOURCE_KIND.FILE,
-              ownerId: resourceInfo.ownerId,
-              onPermissionSuccess,
-              moreMenu: isOfficeResourceType(documentType)
-                ? {
-                    actions: [
-                      {
-                        id: 'open-with-pdf-preview',
-                        label: t('office.openWithPdf'),
-                        icon: FileText,
-                        onAction: () => onViewerSwitch?.(RESOURCE_VIEWER.PDF_PREVIEW),
-                      },
-                    ],
-                  }
-                : undefined,
-            },
-          }
-        : {},
-    }),
+  const frameConfig = {
+    className: styles.container,
+    sidePanel: resourceInfo ? { resource: resourceInfo, onResourceChanged } : undefined,
+    header: resourceInfo
+      ? {
+          resource: {
+            resourceId: resourceInfo.resourceId,
+            resourceName: resourceInfo.resourceName,
+            resourceType: resourceInfo.resourceType,
+            currentActions: resourceInfo.currentActions,
+            permissionResourceType: RESOURCE_KIND.FILE,
+            ownerId: resourceInfo.ownerId,
+            onPermissionSuccess,
+            moreMenu: isOfficeResourceType(documentType)
+              ? {
+                  actions: [
+                    {
+                      id: 'open-with-pdf-preview',
+                      label: t('office.openWithPdf'),
+                      icon: FileText,
+                      onAction: () => onViewerSwitch?.(RESOURCE_VIEWER.PDF_PREVIEW),
+                    },
+                  ],
+                }
+              : undefined,
+          },
+        }
+      : {},
+  } satisfies ResourceHostLayoutConfig;
+  useResourceHostLayoutConfig(
+    () => frameConfig,
     [documentType, onPermissionSuccess, onResourceChanged, onViewerSwitch, resourceInfo, t]
   );
-  useResourceHostLayoutConfig(frameConfig);
 
   return <>{children}</>;
 }
@@ -101,12 +101,12 @@ function OfficeEditorHost({
   onError,
 }: OfficeEditorHostProps) {
   const hostId = useResourceHostId();
-  const containerId = useMemo(() => {
+  const containerId = (() => {
     const safeResourceId = resourceId.replace(/[^a-z0-9_-]/gi, '-');
     if (hostId === DEFAULT_RESOURCE_HOST_ID) return `onlyoffice-editor-${safeResourceId}`;
     const safeHostId = hostId.replace(/[^a-z0-9_-]/gi, '-');
     return `onlyoffice-editor-${safeHostId}-${safeResourceId}`;
-  }, [hostId, resourceId]);
+  })();
 
   return (
     <div className={styles.editorHost}>
@@ -176,20 +176,20 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
     refreshDeps: [resourceId],
   });
 
-  const handleEditorReady = useCallback(() => {
+  const handleEditorReady = () => {
     setEditorReady(true);
     setEditorError(null);
-  }, []);
+  };
 
-  const handleEditorError = useCallback((nextError: unknown) => {
+  const handleEditorError = (nextError: unknown) => {
     setEditorError(nextError);
     setEditorReady(false);
-  }, []);
+  };
 
-  const refreshResourceInfo = useCallback(async () => {
+  const refreshResourceInfo = async () => {
     const docInfo = await documentService.getDocInfo(resourceId as string);
     if (data) mutateOfficeData({ ...data, docInfo });
-  }, [data, documentService, mutateOfficeData, resourceId]);
+  };
 
   if (!resourceId) {
     return (

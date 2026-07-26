@@ -9,7 +9,21 @@ const reactUseEffectImportRule = {
   name: 'react',
   importNames: ['useEffect'],
   message:
-    '项目约定禁止使用 useEffect，请改为事件驱动、显式回调或拆解为 ahooks 的 useMount、useUnmount、useUpdateEffect。',
+    '项目约定禁止使用 useEffect，请改为事件驱动、渲染期派生、useRequest 或有完整说明的 useEffectForce。',
+};
+
+const reactManualMemoImportRule = {
+  name: 'react',
+  importNames: ['useCallback', 'useMemo'],
+  message:
+    '项目禁止业务代码直接使用 useCallback/useMemo；确有必要时请使用 useCallbackForce/useMemoForce，并在调用点写带 @wisepen-manual-memo 标记的中文 JSDoc。',
+};
+
+const ahooksUpdateEffectImportRule = {
+  name: 'ahooks',
+  importNames: ['useUpdateEffect'],
+  message:
+    'useUpdateEffect 只是跳过首次执行，不能替代副作用设计；请改为事件驱动、渲染期派生、useRequest 或有完整说明的 useEffectForce。',
 };
 
 const reactFcImportRule = {
@@ -98,12 +112,15 @@ const buildRestrictedImportsRule = ({
   allowDirectAxios = false,
   allowDomainApiFunction = false,
   allowOverlayPrimitive = false,
+  allowReactManualMemo = false,
   allowReactUseEffect = false,
   allowServiceFactory = false,
   allowServiceMock = false,
 } = {}) => {
   const paths = [
     ...(allowReactUseEffect ? [] : [reactUseEffectImportRule]),
+    ...(allowReactManualMemo ? [] : [reactManualMemoImportRule]),
+    ahooksUpdateEffectImportRule,
     reactFcImportRule,
     ...(allowOverlayPrimitive
       ? []
@@ -120,6 +137,113 @@ const buildRestrictedImportsRule = ({
   ];
 
   return ['error', { paths, patterns }];
+};
+
+const requireEffectForceJSDocRule = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: '要求 useEffectForce 说明执行时机、不可替代原因和 cleanup',
+    },
+    schema: [],
+    messages: {
+      missing:
+        'useEffectForce 上方必须紧邻中文 JSDoc，并包含“执行时机：”“不可替代原因：”“cleanup：”。',
+    },
+  },
+  create(context) {
+    const sourceCode = context.sourceCode;
+    return {
+      CallExpression(node) {
+        if (node.callee.type !== 'Identifier' || node.callee.name !== 'useEffectForce') return;
+        const statement = node.parent?.type === 'ExpressionStatement' ? node.parent : node;
+        const comment = sourceCode.getCommentsBefore(statement).at(-1);
+        const isAdjacent =
+          comment?.loc?.end.line != null &&
+          statement.loc?.start.line != null &&
+          statement.loc.start.line - comment.loc.end.line <= 1;
+        const commentText = comment?.value ?? '';
+        const isValid =
+          comment?.type === 'Block' &&
+          commentText.startsWith('*') &&
+          isAdjacent &&
+          ['执行时机：', '不可替代原因：', 'cleanup：'].every((field) =>
+            commentText.includes(field)
+          );
+        if (!isValid) {
+          context.report({ node, messageId: 'missing' });
+        }
+      },
+    };
+  },
+};
+
+const requireManualMemoJSDocRule = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: '要求受控 memo 封装说明必要性、收益和失效条件',
+    },
+    schema: [],
+    messages: {
+      missing:
+        'useMemoForce/useCallbackForce 上方必须紧邻中文 JSDoc，并包含 @wisepen-manual-memo、“为什么：”“收益：”“失效条件：”。',
+    },
+  },
+  create(context) {
+    const sourceCode = context.sourceCode;
+    const statementTypes = new Set([
+      'ExpressionStatement',
+      'VariableDeclaration',
+      'ReturnStatement',
+      'AssignmentExpression',
+    ]);
+
+    const getStatement = (node) => {
+      let current = node;
+      while (current.parent && !statementTypes.has(current.parent.type)) {
+        current = current.parent;
+      }
+      return current.parent ?? node;
+    };
+
+    return {
+      CallExpression(node) {
+        if (
+          node.callee.type !== 'Identifier' ||
+          !['useMemoForce', 'useCallbackForce'].includes(node.callee.name)
+        ) {
+          return;
+        }
+
+        const statement = getStatement(node);
+        const comment = sourceCode.getCommentsBefore(statement).at(-1);
+        const isAdjacent =
+          comment?.loc?.end.line != null &&
+          statement.loc?.start.line != null &&
+          statement.loc.start.line - comment.loc.end.line <= 1;
+        const commentText = comment?.value ?? '';
+        const isValid =
+          comment?.type === 'Block' &&
+          commentText.startsWith('*') &&
+          isAdjacent &&
+          ['@wisepen-manual-memo', '为什么：', '收益：', '失效条件：'].every((field) =>
+            commentText.includes(field)
+          );
+
+        if (!isValid) {
+          context.report({ node, messageId: 'missing' });
+        }
+      },
+    };
+  },
+};
+
+const wisePenPlugin = {
+  rules: {
+    'require-effect-force-jsdoc': requireEffectForceJSDocRule,
+    'require-manual-memo-jsdoc': requireManualMemoJSDocRule,
+  },
 };
 
 const projectRestrictedSyntaxRules = [
@@ -167,6 +291,9 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    plugins: {
+      wisepen: wisePenPlugin,
+    },
     rules: {
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
@@ -182,10 +309,30 @@ export default defineConfig([
           object: 'React',
           property: 'useEffect',
           message:
-            '项目约定禁止使用 useEffect，请改为事件驱动、显式回调或拆解为 ahooks 的 useMount、useUnmount、useUpdateEffect。',
+            '项目约定禁止使用 useEffect，请改为事件驱动、渲染期派生、useRequest 或有完整说明的 useEffectForce。',
+        },
+        {
+          object: 'React',
+          property: 'useCallback',
+          message:
+            '项目禁止 React.useCallback；确有必要时请使用 useCallbackForce，并在调用点写带 @wisepen-manual-memo 标记的中文 JSDoc。',
+        },
+        {
+          object: 'React',
+          property: 'useMemo',
+          message:
+            '项目禁止 React.useMemo；确有必要时请使用 useMemoForce，并在调用点写带 @wisepen-manual-memo 标记的中文 JSDoc。',
+        },
+        {
+          object: 'ahooks',
+          property: 'useUpdateEffect',
+          message:
+            '项目禁止 ahooks.useUpdateEffect；请改为事件驱动、渲染期派生、useRequest 或有完整说明的 useEffectForce。',
         },
       ],
       'no-restricted-syntax': ['error', ...projectRestrictedSyntaxRules],
+      'wisepen/require-effect-force-jsdoc': 'error',
+      'wisepen/require-manual-memo-jsdoc': 'error',
     },
   },
   {
@@ -228,7 +375,14 @@ export default defineConfig([
     files: ['src/hooks/useEffectForce.ts'],
     rules: {
       'no-restricted-imports': buildRestrictedImportsRule({ allowReactUseEffect: true }),
-      'no-restricted-properties': 'off',
+    },
+  },
+  {
+    // 全局禁止原生 memo hook，只有统一封装入口允许直接调用。
+    // 调用方不需要文件级白名单，但必须在调用点提供带标记的必要性说明。
+    files: ['src/hooks/useMemoForce.ts', 'src/hooks/useCallbackForce.ts'],
+    rules: {
+      'no-restricted-imports': buildRestrictedImportsRule({ allowReactManualMemo: true }),
     },
   },
   {

@@ -8,6 +8,7 @@ import type {
   NoteVersionListPage,
 } from '@/domains/Note';
 import type { ResourceAction, ResourceItem } from '@/domains/Resource';
+import { useEffectForce } from '@/hooks/useEffectForce';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
@@ -16,9 +17,9 @@ import {
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
 import { Button, toast } from '@heroui/react';
-import { useEventListener, useRequest, useUnmount, useUpdateEffect } from 'ahooks';
+import { useEventListener, useRequest, useUnmount } from 'ahooks';
 import { History, Save } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import styles from './style.module.less';
@@ -179,25 +180,26 @@ function DrawioLayoutConfig({
 }) {
   const { t } = useTranslation('workspace');
   const displayResourceName = resourceName ?? t('drawio.defaultName');
-  const frameConfig = useMemo<ResourceHostLayoutConfig>(
-    () => ({
-      className: styles.container,
-      sidePanel: resourceInfo ? { resource: resourceInfo, onResourceChanged } : undefined,
-      header: {
-        resource: {
-          resourceId,
-          resourceName: displayResourceName,
-          resourceIconType: 'drawio',
-          currentActions,
-          copyVersion,
-          permissionResourceType: RESOURCE_KIND.DRAWIO,
-          ownerId,
-          onPermissionSuccess,
-          titleMeta,
-          actions,
-        },
+  const frameConfig = {
+    className: styles.container,
+    sidePanel: resourceInfo ? { resource: resourceInfo, onResourceChanged } : undefined,
+    header: {
+      resource: {
+        resourceId,
+        resourceName: displayResourceName,
+        resourceIconType: 'drawio',
+        currentActions,
+        copyVersion,
+        permissionResourceType: RESOURCE_KIND.DRAWIO,
+        ownerId,
+        onPermissionSuccess,
+        titleMeta,
+        actions,
       },
-    }),
+    },
+  } satisfies ResourceHostLayoutConfig;
+  useResourceHostLayoutConfig(
+    () => frameConfig,
     [
       actions,
       copyVersion,
@@ -211,7 +213,6 @@ function DrawioLayoutConfig({
       titleMeta,
     ]
   );
-  useResourceHostLayoutConfig(frameConfig);
 
   return <>{children}</>;
 }
@@ -291,10 +292,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
   const canEdit = noteInfoDisplay.canCollaborativeEdit;
   const canViewVersions = Boolean(noteInfoDisplay.ownerId);
   const title = useResourceDisplayName(resourceId, noteInfoDisplay.noteTitle, t('drawio.unnamed'));
-  const drawioUrl = useMemo(
-    () => buildDrawioUrl(canEdit, i18n.resolvedLanguage ?? 'zh-CN'),
-    [canEdit, i18n.resolvedLanguage]
-  );
+  const drawioUrl = buildDrawioUrl(canEdit, i18n.resolvedLanguage ?? 'zh-CN');
   const drawioOrigin = readDrawioEmbedOrigin();
 
   const { data: currentUser } = useRequest(() => userService.getUserInfo(), {
@@ -302,52 +300,46 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     refreshDeps: [noteInfoDisplay.ownerId],
   });
 
-  const postToEditor = useCallback(
-    (message: Record<string, unknown>) => {
-      iframeRef.current?.contentWindow?.postMessage(JSON.stringify(message), drawioOrigin);
-    },
-    [drawioOrigin]
-  );
+  const postToEditor = (message: Record<string, unknown>) => {
+    iframeRef.current?.contentWindow?.postMessage(JSON.stringify(message), drawioOrigin);
+  };
 
-  const clearExportTimer = useCallback(() => {
+  const clearExportTimer = () => {
     if (exportTimerRef.current !== null) {
       window.clearTimeout(exportTimerRef.current);
       exportTimerRef.current = null;
     }
-  }, []);
+  };
 
-  const persistXml = useCallback(
-    async (xml: string) => {
-      if (!canEdit) {
-        toast.danger(t('drawio.noEditPermission'));
-        return;
-      }
+  const persistXml = async (xml: string) => {
+    if (!canEdit) {
+      toast.danger(t('drawio.noEditPermission'));
+      return;
+    }
 
-      const nextVersion = currentVersionRef.current + 1;
-      setSaveState('saving');
-      try {
-        await noteService.saveDrawIoSnapshot({
-          resourceId,
-          version: nextVersion,
-          xml,
-          plainText: extractPlainText(xml),
-        });
-        currentVersionRef.current = nextVersion;
-        lastSavedXmlRef.current = xml;
-        setCurrentVersion(nextVersion);
-        setSaveState('saved');
-        postToEditor({ action: 'status', message: t('drawio.status.saved'), modified: false });
-        toast.success(t('drawio.status.saved'));
-      } catch (err) {
-        setSaveState('failed');
-        postToEditor({ action: 'status', message: t('drawio.status.failed'), modified: true });
-        toast.danger(parseErrorMessage(err));
-      }
-    },
-    [canEdit, noteService, postToEditor, resourceId, t]
-  );
+    const nextVersion = currentVersionRef.current + 1;
+    setSaveState('saving');
+    try {
+      await noteService.saveDrawIoSnapshot({
+        resourceId,
+        version: nextVersion,
+        xml,
+        plainText: extractPlainText(xml),
+      });
+      currentVersionRef.current = nextVersion;
+      lastSavedXmlRef.current = xml;
+      setCurrentVersion(nextVersion);
+      setSaveState('saved');
+      postToEditor({ action: 'status', message: t('drawio.status.saved'), modified: false });
+      toast.success(t('drawio.status.saved'));
+    } catch (err) {
+      setSaveState('failed');
+      postToEditor({ action: 'status', message: t('drawio.status.failed'), modified: true });
+      toast.danger(parseErrorMessage(err));
+    }
+  };
 
-  const requestEditorExport = useCallback(() => {
+  const requestEditorExport = () => {
     if (!canEdit) {
       toast.danger(t('drawio.noEditPermission'));
       return;
@@ -370,9 +362,14 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
       setSaveState('failed');
       toast.danger(t('drawio.saveRetry'));
     }, 10000);
-  }, [canEdit, clearExportTimer, editorLoaded, postToEditor, saveState, t]);
+  };
 
-  useUpdateEffect(() => {
+  /**
+   * 执行时机：资源快照、版本或初始 XML 更新时重置 draw.io iframe 会话基线。
+   * 不可替代原因：已保存 XML、导出版本和 iframe 就绪标记共同描述外部编辑器会话。
+   * cleanup：没有持续订阅；导出超时由组件统一卸载清理。
+   */
+  useEffectForce(() => {
     currentVersionRef.current = Math.max(noteInfoDisplay.version ?? 0, snapshot.version ?? 0);
     setCurrentVersion(currentVersionRef.current);
     lastSavedXmlRef.current = initialXml;
@@ -381,64 +378,61 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     setEditorLoaded(false);
   }, [initialXml, noteInfoDisplay.version, resourceId, snapshot.version]);
 
-  const handleMessage = useCallback(
-    (event: MessageEvent) => {
-      if (event.origin !== drawioOrigin) return;
-      if (event.source !== iframeRef.current?.contentWindow) return;
+  const handleMessage = (event: MessageEvent) => {
+    if (event.origin !== drawioOrigin) return;
+    if (event.source !== iframeRef.current?.contentWindow) return;
 
-      const message = readDrawioMessage(event.data);
-      if (!message?.event) return;
+    const message = readDrawioMessage(event.data);
+    if (!message?.event) return;
 
-      if (message.event === 'init') {
-        setEditorReady(true);
-        postToEditor({
-          action: 'load',
-          autosave: canEdit ? 1 : 0,
-          modified: false,
-          noExitBtn: 1,
-          noSaveBtn: canEdit ? 0 : 1,
-          saveAndExit: 0,
-          xml: initialXml,
-        });
-        return;
+    if (message.event === 'init') {
+      setEditorReady(true);
+      postToEditor({
+        action: 'load',
+        autosave: canEdit ? 1 : 0,
+        modified: false,
+        noExitBtn: 1,
+        noSaveBtn: canEdit ? 0 : 1,
+        saveAndExit: 0,
+        xml: initialXml,
+      });
+      return;
+    }
+
+    if (message.event === 'load') {
+      setEditorLoaded(true);
+      setSaveState('saved');
+      return;
+    }
+
+    if (message.event === 'autosave' && canEdit && typeof message.xml === 'string') {
+      if (message.xml !== lastSavedXmlRef.current && saveState !== 'saving') {
+        setSaveState('dirty');
       }
+      return;
+    }
 
-      if (message.event === 'load') {
-        setEditorLoaded(true);
-        setSaveState('saved');
-        return;
-      }
+    if (message.event === 'save' && typeof message.xml === 'string') {
+      void persistXml(message.xml);
+      return;
+    }
 
-      if (message.event === 'autosave' && canEdit && typeof message.xml === 'string') {
-        if (message.xml !== lastSavedXmlRef.current && saveState !== 'saving') {
-          setSaveState('dirty');
-        }
-        return;
-      }
-
-      if (message.event === 'save' && typeof message.xml === 'string') {
+    if (message.event === 'export' && pendingExportForSaveRef.current) {
+      pendingExportForSaveRef.current = false;
+      clearExportTimer();
+      if (typeof message.xml === 'string') {
         void persistXml(message.xml);
-        return;
+      } else {
+        setSaveState('failed');
+        toast.danger(t('drawio.saveRetry'));
       }
+      return;
+    }
 
-      if (message.event === 'export' && pendingExportForSaveRef.current) {
-        pendingExportForSaveRef.current = false;
-        clearExportTimer();
-        if (typeof message.xml === 'string') {
-          void persistXml(message.xml);
-        } else {
-          setSaveState('failed');
-          toast.danger(t('drawio.saveRetry'));
-        }
-        return;
-      }
-
-      if (message.event === 'error') {
-        toast.danger(message.message || t('drawio.loadFailed'));
-      }
-    },
-    [canEdit, clearExportTimer, drawioOrigin, initialXml, persistXml, postToEditor, saveState, t]
-  );
+    if (message.event === 'error') {
+      toast.danger(message.message || t('drawio.loadFailed'));
+    }
+  };
 
   useEventListener('message', handleMessage);
 
@@ -453,64 +447,48 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     manual: true,
   });
 
-  const handleOpenVersions = useCallback(() => {
+  const handleOpenVersions = () => {
     setVersionOpen(true);
     runLoadVersions();
-  }, [runLoadVersions]);
+  };
 
-  const titleMeta = useMemo(
-    () => (
-      <>
-        <span className={styles.versionBadge}>v{currentVersion}</span>
-        <SaveStatusText state={saveState} />
-      </>
-    ),
-    [currentVersion, saveState]
+  const titleMeta = (
+    <>
+      <span className={styles.versionBadge}>v{currentVersion}</span>
+      <SaveStatusText state={saveState} />
+    </>
   );
 
-  const headerActions = useMemo(
-    () => (
-      <div className={styles.headerExtra}>
-        {currentUser?.id === noteInfoDisplay.ownerId && canViewVersions ? (
-          <Button
-            size="sm"
-            variant="secondary"
-            onPress={handleOpenVersions}
-            aria-label={t('drawio.versions')}
-          >
-            <History size={16} />
-            <span>{t('drawio.version')}</span>
-          </Button>
-        ) : null}
-        {canEdit ? (
-          <Button
-            size="sm"
-            variant="primary"
-            isDisabled={!editorLoaded || saveState === 'saved' || saveState === 'saving'}
-            onPress={requestEditorExport}
-            aria-label={t('actions.save', { ns: 'common' })}
-          >
-            <Save size={16} />
-            <span>
-              {saveState === 'saving'
-                ? t('drawio.status.saving')
-                : t('actions.save', { ns: 'common' })}
-            </span>
-          </Button>
-        ) : null}
-      </div>
-    ),
-    [
-      canEdit,
-      canViewVersions,
-      currentUser?.id,
-      editorLoaded,
-      handleOpenVersions,
-      noteInfoDisplay.ownerId,
-      requestEditorExport,
-      saveState,
-      t,
-    ]
+  const headerActions = (
+    <div className={styles.headerExtra}>
+      {currentUser?.id === noteInfoDisplay.ownerId && canViewVersions ? (
+        <Button
+          size="sm"
+          variant="secondary"
+          onPress={handleOpenVersions}
+          aria-label={t('drawio.versions')}
+        >
+          <History size={16} />
+          <span>{t('drawio.version')}</span>
+        </Button>
+      ) : null}
+      {canEdit ? (
+        <Button
+          size="sm"
+          variant="primary"
+          isDisabled={!editorLoaded || saveState === 'saved' || saveState === 'saving'}
+          onPress={requestEditorExport}
+          aria-label={t('actions.save', { ns: 'common' })}
+        >
+          <Save size={16} />
+          <span>
+            {saveState === 'saving'
+              ? t('drawio.status.saving')
+              : t('actions.save', { ns: 'common' })}
+          </span>
+        </Button>
+      ) : null}
+    </div>
   );
 
   return (

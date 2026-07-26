@@ -6,7 +6,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { normalizeId } from '@/utils/normalize/normalizeId';
 import { Button, toast, type Selection, type SortDescriptor } from '@heroui/react';
 import { usePagination } from 'ahooks';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MemberListProps } from './index.type';
 import MemberListTable from './MemberListTable';
@@ -108,10 +108,6 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
     clearInlineEdit();
     setBatchEditMode(false);
     void refresh();
-  };
-
-  const handleEdit = (action: 'editPermission' | 'assignQuota' | 'deleteMember') => {
-    setActiveModal(action);
   };
 
   const handleSelectionChange = (keys: Selection, currentPageMembers: GroupMember[]) => {
@@ -230,19 +226,16 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
     setActiveModal('deleteMember');
   };
 
-  const selectedMemberIds = useMemo(
-    () => selectedRowKeys.map((k) => normalizeId(k)),
-    [selectedRowKeys]
-  );
+  const selectedMemberIds = selectedRowKeys.map((k) => normalizeId(k));
 
   const activeDeleteMembers = singleDeleteMember ? [singleDeleteMember] : selectedMembersList;
   const activeDeleteMemberIds = singleDeleteMember
     ? [singleDeleteMember.userId]
     : selectedMemberIds;
-  const currentPageSelectedKeys = useMemo(() => {
+  const currentPageSelectedKeys = (() => {
     const currentPageKeys = new Set(members.map((member) => String(member.userId)));
     return new Set(selectedRowKeys.filter((key) => currentPageKeys.has(String(key))).map(String));
-  }, [members, selectedRowKeys]);
+  })();
 
   const showBatchActions = groupDisplayConfig.canEnterEditMode;
   const hasBatchActions =
@@ -256,7 +249,7 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
       <div className={styles.toolbarActions}>
         {batchEditMode && showBatchActions && groupDisplayConfig.canModifyPermission ? (
           <Button
-            onPress={() => handleEdit('editPermission')}
+            onPress={() => setActiveModal('editPermission')}
             isDisabled={selectedRowKeys.length === 0}
           >
             {t('member.actions.editPermission')}
@@ -264,7 +257,7 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
         ) : null}
         {batchEditMode && showBatchActions && groupDisplayConfig.canAssignQuota ? (
           <Button
-            onPress={() => handleEdit('assignQuota')}
+            onPress={() => setActiveModal('assignQuota')}
             isDisabled={selectedRowKeys.length === 0}
           >
             {t('member.actions.assignQuota')}
@@ -273,7 +266,7 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
         {batchEditMode && showBatchActions && groupDisplayConfig.canRemoveMember ? (
           <Button
             variant="danger"
-            onPress={() => handleEdit('deleteMember')}
+            onPress={() => setActiveModal('deleteMember')}
             isDisabled={selectedRowKeys.length === 0}
           >
             {t('member.actions.delete')}

@@ -140,8 +140,9 @@ export function useNoteOutlineRuntime({
   });
 
   /**
-   * Editor 是 Outline 的外部事件源；实例变化时重新订阅，cleanup 释放旧实例监听。
-   * 普通文本变化只更新受影响 block，结构变化才合帧重建整个投影。
+   * 执行时机：编辑器实例变化时订阅事务，并立即构建一次大纲投影。
+   * 不可替代原因：Editor 是大纲的外部事件源，正文结构变化只能从事务流得知。
+   * cleanup：注销旧编辑器事务监听，并取消尚未执行的全量刷新帧。
    */
   useEffectForce(() => {
     const cleanup = registry.services.transactions.subscribe(editor, (analysis) => {

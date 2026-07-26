@@ -10,7 +10,7 @@ import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Folder } from 'lucide-react';
 import type { Key } from 'react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
@@ -44,7 +44,7 @@ function OtherSkillModalContent() {
   );
   const rawGroups = data?.otherSkillGroups;
 
-  const { skillMap, treeData } = useMemo(() => {
+  const { skillMap, treeData } = (() => {
     const mapping = new Map<
       string,
       { skill: ResourceSkillSummary; sourceAgent: ChatAgentOption | null }
@@ -77,7 +77,7 @@ function OtherSkillModalContent() {
     });
 
     return { skillMap: mapping, treeData: data };
-  }, [currentAgent, rawGroups, t]);
+  })();
 
   function handleClose(): void {
     setOtherSkillModalOpen(false);

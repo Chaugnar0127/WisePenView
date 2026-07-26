@@ -8,7 +8,7 @@ import {
 } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import { ListBox, ListBoxItem } from '@heroui/react';
 import clsx from 'clsx';
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { AppHeaderNavProps } from './index.type';
@@ -40,48 +40,42 @@ function AppHeaderNav({ collapsed }: AppHeaderNavProps) {
   const indicatorRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<string, HTMLElement>>(new Map());
 
-  const setItemRef = useCallback(
-    (key: string) => (el: HTMLElement | null) => {
-      if (el) {
-        itemRefs.current.set(key, el);
-      } else {
-        itemRefs.current.delete(key);
-      }
-    },
-    []
-  );
+  const setItemRef = (key: string) => (el: HTMLElement | null) => {
+    if (el) {
+      itemRefs.current.set(key, el);
+    } else {
+      itemRefs.current.delete(key);
+    }
+  };
 
-  const syncIndicator = useCallback(() => {
+  useLayoutEffect(() => {
     const indicatorEl = indicatorRef.current;
     const containerEl = containerRef.current;
-    if (!indicatorEl || !containerEl) return;
+    const syncIndicator = () => {
+      if (!indicatorEl || !containerEl) return;
 
-    if (!activeNavKey) {
-      indicatorEl.style.opacity = '0';
-      return;
-    }
+      if (!activeNavKey) {
+        indicatorEl.style.opacity = '0';
+        return;
+      }
 
-    const activeEl = itemRefs.current.get(activeNavKey);
-    if (!activeEl) {
-      indicatorEl.style.opacity = '0';
-      return;
-    }
+      const activeEl = itemRefs.current.get(activeNavKey);
+      if (!activeEl) {
+        indicatorEl.style.opacity = '0';
+        return;
+      }
 
-    const containerRect = containerEl.getBoundingClientRect();
-    const elRect = activeEl.getBoundingClientRect();
-    indicatorEl.style.transform = `translateY(${elRect.top - containerRect.top}px)`;
-    indicatorEl.style.opacity = '1';
-  }, [activeNavKey]);
+      const containerRect = containerEl.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      indicatorEl.style.transform = `translateY(${elRect.top - containerRect.top}px)`;
+      indicatorEl.style.opacity = '1';
+    };
 
-  useLayoutEffect(() => {
     syncIndicator();
-  });
-
-  useLayoutEffect(() => {
-    const handleResize = () => syncIndicator();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [syncIndicator]);
+    const observer = new ResizeObserver(syncIndicator);
+    if (containerEl) observer.observe(containerEl);
+    return () => observer.disconnect();
+  }, [activeNavKey, collapsed]);
 
   return (
     <div

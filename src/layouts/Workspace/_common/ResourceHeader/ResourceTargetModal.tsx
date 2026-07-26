@@ -3,7 +3,7 @@ import type { DriveSelectionItem } from '@/components/Drive/common/driveComponen
 import AppModal from '@/components/Overlay/AppModal';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { Button } from '@heroui/react';
-import { useMemoizedFn, useUpdateEffect } from 'ahooks';
+import { useMemoizedFn } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './ResourceTargetModal.module.less';
@@ -51,10 +51,6 @@ function ResourceTargetModal({
     };
     return Boolean(item.tagId && (isTargetSelectable?.(item) ?? true));
   });
-
-  useUpdateEffect(() => {
-    setTarget(undefined);
-  }, [isOpen]);
 
   const handleOpenChange = (open: boolean) => {
     if (!open && submitting) return;

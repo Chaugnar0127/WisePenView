@@ -13,7 +13,7 @@ import { useResourceHostLayoutConfig } from '@/views/workspace/ResourceHostConte
 import { Button } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { FilePenLine } from 'lucide-react';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useDocumentViewerSwitcher } from '../_hooks/useDocumentViewerSwitcher';
@@ -37,39 +37,39 @@ function PdfLayoutConfig({
   onViewerSwitch,
 }: PdfLayoutConfigProps) {
   const { t } = useTranslation('workspace');
-  const frameConfig = useMemo(
-    () => ({
-      className: styles.container,
-      sidePanel: resourceInfo ? { resource: resourceInfo, onResourceChanged } : undefined,
-      header: resourceInfo
-        ? {
-            resource: {
-              resourceId: resourceInfo.resourceId,
-              resourceName: resourceInfo.resourceName,
-              resourceType: resourceInfo.resourceType,
-              currentActions: resourceInfo.currentActions,
-              permissionResourceType: RESOURCE_KIND.FILE,
-              ownerId: resourceInfo.ownerId,
-              onPermissionSuccess,
-              moreMenu: isOfficeResourceType(documentType)
-                ? {
-                    actions: [
-                      {
-                        id: 'open-with-office',
-                        label: t('pdf.openWithOffice'),
-                        icon: FilePenLine,
-                        onAction: () => onViewerSwitch?.(RESOURCE_VIEWER.OFFICE),
-                      },
-                    ],
-                  }
-                : undefined,
-            },
-          }
-        : {},
-    }),
+  const frameConfig = {
+    className: styles.container,
+    sidePanel: resourceInfo ? { resource: resourceInfo, onResourceChanged } : undefined,
+    header: resourceInfo
+      ? {
+          resource: {
+            resourceId: resourceInfo.resourceId,
+            resourceName: resourceInfo.resourceName,
+            resourceType: resourceInfo.resourceType,
+            currentActions: resourceInfo.currentActions,
+            permissionResourceType: RESOURCE_KIND.FILE,
+            ownerId: resourceInfo.ownerId,
+            onPermissionSuccess,
+            moreMenu: isOfficeResourceType(documentType)
+              ? {
+                  actions: [
+                    {
+                      id: 'open-with-office',
+                      label: t('pdf.openWithOffice'),
+                      icon: FilePenLine,
+                      onAction: () => onViewerSwitch?.(RESOURCE_VIEWER.OFFICE),
+                    },
+                  ],
+                }
+              : undefined,
+          },
+        }
+      : {},
+  };
+  useResourceHostLayoutConfig(
+    () => frameConfig,
     [documentType, onPermissionSuccess, onResourceChanged, onViewerSwitch, resourceInfo, t]
   );
-  useResourceHostLayoutConfig(frameConfig);
 
   return <>{children}</>;
 }

@@ -2,7 +2,7 @@ import type { AiDiffDisplayMode } from '@/domains/Note';
 import { AI_DIFF_DISPLAY_MODE } from '@/domains/Note';
 import { TextSelection } from '@tiptap/pm/state';
 import { useMemoizedFn } from 'ahooks';
-import { useMemo, type Dispatch, type SetStateAction } from 'react';
+import { type Dispatch, type SetStateAction } from 'react';
 
 import { exportNoteMarkdown } from '../engines/markdown/markdownExport';
 import { printNotePdfViaBrowser, waitForEditorPaint } from '../engines/print/noteBrowserPrint';
@@ -153,53 +153,39 @@ export function useNoteEditorCommands(
   const replaceCurrent = useMemoizedFn((replacement: string) => replaceMatches(replacement, false));
   const replaceAll = useMemoizedFn((replacement: string) => replaceMatches(replacement, true));
 
-  return useMemo(
-    () => ({
-      focus: () => {
-        editor.focus();
-      },
-      exportPdf: async (options) => {
-        try {
-          setExportDisplayModeOverride(AI_DIFF_DISPLAY_MODE.OLD_ONLY);
-          await waitForEditorPaint();
-          await printNotePdfViaBrowser(editor, notePluginRegistry, {
-            title: options?.title,
-            titleRoot: options?.titleRoot,
-          });
-        } finally {
-          setExportDisplayModeOverride(null);
-        }
-      },
-      exportMarkdown: () => ({
-        content: exportNoteMarkdown(
-          editor,
-          notePluginRegistry,
-          editor.document,
-          AI_DIFF_DISPLAY_MODE.OLD_ONLY
-        ),
-        mimeType: 'text/markdown;charset=utf-8',
-        extension: 'md',
-      }),
-      findMatches,
-      findNext,
-      findPrev,
-      replaceCurrent,
-      replaceAll,
-      canReplace: () => canReplace,
-      clearFind,
-      collapseSelection,
+  return {
+    focus: () => {
+      editor.focus();
+    },
+    exportPdf: async (options) => {
+      try {
+        setExportDisplayModeOverride(AI_DIFF_DISPLAY_MODE.OLD_ONLY);
+        await waitForEditorPaint();
+        await printNotePdfViaBrowser(editor, notePluginRegistry, {
+          title: options?.title,
+          titleRoot: options?.titleRoot,
+        });
+      } finally {
+        setExportDisplayModeOverride(null);
+      }
+    },
+    exportMarkdown: () => ({
+      content: exportNoteMarkdown(
+        editor,
+        notePluginRegistry,
+        editor.document,
+        AI_DIFF_DISPLAY_MODE.OLD_ONLY
+      ),
+      mimeType: 'text/markdown;charset=utf-8',
+      extension: 'md',
     }),
-    [
-      editor,
-      setExportDisplayModeOverride,
-      findMatches,
-      findNext,
-      findPrev,
-      replaceCurrent,
-      replaceAll,
-      canReplace,
-      clearFind,
-      collapseSelection,
-    ]
-  );
+    findMatches,
+    findNext,
+    findPrev,
+    replaceCurrent,
+    replaceAll,
+    canReplace: () => canReplace,
+    clearFind,
+    collapseSelection,
+  };
 }

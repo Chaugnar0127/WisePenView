@@ -141,6 +141,11 @@ function ToolCallBlock({ part, autoCollapseOnFinish = true }: ToolCallBlockProps
   const isExpanded = isRunning || userExpanded;
   const panelId = useId();
 
+  /**
+   * 执行时机：工具调用运行状态变化时调整详情展开态并校正消息滚动位置。
+   * 不可替代原因：工具状态来自外部消息运行时，消息滚动器只提供命令式控制。
+   * cleanup：没有订阅或延迟任务，无需清理。
+   */
   useEffectForce(() => {
     const prev = previousStateRef.current;
     const stateChanged = prev !== part.state;

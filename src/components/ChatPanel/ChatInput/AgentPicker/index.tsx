@@ -9,9 +9,9 @@ import {
 } from '@/domains/Chat';
 import { parseErrorMessage } from '@/utils/error';
 import { ListBox, ListBoxItem, toast } from '@heroui/react';
-import { useMount, useRequest, useUpdateEffect } from 'ahooks';
+import { useLatest, useRequest } from 'ahooks';
 import { Bot, Check } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
 import styles from '../style.module.less';
@@ -53,41 +53,50 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
     },
     onError: (error) => toast.danger(parseErrorMessage(error)),
   });
-  const displayAgents = useMemo(
-    () => buildChatInputAgentOptions(mergeAgentOptions(agents, injectedAgents), selectedAgent),
-    [agents, injectedAgents, selectedAgent]
+  const displayAgents = buildChatInputAgentOptions(
+    mergeAgentOptions(agents, injectedAgents),
+    selectedAgent
   );
-  const injectedAgentKey = useMemo(
-    () =>
-      (injectedAgents ?? [])
-        .map((agent) => `${agent.agentId}:${agent.agentVersion ?? ''}`)
-        .join('|'),
-    [injectedAgents]
-  );
-  const injectedAgentIds = useMemo(
-    () => new Set((injectedAgents ?? []).map((agent) => agent.agentId)),
-    [injectedAgents]
-  );
+  const injectedAgentKey = JSON.stringify(injectedAgents ?? []);
+  const preferredAgentKey = JSON.stringify(preferredAgent ?? null);
+  const injectedAgentsLatest = useLatest(injectedAgents);
+  const preferredAgentLatest = useLatest(preferredAgent);
 
   const syncPreferredAgent = () => {
+    const injectedAgentIds = new Set(
+      (injectedAgentsLatest.current ?? []).map((agent) => agent.agentId)
+    );
+    const currentPreferredAgent = preferredAgentLatest.current;
     const currentAgent = store.getState().selectedAgent;
     if (currentAgent.source === 'CURRENT_DRAFT' && !injectedAgentIds.has(currentAgent.agentId)) {
       setSelectedAgent(buildDefaultPersonalAgent());
       return;
     }
-    if (!preferredAgent) return;
+    if (!currentPreferredAgent) return;
     if (!currentAgent.isDefault && currentAgent.source !== 'CURRENT_DRAFT') return;
-    if (currentAgent.agentId === preferredAgent.agentId) {
-      if (currentAgent.source === 'CURRENT_DRAFT' && currentAgent !== preferredAgent) {
-        setSelectedAgent(preferredAgent);
+    if (currentAgent.agentId === currentPreferredAgent.agentId) {
+      if (currentAgent.source === 'CURRENT_DRAFT' && currentAgent !== currentPreferredAgent) {
+        setSelectedAgent(currentPreferredAgent);
       }
       return;
     }
-    setSelectedAgent(preferredAgent);
+    setSelectedAgent(currentPreferredAgent);
   };
 
-  useMount(syncPreferredAgent);
-  useUpdateEffect(syncPreferredAgent, [injectedAgentKey, preferredAgent?.agentId]);
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：外部注入的 Agent 集合或首选 Agent 变化时校正聊天输入 store。
+   * 不可替代原因：选中 Agent 保存在独立 Zustand store，不能由当前组件 JSX 直接派生。
+   * cleanup：没有订阅或异步任务，无需清理。
+   */
+  useEffect(syncPreferredAgent, [
+    injectedAgentKey,
+    injectedAgentsLatest,
+    preferredAgentKey,
+    preferredAgentLatest,
+    setSelectedAgent,
+    store,
+  ]);
 
   const handleSelect = (agent: ChatAgentOption) => {
     setSelectedAgent(agent);

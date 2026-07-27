@@ -5,7 +5,6 @@ import {
 import { useDriveService, useGroupService } from '@/domains';
 import { buildDrivePath } from '@/utils/navigation/driveRoute';
 import { useRequest } from 'ahooks';
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspaceNavigationStore } from './_store/useWorkspaceNavigationStore';
@@ -66,12 +65,9 @@ export function useWorkspaceResourceBreadcrumb(resourceId?: string) {
       ? data.items
       : [];
 
-  const navigateToNode = useCallback(
-    (nodeId: string) => {
-      navigate(buildDrivePath({ scope: location.scope, nodeId }));
-    },
-    [location.scope, navigate]
-  );
+  const navigateToNode = (nodeId: string) => {
+    navigate(buildDrivePath({ scope: location.scope, nodeId }));
+  };
 
   return { items, navigateToNode };
 }

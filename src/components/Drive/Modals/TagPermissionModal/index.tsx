@@ -18,7 +18,6 @@ import {
   type TagResourceAction,
   type TagTreeNode,
 } from '@/domains/Tag';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { Button, ListBox, Tabs, TextField, toast, type Selection } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -216,7 +215,6 @@ const TagPolicyModalBase = ({
     useState<TagPermissionFormValues>(DEFAULT_FORM_VALUES);
   const [selectedTag, setSelectedTag] = useState<DriveSelectionItem | null>(null);
   const [tagRefreshSeed, setTagRefreshSeed] = useState(0);
-  const [initialTagLoading, setInitialTagLoading] = useState(false);
   const [accessMemberSearchValue, setAccessMemberSearchValue] = useState('');
   const [mountMemberSearchValue, setMountMemberSearchValue] = useState('');
   const showTagTree = !initialTagId;
@@ -276,42 +274,36 @@ const TagPolicyModalBase = ({
   const resolveCachedTag = (tagId: string): TagTreeNode | undefined =>
     tagService.getRawTagById(tagId, groupId) ?? tagService.getTagById(tagId, groupId);
 
-  const handleModalShow = () => {
-    setSelectedTag(null);
-    resetPermissionForm();
-    setAccessMemberSearchValue('');
-    setMountMemberSearchValue('');
-    setTagRefreshSeed((prev) => prev + 1);
-    void (async () => {
-      if (initialTagId) {
-        setInitialTagLoading(true);
+  const { loading: tagRequestLoading } = useRequest(
+    async () => {
+      await tagService.getRawTagTree(groupId);
+      return initialTagId ? resolveTagById(initialTagId) : undefined;
+    },
+    {
+      ready: isOpen,
+      refreshDeps: [groupId, initialTagId, isOpen],
+      onBefore: () => {
+        setSelectedTag(null);
+        resetPermissionForm();
+        setAccessMemberSearchValue('');
+        setMountMemberSearchValue('');
+        setTagRefreshSeed((prev) => prev + 1);
+        if (!initialTagId) return;
         const cachedTag = resolveCachedTag(initialTagId);
         if (cachedTag) {
           setSelectedTag(buildSelectionFromTag(cachedTag, groupId));
           applyTagToForm(cachedTag);
         }
-        try {
-          await tagService.getRawTagTree(groupId);
-          const tag = await resolveTagById(initialTagId);
-          if (tag) {
-            setSelectedTag(buildSelectionFromTag(tag, groupId));
-            applyTagToForm(tag);
-          }
-        } catch (err) {
-          toast.danger(parseErrorMessage(err));
-        } finally {
-          setInitialTagLoading(false);
-        }
-        return;
-      }
-
-      try {
-        await tagService.getRawTagTree(groupId);
-      } catch (err) {
-        toast.danger(parseErrorMessage(err));
-      }
-    })();
-  };
+      },
+      onSuccess: (tag) => {
+        if (!tag) return;
+        setSelectedTag(buildSelectionFromTag(tag, groupId));
+        applyTagToForm(tag);
+      },
+      onError: (error) => toast.danger(parseErrorMessage(error)),
+    }
+  );
+  const initialTagLoading = Boolean(initialTagId) && tagRequestLoading;
 
   const handleTagChange = (nodes: DriveSelectionItem[]) => {
     const nextFolder = nodes.find((node) => node.kind === 'folder');
@@ -376,7 +368,6 @@ const TagPolicyModalBase = ({
     if (!nextOpen) {
       if (saving) return;
       setSelectedTag(null);
-      setInitialTagLoading(false);
       setAccessMemberSearchValue('');
       setMountMemberSearchValue('');
       resetPermissionForm();
@@ -436,15 +427,6 @@ const TagPolicyModalBase = ({
     }
     setMountMemberSearchValue(value);
   };
-
-  /**
-   * 弹窗每次打开都需要重新读取目标标签权限；这里依赖 Overlay 打开时机，
-   * 不能改成事件回调之外的请求，否则顶部入口选择标签与右栏直达标签会不同步。
-   */
-  useEffectForce(() => {
-    if (!isOpen) return;
-    handleModalShow();
-  }, [isOpen]);
 
   const renderMemberList = (policy: PersonnelPolicyConfig) => {
     if (groupMemberLoading) {

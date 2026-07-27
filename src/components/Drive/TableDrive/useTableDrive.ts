@@ -4,7 +4,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { findTreeNodeById } from '@/utils/tree/findTreeNodeById';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { startTransition, useCallback, useMemo, useRef, useState } from 'react';
+import { startTransition, useRef, useState } from 'react';
 import { useDriveTreeChildren } from '../common/useDriveTreeChildren';
 import type { DriveRow } from './index.type';
 
@@ -65,15 +65,11 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
   const loadedLocationKeyRef = useRef<string | undefined>(undefined);
   const locationKey = `${navigationKey}\u0000${currentNodeId}`;
 
-  const updateExpandedRowKeys = useCallback(
-    (updater: string[] | ((currentKeys: string[]) => string[])) => {
-      const nextKeys =
-        typeof updater === 'function' ? updater(expandedRowKeysRef.current) : updater;
-      expandedRowKeysRef.current = nextKeys;
-      setExpandedRowKeys(nextKeys);
-    },
-    []
-  );
+  const updateExpandedRowKeys = (updater: string[] | ((currentKeys: string[]) => string[])) => {
+    const nextKeys = typeof updater === 'function' ? updater(expandedRowKeysRef.current) : updater;
+    expandedRowKeysRef.current = nextKeys;
+    setExpandedRowKeys(nextKeys);
+  };
 
   // 切换目录时清空展开状态；同目录刷新时重载已展开分支并保留仍然存在的节点。
   const { loading, refresh } = useRequest(
@@ -143,55 +139,46 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
   );
   const pathNodes = pathResult?.locationKey === locationKey ? pathResult.nodes : [];
 
-  const enterFolder = useCallback(
-    (nodeId: string) => {
-      startTransition(() => {
-        setCurrentLocation({ navigationKey, nodeId });
-      });
-    },
-    [navigationKey]
-  );
+  const enterFolder = (nodeId: string) => {
+    startTransition(() => {
+      setCurrentLocation({ navigationKey, nodeId });
+    });
+  };
 
-  const updateExpandedRow = useCallback(
-    async (expanded: boolean, record: DriveRow) => {
-      if (!expanded || (record.type !== 'root' && record.type !== 'folder')) {
-        updateExpandedRowKeys((keys) => keys.filter((k) => k !== record.id));
-        return;
-      }
-      if (!childrenMap.has(record.id)) {
-        await loadChildren(record.id);
-      }
-      updateExpandedRowKeys((keys) => (keys.includes(record.id) ? keys : [...keys, record.id]));
-    },
-    [childrenMap, loadChildren, updateExpandedRowKeys]
-  );
+  const updateExpandedRow = async (expanded: boolean, record: DriveRow) => {
+    if (!expanded || (record.type !== 'root' && record.type !== 'folder')) {
+      updateExpandedRowKeys((keys) => keys.filter((k) => k !== record.id));
+      return;
+    }
+    if (!childrenMap.has(record.id)) {
+      await loadChildren(record.id);
+    }
+    updateExpandedRowKeys((keys) => (keys.includes(record.id) ? keys : [...keys, record.id]));
+  };
 
   // 浅 map：folder 命中 expandedChildrenMap 时挂 children，否则原样返回
-  const dataSource = useMemo<DriveRow[]>(() => {
+  const dataSource = (() => {
     return rows.map((row) => attachChildren(row, childrenMap));
-  }, [rows, childrenMap]);
+  })() satisfies DriveRow[];
 
-  const handleExpandedChange = useCallback(
-    async (keys: string[]) => {
-      const addedKey = keys.find((key) => !expandedRowKeys.includes(key));
-      if (addedKey) {
-        const row = findTreeNodeById(dataSource, addedKey);
-        if (row) {
-          await updateExpandedRow(true, row);
-          return;
-        }
-      }
-
-      const removedKey = expandedRowKeys.find((key) => !keys.includes(key));
-      if (!removedKey) return;
-
-      const row = findTreeNodeById(dataSource, removedKey);
+  const handleExpandedChange = async (keys: string[]) => {
+    const addedKey = keys.find((key) => !expandedRowKeys.includes(key));
+    if (addedKey) {
+      const row = findTreeNodeById(dataSource, addedKey);
       if (row) {
-        await updateExpandedRow(false, row);
+        await updateExpandedRow(true, row);
+        return;
       }
-    },
-    [dataSource, expandedRowKeys, updateExpandedRow]
-  );
+    }
+
+    const removedKey = expandedRowKeys.find((key) => !keys.includes(key));
+    if (!removedKey) return;
+
+    const row = findTreeNodeById(dataSource, removedKey);
+    if (row) {
+      await updateExpandedRow(false, row);
+    }
+  };
 
   return {
     currentNodeId,

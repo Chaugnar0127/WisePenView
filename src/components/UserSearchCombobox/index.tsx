@@ -5,7 +5,7 @@ import { Button, TextField } from '@heroui/react';
 import { useRequest, useUnmount } from 'ahooks';
 import clsx from 'clsx';
 import type { KeyboardEvent } from 'react';
-import { useId, useMemo, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { UserSearchComboboxProps } from './index.type';
 import styles from './style.module.less';
@@ -65,13 +65,10 @@ function UserSearchCombobox({
   );
 
   const isFreshResult = queryResult?.keyword === keyword;
-  const users = useMemo(
-    () =>
-      keyword.length >= minKeywordLength && isFreshResult
-        ? queryResult.users.filter((user) => !excludedUserIds?.has(user.userId))
-        : [],
-    [excludedUserIds, isFreshResult, keyword.length, minKeywordLength, queryResult]
-  );
+  const users =
+    keyword.length >= minKeywordLength && isFreshResult
+      ? queryResult.users.filter((user) => !excludedUserIds?.has(user.userId))
+      : [];
   const shouldShowList = isFocused && keyword.length >= minKeywordLength;
   const shouldShowLoading = loading || (shouldShowList && !isFreshResult);
   const activeIndex =

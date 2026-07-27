@@ -41,9 +41,8 @@ import {
   type ResourceHostContextValue,
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
-import { useUpdateEffect } from 'ahooks';
 import clsx from 'clsx';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -110,7 +109,7 @@ function WorkspaceLayout() {
   const location = useLocation();
   const resourceRouteMatch = useMatch('/app/workspace/:resourceType/:resourceId');
   const resourceListRouteMatch = useMatch('/app/workspace/:resourceType');
-  const routeContext = useMemo(() => {
+  const routeContext = (() => {
     const rawResourceType =
       resourceRouteMatch?.params.resourceType ?? resourceListRouteMatch?.params.resourceType;
     const resourceId = resourceRouteMatch?.params.resourceId;
@@ -125,13 +124,8 @@ function WorkspaceLayout() {
       resourceType,
       viewer,
     };
-  }, [
-    location.search,
-    resourceListRouteMatch?.params.resourceType,
-    resourceRouteMatch?.params.resourceId,
-    resourceRouteMatch?.params.resourceType,
-  ]);
-  const routeChatStateProvider = useMemo(() => {
+  })();
+  const routeChatStateProvider = (() => {
     const { resourceId, resourceType, viewer } = routeContext;
     if (!resourceId || !resourceType) return undefined;
     return createResourceChatStateProvider({
@@ -139,7 +133,7 @@ function WorkspaceLayout() {
       resourceType,
       viewer,
     });
-  }, [routeContext]);
+  })();
   const resourceBreadcrumb = useWorkspaceResourceBreadcrumb(routeContext.resourceId);
   const workspaceChatStateProvider = layoutConfig.chatStateProvider ?? routeChatStateProvider;
 
@@ -153,7 +147,13 @@ function WorkspaceLayout() {
     size: rightDockPanelSize,
   });
 
-  useUpdateEffect(() => {
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：会话或聊天草稿决定面板是否存在时，同步聊天面板折叠 store。
+   * 不可替代原因：会话、草稿和折叠状态分属独立 Zustand store，且窄屏判断依赖浏览器宽度。
+   * cleanup：没有订阅或延迟任务，无需清理。
+   */
+  useEffect(() => {
     if (!shouldRenderChatPanel) {
       setChatPanelCollapsed(true);
       return;
@@ -166,21 +166,27 @@ function WorkspaceLayout() {
     setChatPanelCollapsed(false);
   }, [setChatPanelCollapsed, shouldRenderChatPanel]);
 
-  useUpdateEffect(() => {
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：真实会话建立后关闭仅用于新会话入口的草稿面板标记。
+   * 不可替代原因：当前会话与聊天面板状态分属独立 Zustand store。
+   * cleanup：没有订阅或延迟任务，无需清理。
+   */
+  useEffect(() => {
     if (!hasSessionId && !chatPanelDraftOpen) return;
     if (hasSessionId) {
       setChatPanelDraftOpen(false);
     }
   }, [chatPanelDraftOpen, hasSessionId, setChatPanelDraftOpen]);
 
-  const persistLeftSidebarWidthFromPanel = useCallback(() => {
+  const persistLeftSidebarWidthFromPanel = () => {
     const currentWidth = leftSidebarPanelRef.current?.getSize().inPixels;
     if (currentWidth == null) return;
     const nextSidebarWidth = clampSidebarWidth(currentWidth);
     if (nextSidebarWidth > SIDEBAR_MIN_WIDTH || leftSidebarWidth === SIDEBAR_MIN_WIDTH) {
       setLeftSidebarWidth(nextSidebarWidth);
     }
-  }, [leftSidebarWidth, setLeftSidebarWidth]);
+  };
 
   const { density, markSidebarUserOverride } = useCompactSidebarCollapse({
     sidebarCollapsed,
@@ -195,7 +201,13 @@ function WorkspaceLayout() {
     setChatPanelCollapsed,
   });
 
-  useUpdateEffect(() => {
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：资源页向工作区 Chat 发布上下文后，展开面板并处理窄屏冲突。
+   * 不可替代原因：资源上下文、聊天面板和资源侧栏是多个独立外部 store。
+   * cleanup：没有订阅或延迟任务；上下文由消费方显式清除。
+   */
+  useEffect(() => {
     if (!workspaceChatContext) return;
     markChatUserOverride();
     if (density === LAYOUT_DENSITY.COMPACT) {
@@ -214,7 +226,7 @@ function WorkspaceLayout() {
     workspaceChatContext,
   ]);
 
-  const handleSidebarToggle = useCallback(() => {
+  const handleSidebarToggle = () => {
     markSidebarUserOverride();
     setSidebarCollapsed((collapsed) => {
       if (!collapsed) {
@@ -222,9 +234,9 @@ function WorkspaceLayout() {
       }
       return !collapsed;
     });
-  }, [markSidebarUserOverride, persistLeftSidebarWidthFromPanel]);
+  };
 
-  const handleChatPanelToggle = useCallback(() => {
+  const handleChatPanelToggle = () => {
     if (safeChatPanelCollapsed) {
       markChatUserOverride();
       if (density === LAYOUT_DENSITY.COMPACT) {
@@ -242,16 +254,9 @@ function WorkspaceLayout() {
     if (!hasSessionId) {
       setChatPanelDraftOpen(false);
     }
-  }, [
-    density,
-    hasSessionId,
-    markChatUserOverride,
-    safeChatPanelCollapsed,
-    setChatPanelCollapsed,
-    setChatPanelDraftOpen,
-  ]);
+  };
 
-  const handleNewChat = useCallback(() => {
+  const handleNewChat = () => {
     markChatUserOverride();
     if (density === LAYOUT_DENSITY.COMPACT) {
       closeOpenResourceSidePanels();
@@ -260,63 +265,41 @@ function WorkspaceLayout() {
     clearNewChatSessionStore();
     setChatPanelDraftOpen(true);
     setChatPanelCollapsed(false);
-  }, [
-    clearCurrentSession,
-    density,
-    markChatUserOverride,
-    setChatPanelCollapsed,
-    setChatPanelDraftOpen,
-  ]);
+  };
 
-  const handleLeftSidebarResize = useCallback(
-    (panelSize: PanelSize) => {
-      if (sidebarCollapsed) return;
-      pendingLeftSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
-    },
-    [sidebarCollapsed]
-  );
+  const handleLeftSidebarResize = (panelSize: PanelSize) => {
+    if (sidebarCollapsed) return;
+    pendingLeftSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
+  };
 
-  const handleRightDockResize = useCallback(
-    (panelSize: PanelSize) => {
-      if (!chatPanelOpen) return;
-      pendingRightDockWidthRef.current = clampWorkspaceChatPanelWidth(panelSize.inPixels);
-    },
-    [chatPanelOpen]
-  );
+  const handleRightDockResize = (panelSize: PanelSize) => {
+    if (!chatPanelOpen) return;
+    pendingRightDockWidthRef.current = clampWorkspaceChatPanelWidth(panelSize.inPixels);
+  };
 
-  const handleWorkspaceShellLayoutChanged = useCallback(
-    (_layout: Layout, meta: LayoutChangedMeta) => {
-      const pendingLeftSidebarWidth = pendingLeftSidebarWidthRef.current;
-      pendingLeftSidebarWidthRef.current = null;
-      if (!meta.isUserInteraction) return;
-      if (!sidebarCollapsed && pendingLeftSidebarWidth != null) {
-        setLeftSidebarWidth(pendingLeftSidebarWidth);
-      }
-    },
-    [setLeftSidebarWidth, sidebarCollapsed]
-  );
+  const handleWorkspaceShellLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const pendingLeftSidebarWidth = pendingLeftSidebarWidthRef.current;
+    pendingLeftSidebarWidthRef.current = null;
+    if (!meta.isUserInteraction) return;
+    if (!sidebarCollapsed && pendingLeftSidebarWidth != null) {
+      setLeftSidebarWidth(pendingLeftSidebarWidth);
+    }
+  };
 
-  const handleWorkspaceContentLayoutChanged = useCallback(
-    (_layout: Layout, meta: LayoutChangedMeta) => {
-      const pendingRightDockWidth = pendingRightDockWidthRef.current;
-      pendingRightDockWidthRef.current = null;
-      if (!meta.isUserInteraction) return;
-      if (chatPanelOpen && pendingRightDockWidth != null) {
-        setChatPanelWidth(pendingRightDockWidth);
-      }
-    },
-    [chatPanelOpen, setChatPanelWidth]
-  );
+  const handleWorkspaceContentLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const pendingRightDockWidth = pendingRightDockWidthRef.current;
+    pendingRightDockWidthRef.current = null;
+    if (!meta.isUserInteraction) return;
+    if (chatPanelOpen && pendingRightDockWidth != null) {
+      setChatPanelWidth(pendingRightDockWidth);
+    }
+  };
 
-  const setLayoutConfig = useCallback((config: ResourceHostLayoutConfig) => {
-    setLayoutConfigState(config);
-  }, []);
-
-  const resetLayoutConfig = useCallback(() => {
+  const resetLayoutConfig = () => {
     setLayoutConfigState({});
-  }, []);
+  };
 
-  const handleEnterZenMode = useCallback(() => {
+  const handleEnterZenMode = () => {
     const { resourceId, resourceType, viewer } = routeContext;
     if (!resourceId || !resourceType) return;
     const resourceName =
@@ -330,22 +313,19 @@ function WorkspaceLayout() {
       },
       useWorkspaceNavigationStore.getState().location
     );
-  }, [enterZenMode, layoutConfig.header, routeContext]);
+  };
 
-  const resourceHostContext = useMemo<ResourceHostContextValue>(
-    () => ({
-      hostId: DEFAULT_RESOURCE_HOST_ID,
-      layoutConfig,
-      routeContext,
-      getNavigationScope: () => useWorkspaceNavigationStore.getState().location.scope,
-      openResource,
-      setLayoutConfig,
-      resetLayoutConfig,
-      setChatContext: useWorkspaceChatProtocolStore.getState().setContext,
-      clearChatContext: useWorkspaceChatProtocolStore.getState().clearContext,
-    }),
-    [layoutConfig, openResource, resetLayoutConfig, routeContext, setLayoutConfig]
-  );
+  const resourceHostContext = {
+    hostId: DEFAULT_RESOURCE_HOST_ID,
+    layoutConfig,
+    routeContext,
+    getNavigationScope: () => useWorkspaceNavigationStore.getState().location.scope,
+    openResource,
+    setLayoutConfig: setLayoutConfigState,
+    resetLayoutConfig,
+    setChatContext: useWorkspaceChatProtocolStore.getState().setContext,
+    clearChatContext: useWorkspaceChatProtocolStore.getState().clearContext,
+  } satisfies ResourceHostContextValue;
 
   const renderHeader = () => {
     if (layoutConfig.header === false) return null;

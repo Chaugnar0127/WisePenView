@@ -2,7 +2,7 @@ import { useNoteService } from '@/domains';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useCallback, useRef, type ChangeEvent, type RefObject } from 'react';
+import { useRef, type ChangeEvent, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePendingNoteImportStore } from './_store/usePendingNoteImportStore';
 
@@ -79,24 +79,21 @@ export function useMarkdownNoteImport({
     }
   );
 
-  const openFilePicker = useCallback(() => {
+  const openFilePicker = () => {
     if (importing) return;
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
       fileInputRef.current.click();
     }
-  }, [importing]);
+  };
 
-  const handleFileChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.currentTarget.files?.[0];
-      event.currentTarget.value = '';
-      if (file) {
-        importMarkdownNote(file);
-      }
-    },
-    [importMarkdownNote]
-  );
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (file) {
+      importMarkdownNote(file);
+    }
+  };
 
   return {
     fileInputRef,

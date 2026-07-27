@@ -11,7 +11,6 @@ import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { Label, ListBox, TextField } from '@heroui/react';
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { canEditSelectedMembers, canEditSelectedMembersForQuota } from '../../GroupDisplayConfig';
 import type {
@@ -355,14 +354,10 @@ function MemberListTable(props: MemberListTableProps) {
     showSizeChanger: pagination?.showSizeChanger ?? true,
   };
 
-  const dataSource = useMemo<MemberRecord[]>(
-    () =>
-      members.map((member) => ({
-        ...member,
-        key: member.userId,
-      })),
-    [members]
-  );
+  const dataSource = members.map((member) => ({
+    ...member,
+    key: member.userId,
+  })) satisfies MemberRecord[];
 
   const pageSizeControl = buildPageSizeControl(paginationConfig, pageSize, onPageChange, t);
 

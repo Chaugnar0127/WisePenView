@@ -17,7 +17,7 @@ import {
 import { Button, toast } from '@heroui/react';
 import { useMemoizedFn, useRequest } from 'ahooks';
 import { Save, Upload } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useBeforeUnload, useBlocker, useNavigate } from 'react-router-dom';
 import AgentSectionNav from './_components/AgentSectionNav';
@@ -60,10 +60,7 @@ export default function AgentView({ resourceId }: Props) {
   const [assetOverride, setAssetOverride] = useState<AgentAsset[] | null>(null);
   const [agentOverride, setAgentOverride] = useState<AgentDetail | null>(null);
   const [viewingVersion, setViewingVersion] = useState<number | null>(null);
-  const anchors = useMemo(
-    () => anchorSections.map(([id, key]) => [id, t(`agent:page.anchor.${key}`)] as const),
-    [t]
-  );
+  const anchors = anchorSections.map(([id, key]) => [id, t(`agent:page.anchor.${key}`)] as const);
   const load = useRequest(
     async () => {
       if (!resourceId) return null;
@@ -223,7 +220,7 @@ export default function AgentView({ resourceId }: Props) {
   });
   const handleSave = useMemoizedFn(() => save.run());
   const handlePublish = useMemoizedFn(() => publish.run());
-  const versionItems = useMemo(() => {
+  const versionItems = (() => {
     if (!load.data) return [];
     const { draftVersion, publishedVersion } = load.data.agent;
     const items = [
@@ -242,12 +239,10 @@ export default function AgentView({ resourceId }: Props) {
       });
     }
     return items;
-  }, [load.data, viewingVersion]);
-  const disabledVersionKeys = useMemo(
-    () =>
-      load.data?.agent.isOwner ? new Set<string>() : new Set(versionItems.map((item) => item.key)),
-    [load.data?.agent.isOwner, versionItems]
-  );
+  })();
+  const disabledVersionKeys = load.data?.agent.isOwner
+    ? new Set<string>()
+    : new Set(versionItems.map((item) => item.key));
   const handleVersionSelect = useMemoizedFn((version: number) => {
     if (!load.data || version === (viewingVersion ?? load.data.agent.draftVersion)) return;
     if (controller.isDirty) {
@@ -257,7 +252,7 @@ export default function AgentView({ resourceId }: Props) {
     runSwitchVersion(version);
   });
   const displayAgent = agentOverride ?? load.data?.agent;
-  const currentDraftAgent = useMemo<ChatAgentOption | null>(() => {
+  const currentDraftAgent = (() => {
     if (!load.data || !controller.draft) return null;
     const skillPolicy = controller.draft.spec.toolAndSkillPolicy;
     const defaultSkillIds = Array.from(
@@ -275,98 +270,90 @@ export default function AgentView({ resourceId }: Props) {
       label: load.data.agent.title || controller.draft.name || t('agent:page.currentAgent'),
       defaultSkillIds,
     };
-  }, [controller.draft, load.data, t]);
-  const headerConfig = useMemo<ResourceHostLayoutConfig>(
-    () => ({
-      className: styles.pageWrap,
-      chatAgentDebug:
-        currentDraftAgent && viewingVersion === null
-          ? {
-              agent: currentDraftAgent,
-              isDirty: controller.isDirty,
-              isSaving: save.loading,
-              onSaveDraft: handleSaveDraftForDebug,
-            }
-          : undefined,
-      header: displayAgent
+  })() satisfies ChatAgentOption | null;
+  const headerConfig = {
+    className: styles.pageWrap,
+    chatAgentDebug:
+      currentDraftAgent && viewingVersion === null
         ? {
-            resource: {
-              resourceId: displayAgent.resourceId,
-              resourceName: displayAgent.title,
-              resourceIconType: 'agent',
-              currentActions: displayAgent.currentActions,
-              copyVersion: displayAgent.version,
-              permissionResourceType: RESOURCE_KIND.AGENT,
-              ownerId: displayAgent.ownerId,
-              titleMeta: (
-                <span className={styles.saveStatus}>
-                  {t(
-                    `agent:page.saveStatus.${
-                      controller.savePhase === 'dirty' ||
-                      controller.savePhase === 'saving' ||
-                      controller.savePhase === 'failed'
-                        ? controller.savePhase
-                        : 'clean'
-                    }`
-                  )}
-                </span>
-              ),
-              actions: displayAgent.isOwner ? (
-                <div className={styles.headerActions}>
-                  <Button
-                    variant="secondary"
-                    isDisabled={
-                      viewingVersion !== null ||
-                      !controller.isDirty ||
-                      save.loading ||
-                      versionLoading
-                    }
-                    onPress={handleSave}
-                  >
-                    <Save size={15} />
-                    {t('common:actions.save')}
-                  </Button>
-                  <Button
-                    variant="primary"
-                    isDisabled={
-                      viewingVersion !== null || publish.loading || save.loading || versionLoading
-                    }
-                    onPress={handlePublish}
-                  >
-                    <Upload size={15} />
-                    {t('agent:page.publishAction')}
-                  </Button>
-                  <VersionDropdown
-                    items={versionItems}
-                    disabledKeys={disabledVersionKeys}
-                    formatVersion={(version) => `v${version}.0`}
-                    onSelect={handleVersionSelect}
-                  />
-                </div>
-              ) : undefined,
-            },
+            agent: currentDraftAgent,
+            isDirty: controller.isDirty,
+            isSaving: save.loading,
+            onSaveDraft: handleSaveDraftForDebug,
           }
         : undefined,
-    }),
+    header: displayAgent
+      ? {
+          resource: {
+            resourceId: displayAgent.resourceId,
+            resourceName: displayAgent.title,
+            resourceIconType: 'agent',
+            currentActions: displayAgent.currentActions,
+            copyVersion: displayAgent.version,
+            permissionResourceType: RESOURCE_KIND.AGENT,
+            ownerId: displayAgent.ownerId,
+            titleMeta: (
+              <span className={styles.saveStatus}>
+                {t(
+                  `agent:page.saveStatus.${
+                    controller.savePhase === 'dirty' ||
+                    controller.savePhase === 'saving' ||
+                    controller.savePhase === 'failed'
+                      ? controller.savePhase
+                      : 'clean'
+                  }`
+                )}
+              </span>
+            ),
+            actions: displayAgent.isOwner ? (
+              <div className={styles.headerActions}>
+                <Button
+                  variant="secondary"
+                  isDisabled={
+                    viewingVersion !== null || !controller.isDirty || save.loading || versionLoading
+                  }
+                  onPress={handleSave}
+                >
+                  <Save size={15} />
+                  {t('common:actions.save')}
+                </Button>
+                <Button
+                  variant="primary"
+                  isDisabled={
+                    viewingVersion !== null || publish.loading || save.loading || versionLoading
+                  }
+                  onPress={handlePublish}
+                >
+                  <Upload size={15} />
+                  {t('agent:page.publishAction')}
+                </Button>
+                <VersionDropdown
+                  items={versionItems}
+                  disabledKeys={disabledVersionKeys}
+                  formatVersion={(version) => `v${version}.0`}
+                  onSelect={handleVersionSelect}
+                />
+              </div>
+            ) : undefined,
+          },
+        }
+      : undefined,
+  } satisfies ResourceHostLayoutConfig;
+  useResourceHostLayoutConfig(
+    () => headerConfig,
     [
+      agentOverride,
+      controller.draft,
       controller.isDirty,
       controller.savePhase,
-      currentDraftAgent,
-      handlePublish,
-      handleSave,
-      handleSaveDraftForDebug,
-      displayAgent,
-      disabledVersionKeys,
-      handleVersionSelect,
+      load.data,
       publish.loading,
       save.loading,
       t,
-      versionItems,
       versionLoading,
       viewingVersion,
     ]
   );
-  useResourceHostLayoutConfig(headerConfig);
   if (!resourceId)
     return (
       <div className={styles.overlay}>

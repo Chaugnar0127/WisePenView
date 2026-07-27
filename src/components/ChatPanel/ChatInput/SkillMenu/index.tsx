@@ -6,7 +6,6 @@ import { parseErrorMessage } from '@/utils/error';
 import { ListBox, ListBoxItem, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Check, Settings, Sparkles, Wrench } from 'lucide-react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
@@ -33,18 +32,14 @@ function SkillMenu() {
       onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
-  const sections = useMemo(
-    () =>
-      buildSkillMenuSections({
-        primarySkills: skillMenuOptions?.primarySkills ?? [],
-        selectedSkills,
-        selectedTools,
-        toolOptions: skillMenuOptions?.tools ?? [],
-        advancedMode: true,
-        otherSkillGroups: skillMenuOptions?.otherSkillGroups ?? [],
-      }),
-    [selectedSkills, selectedTools, skillMenuOptions]
-  );
+  const sections = buildSkillMenuSections({
+    primarySkills: skillMenuOptions?.primarySkills ?? [],
+    selectedSkills,
+    selectedTools,
+    toolOptions: skillMenuOptions?.tools ?? [],
+    advancedMode: true,
+    otherSkillGroups: skillMenuOptions?.otherSkillGroups ?? [],
+  });
   const primarySection = sections.find((section) => section.key === 'primary-skills');
   const externalSection = sections.find((section) => section.key === 'external-skills');
   const toolSection = sections.find((section) => section.key === 'tools');

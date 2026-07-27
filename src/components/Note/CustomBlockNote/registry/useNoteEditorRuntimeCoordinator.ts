@@ -1,6 +1,5 @@
 import { toast } from '@heroui/react';
 import { useMemoizedFn } from 'ahooks';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { captureInlineCommentDraft } from '../engines/inlineComments/relativePosition';
@@ -90,10 +89,7 @@ export function useNoteEditorRuntimeCoordinator({
     scroll.scrollToTarget,
     !readOnly && !blockLocalDocWrites && collaborationBinding.ready
   );
-  const editorHandle = useMemo(
-    () => ({ ...commands, scrollToAnchor: scroll.scrollToAnchor }),
-    [commands, scroll.scrollToAnchor]
-  );
+  const editorHandle = { ...commands, scrollToAnchor: scroll.scrollToAnchor };
   const handleSelectionChange = useMemoizedFn(() => {
     document.captureSelection();
     outlineRuntime.syncActiveItem();

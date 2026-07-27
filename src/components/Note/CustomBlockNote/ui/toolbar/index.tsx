@@ -21,7 +21,7 @@ import {
 import { ButtonGroup, Separator, Toolbar } from '@heroui/react';
 import { useEventListener } from 'ahooks';
 import { MessageSquarePlus, Search, Sparkles } from 'lucide-react';
-import { useCallback, useMemo, type ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BlockTypeMenu } from './components/BlockTypeMenu';
 import { ColorMenu } from './components/ColorMenu';
@@ -56,21 +56,18 @@ function ToolbarSeparator() {
 
 function useNoteToolbarShortcuts(onOpenFind: NoteToolbarProps['onOpenFind']) {
   const editor = useBlockNoteEditor(blockNoteSchema);
-  const handleOpenFind = useCallback(() => {
+  const handleOpenFind = () => {
     const selectedText = editor.getSelectedText().trim();
     onOpenFind(selectedText || undefined);
-  }, [editor, onOpenFind]);
-  const handleEditorKeyDown = useCallback(
-    (event: Event) => {
-      if (!(event instanceof globalThis.KeyboardEvent)) return;
-      // Ctrl/Cmd + F 快捷键触发全文搜索
-      if (!event.altKey && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
-        event.preventDefault();
-        handleOpenFind();
-      }
-    },
-    [handleOpenFind]
-  );
+  };
+  const handleEditorKeyDown = (event: Event) => {
+    if (!(event instanceof globalThis.KeyboardEvent)) return;
+    // Ctrl/Cmd + F 快捷键触发全文搜索
+    if (!event.altKey && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      handleOpenFind();
+    }
+  };
 
   useEventListener('keydown', handleEditorKeyDown, { target: editor.domElement });
 
@@ -206,7 +203,7 @@ function TableRailFormattingToolbar({
   const editor = useBlockNoteEditor();
   const formattingToolbar = useExtension(FormattingToolbarExtension, { editor });
   const show = useExtensionState(FormattingToolbarExtension, { editor });
-  const reference = useMemo<GenericPopoverReference | undefined>(() => {
+  const reference = (() => {
     if (!tableRailSelection.rect) {
       return undefined;
     }
@@ -216,23 +213,20 @@ function TableRailFormattingToolbar({
     return element
       ? { element, getBoundingClientRect, cacheMountedBoundingClientRect: false }
       : { element: undefined, getBoundingClientRect };
-  }, [editor.domElement, tableRailSelection.rect]);
-  const useFloatingOptions = useMemo<ComponentProps<typeof GenericPopover>['useFloatingOptions']>(
-    () => ({
-      onOpenChange: (open, _event, reason) => {
-        formattingToolbar.store.setState(open);
-        if (reason === 'escape-key') {
-          editor.focus();
-        }
-      },
-      open: show,
-      placement:
-        tableRailSelection.orientation === null
-          ? 'top'
-          : getTableRailToolbarPlacement(tableRailSelection.orientation),
-    }),
-    [editor, formattingToolbar.store, show, tableRailSelection.orientation]
-  );
+  })() satisfies GenericPopoverReference | undefined;
+  const useFloatingOptions = {
+    onOpenChange: (open, _event, reason) => {
+      formattingToolbar.store.setState(open);
+      if (reason === 'escape-key') {
+        editor.focus();
+      }
+    },
+    open: show,
+    placement:
+      tableRailSelection.orientation === null
+        ? 'top'
+        : getTableRailToolbarPlacement(tableRailSelection.orientation),
+  } satisfies ComponentProps<typeof GenericPopover>['useFloatingOptions'];
 
   if (isFindModeActive || !tableRailSelection.orientation || !reference) {
     return null;

@@ -37,7 +37,7 @@ import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/u
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
@@ -107,17 +107,14 @@ function SidebarDrive() {
   const importTargetRef = useRef<RootNode | FolderNode | null>(null);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
 
-  const existingFolderNames = useMemo(() => {
+  const existingFolderNames = (() => {
     if (driveCreateTarget?.type !== 'folder') return [];
     return [...nodeMap.values()]
       .filter((node): node is FolderNode => node.type === 'folder')
       .filter((node) => node.parentId === driveCreateTarget.target.id)
       .map((node) => node.name);
-  }, [driveCreateTarget, nodeMap]);
-  const isDeleteTargetInTrash = useMemo(
-    () => isNodeInTrash(deleteTarget, nodeMap),
-    [deleteTarget, nodeMap]
-  );
+  })();
+  const isDeleteTargetInTrash = isNodeInTrash(deleteTarget, nodeMap);
 
   const resolveContainerMountTagId = (node: RootNode | FolderNode): string | undefined => {
     if (node.type === 'folder') return node.tagId;

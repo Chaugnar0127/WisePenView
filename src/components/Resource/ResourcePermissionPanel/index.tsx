@@ -25,7 +25,7 @@ import { Button, Chip, ListBox, Skeleton, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { ChevronDown, Trash2, UserPlus } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ResourcePermissionPanelProps } from './index.type';
 import styles from './style.module.less';
@@ -650,10 +650,8 @@ function ResourcePermissionPanel({
     commitSubjectDrafts(nextSubjects);
   };
 
-  const queryUserCandidates = useCallback(
-    (keyword: string) => userService.queryUserSearchCandidates({ keyword, size: 6 }),
-    [userService]
-  );
+  const queryUserCandidates = (keyword: string) =>
+    userService.queryUserSearchCandidates({ keyword, size: 6 });
 
   const renderSubjectItem = (subject: ResourcePermissionSubject) => {
     const avatarSrc = getAvatarSrc(subject.avatar);

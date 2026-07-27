@@ -1,9 +1,8 @@
 import { FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH } from '@/constants/layoutScale';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { TextArea } from '@heroui/react';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChatInputStoreProvider } from './_store/ChatInputStoreProvider';
 import AttachmentStrip from './AttachmentStrip';
@@ -29,7 +28,7 @@ function ChatInputContent({
   const { t } = useTranslation('chat');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const inputCardRef = useRef<HTMLDivElement>(null);
-  const [compactModelTrigger, setCompactModelTrigger] = useState(false);
+  const [measuredCompactModelTrigger, setMeasuredCompactModelTrigger] = useState(false);
   const { attachmentStripProps, containerProps, dropOverlayProps, textAreaProps, toolbarProps } =
     useChatInputController({
       onSend,
@@ -37,25 +36,25 @@ function ChatInputContent({
       sending,
     });
 
-  const syncCompactModelTrigger = useCallback((width: number) => {
-    setCompactModelTrigger(width < FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH);
-  }, []);
-
   /**
+   * @wisepen-manual-effect
    * 执行时机：fullWidth 挂载后，以及输入卡片尺寸变化时。
    * 不可替代原因：模型按钮是否展示文案取决于输入区实宽，无法仅靠 fullWidth 判断。
-   * cleanup：断开 ResizeObserver。
+   * cleanup：断开 ResizeObserver，并取消尚未执行的首帧测量。
    */
-  useEffectForce(() => {
-    if (!fullWidth) {
-      setCompactModelTrigger(false);
-      return;
-    }
+  useEffect(() => {
+    const syncCompactModelTrigger = (width: number) => {
+      setMeasuredCompactModelTrigger(width < FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH);
+    };
+
+    if (!fullWidth) return;
 
     const inputCard = inputCardRef.current;
     if (!inputCard || typeof ResizeObserver === 'undefined') {
-      syncCompactModelTrigger(window.innerWidth);
-      return;
+      const frame = window.requestAnimationFrame(() => {
+        syncCompactModelTrigger(inputCard?.getBoundingClientRect().width ?? window.innerWidth);
+      });
+      return () => window.cancelAnimationFrame(frame);
     }
 
     const observer = new ResizeObserver((entries) => {
@@ -64,9 +63,8 @@ function ChatInputContent({
       syncCompactModelTrigger(entry.contentRect.width);
     });
     observer.observe(inputCard);
-    syncCompactModelTrigger(inputCard.getBoundingClientRect().width);
     return () => observer.disconnect();
-  }, [fullWidth, syncCompactModelTrigger]);
+  }, [fullWidth]);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -86,7 +84,7 @@ function ChatInputContent({
     textarea.style.overflowY = contentHeight > nextHeight ? 'auto' : 'hidden';
   }, [textAreaProps.value]);
 
-  const modelIconOnly = !fullWidth || compactModelTrigger;
+  const modelIconOnly = !fullWidth || measuredCompactModelTrigger;
 
   return (
     <div

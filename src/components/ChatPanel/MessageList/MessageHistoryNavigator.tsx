@@ -1,9 +1,9 @@
 import { useMessageScroller, useMessageScrollerVisibility } from '@/components/_shadcn';
 import type { WisePenUIMessage } from '@/domains/Chat';
-import { useUnmount, useUpdateEffect } from 'ahooks';
+import { useUnmount } from 'ahooks';
 import { isTextUIPart } from 'ai';
 import clsx from 'clsx';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -134,7 +134,13 @@ function MessageHistoryNavigator({
     clearTimers();
   });
 
-  useUpdateEffect(() => {
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：历史导航浮层打开时监听页面级关闭操作。
+   * 不可替代原因：pointerdown 与 keydown 是 document 上的浏览器事件，属于 React 外部系统。
+   * cleanup：浮层关闭、依赖变化或组件卸载时移除两个 document 监听器。
+   */
+  useEffect(() => {
     if (!open) return;
 
     const handlePointerDown = (event: PointerEvent) => {

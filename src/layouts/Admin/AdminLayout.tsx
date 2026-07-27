@@ -14,7 +14,7 @@ import {
 } from '@/layouts/_common/SystemResizable';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import clsx from 'clsx';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -40,7 +40,7 @@ function AdminLayout() {
     size: sidebarPanelSize,
   });
 
-  const handleSidebarToggle = useCallback(() => {
+  const handleSidebarToggle = () => {
     setSidebarCollapsed((collapsed) => {
       if (!collapsed) {
         const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
@@ -53,25 +53,19 @@ function AdminLayout() {
       }
       return !collapsed;
     });
-  }, [setSidebarWidth, sidebarWidth]);
+  };
 
-  const handleSidebarResize = useCallback(
-    (panelSize: PanelSize) => {
-      if (sidebarCollapsed) return;
-      pendingSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
-    },
-    [sidebarCollapsed]
-  );
+  const handleSidebarResize = (panelSize: PanelSize) => {
+    if (sidebarCollapsed) return;
+    pendingSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
+  };
 
-  const handleLayoutChanged = useCallback(
-    (_layout: Layout, meta: LayoutChangedMeta) => {
-      const pendingSidebarWidth = pendingSidebarWidthRef.current;
-      pendingSidebarWidthRef.current = null;
-      if (sidebarCollapsed || !meta.isUserInteraction || pendingSidebarWidth == null) return;
-      setSidebarWidth(pendingSidebarWidth);
-    },
-    [setSidebarWidth, sidebarCollapsed]
-  );
+  const handleLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const pendingSidebarWidth = pendingSidebarWidthRef.current;
+    pendingSidebarWidthRef.current = null;
+    if (sidebarCollapsed || !meta.isUserInteraction || pendingSidebarWidth == null) return;
+    setSidebarWidth(pendingSidebarWidth);
+  };
 
   return (
     <SystemResizablePanelGroup

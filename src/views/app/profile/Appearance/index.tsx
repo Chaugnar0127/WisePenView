@@ -13,7 +13,6 @@ import {
   ToggleButtonGroup,
 } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Input } from '@/components/Input';
@@ -196,16 +195,10 @@ type SchemeOptionProps = {
 };
 
 function SchemeOption({ option }: SchemeOptionProps) {
-  const ref = React.useRef<HTMLButtonElement | null>(null);
   const { t } = useTranslation('profile');
 
   return (
-    <ToggleButton
-      ref={ref}
-      id={option.id}
-      data-scheme-preview={option.id}
-      className={styles.schemeOption}
-    >
+    <ToggleButton id={option.id} data-scheme-preview={option.id} className={styles.schemeOption}>
       <span className={styles.schemePreview}>
         <span className={styles.schemeSwatch} />
         <span className={styles.schemeSwatch} />

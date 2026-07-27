@@ -35,7 +35,7 @@ import ResourceRenderer from '@/views/workspace/ResourceRenderer';
 import { Button } from '@heroui/react';
 import clsx from 'clsx';
 import { FolderOpen, PanelsTopLeft, X } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Layout, LayoutChangedMeta, PanelSize } from 'react-resizable-panels';
 import ZenResourceFrame from './_components/ZenResourceFrame';
@@ -85,64 +85,52 @@ function ZenResourcePane({
   const [selectedResource, setSelectedResource] = useState<DriveSelectionItem | null>(null);
   const target = normalizeZenModeTarget(pane.target);
 
-  const setLayoutConfig = useCallback(
-    (layoutConfig: ResourceHostLayoutConfig) => {
-      onRuntimeChange(pane.paneId, { layoutConfig });
-    },
-    [onRuntimeChange, pane.paneId]
-  );
-  const resetLayoutConfig = useCallback(() => {
+  const setLayoutConfig = (layoutConfig: ResourceHostLayoutConfig) => {
+    onRuntimeChange(pane.paneId, { layoutConfig });
+  };
+  const resetLayoutConfig = () => {
     onRuntimeChange(pane.paneId, { layoutConfig: {}, chatContext: undefined });
-  }, [onRuntimeChange, pane.paneId]);
-  const setChatContext = useCallback(
-    (chatContext: ResourceChatContext) => {
-      onRuntimeChange(pane.paneId, { chatContext });
-    },
-    [onRuntimeChange, pane.paneId]
-  );
-  const clearChatContext = useCallback(
-    (chatContext?: ResourceChatContext) => {
-      if (chatContext && runtime.chatContext !== chatContext) return;
-      onRuntimeChange(pane.paneId, { chatContext: undefined });
-    },
-    [onRuntimeChange, pane.paneId, runtime.chatContext]
-  );
-  const handleClosePane = useCallback(() => {
+  };
+  const setChatContext = (chatContext: ResourceChatContext) => {
+    onRuntimeChange(pane.paneId, { chatContext });
+  };
+  const clearChatContext = (chatContext?: ResourceChatContext) => {
+    if (chatContext && runtime.chatContext !== chatContext) return;
+    onRuntimeChange(pane.paneId, { chatContext: undefined });
+  };
+  const handleClosePane = () => {
     clearPane(pane.paneId);
     onRuntimeChange(pane.paneId, { layoutConfig: {}, chatContext: undefined });
-  }, [clearPane, onRuntimeChange, pane.paneId]);
-  const openResource = useCallback(
-    (next: OpenResourceTarget) => {
-      const resourceId = next.resourceId.trim();
-      if (!resourceId) return;
-      const resourceType = resolveResourceKind(next.resourceType);
-      const viewer = resolveResourceViewer({
-        resourceType: next.resourceType ?? resourceType,
-        viewer: next.viewer,
+  };
+  const openResource = (next: OpenResourceTarget) => {
+    const resourceId = next.resourceId.trim();
+    if (!resourceId) return;
+    const resourceType = resolveResourceKind(next.resourceType);
+    const viewer = resolveResourceViewer({
+      resourceType: next.resourceType ?? resourceType,
+      viewer: next.viewer,
+    });
+    setPaneTarget(pane.paneId, {
+      resourceId,
+      resourceType,
+      resourceName: next.resourceName,
+      viewer,
+    });
+    if ('parentNodeId' in next.driveLocation) {
+      setPaneLocation(pane.paneId, {
+        scope: next.driveLocation.scope,
+        resource: {
+          resourceId,
+          parentNodeId: next.driveLocation.parentNodeId,
+          ...(next.driveLocation.nodeId ? { nodeId: next.driveLocation.nodeId } : {}),
+        },
       });
-      setPaneTarget(pane.paneId, {
-        resourceId,
-        resourceType,
-        resourceName: next.resourceName,
-        viewer,
-      });
-      if ('parentNodeId' in next.driveLocation) {
-        setPaneLocation(pane.paneId, {
-          scope: next.driveLocation.scope,
-          resource: {
-            resourceId,
-            parentNodeId: next.driveLocation.parentNodeId,
-            ...(next.driveLocation.nodeId ? { nodeId: next.driveLocation.nodeId } : {}),
-          },
-        });
-      } else {
-        setPaneLocation(pane.paneId, { scope: next.driveLocation.scope });
-      }
-      onActivate(pane.paneId);
-    },
-    [onActivate, pane.paneId, setPaneLocation, setPaneTarget]
-  );
-  const resourceHostContext = useMemo<ResourceHostContextValue>(() => {
+    } else {
+      setPaneLocation(pane.paneId, { scope: next.driveLocation.scope });
+    }
+    onActivate(pane.paneId);
+  };
+  const resourceHostContext = (() => {
     return {
       hostId: pane.paneId,
       layoutConfig: runtime.layoutConfig,
@@ -158,30 +146,16 @@ function ZenResourcePane({
       setChatContext,
       clearChatContext,
     };
-  }, [
-    clearChatContext,
-    openResource,
-    pane.paneId,
-    resetLayoutConfig,
-    runtime.layoutConfig,
-    setChatContext,
-    setLayoutConfig,
-    target?.resourceId,
-    target?.resourceType,
-    target?.viewer,
-  ]);
+  })() satisfies ResourceHostContextValue;
 
   const handlePickerOpenChange = (open: boolean) => {
     setPickerOpen(open);
     if (!open) setSelectedResource(null);
   };
 
-  const handleTargetChange = useCallback(
-    (nextTarget: ResourceTarget) => {
-      setPaneTarget(pane.paneId, nextTarget);
-    },
-    [pane.paneId, setPaneTarget]
-  );
+  const handleTargetChange = (nextTarget: ResourceTarget) => {
+    setPaneTarget(pane.paneId, nextTarget);
+  };
 
   const handleConfirmResource = () => {
     if (!selectedResource?.resourceId || !selectedResource.parentNodeId) return;
@@ -296,53 +270,44 @@ function ZenModeLayout() {
   const pendingPrimaryPanePercentageRef = useRef<number | null>(null);
   const pendingChatWidthRef = useRef<number | null>(null);
 
-  const handleRuntimeChange = useCallback((paneId: ZenPaneId, runtime: Partial<ZenPaneRuntime>) => {
+  const handleRuntimeChange = (paneId: ZenPaneId, runtime: Partial<ZenPaneRuntime>) => {
     setRuntimeByPaneId((current) => ({
       ...current,
       [paneId]: { ...current[paneId], ...runtime },
     }));
-  }, []);
+  };
 
-  const handleResourcePaneResize = useCallback(
-    (size: PanelSize, paneId: string | number | undefined) => {
-      if (paneId !== ZEN_PANE_IDS[0]) return;
-      pendingPrimaryPanePercentageRef.current = size.asPercentage;
-    },
-    []
-  );
+  const handleResourcePaneResize = (size: PanelSize, paneId: string | number | undefined) => {
+    if (paneId !== ZEN_PANE_IDS[0]) return;
+    pendingPrimaryPanePercentageRef.current = size.asPercentage;
+  };
 
-  const handleResourceLayoutChanged = useCallback(
-    (_layout: Layout, meta: LayoutChangedMeta) => {
-      const percentage = pendingPrimaryPanePercentageRef.current;
-      pendingPrimaryPanePercentageRef.current = null;
-      if (meta.isUserInteraction && percentage != null) {
-        setPrimaryPanePercentage(percentage);
-      }
-    },
-    [setPrimaryPanePercentage]
-  );
+  const handleResourceLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const percentage = pendingPrimaryPanePercentageRef.current;
+    pendingPrimaryPanePercentageRef.current = null;
+    if (meta.isUserInteraction && percentage != null) {
+      setPrimaryPanePercentage(percentage);
+    }
+  };
 
-  const handleChatResize = useCallback((size: PanelSize) => {
+  const handleChatResize = (size: PanelSize) => {
     pendingChatWidthRef.current = size.inPixels;
-  }, []);
+  };
 
-  const handleShellLayoutChanged = useCallback(
-    (_layout: Layout, meta: LayoutChangedMeta) => {
-      const width = pendingChatWidthRef.current;
-      pendingChatWidthRef.current = null;
-      if (meta.isUserInteraction && width != null) setChatWidth(width);
-    },
-    [setChatWidth]
-  );
+  const handleShellLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const width = pendingChatWidthRef.current;
+    pendingChatWidthRef.current = null;
+    if (meta.isUserInteraction && width != null) setChatWidth(width);
+  };
 
-  const handleNewChat = useCallback(() => {
+  const handleNewChat = () => {
     clearCurrentSession();
     clearNewChatSessionStore();
-  }, [clearCurrentSession]);
+  };
 
   const activeTarget = panes[activePaneId].target;
   const activeRuntime = runtimeByPaneId[activePaneId];
-  const activeChatProvider = useMemo(() => {
+  const activeChatProvider = (() => {
     if (activeRuntime.layoutConfig.chatStateProvider) {
       return activeRuntime.layoutConfig.chatStateProvider;
     }
@@ -352,7 +317,7 @@ function ZenModeLayout() {
       resourceType: activeTarget.resourceType,
       viewer: activeTarget.viewer,
     });
-  }, [activeRuntime.layoutConfig.chatStateProvider, activeTarget]);
+  })();
 
   return (
     <div className={styles.root}>

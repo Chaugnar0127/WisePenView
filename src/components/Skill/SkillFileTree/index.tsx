@@ -3,7 +3,6 @@ import type { DataNode, TreeDropPosition } from '@/components/Tree';
 import Tree from '@/components/Tree';
 import type { SkillFileNode } from '@/domains/Skill';
 import { FileCode2, FileText, Folder, X } from 'lucide-react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SkillFileTreeProps, SkillPendingCreate } from './index.type';
@@ -157,12 +156,13 @@ function SkillFileTree({
   onMoveFile,
 }: SkillFileTreeProps) {
   const { t } = useTranslation('skill');
-  const opts = useMemo<BuildTreeOptions>(
-    () => ({ isOwner, onDeleteFile, getDeleteLabel: (name) => t('fileTree.deleteItem', { name }) }),
-    [isOwner, onDeleteFile, t]
-  );
+  const opts = {
+    isOwner,
+    onDeleteFile,
+    getDeleteLabel: (name) => t('fileTree.deleteItem', { name }),
+  } satisfies BuildTreeOptions;
 
-  const treeData = useMemo(() => {
+  const treeData = (() => {
     const base = buildTreeData(files, opts);
     const fileNodes = pendingCreate
       ? insertPendingNode(
@@ -173,7 +173,7 @@ function SkillFileTree({
       : base;
 
     return prependNodes.length > 0 ? [...prependNodes, ...fileNodes] : fileNodes;
-  }, [files, onCancelCreate, onCommitCreate, opts, pendingCreate, prependNodes]);
+  })();
 
   const handleSelect = (keys: React.Key[]) => {
     const key = String(keys[0] ?? '');

@@ -44,9 +44,6 @@ function DeleteMemberModal({
     { checkOwner: true }
   );
 
-  const handleConfirm = () => {
-    runDeleteMembers();
-  };
   const description = memberContainsOwner
     ? t('member.delete.ownerBlocked')
     : !canEdit
@@ -61,7 +58,7 @@ function DeleteMemberModal({
       title={t('member.delete.title')}
       description={description}
       confirmText={t('member.delete.confirm')}
-      onConfirm={handleConfirm}
+      onConfirm={runDeleteMembers}
       isConfirmLoading={loading}
       isConfirmDisabled={confirmDisabled || loading}
       size="md"

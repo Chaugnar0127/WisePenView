@@ -12,7 +12,7 @@ import { useBlockNoteEditor, useEditorState, useExtension } from '@blocknote/rea
 import { Button, Input } from '@heroui/react';
 import { useEventListener, useUnmount } from 'ahooks';
 import { Link } from 'lucide-react';
-import { useCallback, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
 import { blockHasInlineContent, getSelectedBlocks } from '../utils';
@@ -59,43 +59,37 @@ export function CreateLinkToolbarButton(buttonGroupProps: ButtonGroupChildProps)
     },
   });
 
-  const openLinkPopover = useCallback(() => {
+  const openLinkPopover = () => {
     if (!state) {
       return;
     }
     setUrl(state.url);
     showSelection(true, 'createLinkButton');
     setOpen(true);
-  }, [showSelection, state]);
+  };
 
-  const closeLinkPopover = useCallback(() => {
+  const closeLinkPopover = () => {
     showSelection(false, 'createLinkButton');
     setOpen(false);
-  }, [showSelection]);
+  };
 
-  const handleOpenChange = useCallback(
-    (nextOpen: boolean) => {
-      if (nextOpen) {
-        openLinkPopover();
-      } else {
-        closeLinkPopover();
-      }
-    },
-    [closeLinkPopover, openLinkPopover]
-  );
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      openLinkPopover();
+    } else {
+      closeLinkPopover();
+    }
+  };
 
-  const handleEditorKeyDown = useCallback(
-    (event: Event) => {
-      if (!(event instanceof globalThis.KeyboardEvent)) {
-        return;
-      }
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        openLinkPopover();
-      }
-    },
-    [openLinkPopover]
-  );
+  const handleEditorKeyDown = (event: Event) => {
+    if (!(event instanceof globalThis.KeyboardEvent)) {
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      openLinkPopover();
+    }
+  };
 
   useEventListener('keydown', handleEditorKeyDown, {
     target: editor.domElement,

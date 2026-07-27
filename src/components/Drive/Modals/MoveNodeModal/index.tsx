@@ -5,7 +5,7 @@ import type { FolderNode, IDriveService } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getDriveScopeGroupId, type DriveActionTarget } from '../../common/driveComponentModel';
 import type { MoveNodeModalProps } from './index.type';
@@ -96,7 +96,7 @@ function MoveNodeModal({
     }
   );
 
-  const disabledTargetIds = useMemo(() => {
+  const disabledTargetIds = (() => {
     const next = new Set(nodes.map((node) => node.id));
     for (const nodeId of descendantNodeIds ?? []) {
       next.add(nodeId);
@@ -108,7 +108,7 @@ function MoveNodeModal({
       next.add(effectiveRootId);
     }
     return next;
-  }, [descendantNodeIds, effectiveGroupId, effectiveRootId, nodes]);
+  })();
 
   const { loading: moving, run: runMove } = useRequest(
     async () => {

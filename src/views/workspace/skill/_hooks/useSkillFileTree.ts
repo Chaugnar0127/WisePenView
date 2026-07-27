@@ -3,11 +3,10 @@ import type {
   SkillPendingCreate,
 } from '@/components/Skill/SkillFileTree/index.type';
 import type { ISkillService, SkillDetail, SkillFileNode } from '@/domains/Skill';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -75,6 +74,7 @@ export function useSkillFileTree({
   const [pendingCreate, setPendingCreate] = useState<SkillPendingCreate | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SkillFileNode | null>(null);
   const [isTreeDragOver, setIsTreeDragOver] = useState(false);
+  const [interactionResourceId, setInteractionResourceId] = useState(skill?.resourceId);
   const { files, selectedFileId, selectedTreeNodeId, viewingVersion } = state;
   const {
     setEditing,
@@ -86,21 +86,16 @@ export function useSkillFileTree({
     setSelectedFileId,
     setSelectedTreeNodeId,
   } = actions;
-  const selectedTreeNode = useMemo(
-    () => (selectedTreeNodeId ? findFile(files, selectedTreeNodeId) : null),
-    [files, selectedTreeNodeId]
-  );
-  const expandedKeys = useMemo(() => collectExpandedKeys(files), [files]);
-  const cancelPendingCreate = useCallback(() => setPendingCreate(null), []);
+  const selectedTreeNode = selectedTreeNodeId ? findFile(files, selectedTreeNodeId) : null;
+  const expandedKeys = collectExpandedKeys(files);
+  const cancelPendingCreate = () => setPendingCreate(null);
 
-  /**
-   * 路由可在同一组件实例内切换 Skill，需要清除只属于旧资源的树交互状态；无外部订阅无需 cleanup。
-   */
-  useEffectForce(() => {
+  if (interactionResourceId !== skill?.resourceId) {
+    setInteractionResourceId(skill?.resourceId);
     setPendingCreate(null);
     setDeleteTarget(null);
     setIsTreeDragOver(false);
-  }, [skill?.resourceId]);
+  }
 
   const { loading: contentLoading, run: runLoadFileContent } = useRequest(
     async (file: SkillFileNode) => {
@@ -125,9 +120,12 @@ export function useSkillFileTree({
   );
 
   /**
-   * 文件选择和异步内容加载都会改变编辑器来源，必须同步本地编辑状态；请求由 useRequest 管理，无额外 cleanup。
+   * @wisepen-manual-effect
+   * 执行时机：文件选择、版本或异步加载入口变化时同步编辑器内容，并按需请求远端文件。
+   * 不可替代原因：文件正文来自异步 Skill service，加载结果还需写回编辑器控制器。
+   * cleanup：请求竞态由 useRequest 管理，本层没有额外订阅需要清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const canPreviewCurrentFile = selectedFile ? canPreviewSkillFile(selectedFile) : true;
     const content = selectedFile?.content ?? '';
     if (selectedFileId && !selectedFile) setSelectedFileId('');
@@ -158,7 +156,7 @@ export function useSkillFileTree({
     viewingVersion,
   ]);
 
-  const resolveCreateParent = useCallback(() => {
+  const resolveCreateParent = () => {
     const node = selectedTreeNode ?? (selectedFileId ? selectedFile : null);
     if (!node) return { parentFolderId: undefined, parentPath: ROOT_PATH };
     if (node.kind === 'folder') {
@@ -169,30 +167,24 @@ export function useSkillFileTree({
       parentFolderId: filePath === ROOT_PATH ? undefined : `folder:${filePath}`,
       parentPath: filePath,
     };
-  }, [selectedFile, selectedFileId, selectedTreeNode]);
+  };
 
-  const applyTreeSelection = useCallback(
-    (nodeId: string) => {
-      const node = findFile(files, nodeId);
-      if (!node) return;
-      setSelectedTreeNodeId(nodeId);
-      if (node.kind === 'file') setSelectedFileId(nodeId);
-    },
-    [files, setSelectedFileId, setSelectedTreeNodeId]
-  );
+  const applyTreeSelection = (nodeId: string) => {
+    const node = findFile(files, nodeId);
+    if (!node) return;
+    setSelectedTreeNodeId(nodeId);
+    if (node.kind === 'file') setSelectedFileId(nodeId);
+  };
 
-  const selectNewLocalFile = useCallback(
-    (fileId: string) => {
-      if (isDirty) {
-        setPendingIntent({ type: 'switchFile', fileId });
-        return;
-      }
-      setSelectedFileId(fileId);
-      setSelectedTreeNodeId(fileId);
-      setEditing(true);
-    },
-    [isDirty, setEditing, setPendingIntent, setSelectedFileId, setSelectedTreeNodeId]
-  );
+  const selectNewLocalFile = (fileId: string) => {
+    if (isDirty) {
+      setPendingIntent({ type: 'switchFile', fileId });
+      return;
+    }
+    setSelectedFileId(fileId);
+    setSelectedTreeNodeId(fileId);
+    setEditing(true);
+  };
 
   const { loading: moveLoading, run: handleMoveFile } = useRequest(
     async ({

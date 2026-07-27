@@ -16,7 +16,7 @@ import styles from './style.module.less';
 const NOTE_FRAME_CONFIG: ResourceHostLayoutConfig = { className: styles.pageWrap };
 
 function NoteFrame({ children }: { children: ReactNode }) {
-  useResourceHostLayoutConfig(NOTE_FRAME_CONFIG);
+  useResourceHostLayoutConfig(() => NOTE_FRAME_CONFIG, []);
   return <>{children}</>;
 }
 
@@ -84,7 +84,7 @@ function NoteView({ resourceId }: { resourceId: string }) {
 
   return (
     <NoteWorkspace
-      key={resourceId}
+      key={`${resourceId}:${Boolean(noteInfoDisplay.aiDiffPreview)}`}
       resourceId={resourceId}
       noteInfoDisplay={noteInfoDisplay}
       onRefreshNoteInfo={refresh}

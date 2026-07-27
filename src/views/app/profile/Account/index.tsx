@@ -6,7 +6,7 @@ import { IDENTITY } from '@/domains/User';
 import { parseErrorMessage } from '@/utils/error';
 import { Separator, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountForm, AccountHeader, AccountVerification } from '../_components/Account';
 import type { ProfileFieldKey } from '../profile.config';
@@ -31,44 +31,32 @@ function Account() {
   const fieldConfig = getProfileFieldConfig(identityType);
   const visibleFields = PROFILE_FIELDS.filter((f) => fieldConfig[f.key]);
 
-  const readonlyFieldSet = useMemo(
-    () => new Set((user?.readonlyFields ?? []) as ProfileFieldKey[]),
-    [user?.readonlyFields]
-  );
-  const accountItems = useMemo(
-    () => [
-      {
-        key: 'username',
-        label: t('account.username'),
-        value: user?.userInfo?.username ?? t('placeholder.dash', { ns: 'common' }),
-      },
-      {
-        key: 'campusNo',
-        label: t('account.campusNo'),
-        value:
-          user?.userInfo?.campusNo === 'PENDING'
-            ? t('placeholder.dash', { ns: 'common' })
-            : (user?.userInfo?.campusNo ?? t('placeholder.dash', { ns: 'common' })),
-      },
-      {
-        key: 'email',
-        label: t('account.email'),
-        value: user?.userInfo?.email ?? t('placeholder.dash', { ns: 'common' }),
-      },
-      {
-        key: 'mobile',
-        label: t('account.mobile'),
-        value: user?.userInfo?.mobile ?? t('placeholder.dash', { ns: 'common' }),
-      },
-    ],
-    [
-      user?.userInfo?.campusNo,
-      user?.userInfo?.email,
-      user?.userInfo?.mobile,
-      user?.userInfo?.username,
-      t,
-    ]
-  );
+  const readonlyFieldSet = new Set((user?.readonlyFields ?? []) as ProfileFieldKey[]);
+  const accountItems = [
+    {
+      key: 'username',
+      label: t('account.username'),
+      value: user?.userInfo?.username ?? t('placeholder.dash', { ns: 'common' }),
+    },
+    {
+      key: 'campusNo',
+      label: t('account.campusNo'),
+      value:
+        user?.userInfo?.campusNo === 'PENDING'
+          ? t('placeholder.dash', { ns: 'common' })
+          : (user?.userInfo?.campusNo ?? t('placeholder.dash', { ns: 'common' })),
+    },
+    {
+      key: 'email',
+      label: t('account.email'),
+      value: user?.userInfo?.email ?? t('placeholder.dash', { ns: 'common' }),
+    },
+    {
+      key: 'mobile',
+      label: t('account.mobile'),
+      value: user?.userInfo?.mobile ?? t('placeholder.dash', { ns: 'common' }),
+    },
+  ];
 
   return (
     <div className={layout.pageContainer}>

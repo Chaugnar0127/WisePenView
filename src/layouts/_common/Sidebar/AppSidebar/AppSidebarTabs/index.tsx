@@ -7,14 +7,13 @@ import {
 } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive';
 import { Tabs, Tooltip } from '@heroui/react';
-import { useUpdateEffect } from 'ahooks';
 import clsx from 'clsx';
 import { FolderOpen, MessageSquare } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import GlobalSearch from '../_components/GlobalSearch';
-import SessionListGroup, { type SessionListGroupRef } from '../SessionListGroup';
+import SessionListGroup from '../SessionListGroup';
 import type { AppSidebarTabsProps } from './index.type';
 import styles from './style.module.less';
 
@@ -31,26 +30,24 @@ const resolveSidebarTab = (activeNavKey: AppHeaderNavKey | undefined): SidebarTa
 function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
   const { t } = useTranslation('shell');
   const location = useLocation();
-  const sessionListGroupRef = useRef<SessionListGroupRef>(null);
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
-  const [selectedTab, setSelectedTab] = useState<SidebarTabKey>(() =>
-    resolveSidebarTab(activeNavKey)
-  );
+  const [tabState, setTabState] = useState(() => ({
+    observedNavKey: activeNavKey,
+    selectedTab: resolveSidebarTab(activeNavKey),
+  }));
+
+  let selectedTab = tabState.selectedTab;
+  if (tabState.observedNavKey !== activeNavKey) {
+    selectedTab = resolveSidebarTab(activeNavKey);
+    setTabState({ observedNavKey: activeNavKey, selectedTab });
+  }
 
   const selectedKeys =
     activeNavKey === APP_HEADER_NAV_KEY.CHAT && currentSessionId
       ? [`session-${currentSessionId}`]
       : [];
-
-  useUpdateEffect(() => {
-    void sessionListGroupRef.current?.refresh();
-  }, [refreshVersion]);
-
-  useUpdateEffect(() => {
-    setSelectedTab(resolveSidebarTab(activeNavKey));
-  }, [activeNavKey]);
 
   return (
     <div
@@ -63,7 +60,7 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
         onSelectionChange={(key) => {
           const nextTab = String(key);
           if (nextTab === SIDEBAR_TAB.SESSIONS || nextTab === SIDEBAR_TAB.DRIVE) {
-            setSelectedTab(nextTab);
+            setTabState({ observedNavKey: activeNavKey, selectedTab: nextTab });
           }
         }}
       >
@@ -104,7 +101,7 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
           className={clsx(styles.tabPanel, styles.sessionPanel)}
           shouldForceMount
         >
-          <SessionListGroup ref={sessionListGroupRef} selectedKeys={selectedKeys} />
+          <SessionListGroup selectedKeys={selectedKeys} refreshVersion={refreshVersion} />
         </Tabs.Panel>
         <Tabs.Panel
           id={SIDEBAR_TAB.DRIVE}

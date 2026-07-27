@@ -14,7 +14,7 @@ import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core';
 import { Button, toast, type SortDescriptor } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   getDriveNodeLabel,
@@ -59,10 +59,7 @@ function TableDrive({
 }: TableDriveProps) {
   const { t } = useTranslation(['drive', 'resource', 'common']);
   const driveService = useDriveService();
-  const resolvedScope = useMemo(
-    () => resolveDriveScope(scope, groupId, rootId),
-    [scope, groupId, rootId]
-  );
+  const resolvedScope = resolveDriveScope(scope, groupId, rootId);
   const finalRootId = resolvedScope.rootId;
   const finalGroupId = resolvedScope.groupId;
   const canOpenTrash = !finalGroupId;
@@ -86,7 +83,7 @@ function TableDrive({
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | undefined>();
   const lastSortClickRef = useRef<{ column: string; time: number } | null>(null);
 
-  const handleSortChange = useCallback((descriptor: SortDescriptor) => {
+  const handleSortChange = (descriptor: SortDescriptor) => {
     const now = Date.now();
     const last = lastSortClickRef.current;
     const column = String(descriptor.column);
@@ -100,24 +97,24 @@ function TableDrive({
 
     lastSortClickRef.current = { column, time: now };
     setSortDescriptor(descriptor);
-  }, []);
+  };
   const [renameTarget, setRenameTarget] = useState<DriveActionTarget | null>(null);
   const [moveNodes, setMoveNodes] = useState<DriveActionTarget[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
   const beforeTrashNodeIdRef = useRef<string | null>(null);
 
-  const handleClearSelection = useCallback(() => {
+  const handleClearSelection = () => {
     setCheckedRowKeys(new Set());
-  }, []);
+  };
 
-  const handleNodeActionSuccess = useCallback(() => {
+  const handleNodeActionSuccess = () => {
     handleClearSelection();
     refresh();
-  }, [handleClearSelection, refresh]);
+  };
 
-  const rows = useMemo(() => dataSource.map((node) => toDriveTableRow(node, t)), [dataSource, t]);
-  const rowMap = useMemo(() => buildDriveTableRowMap(rows), [rows]);
-  const columns = useMemo(() => buildDriveTableColumns(t), [t]);
+  const rows = dataSource.map((node) => toDriveTableRow(node, t));
+  const rowMap = buildDriveTableRowMap(rows);
+  const columns = buildDriveTableColumns(t);
   const {
     sensors,
     draggingCount,
@@ -135,21 +132,18 @@ function TableDrive({
     onMoveSuccess: handleNodeActionSuccess,
   });
 
-  const handleEnterFolder = useCallback(
-    (nodeId: string) => {
-      setCheckedRowKeys(new Set());
-      setSelectedRowId(undefined);
-      clearDragState();
-      onCurrentNodeChange?.(nodeId);
-      enterFolder(nodeId);
-    },
-    [clearDragState, enterFolder, onCurrentNodeChange]
-  );
+  const handleEnterFolder = (nodeId: string) => {
+    setCheckedRowKeys(new Set());
+    setSelectedRowId(undefined);
+    clearDragState();
+    onCurrentNodeChange?.(nodeId);
+    enterFolder(nodeId);
+  };
   const handleClickNode = useClickNode({
     enterFolder: handleEnterFolder,
   });
   const selectedRow = selectedRowId ? rowMap.get(selectedRowId) : undefined;
-  const selectedActionTargets = useMemo(() => {
+  const selectedActionTargets = (() => {
     const targets: DriveActionTarget[] = [];
     checkedRowKeys.forEach((rowId) => {
       const node = rowMap.get(rowId)?.node;
@@ -158,15 +152,11 @@ function TableDrive({
       }
     });
     return targets;
-  }, [checkedRowKeys, rowMap]);
+  })();
   const canBatchMove =
     checkedRowKeys.size > 0 && selectedActionTargets.length === checkedRowKeys.size;
-  const sharedRowKeys = useMemo(
-    () =>
-      new Set(
-        [...rowMap.values()].filter((row) => isDriveSharedFolderNode(row.node)).map((row) => row.id)
-      ),
-    [rowMap]
+  const sharedRowKeys = new Set(
+    [...rowMap.values()].filter((row) => isDriveSharedFolderNode(row.node)).map((row) => row.id)
   );
 
   const { loading: batchDeleting, run: runBatchDelete } = useRequest(
@@ -188,25 +178,22 @@ function TableDrive({
     }
   );
 
-  const checkboxSelection = useMemo(
-    () => ({
-      selectedKeys: checkedRowKeys,
-      onSelectionChange: (keys: Set<string>) => {
-        setCheckedRowKeys(keys);
-        if (keys.size > 0) {
-          setSelectedRowId(undefined);
-        }
-      },
-      hiddenKeys: sharedRowKeys,
-    }),
-    [checkedRowKeys, sharedRowKeys]
-  );
+  const checkboxSelection = {
+    selectedKeys: checkedRowKeys,
+    onSelectionChange: (keys: Set<string>) => {
+      setCheckedRowKeys(keys);
+      if (keys.size > 0) {
+        setSelectedRowId(undefined);
+      }
+    },
+    hiddenKeys: sharedRowKeys,
+  };
 
   const currentDirectoryItemCount = rows.filter((row) => row.entryType !== 'loading').length;
 
-  const handleDeleteModalOpenChange = useCallback((open: boolean) => {
+  const handleDeleteModalOpenChange = (open: boolean) => {
     if (!open) setDeleteTarget(null);
-  }, []);
+  };
 
   const { data: trashFolderNodeId, runAsync: resolveTrashFolderNodeId } = useRequest(
     () => driveService.getTrashFolderNodeId(finalGroupId),
@@ -222,7 +209,7 @@ function TableDrive({
       pathNodes.some((pathNode) => pathNode.id === trashFolderNodeId))
   );
   const isEditMode = checkedRowKeys.size > 0;
-  const selectionFooter = useMemo(() => {
+  const selectionFooter = (() => {
     if (!isEditMode) return null;
     return (
       <div className={styles.selectionActions}>
@@ -246,17 +233,8 @@ function TableDrive({
         </Button>
       </div>
     );
-  }, [
-    batchDeleting,
-    canBatchMove,
-    handleClearSelection,
-    isEditMode,
-    isTrashView,
-    runBatchDelete,
-    selectedActionTargets,
-    t,
-  ]);
-  const openTrash = useCallback(async () => {
+  })();
+  const openTrash = async () => {
     if (!canOpenTrash) {
       return;
     }
@@ -279,16 +257,7 @@ function TableDrive({
     } catch (error) {
       toast.danger(parseErrorMessage(error));
     }
-  }, [
-    canOpenTrash,
-    currentNodeId,
-    finalRootId,
-    handleEnterFolder,
-    isTrashView,
-    resolveTrashFolderNodeId,
-    trashFolderNodeId,
-    t,
-  ]);
+  };
 
   const mountTagId = resolveCurrentFolderTagId(currentNodeId, pathNodes);
   const {
@@ -311,65 +280,47 @@ function TableDrive({
     mountTagId,
     isTrashView,
   });
-  const toolbar = useMemo(
-    () => (
-      <div className={styles.toolbarActions}>
-        {!isEditMode && showCreateMenu ? (
-          <CreateMenu items={createMenuItems} onSelect={handleCreateMenuSelect} />
-        ) : null}
-        {!isEditMode && showUploadToGroup ? (
-          <Button variant="secondary" size="sm" onPress={openUploadToGroup}>
-            {t('table.addFromPersonal')}
-          </Button>
-        ) : null}
-        {!isEditMode && canOpenTrash ? (
-          <Button variant={isTrashView ? 'primary' : 'secondary'} size="sm" onPress={openTrash}>
-            <Trash2 size={16} aria-hidden="true" />
-            {isTrashView ? t('page.backToDrive') : t('node.trash')}
-          </Button>
-        ) : null}
-        <AppIconButton
-          icon={
-            isDetailPanelCollapsed ? (
-              <PanelRightOpen size={16} aria-hidden="true" />
-            ) : (
-              <PanelRightClose size={16} aria-hidden="true" />
-            )
-          }
-          label={isDetailPanelCollapsed ? t('table.expandDetails') : t('table.collapseDetails')}
-          size="sm"
-          className={styles.detailPanelToggle}
-          onPress={() => setIsDetailPanelCollapsed((collapsed) => !collapsed)}
-        />
-      </div>
-    ),
-    [
-      createMenuItems,
-      handleCreateMenuSelect,
-      isEditMode,
-      isDetailPanelCollapsed,
-      isTrashView,
-      openUploadToGroup,
-      openTrash,
-      canOpenTrash,
-      showCreateMenu,
-      showUploadToGroup,
-      t,
-    ]
+  const toolbar = (
+    <div className={styles.toolbarActions}>
+      {!isEditMode && showCreateMenu ? (
+        <CreateMenu items={createMenuItems} onSelect={handleCreateMenuSelect} />
+      ) : null}
+      {!isEditMode && showUploadToGroup ? (
+        <Button variant="secondary" size="sm" onPress={openUploadToGroup}>
+          {t('table.addFromPersonal')}
+        </Button>
+      ) : null}
+      {!isEditMode && canOpenTrash ? (
+        <Button variant={isTrashView ? 'primary' : 'secondary'} size="sm" onPress={openTrash}>
+          <Trash2 size={16} aria-hidden="true" />
+          {isTrashView ? t('page.backToDrive') : t('node.trash')}
+        </Button>
+      ) : null}
+      <AppIconButton
+        icon={
+          isDetailPanelCollapsed ? (
+            <PanelRightOpen size={16} aria-hidden="true" />
+          ) : (
+            <PanelRightClose size={16} aria-hidden="true" />
+          )
+        }
+        label={isDetailPanelCollapsed ? t('table.expandDetails') : t('table.collapseDetails')}
+        size="sm"
+        className={styles.detailPanelToggle}
+        onPress={() => setIsDetailPanelCollapsed((collapsed) => !collapsed)}
+      />
+    </div>
   );
 
-  const handleRowActivate = useCallback(
-    (row: DriveTableRow, viewer?: ResourceViewer) => {
-      handleClickNode(row.node, viewer);
-    },
-    [handleClickNode]
-  );
+  const handleRowActivate = (row: DriveTableRow, viewer?: ResourceViewer) => {
+    handleClickNode(row.node, viewer);
+  };
 
-  const handleRowSelect = useCallback((row: DriveTableRow) => {
+  const handleRowSelect = (row: DriveTableRow) => {
     if (row.node.type !== 'loading') {
       setSelectedRowId(row.id);
     }
-  }, []);
+  };
 
   const resolveRowActions = useTableDriveRowActions({
     groupId: finalGroupId,
@@ -386,7 +337,7 @@ function TableDrive({
     onOpenResourcePermission: openResourcePermission,
   });
 
-  const breadcrumb = useMemo(() => {
+  const breadcrumb = (() => {
     const items = toBreadcrumbItems(pathNodes);
     return (
       <>
@@ -398,7 +349,7 @@ function TableDrive({
         {breadcrumbExtra}
       </>
     );
-  }, [breadcrumbExtra, handleEnterFolder, pathNodes, renderBreadcrumbItem]);
+  })();
 
   return (
     <DndContext

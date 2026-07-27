@@ -9,10 +9,9 @@ import {
   useMessageScroller,
 } from '@/components/_shadcn';
 import type { WisePenUIMessage } from '@/domains/Chat';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import type { ChatStatus } from 'ai';
 import { ArrowDown } from 'lucide-react';
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import HistoryLoader from './HistoryLoader';
 import Message from './Message';
@@ -145,12 +144,12 @@ function StreamingScrollFollower({ active, messages }: StreamingScrollFollowerPr
   const wasActiveRef = useRef(false);
 
   /**
-   * 流式 Markdown 会在子组件 effect 中再次提交，外层 ResizeObserver 可能错过该帧的高度变化。
-   * 每次流消息更新后于下一帧校正到底部；仅在用户仍停留于底部时执行，避免覆盖阅读位置。
-   * 生成刚开始时强制 scrollToEnd，退出 user scrollAnchor 带来的 anchored-to-message，
-   * 否则内容增高会反复 reanchor 到用户气泡顶部，看不到最新 AI 输出。
+   * @wisepen-manual-effect
+   * 执行时机：流式消息开始或内容更新后校正消息滚动锚点。
+   * 不可替代原因：消息高度和用户滚动中断状态由外部 MessageScroller 的 DOM 运行时维护。
+   * cleanup：没有订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const started = active && !wasActiveRef.current;
     wasActiveRef.current = active;
 

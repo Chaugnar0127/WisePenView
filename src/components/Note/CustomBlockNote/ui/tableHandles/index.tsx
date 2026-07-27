@@ -17,9 +17,16 @@ import {
   useExtensionState,
   type TableCellButtonProps,
 } from '@blocknote/react';
-import { useEventListener, useMount, useUnmount, useUpdateEffect } from 'ahooks';
+import { useEventListener, useMount, useUnmount } from 'ahooks';
 import { Plus, Table2 } from 'lucide-react';
-import { useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { tableRailSelectionState } from './railSelectionState';
@@ -106,6 +113,7 @@ function MountedTableInsertHandles() {
   });
   const [activeTarget, setActiveTarget] = useState<InsertTarget>(null);
   const [railSelectionRange, setRailSelectionRange] = useState<SelectionRange | null>(null);
+  const visibleRailSelectionRange = isSelectingTableCells ? railSelectionRange : null;
   const activeInsertKeyRef = useRef<string | null>(null);
   const isPressingInsertRef = useRef(false);
   const hoveredSelectionKeyRef = useRef<string | null>(null);
@@ -119,12 +127,17 @@ function MountedTableInsertHandles() {
     tableHandles?.unfreezeHandles();
   });
 
-  useUpdateEffect(() => {
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：ProseMirror 表格单元格选择结束后清理行列轨道的外部临时状态。
+   * 不可替代原因：选择状态同时存在于编辑器扩展、模块级 rail store 和拖拽 ref 中。
+   * cleanup：没有订阅或延迟任务；组件卸载路径会再次清空相同外部状态。
+   */
+  useEffect(() => {
     if (isSelectingTableCells) {
       return;
     }
     dragSelectionRef.current = null;
-    setRailSelectionRange(null);
     tableRailSelectionState.clear();
   }, [isSelectingTableCells]);
 
@@ -281,13 +294,21 @@ function MountedTableInsertHandles() {
           return railKeys;
         })()
       : new Set<string>();
-  const selectedRailKeys = railSelectionRange
+  const selectedRailKeys = visibleRailSelectionRange
     ? (() => {
         const keys = new Set<string>(selectedRailKeysFromCellSelection);
-        const start = Math.min(railSelectionRange.startIndex, railSelectionRange.endIndex);
-        const end = Math.max(railSelectionRange.startIndex, railSelectionRange.endIndex);
+        const start = Math.min(
+          visibleRailSelectionRange.startIndex,
+          visibleRailSelectionRange.endIndex
+        );
+        const end = Math.max(
+          visibleRailSelectionRange.startIndex,
+          visibleRailSelectionRange.endIndex
+        );
         for (let index = start; index <= end; index += 1) {
-          keys.add(getSelectionTargetKey({ orientation: railSelectionRange.orientation, index }));
+          keys.add(
+            getSelectionTargetKey({ orientation: visibleRailSelectionRange.orientation, index })
+          );
         }
         return keys;
       })()
@@ -399,10 +420,6 @@ function MountedTableInsertHandles() {
     });
   };
 
-  const holdSelectionHandles = () => {
-    tableHandles.freezeHandles();
-  };
-
   const getRailReferenceRect = (target: SelectionTarget, endIndex = target.index) => {
     const startIndex = Math.min(target.index, endIndex);
     const lastIndex = Math.max(target.index, endIndex);
@@ -442,7 +459,7 @@ function MountedTableInsertHandles() {
       return;
     }
     hoveredSelectionKeyRef.current = getSelectionTargetKey(target);
-    holdSelectionHandles();
+    tableHandles.freezeHandles();
     const dragTarget = dragSelectionRef.current;
     if (dragTarget?.orientation === target.orientation) {
       if (dragTarget.index !== target.index) {

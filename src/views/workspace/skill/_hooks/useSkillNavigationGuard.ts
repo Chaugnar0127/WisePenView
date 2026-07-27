@@ -1,9 +1,8 @@
 import type { ISkillService, SkillDetail } from '@/domains/Skill';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
-import { useCallback } from 'react';
+import { useMemoizedFn, useRequest } from 'ahooks';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBeforeUnload, useBlocker } from 'react-router-dom';
 
@@ -84,9 +83,12 @@ export function useSkillNavigationGuard({
   const navigationBlocker = useBlocker(hasUnsafeNavigation);
 
   /**
-   * React Router 只在导航实际被阻塞后暴露目标位置，需要同步为页面唯一 intent；blocker 自行管理生命周期。
+   * @wisepen-manual-effect
+   * 执行时机：React Router blocker 进入或退出 blocked 状态时同步离开页面意图。
+   * 不可替代原因：blocker 是路由器维护的外部状态机，只在导航提交阶段暴露状态。
+   * cleanup：blocker 生命周期由 React Router 管理，本层没有额外订阅需要清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (navigationBlocker.state === 'blocked') {
       setPendingIntent({ type: 'leave' });
     } else if (pendingIntent?.type === 'leave') {
@@ -95,28 +97,25 @@ export function useSkillNavigationGuard({
   }, [navigationBlocker.state, pendingIntent?.type, setPendingIntent]);
 
   useBeforeUnload(
-    useCallback(
-      (event) => {
-        if (!hasUnsafeNavigation) return;
-        event.preventDefault();
-        event.returnValue = '';
-      },
-      [hasUnsafeNavigation]
-    ),
+    (event) => {
+      if (!hasUnsafeNavigation) return;
+      event.preventDefault();
+      event.returnValue = '';
+    },
     { capture: true }
   );
 
-  const applyConfigSelection = useCallback(() => {
+  const applyConfigSelection = () => {
     setSelectedTreeNodeId(SKILL_CONFIG_NODE_ID);
     setSelectedFileId('');
     cancelPendingCreate();
     setEditing(false);
-  }, [cancelPendingCreate, setEditing, setSelectedFileId, setSelectedTreeNodeId]);
+  };
 
-  const discardLocalSkillChanges = useCallback(() => {
+  const discardLocalSkillChanges = () => {
     cancelPendingCreate();
     discardEditorChanges();
-  }, [cancelPendingCreate, discardEditorChanges]);
+  };
 
   const handleConfigSelect = () => {
     if (isSaveQueueActive) {
@@ -131,7 +130,7 @@ export function useSkillNavigationGuard({
     applyConfigSelection();
   };
 
-  const handleTreeSelect = (nodeId: string) => {
+  const handleTreeSelect = useMemoizedFn((nodeId: string) => {
     if (nodeId === SKILL_CONFIG_NODE_ID) {
       handleConfigSelect();
       return;
@@ -155,7 +154,7 @@ export function useSkillNavigationGuard({
       return;
     }
     applyTreeSelection(nodeId);
-  };
+  });
 
   const { loading: publishLoading, run: runPublish } = useRequest(
     async () => {
@@ -195,7 +194,7 @@ export function useSkillNavigationGuard({
     }
   );
 
-  const handlePublish = useCallback(() => {
+  const handlePublish = useMemoizedFn(() => {
     if (isSaveQueueActive) {
       toast.warning(t('toast.savingPublish'));
       return;
@@ -215,18 +214,7 @@ export function useSkillNavigationGuard({
       return;
     }
     runPublish();
-  }, [
-    applyConfigSelection,
-    files,
-    hasMissingConfig,
-    hasUnsavedSkillChanges,
-    isConfigDirty,
-    isDirty,
-    isSaveQueueActive,
-    runPublish,
-    setPendingIntent,
-    t,
-  ]);
+  });
 
   const handleSaveAndPublish = async () => {
     try {
@@ -313,21 +301,18 @@ export function useSkillNavigationGuard({
     }
   };
 
-  const handleVersionSelect = useCallback(
-    (version: number) => {
-      if (version === viewingVersion) return;
-      if (isSaveQueueActive) {
-        toast.warning(t('toast.savingSwitchVersion'));
-        return;
-      }
-      if (hasUnsafeNavigation) {
-        setPendingIntent({ type: 'switchVersion', version });
-        return;
-      }
-      runSwitchVersion(version);
-    },
-    [hasUnsafeNavigation, isSaveQueueActive, runSwitchVersion, setPendingIntent, t, viewingVersion]
-  );
+  const handleVersionSelect = useMemoizedFn((version: number) => {
+    if (version === viewingVersion) return;
+    if (isSaveQueueActive) {
+      toast.warning(t('toast.savingSwitchVersion'));
+      return;
+    }
+    if (hasUnsafeNavigation) {
+      setPendingIntent({ type: 'switchVersion', version });
+      return;
+    }
+    runSwitchVersion(version);
+  });
 
   const handleDiscardAndSwitchVersion = () => {
     const nextVersion = pendingIntent?.type === 'switchVersion' ? pendingIntent.version : null;

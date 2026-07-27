@@ -4,14 +4,14 @@ import { useChatService } from '@/domains';
 import type { ChatSession } from '@/domains/Chat';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, ListBox, ListBoxItem, ListBoxSection, toast } from '@heroui/react';
-import { useMount, useRequest } from 'ahooks';
+import { useMemoizedFn, useRequest } from 'ahooks';
 import clsx from 'clsx';
-import { useImperativeHandle, useState, type Ref } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styles from '../AppSidebarTabs/style.module.less';
 import SessionMenuItem from '../SessionMenuItem';
-import type { SessionListGroupProps, SessionListGroupRef } from './index.type';
+import type { SessionListGroupProps } from './index.type';
 
 const SESSION_PAGE_SIZE = 20;
 
@@ -70,12 +70,8 @@ const useSessionListGroup = () => {
     }
   };
 
-  const refresh = async () => {
+  const refresh = useMemoizedFn(async () => {
     await loadSessionPage(1, false);
-  };
-
-  useMount(() => {
-    void refresh();
   });
 
   const hasMoreSessions = sessionPage < sessionTotalPage;
@@ -109,10 +105,7 @@ const useSessionListGroup = () => {
   };
 };
 
-function SessionListGroup({
-  ref,
-  selectedKeys,
-}: SessionListGroupProps & { ref?: Ref<SessionListGroupRef> }) {
+function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroupProps) {
   const { t } = useTranslation('chat');
   const {
     handleDeleted,
@@ -125,7 +118,15 @@ function SessionListGroup({
     sessionListLoading,
   } = useSessionListGroup();
 
-  useImperativeHandle(ref, () => ({ refresh }), [refresh]);
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：组件挂载或外部刷新版本递增时重新加载会话列表。
+   * 不可替代原因：列表数据来自服务端，刷新版本是父组件可声明的同步信号。
+   * cleanup：请求由 ahooks 管理，无额外订阅需要清理。
+   */
+  useEffect(() => {
+    void refresh();
+  }, [refresh, refreshVersion]);
 
   return (
     <ListBox
@@ -207,5 +208,4 @@ function SessionListGroup({
 
 SessionListGroup.displayName = 'SessionListGroup';
 
-export type { SessionListGroupRef };
 export default SessionListGroup;

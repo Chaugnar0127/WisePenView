@@ -1,5 +1,4 @@
 import { useMessageScroller } from '@/components/_shadcn';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { Button, Chip } from '@heroui/react';
 import { getToolName, type DynamicToolUIPart, type ToolUIPart } from 'ai';
 import {
@@ -11,7 +10,7 @@ import {
   Wrench,
   type LucideIcon,
 } from 'lucide-react';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './ToolCallBlock.module.less';
 
@@ -133,15 +132,21 @@ function ToolCallBlock({ part, autoCollapseOnFinish = true }: ToolCallBlockProps
   const { t } = useTranslation('chat');
   const badge = getToolStatusBadge(part);
   const isRunning = RUNNING_STATES.has(part.state);
-  const [userExpanded, setUserExpanded] = useState(isRunning);
+  const [userExpanded, setUserExpanded] = useState<boolean | null>(null);
   const previousStateRef = useRef<ToolPartState | null>(null);
   const { scrollToEndUnlessUserInterrupted } = useMessageScroller();
   const detailSections = getToolDetailSections(part);
   const toolName = getToolName(part);
-  const isExpanded = isRunning || userExpanded;
+  const isExpanded = isRunning || (userExpanded ?? !autoCollapseOnFinish);
   const panelId = useId();
 
-  useEffectForce(() => {
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：工具调用运行状态变化时校正消息滚动位置。
+   * 不可替代原因：工具状态来自外部消息运行时，消息滚动器只提供命令式控制。
+   * cleanup：没有订阅或延迟任务，无需清理。
+   */
+  useEffect(() => {
     const prev = previousStateRef.current;
     const stateChanged = prev !== part.state;
     previousStateRef.current = part.state;
@@ -150,13 +155,11 @@ function ToolCallBlock({ part, autoCollapseOnFinish = true }: ToolCallBlockProps
 
     if (RUNNING_STATES.has(part.state)) {
       const wasRunning = prev != null && RUNNING_STATES.has(prev);
-      setUserExpanded(true);
       if (!wasRunning) scrollToEndUnlessUserInterrupted();
       return;
     }
 
     if (prev != null && FINISHED_STATES.has(part.state) && autoCollapseOnFinish) {
-      setUserExpanded(false);
       scrollToEndUnlessUserInterrupted();
     }
   }, [part.state, autoCollapseOnFinish, scrollToEndUnlessUserInterrupted]);
@@ -169,7 +172,9 @@ function ToolCallBlock({ part, autoCollapseOnFinish = true }: ToolCallBlockProps
         aria-expanded={isExpanded}
         aria-controls={panelId}
         onPress={() => {
-          if (!isRunning) setUserExpanded((prev) => !prev);
+          if (!isRunning) {
+            setUserExpanded((current) => !(current ?? !autoCollapseOnFinish));
+          }
         }}
       >
         <span className={styles.headerMain}>

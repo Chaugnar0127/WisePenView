@@ -1,21 +1,20 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import CopyButton, { MESSAGE_ACTION_ICON_SIZE } from '@/components/Button/CopyButton';
-import type { Model } from '@/components/ChatPanel/index.type';
 import ProviderLogo from '@/components/Icons/ProviderLogo';
-import type { WisePenUIMessage } from '@/domains/Chat';
+import type { ChatModel, WisePenUIMessage } from '@/domains/Chat';
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from 'ai';
 import { ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ChatMessage from '../ChatMessage';
 import MessageContent from '../Content';
-import MessageLoader from '../Loader';
+import MessageLoaderSkeleton from '../Loader';
 import ReasoningBlock from './ReasoningBlock';
 import ToolCallBlock from './ToolCallBlock';
 import styles from './style.module.less';
 
 interface AssistantMessageProps {
   message: WisePenUIMessage;
-  model: Model | null;
+  model: ChatModel | null;
   streaming: boolean;
 }
 
@@ -79,7 +78,7 @@ function AssistantMessage({ message, model, streaming }: AssistantMessageProps) 
           return null;
         })}
 
-        {showLoadingSkeleton ? <MessageLoader.Skeleton /> : null}
+        {showLoadingSkeleton ? <MessageLoaderSkeleton /> : null}
 
         {!streaming && textContent ? (
           <ChatMessage.Actions>

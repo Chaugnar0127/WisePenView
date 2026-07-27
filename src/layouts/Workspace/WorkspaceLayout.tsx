@@ -456,7 +456,6 @@ function WorkspaceLayout() {
           >
             {chatPanelOpen ? (
               <ChatPanel
-                collapsed={false}
                 onNewChat={handleNewChat}
                 resourceChat={{
                   provider: workspaceChatStateProvider,

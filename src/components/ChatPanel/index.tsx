@@ -8,7 +8,6 @@ import styles from './style.module.less';
 import { useChatPanelController } from './useChatPanelController';
 
 function ChatPanel({
-  collapsed,
   fullWidth = false,
   showHeader = true,
   onNewChat,
@@ -18,7 +17,6 @@ function ChatPanel({
 }: ChatPanelProps) {
   const { t } = useTranslation(['chat', 'common']);
   const controller = useChatPanelController({
-    collapsed,
     fullWidth,
     onNewChat,
     resourceChat,
@@ -30,8 +28,6 @@ function ChatPanel({
       <div className={`${styles.panel} ${fullWidth ? styles.fullWidth : ''}`}>
         {showHeader ? (
           <ChatPanelHeader
-            collapsed={collapsed}
-            fullWidth={fullWidth}
             panelTitle={controller.panelTitle}
             sessionBarOpen={controller.sessionBarOpen}
             showCollapseButton={showCollapseButton}
@@ -41,9 +37,7 @@ function ChatPanel({
           />
         ) : null}
 
-        {!collapsed ? (
-          <ChatPanelBody agentDebug={agentDebug} controller={controller} fullWidth={fullWidth} />
-        ) : null}
+        <ChatPanelBody agentDebug={agentDebug} controller={controller} fullWidth={fullWidth} />
       </div>
       <AppAlertDialog
         type="warning"

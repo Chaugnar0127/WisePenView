@@ -24,48 +24,40 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
     messages,
     resourceChatContext,
     clearResourceChatContext,
-    sending,
     sessionBarOpen,
     status,
     stop,
     ensureChatSession,
   } = controller;
+  const sending = status === 'submitted' || status === 'streaming';
 
   return (
     <div className={styles.panelBody}>
-      <div
-        className={styles.conversationPanel}
-        hidden={sessionBarOpen}
-        aria-hidden={sessionBarOpen}
-      >
-        <div className={styles.content}>
-          <div className={styles.messageViewport}>
-            <MessageList
-              messages={messages}
-              sessionId={currentSessionId}
-              canLoadMoreHistory={canLoadMoreHistory}
-              loadingMoreHistory={loadingMoreHistory}
-              onLoadMoreHistory={loadMoreHistoryMessages}
-              status={status}
-              model={currentModel}
-              fullWidth={fullWidth}
-            />
-          </div>
-          <div className={styles.footerSlot}>
-            <div className={styles.footer}>
-              <ChatInput
-                onSend={handleSend}
-                getUploadSessionId={ensureChatSession}
-                sending={sending}
-                onStop={stop}
-                contextPreview={resourceChatContext?.preview}
-                onClearContext={clearResourceChatContext}
-                injectedAgents={agentDebug ? [agentDebug.agent] : undefined}
-                preferredAgent={agentDebug?.agent}
-                fullWidth={fullWidth}
-              />
-            </div>
-          </div>
+      <div className={styles.conversationPanel} hidden={sessionBarOpen}>
+        <div className={styles.messageViewport}>
+          <MessageList
+            messages={messages}
+            sessionId={currentSessionId}
+            canLoadMoreHistory={canLoadMoreHistory}
+            loadingMoreHistory={loadingMoreHistory}
+            onLoadMoreHistory={loadMoreHistoryMessages}
+            status={status}
+            model={currentModel}
+            fullWidth={fullWidth}
+          />
+        </div>
+        <div className={styles.footerSlot}>
+          <ChatInput
+            onSend={handleSend}
+            getUploadSessionId={ensureChatSession}
+            sending={sending}
+            onStop={stop}
+            contextPreview={resourceChatContext?.preview}
+            onClearContext={clearResourceChatContext}
+            injectedAgents={agentDebug ? [agentDebug.agent] : undefined}
+            preferredAgent={agentDebug?.agent}
+            fullWidth={fullWidth}
+          />
         </div>
       </div>
 

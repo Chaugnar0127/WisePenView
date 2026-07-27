@@ -110,13 +110,7 @@ function UserMessageAttachments({
   );
 }
 
-function UserMessage({
-  message,
-  fullWidth = false,
-}: {
-  message: WisePenUIMessage;
-  fullWidth?: boolean;
-}) {
+function UserMessage({ message, fullWidth }: { message: WisePenUIMessage; fullWidth: boolean }) {
   const content = message.parts
     .filter(isTextUIPart)
     .map((part) => part.text)

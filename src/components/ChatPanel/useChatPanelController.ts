@@ -5,12 +5,16 @@ import {
   clearNewChatSessionStore,
   useNewChatSessionStore,
 } from '@/components/ChatPanel/_store/useNewChatSessionStore';
-import type { ChatPanelProps, Model } from '@/components/ChatPanel/index.type';
+import type { ChatPanelProps } from '@/components/ChatPanel/index.type';
 import { useChatService } from '@/domains';
-import { CHAT_ERROR_CODE, useChatHistory, type ChatSession } from '@/domains/Chat';
-import type { CreateSessionRequest } from '@/domains/Chat/service/index.type';
-import { useChatSession } from '@/domains/Chat/session/useChatSession';
-import { isWisePenError, parseErrorMessage } from '@/utils/error';
+import {
+  useChatHistory,
+  useChatSession,
+  type ChatModel,
+  type ChatSession,
+  type CreateSessionRequest,
+} from '@/domains/Chat';
+import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useLatest, useRequest } from 'ahooks';
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from 'ai';
@@ -19,14 +23,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { SendOptions } from './ChatInput/index.type';
 
-const HISTORY_PAGE_SIZE = 100;
-
-interface UseChatPanelControllerOptions extends Pick<
+type UseChatPanelControllerOptions = Pick<
   ChatPanelProps,
-  'fullWidth' | 'onNewChat' | 'resourceChat' | 'agentDebug'
-> {
-  collapsed: boolean;
-}
+  'onNewChat' | 'resourceChat' | 'agentDebug'
+> & { fullWidth: boolean };
 
 interface PendingDebugSend {
   text: string;
@@ -35,8 +35,7 @@ interface PendingDebugSend {
 }
 
 export function useChatPanelController({
-  collapsed,
-  fullWidth = false,
+  fullWidth,
   onNewChat,
   resourceChat,
   agentDebug,
@@ -45,7 +44,6 @@ export function useChatPanelController({
   const navigate = useNavigate();
   const chatService = useChatService();
   const setChatPanelCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
-  const chatPanelDraftOpen = useChatPanelStore((state) => state.chatPanelDraftOpen);
   const setChatPanelDraftOpen = useChatPanelStore((state) => state.setChatPanelDraftOpen);
   const requestChatSessionHistoryRefresh = useChatSessionHistoryRefreshStore(
     (state) => state.requestRefresh
@@ -62,7 +60,7 @@ export function useChatPanelController({
   const resourceChatContext = resourceChat?.context;
   const clearResourceChatContext = resourceChat?.clearContext;
 
-  const [currentModel, setCurrentModel] = useState<Model | null>(null);
+  const [currentModel, setCurrentModel] = useState<ChatModel | null>(null);
   const [sessionBarOpen, setSessionBarOpen] = useState(false);
   const [pendingDebugSend, setPendingDebugSend] = useState<PendingDebugSend | null>(null);
   const [savingDebugDraft, setSavingDebugDraft] = useState(false);
@@ -85,7 +83,7 @@ export function useChatPanelController({
     clearConversation,
   } = useChatHistory({
     sessionId: currentSessionId ?? null,
-    pageSize: HISTORY_PAGE_SIZE,
+    pageSize: 100,
     loadPage: runLoadSessionHistory,
     setMessages,
   });
@@ -120,64 +118,33 @@ export function useChatPanelController({
     clearNewChatSessionStore();
   }, [currentSessionId, hasRenderableChatContent, requestChatSessionHistoryRefresh]);
 
-  const sending = status === 'submitted' || status === 'streaming';
   const panelTitle = currentSessionTitle || t('panel.newChat');
-
-  const resolveSessionAgentParams = (opts?: SendOptions): CreateSessionRequest | undefined => {
-    const selectedAgent = opts?.selectedAgent;
-    if (!selectedAgent) return undefined;
-    if (!selectedAgent.resourceId) {
-      if (selectedAgent.isDefault || selectedAgent.source === 'DEFAULT') {
-        return { agentId: null, agentVersion: null };
-      }
-      return undefined;
-    }
-    return {
-      agentId: selectedAgent.resourceId,
-      agentVersion: selectedAgent.agentVersion,
-    };
-  };
-
-  const isCurrentSessionAgentMatched = (agentParams?: CreateSessionRequest): boolean => {
-    if (!agentParams) return true;
-    if (agentParams.agentId == null) return currentSessionAgentId == null;
-    return (
-      currentSessionAgentId === agentParams.agentId &&
-      (agentParams.agentVersion == null || currentSessionAgentVersion === agentParams.agentVersion)
-    );
-  };
 
   const ensureChatSession = async (agentParams?: CreateSessionRequest): Promise<string> => {
     const existingSessionId =
       useCurrentChatSessionStore.getState().currentSessionId ?? currentSessionId;
     if (existingSessionId) {
-      if (!isCurrentSessionAgentMatched(agentParams)) {
+      const sessionAgentMatched =
+        !agentParams ||
+        (agentParams.agentId == null
+          ? currentSessionAgentId == null
+          : currentSessionAgentId === agentParams.agentId &&
+            (agentParams.agentVersion == null ||
+              currentSessionAgentVersion === agentParams.agentVersion));
+      if (!sessionAgentMatched) {
         const updatedSession = await runSetSessionAgent({
           sessionId: existingSessionId,
           agentId: agentParams?.agentId,
           agentVersion: agentParams?.agentVersion,
         });
-        setCurrentSession({
-          id: updatedSession.id,
-          title: updatedSession.title,
-          agentId: updatedSession.agentId,
-          agentVersion: updatedSession.agentVersion,
-        });
+        setCurrentSession(updatedSession);
       }
       return existingSessionId;
     }
 
     const createdSession = await runCreateSession(agentParams);
-    useNewChatSessionStore.getState().setNewChatSession({
-      id: createdSession.id,
-      title: createdSession.title,
-    });
-    setCurrentSession({
-      id: createdSession.id,
-      title: createdSession.title,
-      agentId: createdSession.agentId,
-      agentVersion: createdSession.agentVersion,
-    });
+    useNewChatSessionStore.getState().setNewChatSessionId(createdSession.id);
+    setCurrentSession(createdSession);
     requestChatSessionHistoryRefresh();
     setChatPanelDraftOpen(false);
     if (fullWidth) {
@@ -190,12 +157,6 @@ export function useChatPanelController({
     try {
       await replaceHistory(sessionId);
     } catch (error) {
-      if (isWisePenError(error) && error.code === CHAT_ERROR_CODE.SESSION_NOT_FOUND) {
-        clearResourceChatContext?.();
-        clearCurrentSession();
-        clearConversation();
-        return;
-      }
       toast.danger(parseErrorMessage(error));
       clearConversation();
     }
@@ -223,9 +184,18 @@ export function useChatPanelController({
       return false;
     }
     setCurrentModel(targetModel);
-    let targetSessionId = currentSessionId;
-    const agentParams = resolveSessionAgentParams(opts);
+    const selectedAgent = opts?.selectedAgent;
+    let agentParams: CreateSessionRequest | undefined;
+    if (selectedAgent?.resourceId) {
+      agentParams = {
+        agentId: selectedAgent.resourceId,
+        agentVersion: selectedAgent.agentVersion,
+      };
+    } else if (selectedAgent?.isDefault || selectedAgent?.source === 'DEFAULT') {
+      agentParams = { agentId: null, agentVersion: null };
+    }
 
+    let targetSessionId: string;
     try {
       targetSessionId = await ensureChatSession(agentParams);
     } catch (error) {
@@ -259,13 +229,8 @@ export function useChatPanelController({
     return true;
   };
 
-  const isCurrentDebugAgentSelected = (opts?: SendOptions): boolean => {
-    if (!agentDebug) return false;
-    return opts?.selectedAgent?.agentId === agentDebug.agent.agentId;
-  };
-
   const handleSend = async (text: string, opts?: SendOptions): Promise<boolean> => {
-    if (agentDebug?.isDirty && isCurrentDebugAgentSelected(opts)) {
+    if (agentDebug?.isDirty && opts?.selectedAgent?.agentId === agentDebug.agent.agentId) {
       return new Promise<boolean>((resolve) => {
         setPendingDebugSend({ text, opts, resolve });
       });
@@ -311,7 +276,6 @@ export function useChatPanelController({
   };
 
   const handleToggleSessionBar = () => {
-    if (collapsed) return;
     setSessionBarOpen((open) => !open);
   };
 
@@ -322,12 +286,7 @@ export function useChatPanelController({
   const handleSelectSession = (session: ChatSession) => {
     void stop();
     clearResourceChatContext?.();
-    setCurrentSession({
-      id: session.id,
-      title: session.title,
-      agentId: session.agentId,
-      agentVersion: session.agentVersion,
-    });
+    setCurrentSession(session);
     clearNewChatSessionStore();
     setChatPanelDraftOpen(false);
     setSessionBarOpen(false);
@@ -364,19 +323,6 @@ export function useChatPanelController({
     void historyActionsLatest.current.loadHistoryMessages(currentSessionId);
   }, [currentSessionId, historyActionsLatest]);
 
-  /**
-   * @wisepen-manual-effect
-   * 执行时机：会话 ID 与草稿面板状态变化后清理不再属于任何会话的消息。
-   * 不可替代原因：消息状态由 useChatSession 管理，需要在无会话且非草稿状态下显式清空。
-   * cleanup：没有订阅或异步任务，无需清理。
-   */
-  useEffect(() => {
-    if (currentSessionId) return;
-    if (!chatPanelDraftOpen) {
-      clearConversation();
-    }
-  }, [chatPanelDraftOpen, clearConversation, currentSessionId]);
-
   return {
     canLoadMoreHistory,
     currentModel,
@@ -397,7 +343,6 @@ export function useChatPanelController({
     resourceChatContext,
     clearResourceChatContext,
     savingDebugDraft,
-    sending,
     sessionBarOpen,
     status,
     stop,

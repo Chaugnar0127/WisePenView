@@ -23,18 +23,17 @@ function ChatInputContent({
   onClearContext,
   injectedAgents,
   preferredAgent,
-  fullWidth = false,
+  fullWidth,
 }: ChatInputProps) {
   const { t } = useTranslation('chat');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const inputCardRef = useRef<HTMLDivElement>(null);
   const [measuredCompactModelTrigger, setMeasuredCompactModelTrigger] = useState(false);
-  const { attachmentStripProps, containerProps, dropOverlayProps, textAreaProps, toolbarProps } =
-    useChatInputController({
-      onSend,
-      onStop,
-      sending,
-    });
+  const { containerProps, isDragOver, textAreaProps, toolbarProps } = useChatInputController({
+    onSend,
+    onStop,
+    sending,
+  });
 
   /**
    * @wisepen-manual-effect
@@ -94,9 +93,9 @@ function ChatInputContent({
     >
       <div
         ref={inputCardRef}
-        className={clsx(styles.inputCard, dropOverlayProps.visible && styles.inputCardDragOver)}
+        className={clsx(styles.inputCard, isDragOver && styles.inputCardDragOver)}
       >
-        <AttachmentStrip {...attachmentStripProps} />
+        <AttachmentStrip />
 
         {contextPreview ? (
           <div className={styles.contextAttachment}>
@@ -127,7 +126,7 @@ function ChatInputContent({
           modelIconOnly={modelIconOnly}
         />
 
-        <DropOverlay {...dropOverlayProps} />
+        <DropOverlay visible={isDragOver} />
       </div>
 
       <OtherSkillModal />

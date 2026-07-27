@@ -4,7 +4,6 @@ export type {
   MessageAttachmentSnapshot,
   WisePenUIMessage,
 } from './entity/message';
-export { CHAT_ERROR_CODE } from './enum/error';
 export { MODEL_PROVIDER_ID, MODEL_TYPE } from './enum/model';
 export type { ModelProviderId, ModelType } from './enum/model';
 export {

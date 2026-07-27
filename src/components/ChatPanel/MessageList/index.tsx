@@ -1,4 +1,3 @@
-import type { Model } from '@/components/ChatPanel/index.type';
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -8,7 +7,7 @@ import {
   MessageScrollerViewport,
   useMessageScroller,
 } from '@/components/_shadcn';
-import type { WisePenUIMessage } from '@/domains/Chat';
+import type { ChatModel, WisePenUIMessage } from '@/domains/Chat';
 import type { ChatStatus } from 'ai';
 import { ArrowDown } from 'lucide-react';
 import { useEffect, useRef } from 'react';
@@ -29,8 +28,8 @@ interface MessageListProps {
   loadingMoreHistory: boolean;
   onLoadMoreHistory: () => Promise<void>;
   status: ChatStatus;
-  model: Model | null;
-  fullWidth?: boolean;
+  model: ChatModel | null;
+  fullWidth: boolean;
 }
 
 function MessageList({
@@ -41,8 +40,11 @@ function MessageList({
   onLoadMoreHistory,
   status,
   model,
-  fullWidth = false,
+  fullWidth,
 }: MessageListProps) {
+  const { t } = useTranslation('chat');
+  const isGenerating = status === 'submitted' || status === 'streaming';
+
   return (
     <MessageScrollerProvider
       autoScroll
@@ -52,79 +54,54 @@ function MessageList({
       scrollEdgeThreshold={AUTO_LOAD_EDGE_THRESHOLD}
       scrollPreviousItemPeek={72}
     >
-      <MessageListContent
-        messages={messages}
-        canLoadMoreHistory={canLoadMoreHistory}
-        loadingMoreHistory={loadingMoreHistory}
-        onLoadMoreHistory={onLoadMoreHistory}
-        status={status}
-        model={model}
-        fullWidth={fullWidth}
-      />
+      <MessageScroller className={styles.container}>
+        <MessageScrollerViewport className={styles.viewport}>
+          <MessageScrollerContent className={styles.scrollColumn}>
+            <StreamingScrollFollower active={isGenerating} messages={messages} />
+
+            <div className={styles.messagesBody}>
+              {messages.length === 0 ? (
+                <MessageScrollerItem className={styles.welcomeItem}>
+                  <Welcome />
+                </MessageScrollerItem>
+              ) : (
+                <>
+                  <HistoryLoader
+                    canLoadMoreHistory={canLoadMoreHistory}
+                    loadingMoreHistory={loadingMoreHistory}
+                    onLoadMoreHistory={onLoadMoreHistory}
+                  />
+
+                  {messages.map((message) => (
+                    <MessageScrollerItem
+                      key={message.id}
+                      messageId={message.id}
+                      scrollAnchor={message.role === 'user'}
+                    >
+                      <Message
+                        message={message}
+                        model={model}
+                        fullWidth={fullWidth}
+                        streaming={message.id === messages[messages.length - 1]?.id && isGenerating}
+                      />
+                    </MessageScrollerItem>
+                  ))}
+                </>
+              )}
+            </div>
+          </MessageScrollerContent>
+        </MessageScrollerViewport>
+
+        <MessageScrollerButton className={styles.scrollToBottomButton}>
+          <ArrowDown size={14} />
+          <span className={styles.srOnly}>{t('message.scrollToBottom')}</span>
+        </MessageScrollerButton>
+        <MessageHistoryNavigator
+          messages={messages}
+          scrollAnchorOffsetRatio={HISTORY_ANCHOR_TOP_RATIO}
+        />
+      </MessageScroller>
     </MessageScrollerProvider>
-  );
-}
-
-function MessageListContent({
-  messages,
-  canLoadMoreHistory,
-  loadingMoreHistory,
-  onLoadMoreHistory,
-  status,
-  model,
-  fullWidth = false,
-}: MessageListProps) {
-  const { t } = useTranslation('chat');
-  const isGenerating = status === 'submitted' || status === 'streaming';
-
-  return (
-    <MessageScroller className={styles.container}>
-      <MessageScrollerViewport className={styles.viewport}>
-        <MessageScrollerContent className={styles.scrollColumn}>
-          <StreamingScrollFollower active={isGenerating} messages={messages} />
-
-          <div className={styles.messagesBody}>
-            {messages.length === 0 ? (
-              <MessageScrollerItem className={styles.welcomeItem}>
-                <Welcome />
-              </MessageScrollerItem>
-            ) : (
-              <>
-                <HistoryLoader
-                  canLoadMoreHistory={canLoadMoreHistory}
-                  loadingMoreHistory={loadingMoreHistory}
-                  onLoadMoreHistory={onLoadMoreHistory}
-                />
-
-                {messages.map((message) => (
-                  <MessageScrollerItem
-                    key={message.id}
-                    messageId={message.id}
-                    scrollAnchor={message.role === 'user'}
-                  >
-                    <Message
-                      message={message}
-                      model={model}
-                      fullWidth={fullWidth}
-                      streaming={message.id === messages[messages.length - 1]?.id && isGenerating}
-                    />
-                  </MessageScrollerItem>
-                ))}
-              </>
-            )}
-          </div>
-        </MessageScrollerContent>
-      </MessageScrollerViewport>
-
-      <MessageScrollerButton className={styles.scrollToBottomButton}>
-        <ArrowDown size={14} />
-        <span className={styles.srOnly}>{t('message.scrollToBottom')}</span>
-      </MessageScrollerButton>
-      <MessageHistoryNavigator
-        messages={messages}
-        scrollAnchorOffsetRatio={HISTORY_ANCHOR_TOP_RATIO}
-      />
-    </MessageScroller>
   );
 }
 

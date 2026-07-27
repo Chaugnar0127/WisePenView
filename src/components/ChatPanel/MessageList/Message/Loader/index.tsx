@@ -20,9 +20,5 @@ function MessageLoaderSkeleton({ className }: MessageLoaderSkeletonProps) {
   );
 }
 
-const MessageLoader = {
-  Skeleton: MessageLoaderSkeleton,
-};
-
 export type { MessageLoaderSkeletonProps } from './index.type';
-export default MessageLoader;
+export default MessageLoaderSkeleton;

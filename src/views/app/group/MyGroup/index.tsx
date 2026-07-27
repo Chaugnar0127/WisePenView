@@ -1,9 +1,9 @@
-import { Empty, Spin } from '@/components/Feedback';
+import { Empty } from '@/components/Feedback';
 import SegmentedTabs from '@/components/SegmentedTabs';
 import { useGroupService } from '@/domains';
 import type { FetchGroupListRequest, Group } from '@/domains/Group';
 import { GROUP_ROLE_FILTER_MAP } from '@/domains/Group';
-import { Button, Pagination, toast } from '@heroui/react';
+import { Button, Card, Pagination, Skeleton, toast } from '@heroui/react';
 import { usePagination } from 'ahooks';
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -16,6 +16,10 @@ import page from './style.module.less';
 
 const PAGE_SIZE = 8;
 const PAGINATION_SIBLING_COUNT = 1;
+const GROUP_CARD_SKELETON_KEYS = Array.from(
+  { length: PAGE_SIZE },
+  (_, index) => `group-card-skeleton-${index + 1}`
+);
 
 type PaginationPageItem = number | 'ellipsis';
 
@@ -43,15 +47,31 @@ function buildPaginationItems(currentPage: number, totalPages: number): Paginati
   });
 }
 
+function GroupCardSkeleton() {
+  return (
+    <Card className={page.skeletonCard} aria-hidden="true">
+      <Skeleton animationType="shimmer" className={page.skeletonCover} />
+      <div className={page.skeletonBody}>
+        <Skeleton animationType="shimmer" className={page.skeletonTitle} />
+        <div className={page.skeletonFooter}>
+          <Skeleton animationType="shimmer" className={page.skeletonAvatar} />
+          <Skeleton animationType="shimmer" className={page.skeletonOwner} />
+          <Skeleton animationType="shimmer" className={page.skeletonMemberCount} />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function MyGroup() {
   const { t } = useTranslation('group');
   const groupService = useGroupService();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<string>('joined');
+  const [activeTab, setActiveTab] = useState<string>('all');
   const [joinGroupModalOpen, setJoinGroupModalOpen] = useState(false);
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
 
-  const groupRoleFilter = GROUP_ROLE_FILTER_MAP[activeTab] ?? GROUP_ROLE_FILTER_MAP.joined;
+  const groupRoleFilter = GROUP_ROLE_FILTER_MAP[activeTab] ?? GROUP_ROLE_FILTER_MAP.all;
 
   const {
     data: groupsData,
@@ -83,12 +103,8 @@ function MyGroup() {
   const pages = buildPaginationItems(pageNum, totalPages);
   const start = total === 0 ? 0 : (pageNum - 1) * size + 1;
   const end = Math.min(pageNum * size, total);
-
   const handleTabChange = (key: string) => {
     setActiveTab(key);
-    if (pageNum !== 1) {
-      onPageChange(1, size);
-    }
   };
 
   const handleModalSuccess = () => {
@@ -127,6 +143,7 @@ function MyGroup() {
         selectedKey={activeTab}
         onSelectionChange={handleTabChange}
         items={[
+          { key: 'all', label: t('list.all') },
           { key: 'joined', label: t('list.joined') },
           { key: 'managed', label: t('list.managed') },
         ]}
@@ -135,8 +152,17 @@ function MyGroup() {
       />
 
       {loading ? (
-        <div className={page.loadingState}>
-          <Spin size="large" />
+        <div
+          className={page.groupGrid}
+          role="status"
+          aria-live="polite"
+          aria-label={t('list.loading')}
+        >
+          {GROUP_CARD_SKELETON_KEYS.map((key) => (
+            <div key={key} className={page.groupGridItem}>
+              <GroupCardSkeleton />
+            </div>
+          ))}
         </div>
       ) : (
         <>

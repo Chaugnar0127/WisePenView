@@ -15,8 +15,6 @@ import { useNavigate } from 'react-router-dom';
 import styles from './style.module.less';
 
 const PERSONAL_SCOPE_KEY = '__personal__';
-const GROUP_SCOPE_PAGE_SIZE = 100;
-
 function SidebarDriveScopeSwitcher() {
   const { t } = useTranslation('drive');
   const groupService = useGroupService();
@@ -26,21 +24,7 @@ function SidebarDriveScopeSwitcher() {
   const selectedKey = activeScope.type === 'group' ? activeScope.groupId : PERSONAL_SCOPE_KEY;
 
   const { data: groups = [], loading } = useRequest(
-    async (): Promise<Group[]> => {
-      const [joinedGroups, managedGroups] = await Promise.all([
-        groupService.fetchGroupList({
-          groupRoleFilter: 'JOINED',
-          page: 1,
-          size: GROUP_SCOPE_PAGE_SIZE,
-        }),
-        groupService.fetchGroupList({
-          groupRoleFilter: 'MANAGED',
-          page: 1,
-          size: GROUP_SCOPE_PAGE_SIZE,
-        }),
-      ]);
-      return mergeScopeGroups([...joinedGroups.groups, ...managedGroups.groups]);
-    },
+    async (): Promise<Group[]> => groupService.fetchAllMyGroups(),
     {
       onError: () => {
         toast.danger(t('sidebar.loadGroupsFailed'));
@@ -110,15 +94,6 @@ function SidebarDriveScopeSwitcher() {
       </AppPopover.Content>
     </AppPopover>
   );
-}
-
-function mergeScopeGroups(groups: Group[]): Group[] {
-  const groupMap = new Map<string, Group>();
-  for (const group of groups) {
-    if (!group.groupId || groupMap.has(group.groupId)) continue;
-    groupMap.set(group.groupId, group);
-  }
-  return [...groupMap.values()];
 }
 
 export default SidebarDriveScopeSwitcher;

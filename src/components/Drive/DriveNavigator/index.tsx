@@ -3,7 +3,7 @@ import type { DataNode } from '@/components/Tree';
 import Tree from '@/components/Tree';
 import { useDriveService, useGroupService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
-import type { FetchGroupListRequest, Group, IGroupService } from '@/domains/Group';
+import type { IGroupService } from '@/domains/Group';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -30,7 +30,6 @@ import styles from './style.module.less';
 const DEFAULT_RENDERABLE_TYPES: DriveItemKind[] = ['root', 'folder', 'resource', 'link'];
 const DEFAULT_SELECTABLE_TYPES: DriveItemKind[] = ['folder'];
 const PERSONAL_SCOPE_KEY = 'personal';
-const GROUP_SCOPE_PAGE_SIZE = 100;
 const DEFAULT_RESOURCE_PREVIEW_LIMIT = 8;
 const TREE_KEY_SEPARATOR = '\u001f';
 
@@ -96,54 +95,13 @@ function buildSingleScopeOption(
   };
 }
 
-async function fetchGroupsByRole(
-  groupService: IGroupService,
-  groupRoleFilter: FetchGroupListRequest['groupRoleFilter']
-): Promise<Group[]> {
-  const groups: Group[] = [];
-  let page = 1;
-
-  while (true) {
-    const data = await groupService.fetchGroupList({
-      groupRoleFilter,
-      page,
-      size: GROUP_SCOPE_PAGE_SIZE,
-    });
-    groups.push(...data.groups);
-
-    if (
-      data.groups.length === 0 ||
-      data.groups.length < GROUP_SCOPE_PAGE_SIZE ||
-      (data.total > 0 && groups.length >= data.total)
-    ) {
-      break;
-    }
-    page += 1;
-  }
-
-  return groups;
-}
-
-function mergeScopeGroups(groups: Group[]): Group[] {
-  const groupMap = new Map<string, Group>();
-  for (const group of groups) {
-    if (!group.groupId || groupMap.has(group.groupId)) continue;
-    groupMap.set(group.groupId, group);
-  }
-  return [...groupMap.values()];
-}
-
 async function fetchAllScopeOptions(
   groupService: IGroupService,
   includePersonal: boolean,
   excludedGroupIds: Set<string>,
   t: TFunction<'drive'>
 ): Promise<DriveNavigatorScopeOption[]> {
-  const [joinedGroups, managedGroups] = await Promise.all([
-    fetchGroupsByRole(groupService, 'JOINED'),
-    fetchGroupsByRole(groupService, 'MANAGED'),
-  ]);
-  const groups = mergeScopeGroups([...joinedGroups, ...managedGroups]).filter(
+  const groups = (await groupService.fetchAllMyGroups()).filter(
     (group) => !excludedGroupIds.has(group.groupId)
   );
 

@@ -393,7 +393,6 @@ function ZenModeLayout() {
             onResize={handleChatResize}
           >
             <ChatPanel
-              collapsed={false}
               showCollapseButton={false}
               onNewChat={handleNewChat}
               resourceChat={{

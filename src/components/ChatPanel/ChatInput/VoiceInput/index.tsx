@@ -43,4 +43,4 @@ function VoiceInput({ state, isActive, isDisabled, onPress }: VoiceInputProps) {
 }
 
 export default VoiceInput;
-export type { VoiceInputProps, VoiceInputState } from './index.type';
+export type { VoiceInputProps } from './index.type';

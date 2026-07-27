@@ -16,7 +16,7 @@ function InputToolbar({
   voiceInputProps,
   injectedAgents,
   preferredAgent,
-  modelIconOnly = false,
+  modelIconOnly,
   onSend,
   onStop,
 }: InputToolbarProps) {

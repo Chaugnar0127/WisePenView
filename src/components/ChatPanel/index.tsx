@@ -1,36 +1,13 @@
-import { useChatSessionHistoryRefreshStore } from '@/components/ChatPanel/_store/useChatSessionHistoryRefreshStore';
-import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
-import {
-  clearNewChatSessionStore,
-  useNewChatSessionStore,
-} from '@/components/ChatPanel/_store/useNewChatSessionStore';
-import type { ChatPanelProps, Model } from '@/components/ChatPanel/index.type';
+import type { ChatPanelProps } from '@/components/ChatPanel/index.type';
 import { AppAlertDialog } from '@/components/Overlay';
-import { useChatService } from '@/domains';
-import { useChatHistory, type ChatSession } from '@/domains/Chat';
-import type { CreateSessionRequest } from '@/domains/Chat/service/index.type';
-import { useChatSession } from '@/domains/Chat/session/useChatSession';
-import { parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
-import { useLatest, useRequest } from 'ahooks';
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import ChatInput from './ChatInput';
-import type { SendOptions } from './ChatInput/index.type';
-import {
-  HISTORY_PAGE_SIZE,
-  hasRenderableMessageContent,
-  isSessionInvalidMessage,
-} from './ChatPanel';
+import ChatPanelBody from './ChatPanelBody';
 import ChatPanelHeader from './ChatPanelHeader';
-import ChatSessionBar from './ChatSessionBar';
-import MessageList from './MessageList';
-import { useChatPanelStore } from './_store/useChatPanelStore';
 import styles from './style.module.less';
+import { useChatPanelController } from './useChatPanelController';
 
 function ChatPanel({
-  collapsed,
   fullWidth = false,
   showHeader = true,
   onNewChat,
@@ -39,414 +16,41 @@ function ChatPanel({
   showCollapseButton = true,
 }: ChatPanelProps) {
   const { t } = useTranslation(['chat', 'common']);
-  const navigate = useNavigate();
-  const chatService = useChatService();
-  const setChatPanelCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
-  const chatPanelDraftOpen = useChatPanelStore((state) => state.chatPanelDraftOpen);
-  const setChatPanelDraftOpen = useChatPanelStore((state) => state.setChatPanelDraftOpen);
-  const requestChatSessionHistoryRefresh = useChatSessionHistoryRefreshStore(
-    (state) => state.requestRefresh
-  );
-  const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
-  const currentSessionTitle = useCurrentChatSessionStore((state) => state.currentSessionTitle);
-  const currentSessionAgentId = useCurrentChatSessionStore((state) => state.currentSessionAgentId);
-  const currentSessionAgentVersion = useCurrentChatSessionStore(
-    (state) => state.currentSessionAgentVersion
-  );
-  const setCurrentSession = useCurrentChatSessionStore((state) => state.setCurrentSession);
-  const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
-  const resourceStateProvider = resourceChat?.provider;
-  const resourceChatContext = resourceChat?.context;
-  const clearResourceChatContext = resourceChat?.clearContext;
-
-  const [currentModel, setCurrentModel] = useState<Model | null>(null);
-  const [sessionBarOpen, setSessionBarOpen] = useState(false);
-  const [pendingDebugSend, setPendingDebugSend] = useState<{
-    text: string;
-    opts?: SendOptions;
-    resolve: (sent: boolean) => void;
-  } | null>(null);
-  const [savingDebugDraft, setSavingDebugDraft] = useState(false);
-
-  const { messages, status, setMessages, sendSessionMessage, stop } = useChatSession({
-    sessionId: currentSessionId ?? '',
-    model: currentModel?.modelId,
+  const controller = useChatPanelController({
+    fullWidth,
+    onNewChat,
+    resourceChat,
+    agentDebug,
   });
-
-  const { runAsync: runLoadSessionHistory } = useRequest(
-    async (sessionId: string, page: number, size: number) =>
-      chatService.listHistoryMessages({ sessionId, page, size }),
-    { manual: true }
-  );
-  const {
-    canLoadMore: canLoadMoreHistory,
-    loadingMore: loadingMoreHistory,
-    replaceHistory,
-    prependHistory,
-    clearConversation,
-  } = useChatHistory({
-    sessionId: currentSessionId ?? null,
-    pageSize: HISTORY_PAGE_SIZE,
-    loadPage: runLoadSessionHistory,
-    setMessages,
-  });
-  const { runAsync: runCreateSession } = useRequest(
-    (params?: CreateSessionRequest) => chatService.createSession(params),
-    {
-      manual: true,
-    }
-  );
-  const { runAsync: runSetSessionAgent } = useRequest(
-    (params: { sessionId: string; agentId?: string | null; agentVersion?: number | null }) =>
-      chatService.setSessionAgent(params),
-    {
-      manual: true,
-    }
-  );
-  const hasRenderableChatContent = hasRenderableMessageContent(messages);
-
-  /**
-   * @wisepen-manual-effect
-   * 执行时机：新建会话收到首个可渲染内容后通知侧栏刷新历史列表。
-   * 不可替代原因：新会话标记与侧栏刷新版本位于两个独立 Zustand store。
-   * cleanup：没有订阅或延迟任务，无需清理。
-   */
-  useEffect(() => {
-    if (currentSessionId == null || currentSessionId === '') return;
-    const pendingId = useNewChatSessionStore.getState().newChatSessionId;
-    if (pendingId !== currentSessionId) return;
-    if (!hasRenderableChatContent) return;
-    requestChatSessionHistoryRefresh();
-    clearNewChatSessionStore();
-  }, [currentSessionId, hasRenderableChatContent, requestChatSessionHistoryRefresh]);
-
-  const sending = status === 'submitted' || status === 'streaming';
-  const hasResourceChatContext = Boolean(resourceChatContext);
-  const panelTitle = currentSessionTitle || t('panel.newChat');
-
-  const resolveSessionAgentParams = (opts?: SendOptions): CreateSessionRequest | undefined => {
-    const selectedAgent = opts?.selectedAgent;
-    if (!selectedAgent) return undefined;
-    if (!selectedAgent.resourceId) {
-      if (selectedAgent.isDefault || selectedAgent.source === 'DEFAULT') {
-        return { agentId: null, agentVersion: null };
-      }
-      return undefined;
-    }
-    return {
-      agentId: selectedAgent.resourceId,
-      agentVersion: selectedAgent.agentVersion,
-    };
-  };
-
-  const isCurrentSessionAgentMatched = (agentParams?: CreateSessionRequest): boolean => {
-    if (!agentParams) return true;
-    if (agentParams.agentId == null) return currentSessionAgentId == null;
-    return (
-      currentSessionAgentId === agentParams.agentId &&
-      (agentParams.agentVersion == null || currentSessionAgentVersion === agentParams.agentVersion)
-    );
-  };
-
-  const ensureChatSession = async (agentParams?: CreateSessionRequest): Promise<string> => {
-    const existingSessionId =
-      useCurrentChatSessionStore.getState().currentSessionId ?? currentSessionId;
-    if (existingSessionId) {
-      if (!isCurrentSessionAgentMatched(agentParams)) {
-        const updatedSession = await runSetSessionAgent({
-          sessionId: existingSessionId,
-          agentId: agentParams?.agentId,
-          agentVersion: agentParams?.agentVersion,
-        });
-        setCurrentSession({
-          id: updatedSession.id,
-          title: updatedSession.title,
-          agentId: updatedSession.agentId,
-          agentVersion: updatedSession.agentVersion,
-        });
-      }
-      return existingSessionId;
-    }
-
-    const createdSession = await runCreateSession(agentParams);
-    useNewChatSessionStore.getState().setNewChatSession({
-      id: createdSession.id,
-      title: createdSession.title,
-    });
-    setCurrentSession({
-      id: createdSession.id,
-      title: createdSession.title,
-      agentId: createdSession.agentId,
-      agentVersion: createdSession.agentVersion,
-    });
-    requestChatSessionHistoryRefresh();
-    setChatPanelDraftOpen(false);
-    if (fullWidth) {
-      navigate(`/app/chat/${createdSession.id}`, { replace: true });
-    }
-    return createdSession.id;
-  };
-
-  const loadHistoryMessages = async (sessionId: string) => {
-    try {
-      await replaceHistory(sessionId);
-    } catch (error) {
-      const errorMessage = parseErrorMessage(error);
-      if (isSessionInvalidMessage(errorMessage)) {
-        clearResourceChatContext?.();
-        clearCurrentSession();
-        clearConversation();
-        return;
-      }
-      toast.danger(errorMessage);
-      clearConversation();
-    }
-  };
-  const historyActionsLatest = useLatest({ clearConversation, loadHistoryMessages });
-
-  const loadMoreHistoryMessages = async () => {
-    try {
-      await prependHistory();
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-    }
-  };
-
-  const sendImmediately = async (text: string, opts?: SendOptions): Promise<boolean> => {
-    const targetModel = opts?.model ?? currentModel;
-    if (!targetModel) return false;
-    const sendBlockedReason = resourceStateProvider?.getBlockedReason?.();
-    if (sendBlockedReason) {
-      toast.warning(sendBlockedReason);
-      return false;
-    }
-    if (resourceChatContext && resourceChatContext.providerKey !== resourceStateProvider?.key) {
-      toast.warning(t('panel.contextMismatch'));
-      return false;
-    }
-    setCurrentModel(targetModel);
-    let targetSessionId = currentSessionId;
-    const agentParams = resolveSessionAgentParams(opts);
-
-    try {
-      targetSessionId = await ensureChatSession(agentParams);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-      return false;
-    }
-
-    void sendSessionMessage(text, {
-      model: targetModel.modelId,
-      providerId: targetModel.providerId,
-      sessionId: targetSessionId,
-      frontendStates: [
-        ...(resourceStateProvider?.getStates() ?? []),
-        ...(resourceChatContext?.states ?? []),
-      ],
-      selectedResources: opts?.activeDocRefs,
-      uploadedAttachments: opts?.activeAttachments,
-      onDemandSkillIds: opts?.selectedSkills?.map((skill) => skill.skillId),
-      allowToolNames: [
-        ...(resourceStateProvider?.allowToolNames ?? []),
-        ...(opts?.selectedTools?.map((tool) => tool.toolId) ?? []),
-      ],
-      forceEnabledSkillIds: [...(resourceStateProvider?.forceEnabledSkillIds ?? [])],
-    }).catch((error) => {
-      toast.danger(parseErrorMessage(error));
-    });
-
-    if (hasResourceChatContext) {
-      clearResourceChatContext?.(resourceChatContext);
-    }
-    return true;
-  };
-
-  const isCurrentDebugAgentSelected = (opts?: SendOptions): boolean => {
-    if (!agentDebug) return false;
-    return opts?.selectedAgent?.agentId === agentDebug.agent.agentId;
-  };
-
-  const handleSend = async (text: string, opts?: SendOptions): Promise<boolean> => {
-    if (agentDebug?.isDirty && isCurrentDebugAgentSelected(opts)) {
-      return new Promise<boolean>((resolve) => {
-        setPendingDebugSend({ text, opts, resolve });
-      });
-    }
-    return sendImmediately(text, opts);
-  };
-
-  const resolvePendingDebugSend = (sent: boolean) => {
-    pendingDebugSend?.resolve(sent);
-    setPendingDebugSend(null);
-  };
-
-  const handleCancelDebugSend = () => {
-    if (savingDebugDraft) return;
-    resolvePendingDebugSend(false);
-  };
-
-  const handleConfirmDebugSend = async () => {
-    if (!pendingDebugSend || !agentDebug) return;
-    setSavingDebugDraft(true);
-    try {
-      const saved = await agentDebug.onSaveDraft();
-      if (!saved) {
-        resolvePendingDebugSend(false);
-        return;
-      }
-      const sent = await sendImmediately(pendingDebugSend.text, pendingDebugSend.opts);
-      resolvePendingDebugSend(sent);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-      resolvePendingDebugSend(false);
-    } finally {
-      setSavingDebugDraft(false);
-    }
-  };
-
-  const handleCollapsePanel = () => {
-    setSessionBarOpen(false);
-    setChatPanelCollapsed(true);
-    if (!currentSessionId) {
-      setChatPanelDraftOpen(false);
-    }
-  };
-
-  const handleToggleSessionBar = () => {
-    if (collapsed) return;
-    setSessionBarOpen((open) => !open);
-  };
-
-  const handleSelectSession = (session: ChatSession) => {
-    void stop();
-    clearResourceChatContext?.();
-    setCurrentSession({
-      id: session.id,
-      title: session.title,
-      agentId: session.agentId,
-      agentVersion: session.agentVersion,
-    });
-    clearNewChatSessionStore();
-    setChatPanelDraftOpen(false);
-    setSessionBarOpen(false);
-    if (fullWidth) {
-      navigate(`/app/chat/${session.id}`, { replace: true });
-    }
-  };
-
-  const handleNewChat = () => {
-    void stop();
-    clearResourceChatContext?.();
-    setSessionBarOpen(false);
-    if (onNewChat) {
-      onNewChat();
-      return;
-    }
-    clearCurrentSession();
-    clearNewChatSessionStore();
-    setChatPanelDraftOpen(true);
-  };
-
-  /**
-   * @wisepen-manual-effect
-   * 执行时机：当前会话 ID 首次可用或发生切换时加载对应历史消息。
-   * 不可替代原因：历史消息来自异步服务，并写入聊天会话的外部消息运行时。
-   * cleanup：请求竞态由 useChatHistory 管理，本层没有额外订阅需要清理。
-   */
-  useEffect(() => {
-    if (!currentSessionId) {
-      historyActionsLatest.current.clearConversation();
-      return;
-    }
-    if (useNewChatSessionStore.getState().newChatSessionId === currentSessionId) return;
-    void historyActionsLatest.current.loadHistoryMessages(currentSessionId);
-  }, [currentSessionId, historyActionsLatest]);
-
-  /**
-   * @wisepen-manual-effect
-   * 执行时机：会话 ID 与草稿面板状态变化后清理不再属于任何会话的消息。
-   * 不可替代原因：消息保存在 useChatHistory 管理的外部会话运行时，需要显式清空。
-   * cleanup：没有订阅或异步任务，无需清理。
-   */
-  useEffect(() => {
-    if (currentSessionId) return;
-    if (!chatPanelDraftOpen) {
-      clearConversation();
-    }
-  }, [chatPanelDraftOpen, clearConversation, currentSessionId]);
 
   return (
     <>
       <div className={`${styles.panel} ${fullWidth ? styles.fullWidth : ''}`}>
         {showHeader ? (
           <ChatPanelHeader
-            collapsed={collapsed}
-            fullWidth={fullWidth}
-            panelTitle={panelTitle}
-            sessionBarOpen={sessionBarOpen}
+            panelTitle={controller.panelTitle}
+            sessionBarOpen={controller.sessionBarOpen}
             showCollapseButton={showCollapseButton}
-            onCollapsePanel={handleCollapsePanel}
-            onNewChat={handleNewChat}
-            onToggleSessionBar={handleToggleSessionBar}
+            onCollapsePanel={controller.handleCollapsePanel}
+            onNewChat={controller.handleNewChat}
+            onToggleSessionBar={controller.handleToggleSessionBar}
           />
         ) : null}
 
-        {!collapsed && (
-          <div className={styles.panelBody}>
-            {sessionBarOpen ? (
-              <ChatSessionBar
-                activeSessionId={currentSessionId}
-                onClose={() => setSessionBarOpen(false)}
-                onSelectSession={handleSelectSession}
-              />
-            ) : (
-              <div className={styles.conversationPanel}>
-                <div className={styles.content}>
-                  <div className={styles.messageViewport}>
-                    <MessageList
-                      messages={messages}
-                      sessionId={currentSessionId}
-                      canLoadMoreHistory={canLoadMoreHistory}
-                      loadingMoreHistory={loadingMoreHistory}
-                      onLoadMoreHistory={loadMoreHistoryMessages}
-                      status={status}
-                      model={currentModel}
-                      fullWidth={fullWidth}
-                      footer={
-                        <div className={styles.footer}>
-                          <ChatInput
-                            onSend={handleSend}
-                            getUploadSessionId={ensureChatSession}
-                            sending={sending}
-                            onStop={stop}
-                            contextPreview={resourceChatContext?.preview}
-                            onClearContext={clearResourceChatContext}
-                            injectedAgents={agentDebug ? [agentDebug.agent] : undefined}
-                            preferredAgent={agentDebug?.agent}
-                            fullWidth={fullWidth}
-                          />
-                        </div>
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        <ChatPanelBody agentDebug={agentDebug} controller={controller} fullWidth={fullWidth} />
       </div>
       <AppAlertDialog
         type="warning"
-        isOpen={pendingDebugSend != null}
+        isOpen={controller.isDebugSaveDialogOpen}
         onOpenChange={(open) => {
-          if (!open) handleCancelDebugSend();
+          if (!open) controller.handleCancelDebugSend();
         }}
         title={t('panel.debugSave.title')}
         description={t('panel.debugSave.description')}
         cancelText={t('actions.cancel', { ns: 'common' })}
         confirmText={t('panel.debugSave.confirm')}
-        isConfirmLoading={savingDebugDraft || agentDebug?.isSaving}
-        onConfirm={() => void handleConfirmDebugSend()}
+        isConfirmLoading={controller.savingDebugDraft || agentDebug?.isSaving}
+        onConfirm={() => void controller.handleConfirmDebugSend()}
       />
     </>
   );

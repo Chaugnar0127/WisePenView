@@ -134,10 +134,7 @@ export function useChatInputController({ onSend, onStop, sending }: UseChatInput
       onDragLeave: handleDragLeave,
       onDrop: handleDrop,
     },
-    dropOverlayProps: {
-      visible: isDragOver,
-    },
-    attachmentStripProps: {},
+    isDragOver,
     textAreaProps: {
       value,
       readOnly: voiceInputProps.isActive,

@@ -28,7 +28,7 @@ function ChatPage() {
   return (
     <div className={styles.root}>
       <div className={styles.chatPanelHost}>
-        <ChatPanel collapsed={false} fullWidth showHeader={false} />
+        <ChatPanel fullWidth showHeader={false} />
       </div>
     </div>
   );

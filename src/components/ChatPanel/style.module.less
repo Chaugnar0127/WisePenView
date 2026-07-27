@@ -25,7 +25,6 @@
   --chat-user-message-max-width: 72%;
   --chat-avatar-size: 24px;
   --chat-model-meta-font-size: var(--font-size-base);
-  --chat-footer-scroll-offset: var(--layout-chat-footer-scroll-offset, 132px);
   /* 历史导航：侧栏紧凑 */
   --history-nav-preview-font-size: var(--font-size-xs);
   --history-nav-item-padding-block: var(--space-2xs);
@@ -77,7 +76,7 @@
     --history-nav-bar-active-height: 7px;
     --history-nav-bar-gap: var(--space-md);
 
-    .content {
+    .conversationPanel {
       width: 100%;
       max-width: none;
       margin-inline: 0;
@@ -102,10 +101,6 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-
-  &.collapsedHeader {
-    padding: var(--space-sm);
-  }
 }
 
 :global(html[data-layout-height='short']) {
@@ -168,13 +163,6 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-}
-
-.content {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
   position: relative;
   padding: 0;
 }
@@ -195,6 +183,25 @@
   display: flex;
   flex-direction: column;
   padding-top: 0;
+  /* 输入框已移到滚动容器外，滚动按钮不再需要为 footer 预留偏移 */
+  --chat-footer-scroll-offset: 0px;
+}
+
+.footerSlot {
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  width: 100%;
+  margin-top: calc(-1 * var(--space-lg));
+  padding: var(--space-lg)
+    var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)))
+    var(--space-xs) var(--chat-message-inline-padding, var(--space-lg));
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--chat-shell-bg, var(--surface)) 0%, transparent) 0%,
+    var(--chat-shell-bg, var(--surface)) 20%
+  );
 }
 
 .sessionList {
@@ -306,12 +313,4 @@
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
-}
-
-.footer {
-  flex-shrink: 0;
-  padding: 0
-    var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)))
-    var(--space-xs) var(--chat-message-inline-padding, var(--space-lg));
-  background: transparent;
 }

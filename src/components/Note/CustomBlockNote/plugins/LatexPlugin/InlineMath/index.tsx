@@ -5,11 +5,10 @@ import { createReactInlineContentSpec } from '@blocknote/react';
 import type { Transaction } from '@tiptap/pm/state';
 import { TextSelection } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
-import { useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-
-import { useEffectForce } from '@/hooks/useEffectForce';
+import { useLatest } from 'ahooks';
 import 'katex/dist/katex.min.css';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNoteEditorReadOnlyContext } from '../../../engines/editor/readOnly';
 import { renderKatexInto } from '../katexRender';
 import { LatexEditPopover } from '../LatexEditPopover';
@@ -54,11 +53,12 @@ function InlineMathFormulaPreview({
   const mathRef = useRef<HTMLSpanElement>(null);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：行内公式表达式变化后重新渲染 KaTeX DOM。
    * 不可替代原因：KaTeX 通过命令式 API 写入真实 DOM，不能由 React JSX 直接表达。
    * cleanup：下一次渲染会覆盖旧内容，没有订阅或异步任务需要清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const el = mathRef.current;
     if (!el) return;
     renderKatexInto(el, expression, popoverStyles.mathPlaceholder, false);
@@ -114,6 +114,8 @@ function InlineMathView(
   const readOnly = useNoteEditorReadOnlyContext();
   const expression = inlineContent.props.expression as string;
   const autoOpenEdit = inlineContent.props.autoOpenEdit as boolean;
+  const inlineContentPropsLatest = useLatest(inlineContent.props);
+  const updateInlineContentLatest = useLatest(updateInlineContent);
 
   const [isEditing, setIsEditing] = useState(false);
   const isEditingRef = useRef(false);
@@ -154,27 +156,31 @@ function InlineMathView(
   const displayLatex = isEditing ? value : expression;
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：BlockNote 插件把 autoOpenEdit 置为 true 后拉起一次公式编辑。
    * 不可替代原因：该标记来自编辑器外部文档状态，还需用命令式事务消费并复位。
-   * cleanup：事务同步完成且标记立即复位，无需额外清理。
+   * cleanup：取消尚未消费 autoOpenEdit 的 animation frame。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (readOnly) return;
     if (!autoOpenEdit) return;
-    const openExpr = sanitizeLatexInput(inlineContent.props.expression as string);
-    updateInlineContent({
-      type: 'inlineMath',
-      props: {
-        ...inlineContent.props,
-        expression: openExpr,
-        autoOpenEdit: false,
-      },
+    const inlineContentProps = inlineContentPropsLatest.current;
+    const openExpr = sanitizeLatexInput(inlineContentProps.expression as string);
+    const frame = window.requestAnimationFrame(() => {
+      updateInlineContentLatest.current({
+        type: 'inlineMath',
+        props: {
+          ...inlineContentProps,
+          expression: openExpr,
+          autoOpenEdit: false,
+        },
+      });
+      setValue(openExpr);
+      isEditingRef.current = true;
+      setIsEditing(true);
     });
-    setValue(openExpr);
-    isEditingRef.current = true;
-    setIsEditing(true);
-    // 仅在插件将 autoOpenEdit 置为 true 时拉起编辑
-  }, [autoOpenEdit]);
+    return () => window.cancelAnimationFrame(frame);
+  }, [autoOpenEdit, inlineContentPropsLatest, readOnly, updateInlineContentLatest]);
 
   useFocusPopoverTextarea(isEditing, popoverPos, inputRef);
 

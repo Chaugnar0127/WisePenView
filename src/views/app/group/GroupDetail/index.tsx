@@ -12,11 +12,10 @@ import { WALLET_TARGET_TYPE } from '@/domains/Wallet';
 import SidebarDriveScopeSwitcher from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive/SidebarDriveScopeSwitcher';
 import { parseDriveInitialNodeId } from '@/utils/navigation/driveRoute';
 import ComputeWallet from '@/views/app/_common/Wallet/ComputeWallet';
-import type { ComputeWalletRef } from '@/views/app/_common/Wallet/ComputeWallet/index.type';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { ReactNode } from 'react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
 import { getGroupDisplayConfig } from '../_components/GroupDisplayConfig';
@@ -73,7 +72,7 @@ function GroupDetail() {
     return getGroupDisplayConfig(group.groupType, currentUserRole);
   })();
 
-  const walletRef = useRef<ComputeWalletRef | null>(null);
+  const [walletRefreshVersion, setWalletRefreshVersion] = useState(0);
 
   /** Tabs 受控，避免 items 更新时重置当前选中的 Tab */
   const [detailTabKey, setDetailTabKey] = useState<GroupDetailTabKey>('files');
@@ -144,7 +143,7 @@ function GroupDetail() {
               targetId={gid}
               canRecharge={false}
               showOperatorColumn
-              ref={walletRef}
+              refreshVersion={walletRefreshVersion}
             />
           </div>
         ),
@@ -157,7 +156,7 @@ function GroupDetail() {
             <OwnerGroupTokenTransfer
               groupId={gid}
               onTransferSuccess={() => {
-                void walletRef.current?.refresh();
+                setWalletRefreshVersion((version) => version + 1);
               }}
             />
           </div>

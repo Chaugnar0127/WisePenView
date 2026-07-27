@@ -1,7 +1,6 @@
 import { FormField, Input } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import { useDriveService } from '@/domains';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { parseErrorMessage } from '@/utils/error';
 import { validateReservedName } from '@/utils/tag/validateReservedName';
 import { toast } from '@heroui/react';
@@ -18,22 +17,17 @@ function getDefaultName(node: DriveActionTarget | null): string {
   return node.title;
 }
 
-function RenameNodeModal({ isOpen, node, groupId, onOpenChange, onSuccess }: RenameNodeModalProps) {
+function RenameNodeModalContent({
+  isOpen,
+  node,
+  groupId,
+  onOpenChange,
+  onSuccess,
+}: RenameNodeModalProps) {
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
   const [name, setName] = useState(getDefaultName(node));
   const [nameError, setNameError] = useState('');
-
-  /**
-   * 执行时机：弹窗打开并绑定目标节点时，同步输入框默认名称。
-   * 不可替代原因：弹窗组件常驻挂载，useState 初始值不会随右栏选中节点变化而重置。
-   * cleanup：没有订阅或异步资源需要释放。
-   */
-  useEffectForce(() => {
-    if (!isOpen) return;
-    setName(getDefaultName(node));
-    setNameError('');
-  }, [isOpen, node?.id]);
 
   const { loading, run: runRenameNode } = useRequest(
     async (trimmed: string) => {
@@ -103,6 +97,11 @@ function RenameNodeModal({ isOpen, node, groupId, onOpenChange, onSuccess }: Ren
       </FormField>
     </AppFormDialog>
   );
+}
+
+function RenameNodeModal(props: RenameNodeModalProps) {
+  const formKey = `${props.isOpen ? 'open' : 'closed'}:${props.node?.id ?? 'empty'}`;
+  return <RenameNodeModalContent key={formKey} {...props} />;
 }
 
 export default RenameNodeModal;

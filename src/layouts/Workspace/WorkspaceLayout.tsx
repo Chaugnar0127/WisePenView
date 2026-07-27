@@ -13,7 +13,6 @@ import {
   resolveLayoutDensity,
   WORKSPACE_CHAT_PANEL_MAX_WIDTH,
 } from '@/constants/layoutScale';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
 import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
@@ -43,7 +42,7 @@ import {
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
 import clsx from 'clsx';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -149,11 +148,12 @@ function WorkspaceLayout() {
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：会话或聊天草稿决定面板是否存在时，同步聊天面板折叠 store。
    * 不可替代原因：会话、草稿和折叠状态分属独立 Zustand store，且窄屏判断依赖浏览器宽度。
    * cleanup：没有订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!shouldRenderChatPanel) {
       setChatPanelCollapsed(true);
       return;
@@ -167,11 +167,12 @@ function WorkspaceLayout() {
   }, [setChatPanelCollapsed, shouldRenderChatPanel]);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：真实会话建立后关闭仅用于新会话入口的草稿面板标记。
    * 不可替代原因：当前会话与聊天面板状态分属独立 Zustand store。
    * cleanup：没有订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!hasSessionId && !chatPanelDraftOpen) return;
     if (hasSessionId) {
       setChatPanelDraftOpen(false);
@@ -201,11 +202,12 @@ function WorkspaceLayout() {
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：资源页向工作区 Chat 发布上下文后，展开面板并处理窄屏冲突。
    * 不可替代原因：资源上下文、聊天面板和资源侧栏是多个独立外部 store。
    * cleanup：没有订阅或延迟任务；上下文由消费方显式清除。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!workspaceChatContext) return;
     markChatUserOverride();
     if (density === LAYOUT_DENSITY.COMPACT) {

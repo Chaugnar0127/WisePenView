@@ -32,9 +32,9 @@
 
 必须使用 effect 时：
 
-- 统一使用 `useEffectForce`。
-- `useEffectForce` 上方必须写 JSDoc 风格中文注释。
-- 注释必须说明执行时机、为什么不能用事件驱动或状态派生实现、cleanup 的作用。
+- 直接使用 React `useEffect`，不使用 wrapper 或 alias 绕过 React Hooks 检查。
+- `useEffect` 上方必须写 JSDoc 风格中文注释。
+- 注释必须包含 `@wisepen-manual-effect` 标记，并说明执行时机、为什么不能用事件驱动或状态派生实现、cleanup 的作用。该标记只放行本项目的 effect 治理规则，不是通用 `eslint-disable`。
 - 禁止使用 `useUpdateEffect` 规避首次执行；它仍是 effect，不能解决错误的数据流设计。
 
 ## 四、useMemo 与 useCallback
@@ -42,10 +42,9 @@
 业务代码默认禁止 `useMemo` 和 `useCallback`，ESLint 会同时拦截命名导入和
 `React.useMemo` / `React.useCallback` 属性调用。React 函数组件应先保证没有缓存也能正确工作。
 
-确有必要时，统一使用 `src/hooks/useMemoForce.ts` 或
-`src/hooks/useCallbackForce.ts`。这两个薄封装是原生 hook 的唯一放行入口，不代表每个调用都有性能收益。
+确有必要时直接使用 React `useMemo` 或 `useCallback`，但标准 manual JSDoc 只负责审批和说明，不豁免 React Hooks 规则。
 
-只有以下情况才允许使用受控封装：
+只有以下情况才允许使用 `useMemo` 或 `useCallback`：
 
 - React Profiler 或可重复基准明确证明计算或子树重渲染构成实际性能瓶颈。
 - 第三方命令式 API 明确把引用身份作为注册、取消注册或资源生命周期契约。
@@ -101,13 +100,50 @@
 
 不要为每行代码写注释，不要用注释解释显而易见的“做什么”，优先解释“为什么这样做”。
 
-## 九、检查清单
+## 九、Refs 与组件边界
+
+### `useRef` 的合理场景
+
+`useRef` 用于保存“不参与渲染、但需要跨渲染保持身份或可变值”的对象，例如：
+
+- DOM 节点：聚焦输入框、测量尺寸、滚动到指定位置。
+- 第三方实例：编辑器、PDF Viewer、图表或拖拽实例。
+- 生命周期资源：定时器、`requestAnimationFrame`、订阅取消函数。
+- 异步竞态标记：记录请求序号、最新任务 ID 或是否仍然有效。
+
+这些场景中，组件内部读取 `ref.current` 来完成明确的实例操作；如果 ref 只是为了让父组件调用普通业务函数，通常说明组件边界设计不合适。
+
+### 父子通信与 imperative interface
+
+- 父组件要告诉子组件“数据或条件变了”，优先通过 props、状态或递增版本号表达。子组件根据声明式输入请求或计算，不要通过 `ref.refresh()` 传递普通业务事件。
+- `useImperativeHandle` 只用于真实的实例命令，例如 `focus()`、`scrollToSelection()`、`openFindBar()`。暴露的 interface 应描述稳定、少量、可验证的实例能力，不应泄漏子组件内部请求和状态实现。
+- 当一个 interface 只有单个 `refresh()`、`reload()` 或类似方法时，先检查它是否应该改成 `refreshVersion`、查询参数或显式事件回调；迁移完成后删除旧 ref、旧类型和中间 wrapper，不保留双路径。
+- 第三方组件优先使用其官方 ref/interface 类型。不要通过自定义近似类型或 `RefObject<never>` 强转绕过检查；如果官方类型暴露了异步任务、事件字段或权限结构，应按真实契约调用。
+- 每个 ref 都要有实际读取点和明确生命周期。只声明、只透传、从未读取的 ref 是死代码，应在审查或迁移时删除。
+
+### 可读性判断
+
+遇到下面这种链路时应优先重构：
+
+```text
+store/version -> 父组件 effect -> 子组件 ref -> 子组件内部请求
+```
+
+如果业务含义只是“外部数据变更后重新加载”，应收敛为：
+
+```text
+store/version -> 子组件声明式输入 -> 子组件请求
+```
+
+只有需要控制具体 UI 或第三方实例时，才保留 imperative ref。这样可以减少隐藏调用链、重复的 previous-ref 守卫和仅为暴露方法而存在的 interface。
+
+## 十、检查清单
 
 - [ ] Hooks 调用位置合法。
-- [ ] 没有直接使用 `useEffect`。
-- [ ] 必要副作用使用 `useEffectForce` 并写清楚 JSDoc。
+- [ ] 没有未经审批或可由事件、派生状态替代的 `useEffect`。
+- [ ] 必要副作用使用 `useEffect`，并写清带 `@wisepen-manual-effect` 标记的 JSDoc。
 - [ ] 没有 `useUpdateEffect`。
-- [ ] 没有 `useMemo` / `useCallback`；获批例外只通过 `useMemoForce` / `useCallbackForce`，并有带标记的 why 注释。
+- [ ] 没有未经审批的 `useMemo` / `useCallback`；获批例外有带标记的 why 注释，且 React Hooks 检查通过。
 - [ ] JSX key 稳定唯一。
 - [ ] state 更新保持不可变。
 - [ ] 未新增 `any`。

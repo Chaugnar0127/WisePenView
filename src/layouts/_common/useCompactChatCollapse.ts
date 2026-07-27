@@ -1,7 +1,6 @@
 import { LAYOUT_DENSITY, type LayoutDensity } from '@/constants/layoutScale';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { useMemoizedFn } from 'ahooks';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface UseCompactChatCollapseOptions {
   density: LayoutDensity;
@@ -29,11 +28,12 @@ export const useCompactChatCollapse = ({
   const prevDensityRef = useRef(density);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：布局密度变化时按自动折叠来源同步聊天面板 store。
    * 不可替代原因：密度与聊天面板分别由不同 hook/store 管理，还需保留用户覆盖标记。
    * cleanup：没有订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const prevDensity = prevDensityRef.current;
     if (prevDensity === density) return;
     prevDensityRef.current = density;

@@ -1,5 +1,4 @@
-import { useEffectForce } from '@/hooks/useEffectForce';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -36,11 +35,12 @@ function AgentSectionNav({ items, scrollContainerId }: AgentSectionNavProps) {
   const pendingNavigationRef = useRef<{ id: string; top: number } | null>(null);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：导航条挂载或段落集合变化时订阅滚动容器并同步当前段落。
    * 不可替代原因：段落位置、平滑滚动进度和 scroll 事件都属于浏览器 DOM 状态。
    * cleanup：移除滚动监听，并取消尚未执行的 animation frame 与稳定计时器。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const root = document.getElementById(scrollContainerId);
     if (!root) return;
     const sections = items

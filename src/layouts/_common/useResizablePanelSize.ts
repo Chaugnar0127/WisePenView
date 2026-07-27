@@ -1,5 +1,5 @@
-import { useEffectForce } from '@/hooks/useEffectForce';
 import type { RefObject } from 'react';
+import { useEffect } from 'react';
 import type { PanelImperativeHandle } from 'react-resizable-panels';
 
 type ResizablePanelSize = number | string;
@@ -17,11 +17,12 @@ export function useResizablePanelSize({
   enabled = true,
 }: UseResizablePanelSizeOptions) {
   /**
+   * @wisepen-manual-effect
    * 执行时机：受控尺寸或启用状态变化时，同步命令式面板尺寸。
    * 不可替代原因：react-resizable-panels 通过 imperative handle 管理布局，不属于 React 渲染输出。
    * cleanup：取消下一帧的补偿 resize，避免卸载或新尺寸生效后执行过期命令。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!enabled) return;
     const resizePanel = () => panelRef.current?.resize(size);
     resizePanel();

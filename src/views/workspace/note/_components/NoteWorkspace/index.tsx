@@ -2,7 +2,7 @@
 import InlineComment from '@/components/InlineComment';
 import SegmentedTabs from '@/components/SegmentedTabs';
 import { useMemoizedFn, useRequest, useUnmount } from 'ahooks';
-import { useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CustomBlockNote from '@/components/Note/CustomBlockNote';
@@ -26,7 +26,6 @@ import {
   useNoteSession,
 } from '@/domains/Note';
 import type { User } from '@/domains/User';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { useSmoothFlag } from '@/hooks/useSmoothFlag';
 import { parseErrorMessage } from '@/utils/error';
@@ -321,11 +320,12 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：选中批注并完成侧栏布局更新后，将正文锚点平滑滚动到视口中央。
    * 不可替代原因：目标正文位置存在于 BlockNote 编辑器的命令式滚动运行时中。
    * cleanup：没有订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!inlineCommentScrollTarget) return;
     bodyEditorRef.current?.scrollToAnchor({
       kind: 'inlineComment',

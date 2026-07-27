@@ -1,6 +1,5 @@
 import { useChatSessionHistoryRefreshStore } from '@/components/ChatPanel/_store/useChatSessionHistoryRefreshStore';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import {
   APP_HEADER_NAV_KEY,
   resolveAppHeaderNavKey,
@@ -10,11 +9,11 @@ import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/Sid
 import { Tabs, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
 import { FolderOpen, MessageSquare } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import GlobalSearch from '../_components/GlobalSearch';
-import SessionListGroup, { type SessionListGroupRef } from '../SessionListGroup';
+import SessionListGroup from '../SessionListGroup';
 import type { AppSidebarTabsProps } from './index.type';
 import styles from './style.module.less';
 
@@ -31,7 +30,6 @@ const resolveSidebarTab = (activeNavKey: AppHeaderNavKey | undefined): SidebarTa
 function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
   const { t } = useTranslation('shell');
   const location = useLocation();
-  const sessionListGroupRef = useRef<SessionListGroupRef>(null);
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
@@ -39,7 +37,6 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
     observedNavKey: activeNavKey,
     selectedTab: resolveSidebarTab(activeNavKey),
   }));
-  const previousRefreshVersionRef = useRef(refreshVersion);
 
   let selectedTab = tabState.selectedTab;
   if (tabState.observedNavKey !== activeNavKey) {
@@ -51,17 +48,6 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
     activeNavKey === APP_HEADER_NAV_KEY.CHAT && currentSessionId
       ? [`session-${currentSessionId}`]
       : [];
-
-  /**
-   * 执行时机：聊天会话列表的外部刷新版本递增时，请求已挂载列表重新加载。
-   * 不可替代原因：ref 暴露的 refresh 是子组件命令式接口，不能由 JSX 派生。
-   * cleanup：没有持续订阅；仅记录已处理版本，卸载时无需额外清理。
-   */
-  useEffectForce(() => {
-    if (previousRefreshVersionRef.current === refreshVersion) return;
-    previousRefreshVersionRef.current = refreshVersion;
-    void sessionListGroupRef.current?.refresh();
-  }, [refreshVersion]);
 
   return (
     <div
@@ -115,7 +101,7 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
           className={clsx(styles.tabPanel, styles.sessionPanel)}
           shouldForceMount
         >
-          <SessionListGroup ref={sessionListGroupRef} selectedKeys={selectedKeys} />
+          <SessionListGroup selectedKeys={selectedKeys} refreshVersion={refreshVersion} />
         </Tabs.Panel>
         <Tabs.Panel
           id={SIDEBAR_TAB.DRIVE}

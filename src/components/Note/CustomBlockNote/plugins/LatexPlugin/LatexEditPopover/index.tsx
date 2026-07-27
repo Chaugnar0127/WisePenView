@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import { AppPopover } from '@/components/Overlay';
-import { useEffectForce } from '@/hooks/useEffectForce';
+import { useEffect } from 'react';
 import popoverStyles from '../InlineMath/style.module.less';
 import { sanitizeLatexInput } from '../latexInput';
 
@@ -88,11 +88,12 @@ export function LatexEditPopover(props: LatexEditPopoverProps) {
   } = props;
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：公式编辑浮层可见且完成定位后监听页面级外部点击。
    * 不可替代原因：编辑器会拦截鼠标事件，必须在 document 捕获阶段监听真实 DOM 事件。
    * cleanup：浮层隐藏、依赖变化或卸载时移除 pointerdown 监听器。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!visible || position === null) return;
 
     const handlePointerDown = (event: PointerEvent) => {

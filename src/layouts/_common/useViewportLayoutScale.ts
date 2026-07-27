@@ -6,9 +6,8 @@ import {
   type LayoutDensity,
   type LayoutHeightDensity,
 } from '@/constants/layoutScale';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { syncViewportLayoutScale } from '@/layouts/_common/applyLayoutScaleCssVars';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ViewportLayoutScale {
   widthDensity: LayoutDensity;
@@ -33,11 +32,12 @@ export const useViewportLayoutScale = (): ViewportLayoutScale => {
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：组件挂载时读取视口，并在浏览器 resize 后更新布局密度。
    * 不可替代原因：window 尺寸是 React 外部可变状态，只能通过浏览器事件订阅。
    * cleanup：组件卸载时移除 resize 监听器。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const sync = () => {
       const next = syncViewportLayoutScale();
       setScale((prev) =>

@@ -1,7 +1,6 @@
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { getNearestBlockPos } from '@blocknote/core';
 import { useLatest, useMemoizedFn } from 'ahooks';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import {
   buildNoteOutlineProjection,
@@ -36,6 +35,7 @@ export function useNoteOutlineRuntime({
   onOutlineChange,
   onActiveItemChange,
 }: UseNoteOutlineRuntimeParams) {
+  const transactions = registry.services.transactions;
   const callbacksLatest = useLatest({ onOutlineChange, onActiveItemChange });
   const blockSnapshotsRef = useRef<NoteOutlineBlockSnapshot[]>([]);
   const itemsByIdRef = useRef<Map<string, NoteOutlineItem>>(new Map());
@@ -140,12 +140,13 @@ export function useNoteOutlineRuntime({
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：编辑器实例变化时订阅事务，并立即构建一次大纲投影。
    * 不可替代原因：Editor 是大纲的外部事件源，正文结构变化只能从事务流得知。
    * cleanup：注销旧编辑器事务监听，并取消尚未执行的全量刷新帧。
    */
-  useEffectForce(() => {
-    const cleanup = registry.services.transactions.subscribe(editor, (analysis) => {
+  useEffect(() => {
+    const cleanup = transactions.subscribe(editor, (analysis) => {
       if (!analysis.docChanged) return;
       if (requiresOutlineFullRefresh(analysis) || analysis.structureChanged) {
         scheduleFullRefresh();
@@ -161,7 +162,7 @@ export function useNoteOutlineRuntime({
         refreshFrameRef.current = null;
       }
     };
-  }, [editor, refresh, scheduleFullRefresh, updateChangedBlocks]);
+  }, [editor, refresh, scheduleFullRefresh, transactions, updateChangedBlocks]);
 
   return { syncActiveItem };
 }

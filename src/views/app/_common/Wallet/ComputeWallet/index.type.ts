@@ -1,10 +1,5 @@
 import type { WalletTargetType } from '@/domains/Wallet';
 
-export interface ComputeWalletRef {
-  /** 显式刷新余额与当前页流水 */
-  refresh: () => Promise<void>;
-}
-
 /**
  * 通用钱包组件 Props（个人中心 + 高级组 token明细 复用同一套 UI）。
  */
@@ -33,4 +28,6 @@ export interface ComputeWalletProps {
    * `card`：独立卡片（小组详情等）；`plain`：无外层卡片，由内部表格提供视觉边界。
    */
   surface?: 'card' | 'plain';
+  /** 外部数据变更时递增，触发余额与流水重新加载。 */
+  refreshVersion?: number;
 }

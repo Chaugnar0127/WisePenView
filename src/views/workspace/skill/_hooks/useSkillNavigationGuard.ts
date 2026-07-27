@@ -1,8 +1,8 @@
 import type { ISkillService, SkillDetail } from '@/domains/Skill';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useMemoizedFn, useRequest } from 'ahooks';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBeforeUnload, useBlocker } from 'react-router-dom';
 
@@ -83,11 +83,12 @@ export function useSkillNavigationGuard({
   const navigationBlocker = useBlocker(hasUnsafeNavigation);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：React Router blocker 进入或退出 blocked 状态时同步离开页面意图。
    * 不可替代原因：blocker 是路由器维护的外部状态机，只在导航提交阶段暴露状态。
    * cleanup：blocker 生命周期由 React Router 管理，本层没有额外订阅需要清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (navigationBlocker.state === 'blocked') {
       setPendingIntent({ type: 'leave' });
     } else if (pendingIntent?.type === 'leave') {

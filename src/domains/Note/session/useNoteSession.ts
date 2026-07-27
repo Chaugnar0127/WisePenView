@@ -1,9 +1,7 @@
 import { useUnmount } from 'ahooks';
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import * as Y from 'yjs';
-
-import { useEffectForce } from '@/hooks/useEffectForce';
 
 import { NoteSaveStatusObserver } from './NoteSaveStatusObserver';
 import { NoteStatusObserver } from './NoteStatusObserver';
@@ -109,11 +107,12 @@ export function useNoteSession(resourceId: string, options: UseNoteSessionOption
   );
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：用户身份或连接开关变化时，更新协同连接参数并重连 WebSocket provider。
    * 不可替代原因：WebSocket 是外部资源，连接状态必须与当前用户和页面可用态同步。
    * cleanup：断开当前连接；Session 持有的 Yjs/IndexedDB 资源统一在组件卸载时销毁。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     session.provider.setActorUserId(actorUserId);
     if (enabled && !localOnly) {
       session.observer.setConnecting();

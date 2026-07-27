@@ -11,10 +11,10 @@ import type { EnumValue } from '@/utils/enum';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { usePagination, useRequest, useUnmount } from 'ahooks';
-import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RechargeModal from '../RechargeModal';
-import type { ComputeWalletProps, ComputeWalletRef } from './index.type';
+import type { ComputeWalletProps } from './index.type';
 import styles from './style.module.less';
 import WalletBalanceHeader from './WalletBalanceHeader';
 import { PAGE_SIZE, tabToListType, type TxTabKey } from './walletHelpers';
@@ -29,8 +29,8 @@ function ComputeWallet({
   groupDisplayName,
   showOperatorColumn = false,
   surface = 'card',
-  ref,
-}: ComputeWalletProps & { ref?: Ref<ComputeWalletRef> }) {
+  refreshVersion = 0,
+}: ComputeWalletProps) {
   const { t } = useTranslation('wallet');
   const walletService = useWalletService();
   const groupService = useGroupService();
@@ -85,7 +85,7 @@ function ComputeWallet({
     },
     {
       ready: walletReady,
-      refreshDeps: [walletService, groupService, targetType, effectiveGroupId],
+      refreshDeps: [walletService, groupService, targetType, effectiveGroupId, refreshVersion],
       onBefore: (params) => {
         const options = params?.[0];
         if (!options?.silent) {
@@ -164,21 +164,11 @@ function ComputeWallet({
       ready: walletReady,
       defaultCurrent: 1,
       defaultPageSize: PAGE_SIZE,
-      refreshDeps: [walletService, targetType, effectiveGroupId, txTab],
+      refreshDeps: [walletService, targetType, effectiveGroupId, txTab, refreshVersion],
       onError: (err) => {
         toast.danger(parseErrorMessage(err));
       },
     }
-  );
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      refresh: async () => {
-        await Promise.all([loadBalance({ silent: true }), Promise.resolve(refreshTransactions())]);
-      },
-    }),
-    [loadBalance, refreshTransactions]
   );
 
   useUnmount(() => {

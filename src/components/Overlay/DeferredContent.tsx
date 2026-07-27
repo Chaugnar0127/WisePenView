@@ -1,5 +1,4 @@
-import { useEffectForce } from '@/hooks/useEffectForce';
-import { useContext, useState, type ReactNode } from 'react';
+import { useContext, useEffect, useState, type ReactNode } from 'react';
 import {
   DeferredOverlayContext,
   type DeferredContentProps,
@@ -25,20 +24,16 @@ function renderDeferredContent(
   return content ?? null;
 }
 
-function useDeferredReady(isOpen: boolean, enabled: boolean, delay: number): boolean {
+function useDeferredReady(delay: number): boolean {
   const [ready, setReady] = useState(false);
 
   /**
-   * 执行时机：浮层打开态、延迟策略或延迟时长变化时，重新安排内容挂载。
-   * 不可替代原因：计时器和动画帧是浏览器外部资源，需要跟随当前浮层生命周期同步。
+   * @wisepen-manual-effect
+   * 执行时机：已打开的浮层挂载或延迟时长变化时，安排内容挂载。
+   * 不可替代原因：计时器和动画帧是浏览器外部资源，需要跟随已打开浮层的生命周期同步。
    * cleanup：取消未执行的计时器与动画帧，避免过期浮层写入状态。
    */
-  useEffectForce(() => {
-    if (!enabled || !isOpen) {
-      setReady(false);
-      return;
-    }
-
+  useEffect(() => {
     let frame: number | null = null;
     const timer = window.setTimeout(
       () => {
@@ -54,9 +49,26 @@ function useDeferredReady(isOpen: boolean, enabled: boolean, delay: number): boo
       window.clearTimeout(timer);
       if (frame !== null) window.cancelAnimationFrame(frame);
     };
-  }, [delay, enabled, isOpen]);
+  }, [delay]);
 
-  return enabled ? ready : isOpen;
+  return ready;
+}
+
+function OpenDeferredOverlayProvider({
+  children,
+  delay,
+}: Pick<DeferredOverlayProviderProps, 'children' | 'delay'>) {
+  const ready = useDeferredReady(delay);
+  const value = {
+    delay,
+    enabled: true,
+    isOpen: true,
+    ready,
+  } satisfies DeferredOverlayContextValue;
+
+  return (
+    <DeferredOverlayContext.Provider value={value}>{children}</DeferredOverlayContext.Provider>
+  );
 }
 
 export function DeferredOverlayProvider({
@@ -65,12 +77,15 @@ export function DeferredOverlayProvider({
   enabled = true,
   isOpen,
 }: DeferredOverlayProviderProps) {
-  const ready = useDeferredReady(isOpen, enabled, delay);
+  if (enabled && isOpen) {
+    return <OpenDeferredOverlayProvider delay={delay}>{children}</OpenDeferredOverlayProvider>;
+  }
+
   const value = {
     delay,
     enabled,
     isOpen,
-    ready,
+    ready: !enabled,
   } satisfies DeferredOverlayContextValue;
 
   return (

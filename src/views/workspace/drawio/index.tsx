@@ -8,7 +8,6 @@ import type {
   NoteVersionListPage,
 } from '@/domains/Note';
 import type { ResourceAction, ResourceItem } from '@/domains/Resource';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
@@ -364,20 +363,6 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     }, 10000);
   };
 
-  /**
-   * 执行时机：资源快照、版本或初始 XML 更新时重置 draw.io iframe 会话基线。
-   * 不可替代原因：已保存 XML、导出版本和 iframe 就绪标记共同描述外部编辑器会话。
-   * cleanup：没有持续订阅；导出超时由组件统一卸载清理。
-   */
-  useEffectForce(() => {
-    currentVersionRef.current = Math.max(noteInfoDisplay.version ?? 0, snapshot.version ?? 0);
-    setCurrentVersion(currentVersionRef.current);
-    lastSavedXmlRef.current = initialXml;
-    setSaveState('saved');
-    setEditorReady(false);
-    setEditorLoaded(false);
-  }, [initialXml, noteInfoDisplay.version, resourceId, snapshot.version]);
-
   const handleMessage = (event: MessageEvent) => {
     if (event.origin !== drawioOrigin) return;
     if (event.source !== iframeRef.current?.contentWindow) return;
@@ -635,8 +620,13 @@ function DrawioView({ resourceId }: DrawioViewProps) {
     );
   }
 
+  const drawioSessionKey = `${resourceId}:${data.noteInfoDisplay.version ?? 'none'}:${
+    data.snapshot.version ?? 'none'
+  }`;
+
   return (
     <DrawioViewConnected
+      key={drawioSessionKey}
       resourceId={resourceId}
       data={data}
       onRefreshDrawioInfo={refreshDrawioInfo}

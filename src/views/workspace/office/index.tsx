@@ -18,7 +18,7 @@ import {
 import { Button } from '@heroui/react';
 import type { Config } from '@onlyoffice/doceditor-types';
 import { DocumentEditor } from '@onlyoffice/document-editor-react';
-import { useRequest } from 'ahooks';
+import { useMemoizedFn, useRequest } from 'ahooks';
 import { FileText } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -186,10 +186,11 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
     setEditorReady(false);
   };
 
-  const refreshResourceInfo = async () => {
+  // 宿主布局依赖稳定函数身份，同时刷新时需要读取最新的文档数据。
+  const refreshResourceInfo = useMemoizedFn(async () => {
     const docInfo = await documentService.getDocInfo(resourceId as string);
     if (data) mutateOfficeData({ ...data, docInfo });
-  };
+  });
 
   if (!resourceId) {
     return (

@@ -3,11 +3,10 @@ import type {
   SkillPendingCreate,
 } from '@/components/Skill/SkillFileTree/index.type';
 import type { ISkillService, SkillDetail, SkillFileNode } from '@/domains/Skill';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -121,11 +120,12 @@ export function useSkillFileTree({
   );
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：文件选择、版本或异步加载入口变化时同步编辑器内容，并按需请求远端文件。
    * 不可替代原因：文件正文来自异步 Skill service，加载结果还需写回编辑器控制器。
    * cleanup：请求竞态由 useRequest 管理，本层没有额外订阅需要清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const canPreviewCurrentFile = selectedFile ? canPreviewSkillFile(selectedFile) : true;
     const content = selectedFile?.content ?? '';
     if (selectedFileId && !selectedFile) setSelectedFileId('');

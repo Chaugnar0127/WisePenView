@@ -3,14 +3,13 @@ import EntryIcon from '@/components/Icons/EntryIcon';
 import { useResourceService } from '@/domains';
 import type { SearchHitItem, SearchResultPage } from '@/domains/Resource';
 import { SEARCH_SCOPE } from '@/domains/Resource';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useInfiniteScroll, useKeyPress } from 'ahooks';
 import clsx from 'clsx';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SearchResultListProps } from './index.type';
 import styles from './style.module.less';
@@ -99,26 +98,28 @@ function SearchResultList({ keyword, onClose }: SearchResultListProps) {
 
   const flatItems = data?.list ?? [];
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeSelection, setActiveSelection] = useState({ keyword: trimmed, index: 0 });
+  const activeIndex = activeSelection.keyword === trimmed ? activeSelection.index : 0;
   const clampedActive = flatItems.length === 0 ? 0 : Math.min(activeIndex, flatItems.length - 1);
 
   /**
-   * 执行时机：标准化搜索词变化时复位键盘位置、滚动容器和分页缓存。
+   * @wisepen-manual-effect
+   * 执行时机：标准化搜索词变化时复位滚动容器和分页缓存。
    * 不可替代原因：滚动位置与 useInfiniteScroll 的可变缓存都在 React 渲染系统之外。
    * cleanup：没有持续订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
-    setActiveIndex(0);
+  useEffect(() => {
     listRef.current?.scrollTo({ top: 0 });
     mutate(trimmed.length === 0 ? createEmptySearchResult() : undefined);
   }, [trimmed, mutate]);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：高亮索引或结果数量变化后，将当前行滚入可见区域。
    * 不可替代原因：scrollIntoView 是对真实 DOM 滚动容器的命令式同步。
    * cleanup：没有持续订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (flatItems.length === 0) return;
     const row = listRef.current?.querySelector<HTMLElement>(`[data-flat-index="${clampedActive}"]`);
     row?.scrollIntoView({ block: 'nearest' });
@@ -139,7 +140,7 @@ function SearchResultList({ keyword, onClose }: SearchResultListProps) {
     (e) => {
       if (flatItems.length === 0) return;
       e.preventDefault();
-      setActiveIndex(Math.max(0, clampedActive - 1));
+      setActiveSelection({ keyword: trimmed, index: Math.max(0, clampedActive - 1) });
     },
     { exactMatch: true }
   );
@@ -148,7 +149,10 @@ function SearchResultList({ keyword, onClose }: SearchResultListProps) {
     (e) => {
       if (flatItems.length === 0) return;
       e.preventDefault();
-      setActiveIndex(Math.min(flatItems.length - 1, clampedActive + 1));
+      setActiveSelection({
+        keyword: trimmed,
+        index: Math.min(flatItems.length - 1, clampedActive + 1),
+      });
     },
     { exactMatch: true }
   );
@@ -180,7 +184,7 @@ function SearchResultList({ keyword, onClose }: SearchResultListProps) {
                 item={item}
                 active={flatIndex === clampedActive}
                 flatIndex={flatIndex}
-                onActivate={setActiveIndex}
+                onActivate={(index) => setActiveSelection({ keyword: trimmed, index })}
                 onOpen={handleOpenHit}
               />
             ))}

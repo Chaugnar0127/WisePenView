@@ -1,12 +1,11 @@
 import { useNewNoteStore } from '@/components/Note/_store/useNewNoteStore';
 import type { NoteSelectionSnapshot, SelectedNoteScope } from '@/domains/Note';
 import { computeNoteBodyContentHash } from '@/domains/Note';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { getNearestBlockPos } from '@blocknote/core';
 import { toast } from '@heroui/react';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { useMemoizedFn, useMount, useUnmount } from 'ahooks';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { CustomBlockNoteProps } from '../index.type';
@@ -112,11 +111,12 @@ export function useNoteDocument({
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：编辑器实例就绪或替换后安排一次正文内容哈希计算。
    * 不可替代原因：计算由浏览器 timer/idle callback 调度，并读取命令式编辑器文档。
    * cleanup：统一由 hook 卸载清理取消尚未执行的 timer/idle callback。
    */
-  useEffectForce(scheduleBodyContentHashRefresh, [editor, scheduleBodyContentHashRefresh]);
+  useEffect(scheduleBodyContentHashRefresh, [editor, scheduleBodyContentHashRefresh]);
 
   useMount(() => {
     let writeGuardActivated = false;
@@ -154,15 +154,16 @@ export function useNoteDocument({
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：本地文档写入限制解除时复位 ProseMirror 写保护状态。
    * 不可替代原因：写保护状态存储在编辑器 definition 的外部可变运行时中。
    * cleanup：没有订阅或异步任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!blockLocalDocWrites) {
       definition.setPmWriteGuardReady(false);
     }
-  }, [blockLocalDocWrites]);
+  }, [blockLocalDocWrites, definition]);
 
   useUnmount(() => {
     bodyOnChangeCleanupRef.current?.();

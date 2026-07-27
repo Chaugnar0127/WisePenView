@@ -1,9 +1,9 @@
 import { usePendingNoteImportStore } from '@/components/Note/_store/usePendingNoteImportStore';
 import type { NoteAiDiffPreviewData } from '@/domains/Note';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useMemoizedFn } from 'ahooks';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type * as Y from 'yjs';
 
@@ -109,11 +109,12 @@ export function useNoteEditorHydration({
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：协作编辑器就绪或资源切换后消费该资源待导入的 Markdown。
    * 不可替代原因：待导入数据位于 Zustand，写入目标是 BlockNote/Yjs 外部编辑器运行时。
    * cleanup：导入是同步事务且消费后立即移除待办，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     applyPendingMarkdownImport();
   }, [applyPendingMarkdownImport, collaborationReady, resourceId]);
 
@@ -126,11 +127,12 @@ export function useNoteEditorHydration({
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：AI Diff 预览、协作就绪状态或资源变化时尝试灌入预览快照。
    * 不可替代原因：快照需要通过 BlockNote 和 Yjs 命令式事务写入外部编辑器状态。
    * cleanup：初始化是同步且按 Y.Doc 幂等记录的事务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     applyAiDiffPreview();
   }, [aiDiffPreview, applyAiDiffPreview, collaborationReady, resourceId]);
 }

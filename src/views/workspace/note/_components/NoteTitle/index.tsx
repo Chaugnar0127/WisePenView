@@ -4,13 +4,12 @@ import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
 import { useLatest, useMemoizedFn, useMount, useUnmount } from 'ahooks';
-import { useImperativeHandle, useRef, type KeyboardEvent, type Ref } from 'react';
+import { useEffect, useImperativeHandle, useRef, type KeyboardEvent, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useNewNoteStore } from '@/components/Note/_store/useNewNoteStore';
 import { getProseMirrorRoot } from '@/components/Note/CustomBlockNote/engines/editor/dom';
 import { useNoteService } from '@/domains';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { useAppTheme } from '@/theme';
 
 import { parseErrorMessage } from '@/utils/error';
@@ -139,11 +138,12 @@ function NoteTitle({
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：标题编辑器实例或只读状态变化时重新注册编辑器事件。
    * 不可替代原因：BlockNote 的 onChange/onBeforeChange 是命令式外部订阅，无法由 JSX 表达。
    * cleanup：注销本轮两个编辑器监听器，防止旧实例或旧只读状态继续响应。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (readOnly) return;
     const detachOnChange = editor.onChange(() => {
       const firstBlock = editor.document[0];

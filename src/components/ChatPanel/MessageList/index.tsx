@@ -9,10 +9,9 @@ import {
   useMessageScroller,
 } from '@/components/_shadcn';
 import type { WisePenUIMessage } from '@/domains/Chat';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import type { ChatStatus } from 'ai';
 import { ArrowDown } from 'lucide-react';
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import HistoryLoader from './HistoryLoader';
 import Message from './Message';
@@ -145,11 +144,12 @@ function StreamingScrollFollower({ active, messages }: StreamingScrollFollowerPr
   const wasActiveRef = useRef(false);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：流式消息开始或内容更新后校正消息滚动锚点。
    * 不可替代原因：消息高度和用户滚动中断状态由外部 MessageScroller 的 DOM 运行时维护。
    * cleanup：没有订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const started = active && !wasActiveRef.current;
     wasActiveRef.current = active;
 

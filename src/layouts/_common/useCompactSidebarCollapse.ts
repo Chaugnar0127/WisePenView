@@ -1,8 +1,7 @@
 import { LAYOUT_DENSITY, resolveLayoutDensity, type LayoutDensity } from '@/constants/layoutScale';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { useMemoizedFn } from 'ahooks';
 import type { Dispatch, SetStateAction } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UseCompactSidebarCollapseOptions {
   sidebarCollapsed: boolean;
@@ -34,11 +33,12 @@ export const useCompactSidebarCollapse = ({
   const runAutoCollapse = useMemoizedFn(() => onAutoCollapse?.());
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：组件挂载及浏览器 resize 时重新判定侧栏布局密度。
    * 不可替代原因：window 宽度是 React 外部状态，并需协调侧栏折叠与用户覆盖标记。
    * cleanup：组件卸载时移除 resize 监听器。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const syncDensity = () => {
       const nextDensity = resolveLayoutDensity(window.innerWidth);
 

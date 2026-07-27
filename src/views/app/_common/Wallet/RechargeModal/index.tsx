@@ -9,9 +9,8 @@
  */
 import { InputOTP, REGEXP_ONLY_DIGITS_AND_CHARS } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { useRequest } from 'ahooks';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RechargeModalProps } from './index.type';
 import styles from './style.module.less';
@@ -69,11 +68,12 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
   const canSubmit = value.length === 16 && !submitting;
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：弹窗打开或验证码长度变化后，在下一帧恢复输入焦点与末尾选区。
    * 不可替代原因：焦点和 selection range 是浏览器 DOM 状态，无法通过 JSX 派生。
    * cleanup：取消尚未执行的 animation frame，避免关闭后的弹窗重新抢焦点。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!open) {
       return;
     }

@@ -10,11 +10,10 @@ import { useChatService } from '@/domains';
 import { useChatHistory, type ChatSession } from '@/domains/Chat';
 import type { CreateSessionRequest } from '@/domains/Chat/service/index.type';
 import { useChatSession } from '@/domains/Chat/session/useChatSession';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
-import { memo, useState } from 'react';
+import { useLatest, useRequest } from 'ahooks';
+import { memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import ChatInput from './ChatInput';
@@ -107,11 +106,12 @@ function ChatPanel({
   const hasRenderableChatContent = hasRenderableMessageContent(messages);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：新建会话收到首个可渲染内容后通知侧栏刷新历史列表。
    * 不可替代原因：新会话标记与侧栏刷新版本位于两个独立 Zustand store。
    * cleanup：没有订阅或延迟任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (currentSessionId == null || currentSessionId === '') return;
     const pendingId = useNewChatSessionStore.getState().newChatSessionId;
     if (pendingId !== currentSessionId) return;
@@ -202,6 +202,7 @@ function ChatPanel({
       clearConversation();
     }
   };
+  const historyActionsLatest = useLatest({ clearConversation, loadHistoryMessages });
 
   const loadMoreHistoryMessages = async () => {
     try {
@@ -347,25 +348,27 @@ function ChatPanel({
   };
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：当前会话 ID 首次可用或发生切换时加载对应历史消息。
    * 不可替代原因：历史消息来自异步服务，并写入聊天会话的外部消息运行时。
    * cleanup：请求竞态由 useChatHistory 管理，本层没有额外订阅需要清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!currentSessionId) {
-      clearConversation();
+      historyActionsLatest.current.clearConversation();
       return;
     }
     if (useNewChatSessionStore.getState().newChatSessionId === currentSessionId) return;
-    void loadHistoryMessages(currentSessionId);
-  }, [currentSessionId]);
+    void historyActionsLatest.current.loadHistoryMessages(currentSessionId);
+  }, [currentSessionId, historyActionsLatest]);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：会话 ID 与草稿面板状态变化后清理不再属于任何会话的消息。
    * 不可替代原因：消息保存在 useChatHistory 管理的外部会话运行时，需要显式清空。
    * cleanup：没有订阅或异步任务，无需清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (currentSessionId) return;
     if (!chatPanelDraftOpen) {
       clearConversation();

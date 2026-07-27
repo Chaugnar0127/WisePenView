@@ -5,25 +5,11 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
-const reactUseEffectImportRule = {
-  name: 'react',
-  importNames: ['useEffect'],
-  message:
-    '项目约定禁止使用 useEffect，请改为事件驱动、渲染期派生、useRequest 或有完整说明的 useEffectForce。',
-};
-
-const reactManualMemoImportRule = {
-  name: 'react',
-  importNames: ['useCallback', 'useMemo'],
-  message:
-    '项目禁止业务代码直接使用 useCallback/useMemo；确有必要时请使用 useCallbackForce/useMemoForce，并在调用点写带 @wisepen-manual-memo 标记的中文 JSDoc。',
-};
-
 const ahooksUpdateEffectImportRule = {
   name: 'ahooks',
   importNames: ['useUpdateEffect'],
   message:
-    'useUpdateEffect 只是跳过首次执行，不能替代副作用设计；请改为事件驱动、渲染期派生、useRequest 或有完整说明的 useEffectForce。',
+    'useUpdateEffect 只是跳过首次执行，不能替代副作用设计；请改为事件驱动、渲染期派生、useRequest 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
 };
 
 const reactFcImportRule = {
@@ -112,14 +98,10 @@ const buildRestrictedImportsRule = ({
   allowDirectAxios = false,
   allowDomainApiFunction = false,
   allowOverlayPrimitive = false,
-  allowReactManualMemo = false,
-  allowReactUseEffect = false,
   allowServiceFactory = false,
   allowServiceMock = false,
 } = {}) => {
   const paths = [
-    ...(allowReactUseEffect ? [] : [reactUseEffectImportRule]),
-    ...(allowReactManualMemo ? [] : [reactManualMemoImportRule]),
     ahooksUpdateEffectImportRule,
     reactFcImportRule,
     ...(allowOverlayPrimitive
@@ -139,23 +121,23 @@ const buildRestrictedImportsRule = ({
   return ['error', { paths, patterns }];
 };
 
-const requireEffectForceJSDocRule = {
+const requireManualEffectJSDocRule = {
   meta: {
     type: 'problem',
     docs: {
-      description: '要求 useEffectForce 说明执行时机、不可替代原因和 cleanup',
+      description: '要求 useEffect 说明执行时机、不可替代原因和 cleanup',
     },
     schema: [],
     messages: {
       missing:
-        'useEffectForce 上方必须紧邻中文 JSDoc，并包含“执行时机：”“不可替代原因：”“cleanup：”。',
+        'useEffect 上方必须紧邻中文 JSDoc，并包含 @wisepen-manual-effect、“执行时机：”“不可替代原因：”“cleanup：”。',
     },
   },
   create(context) {
     const sourceCode = context.sourceCode;
     return {
       CallExpression(node) {
-        if (node.callee.type !== 'Identifier' || node.callee.name !== 'useEffectForce') return;
+        if (node.callee.type !== 'Identifier' || node.callee.name !== 'useEffect') return;
         const statement = node.parent?.type === 'ExpressionStatement' ? node.parent : node;
         const comment = sourceCode.getCommentsBefore(statement).at(-1);
         const isAdjacent =
@@ -167,7 +149,7 @@ const requireEffectForceJSDocRule = {
           comment?.type === 'Block' &&
           commentText.startsWith('*') &&
           isAdjacent &&
-          ['执行时机：', '不可替代原因：', 'cleanup：'].every((field) =>
+          ['@wisepen-manual-effect', '执行时机：', '不可替代原因：', 'cleanup：'].every((field) =>
             commentText.includes(field)
           );
         if (!isValid) {
@@ -182,12 +164,12 @@ const requireManualMemoJSDocRule = {
   meta: {
     type: 'problem',
     docs: {
-      description: '要求受控 memo 封装说明必要性、收益和失效条件',
+      description: '要求 useMemo/useCallback 说明必要性、收益和失效条件',
     },
     schema: [],
     messages: {
       missing:
-        'useMemoForce/useCallbackForce 上方必须紧邻中文 JSDoc，并包含 @wisepen-manual-memo、“为什么：”“收益：”“失效条件：”。',
+        'useMemo/useCallback 上方必须紧邻中文 JSDoc，并包含 @wisepen-manual-memo、“为什么：”“收益：”“失效条件：”。',
     },
   },
   create(context) {
@@ -211,7 +193,7 @@ const requireManualMemoJSDocRule = {
       CallExpression(node) {
         if (
           node.callee.type !== 'Identifier' ||
-          !['useMemoForce', 'useCallbackForce'].includes(node.callee.name)
+          !['useMemo', 'useCallback'].includes(node.callee.name)
         ) {
           return;
         }
@@ -241,7 +223,7 @@ const requireManualMemoJSDocRule = {
 
 const wisePenPlugin = {
   rules: {
-    'require-effect-force-jsdoc': requireEffectForceJSDocRule,
+    'require-manual-effect-jsdoc': requireManualEffectJSDocRule,
     'require-manual-memo-jsdoc': requireManualMemoJSDocRule,
   },
 };
@@ -309,29 +291,27 @@ export default defineConfig([
           object: 'React',
           property: 'useEffect',
           message:
-            '项目约定禁止使用 useEffect，请改为事件驱动、渲染期派生、useRequest 或有完整说明的 useEffectForce。',
+            '请命名导入 useEffect，并在调用点写带 @wisepen-manual-effect 标记的完整中文 JSDoc。',
         },
         {
           object: 'React',
           property: 'useCallback',
-          message:
-            '项目禁止 React.useCallback；确有必要时请使用 useCallbackForce，并在调用点写带 @wisepen-manual-memo 标记的中文 JSDoc。',
+          message: '请命名导入 useCallback，并在调用点写带 @wisepen-manual-memo 标记的中文 JSDoc。',
         },
         {
           object: 'React',
           property: 'useMemo',
-          message:
-            '项目禁止 React.useMemo；确有必要时请使用 useMemoForce，并在调用点写带 @wisepen-manual-memo 标记的中文 JSDoc。',
+          message: '请命名导入 useMemo，并在调用点写带 @wisepen-manual-memo 标记的中文 JSDoc。',
         },
         {
           object: 'ahooks',
           property: 'useUpdateEffect',
           message:
-            '项目禁止 ahooks.useUpdateEffect；请改为事件驱动、渲染期派生、useRequest 或有完整说明的 useEffectForce。',
+            '项目禁止 ahooks.useUpdateEffect；请改为事件驱动、渲染期派生、useRequest 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
         },
       ],
       'no-restricted-syntax': ['error', ...projectRestrictedSyntaxRules],
-      'wisepen/require-effect-force-jsdoc': 'error',
+      'wisepen/require-manual-effect-jsdoc': 'error',
       'wisepen/require-manual-memo-jsdoc': 'error',
     },
   },
@@ -367,22 +347,6 @@ export default defineConfig([
     ],
     rules: {
       'no-restricted-imports': buildRestrictedImportsRule({ allowOverlayPrimitive: true }),
-    },
-  },
-  {
-    // 全局禁止 useEffect，只有统一封装入口允许直接调用原生 useEffect。
-    // 请勿删除此白名单，否则 useEffectForce 无法工作。
-    files: ['src/hooks/useEffectForce.ts'],
-    rules: {
-      'no-restricted-imports': buildRestrictedImportsRule({ allowReactUseEffect: true }),
-    },
-  },
-  {
-    // 全局禁止原生 memo hook，只有统一封装入口允许直接调用。
-    // 调用方不需要文件级白名单，但必须在调用点提供带标记的必要性说明。
-    files: ['src/hooks/useMemoForce.ts', 'src/hooks/useCallbackForce.ts'],
-    rules: {
-      'no-restricted-imports': buildRestrictedImportsRule({ allowReactManualMemo: true }),
     },
   },
   {

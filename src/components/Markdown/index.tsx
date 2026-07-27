@@ -1,5 +1,4 @@
-import { useEffectForce } from '@/hooks/useEffectForce';
-import { useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import MarkdownRenderer, { type MarkdownResourceResolver } from './Renderer';
 import { createMarkdownRuntime, updateMarkdownRuntime } from './runtime';
 import styles from './style.module.less';
@@ -20,17 +19,21 @@ function Markdown({
   resourceResolver,
 }: MarkdownContentProps) {
   const [runtime] = useState(() => createMarkdownRuntime(content, streaming));
-  const [snapshot, setSnapshot] = useState(runtime.snapshot);
+  const snapshot = useSyncExternalStore(
+    runtime.subscribe,
+    runtime.getSnapshot,
+    runtime.getSnapshot
+  );
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：Markdown 内容或流式状态变化后推进增量解析运行时。
    * 不可替代原因：runtime 是组件外部的可变解析器，需要按输入变化执行增量更新命令。
    * cleanup：解析器没有订阅或异步任务，无需清理。
    */
-  useEffectForce(() => {
-    const nextSnapshot = updateMarkdownRuntime(runtime, content, streaming);
-    if (nextSnapshot) setSnapshot(nextSnapshot);
-  }, [content, streaming]);
+  useEffect(() => {
+    updateMarkdownRuntime(runtime, content, streaming);
+  }, [content, runtime, streaming]);
 
   return (
     <div className={styles.markdown}>

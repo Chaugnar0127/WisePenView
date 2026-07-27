@@ -7,12 +7,10 @@ import type {
   StyleSchema,
 } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
-import type { ComponentType } from 'react';
-import { useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-
-import { useEffectForce } from '@/hooks/useEffectForce';
 import 'katex/dist/katex.min.css';
+import type { ComponentType } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNoteEditorReadOnlyContext } from '../../../engines/editor/readOnly';
 import popoverStyles from '../InlineMath/style.module.less';
 import { renderKatexInto } from '../katexRender';
@@ -59,11 +57,12 @@ function MathFormulaPreview({ expression, className }: { expression: string; cla
   const mathRef = useRef<HTMLDivElement>(null);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：块级公式表达式变化后重新渲染 KaTeX DOM。
    * 不可替代原因：KaTeX 通过命令式 API 写入真实 DOM，不能由 React JSX 直接表达。
    * cleanup：下一次渲染会覆盖旧内容，没有订阅或异步任务需要清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const el = mathRef.current;
     if (!el) return;
     renderKatexInto(el, expression, styles.mathPlaceholder, true);
@@ -114,21 +113,25 @@ function MathBlockView(props: MathBlockRenderProps) {
   useFocusPopoverTextarea(isEditing, popoverPos, inputRef);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：BlockNote 块属性把 autoEdit 置为 true 后拉起一次公式编辑。
    * 不可替代原因：该标记来自编辑器外部文档状态，还需用命令式事务消费并复位。
-   * cleanup：事务同步完成且标记立即复位，无需额外清理。
+   * cleanup：取消尚未消费 autoEdit 的 animation frame。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (readOnly) return;
     if (!props.block.props.autoEdit) return;
-    openValueRef.current = sanitizeLatexInput(props.block.props.expression);
-    setValue(openValueRef.current);
-    isEditingRef.current = true;
-    setIsEditing(true);
-    props.editor.updateBlock(props.block, {
-      props: { ...props.block.props, autoEdit: false },
+    const frame = window.requestAnimationFrame(() => {
+      openValueRef.current = sanitizeLatexInput(props.block.props.expression);
+      setValue(openValueRef.current);
+      isEditingRef.current = true;
+      setIsEditing(true);
+      props.editor.updateBlock(props.block, {
+        props: { ...props.block.props, autoEdit: false },
+      });
     });
-  }, [props.block, props.block.props, props.editor]);
+    return () => window.cancelAnimationFrame(frame);
+  }, [props.block, props.block.props, props.editor, readOnly]);
 
   const focusStartOfBlockAfterMath = () => {
     const { editor, block } = props;

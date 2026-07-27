@@ -4,12 +4,11 @@ import type {
   SkillFileNode,
   UploadSkillAssetResult,
 } from '@/domains/Skill';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import i18n from '@/i18n';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useMemoizedFn, useRequest } from 'ahooks';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SkillSaveQueueItem } from '../_components/SkillSaveQueueDock/index.type';
@@ -73,7 +72,9 @@ export function useSkillSave({
   const { t } = useTranslation('skill');
   const draftCacheWriteVersionRef = useRef(0);
   const restoredEditorDraftRef = useRef<RestoredEditorDraft | null>(null);
-  const [draftCacheReady, setDraftCacheReady] = useState(false);
+  const draftCacheKey = skill ? JSON.stringify([skill.resourceId, skill.draftVersion]) : null;
+  const [readyDraftCacheKey, setReadyDraftCacheKey] = useState<string | null>(null);
+  const draftCacheReady = draftCacheKey !== null && readyDraftCacheKey === draftCacheKey;
   const {
     configDescription,
     configName,
@@ -115,23 +116,23 @@ export function useSkillSave({
   });
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：Skill 详情或草稿版本变化时初始化编辑状态并恢复匹配的本地草稿。
    * 不可替代原因：草稿保存在异步 IndexedDB，读取结果需要写入当前编辑器控制器。
    * cleanup：标记本轮读取已失效，防止旧资源异步结果覆盖新页面。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!skill) return;
     let disposed = false;
 
     invalidateDraftCacheWrites();
-    setDraftCacheReady(false);
     initialize(skill);
 
     void loadSkillDraftCache(skill.resourceId)
       .then((snapshot) => {
         if (disposed) return;
         if (!snapshot || snapshot.draftVersion !== skill.draftVersion) {
-          setDraftCacheReady(true);
+          setReadyDraftCacheKey(draftCacheKey);
           return;
         }
         restoredEditorDraftRef.current = snapshot.selectedFileId
@@ -142,17 +143,17 @@ export function useSkillSave({
             }
           : null;
         restoreDraft(snapshot, skill);
-        setDraftCacheReady(true);
+        setReadyDraftCacheKey(draftCacheKey);
         toast.warning(i18n.t('toast.draftRestored', { ns: 'skill' }));
       })
       .catch(() => {
-        if (!disposed) setDraftCacheReady(true);
+        if (!disposed) setReadyDraftCacheKey(draftCacheKey);
       });
 
     return () => {
       disposed = true;
     };
-  }, [initialize, invalidateDraftCacheWrites, restoreDraft, skill]);
+  }, [draftCacheKey, initialize, invalidateDraftCacheWrites, restoreDraft, skill]);
 
   const localAssetNodes = collectLocalAssetNodes(files);
   const isDirty = canEdit && editorContent !== savedContent;
@@ -185,11 +186,12 @@ export function useSkillSave({
     saveQueueItems.length > 0 ? saveQueueItems : pendingLocalSaveQueueItems;
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：可恢复编辑状态变化后防抖写入本地草稿快照。
    * 不可替代原因：IndexedDB 与 Blob 持久化属于 React 外部异步存储。
    * cleanup：取消尚未开始的防抖写入，并通过版本令牌废弃已过期任务。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!skill || !draftCacheReady || !canEdit || !hasRecoverableDraft) return;
     const cacheWriteVersion = draftCacheWriteVersionRef.current;
     const timer = window.setTimeout(() => {
@@ -253,11 +255,12 @@ export function useSkillSave({
   ]);
 
   /**
+   * @wisepen-manual-effect
    * 执行时机：草稿缓存就绪且编辑状态恢复干净时删除本地快照。
    * 不可替代原因：IndexedDB 是 React 外部持久化存储，必须显式执行删除命令。
    * cleanup：删除操作幂等且由缓存层管理，无额外订阅需要清理。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     if (!skill || !draftCacheReady || hasRecoverableDraft) return;
     void clearDraftCache(skill.resourceId);
   }, [clearDraftCache, draftCacheReady, hasRecoverableDraft, skill]);

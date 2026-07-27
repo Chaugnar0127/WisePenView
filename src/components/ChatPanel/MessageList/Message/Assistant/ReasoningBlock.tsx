@@ -1,8 +1,7 @@
 import { useMessageScroller } from '@/components/_shadcn';
-import { useEffectForce } from '@/hooks/useEffectForce';
 import { Button } from '@heroui/react';
 import { Brain, ChevronDown } from 'lucide-react';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './ReasoningBlock.module.less';
 import { useCollapseHeight } from './useCollapseHeight';
@@ -22,14 +21,14 @@ function ReasoningBlock({
   autoCollapseOnFinish = true,
 }: ReasoningBlockProps) {
   const { t } = useTranslation('chat');
-  const [userExpanded, setUserExpanded] = useState(loading);
+  const [userExpanded, setUserExpanded] = useState<boolean | null>(null);
   const [localDurationSeconds, setLocalDurationSeconds] = useState<number | undefined>(
     durationSeconds
   );
   const previousLoadingRef = useRef(loading);
   const startedAtRef = useRef<number | null>(null);
   const { scrollToEndUnlessUserInterrupted } = useMessageScroller();
-  const isExpanded = loading || userExpanded;
+  const isExpanded = loading || (userExpanded ?? !autoCollapseOnFinish);
   const displayDuration = durationSeconds ?? localDurationSeconds;
   const collapseRef = useCollapseHeight(isExpanded);
   const panelId = useId();
@@ -41,32 +40,35 @@ function ReasoningBlock({
   }
 
   /**
-   * 执行时机：推理流开始或结束时记录耗时、调整展开态并校正消息滚动位置。
+   * @wisepen-manual-effect
+   * 执行时机：推理流开始或结束时记录耗时并校正消息滚动位置。
    * 不可替代原因：流状态来自外部消息运行时，耗时依赖时钟，滚动器也是命令式外部对象。
-   * cleanup：没有订阅或延迟任务，无需清理。
+   * cleanup：取消尚未写入耗时状态的 animation frame。
    */
-  useEffectForce(() => {
+  useEffect(() => {
     const wasLoading = previousLoadingRef.current;
     previousLoadingRef.current = loading;
 
     if (loading) {
       if (startedAtRef.current == null) startedAtRef.current = Date.now();
-      setUserExpanded(true);
       return;
     }
 
     if (wasLoading && !loading) {
+      let durationFrame: number | null = null;
       if (startedAtRef.current != null) {
         const elapsedSeconds = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
-        setLocalDurationSeconds(elapsedSeconds);
         startedAtRef.current = null;
-      }
-      if (autoCollapseOnFinish) {
-        setUserExpanded(false);
+        durationFrame = window.requestAnimationFrame(() => {
+          setLocalDurationSeconds(elapsedSeconds);
+        });
       }
       scrollToEndUnlessUserInterrupted();
+      return () => {
+        if (durationFrame !== null) window.cancelAnimationFrame(durationFrame);
+      };
     }
-  }, [loading, autoCollapseOnFinish, scrollToEndUnlessUserInterrupted]);
+  }, [loading, scrollToEndUnlessUserInterrupted]);
 
   if (!content && !loading) return null;
 
@@ -79,7 +81,9 @@ function ReasoningBlock({
         aria-expanded={isExpanded}
         aria-controls={panelId}
         onPress={() => {
-          if (!loading) setUserExpanded((prev) => !prev);
+          if (!loading) {
+            setUserExpanded((current) => !(current ?? !autoCollapseOnFinish));
+          }
         }}
       >
         <Brain

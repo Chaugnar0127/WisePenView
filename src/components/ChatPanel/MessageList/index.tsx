@@ -11,7 +11,7 @@ import {
 import type { WisePenUIMessage } from '@/domains/Chat';
 import type { ChatStatus } from 'ai';
 import { ArrowDown } from 'lucide-react';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import HistoryLoader from './HistoryLoader';
 import Message from './Message';
@@ -31,7 +31,6 @@ interface MessageListProps {
   status: ChatStatus;
   model: Model | null;
   fullWidth?: boolean;
-  footer?: ReactNode;
 }
 
 function MessageList({
@@ -43,7 +42,6 @@ function MessageList({
   status,
   model,
   fullWidth = false,
-  footer,
 }: MessageListProps) {
   return (
     <MessageScrollerProvider
@@ -62,7 +60,6 @@ function MessageList({
         status={status}
         model={model}
         fullWidth={fullWidth}
-        footer={footer}
       />
     </MessageScrollerProvider>
   );
@@ -76,7 +73,6 @@ function MessageListContent({
   status,
   model,
   fullWidth = false,
-  footer,
 }: MessageListProps) {
   const { t } = useTranslation('chat');
   const isGenerating = status === 'submitted' || status === 'streaming';
@@ -117,8 +113,6 @@ function MessageListContent({
               </>
             )}
           </div>
-
-          {footer ? <div className={styles.footerSlot}>{footer}</div> : null}
         </MessageScrollerContent>
       </MessageScrollerViewport>
 

@@ -195,6 +195,23 @@
   display: flex;
   flex-direction: column;
   padding-top: 0;
+  /* 输入框已移到滚动容器外，滚动按钮不再需要为 footer 预留偏移 */
+  --chat-footer-scroll-offset: 0px;
+}
+
+.footerSlot {
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  width: 100%;
+  margin-top: calc(-1 * var(--space-lg));
+  padding-top: var(--space-lg);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--chat-shell-bg, var(--surface)) 0%, transparent) 0%,
+    var(--chat-shell-bg, var(--surface)) 20%
+  );
 }
 
 .sessionList {

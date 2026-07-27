@@ -58,41 +58,44 @@ function FavoriteCollectionList({
                 {collection.collectionName ?? t('favorite.picker.defaultCollectionName')}
               </span>
               <span className={styles.collectionListItemMeta}>{collection.itemCount}</span>
-            </span>
-            {!collection.isDefault ? (
               <span
                 className={styles.collectionListItemActions}
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={(event) => event.stopPropagation()}
+                onPointerDown={
+                  collection.isDefault ? undefined : (event) => event.stopPropagation()
+                }
+                onClick={collection.isDefault ? undefined : (event) => event.stopPropagation()}
               >
-                <Dropdown>
-                  <AppIconButton
-                    icon={<EllipsisVertical size={16} aria-hidden="true" />}
-                    label={t('favorite.collection.actionsAria', {
-                      name: collection.collectionName ?? t('favorite.picker.defaultCollectionName'),
-                    })}
-                    size="sm"
-                    className={styles.collectionMoreButton}
-                    tooltip={{ content: t('favorite.collection.moreActions') }}
-                    overlayTrigger={<Dropdown.Trigger />}
-                  />
-                  <Dropdown.Popover placement="bottom end">
-                    <Dropdown.Menu aria-label={t('favorite.collection.menuAria')}>
-                      <Dropdown.Item id="edit" onAction={() => onEdit(collection)}>
-                        {t('actions.edit', { ns: 'common' })}
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        id="delete"
-                        variant="danger"
-                        onAction={() => onDelete(collection)}
-                      >
-                        {t('actions.delete', { ns: 'common' })}
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown.Popover>
-                </Dropdown>
+                {!collection.isDefault ? (
+                  <Dropdown>
+                    <AppIconButton
+                      icon={<EllipsisVertical size={16} aria-hidden="true" />}
+                      label={t('favorite.collection.actionsAria', {
+                        name:
+                          collection.collectionName ?? t('favorite.picker.defaultCollectionName'),
+                      })}
+                      size="sm"
+                      className={styles.collectionMoreButton}
+                      tooltip={{ content: t('favorite.collection.moreActions') }}
+                      overlayTrigger={<Dropdown.Trigger />}
+                    />
+                    <Dropdown.Popover placement="bottom end">
+                      <Dropdown.Menu aria-label={t('favorite.collection.menuAria')}>
+                        <Dropdown.Item id="edit" onAction={() => onEdit(collection)}>
+                          {t('actions.edit', { ns: 'common' })}
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          id="delete"
+                          variant="danger"
+                          onAction={() => onDelete(collection)}
+                        >
+                          {t('actions.delete', { ns: 'common' })}
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                ) : null}
               </span>
-            ) : null}
+            </span>
           </ListBoxItem>
         ))}
       </ListBox>

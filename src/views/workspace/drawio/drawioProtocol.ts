@@ -3,6 +3,19 @@ export const EMPTY_DRAWIO_XML = `<mxfile host="WisePen"><diagram name="Page-1"><
 export type DrawioSaveState = 'saved' | 'dirty' | 'saving' | 'failed';
 export type WisePenTheme = 'light' | 'dark';
 
+export type DrawioEditorCommand =
+  | {
+      action: 'load';
+      autosave: 0 | 1;
+      modified: boolean;
+      noExitBtn: 1;
+      noSaveBtn: 0 | 1;
+      saveAndExit: 0;
+      xml: string;
+    }
+  | { action: 'status'; message: string; modified: boolean }
+  | { action: 'export'; format: 'xml' };
+
 export interface DrawioMessage {
   event?: string;
   xml?: string;

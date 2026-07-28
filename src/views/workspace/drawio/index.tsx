@@ -21,9 +21,17 @@ import { History, Save } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import {
+  buildDrawioUrl,
+  decodeBase64Utf8,
+  extractDrawioPlainText,
+  readDrawioEmbedOrigin,
+  readDrawioMessage,
+  type DrawioSaveState,
+  type WisePenTheme,
+} from './drawioProtocol';
 import styles from './style.module.less';
 
-const EMPTY_DRAWIO_XML = `<mxfile host="WisePen"><diagram name="Page-1"><mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel></diagram></mxfile>`;
 const WISEPEN_COLOR_SCHEME_STORAGE_KEY = 'heroui-color-scheme';
 const WISEPEN_COLOR_SCHEMES = new Set([
   'default',
@@ -33,8 +41,6 @@ const WISEPEN_COLOR_SCHEMES = new Set([
   'forest',
   'minimal',
 ]);
-
-type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
 
 interface DrawioViewProps {
   resourceId?: string;
@@ -52,53 +58,7 @@ interface DrawioViewConnectedProps {
   onRefreshDrawioInfo: () => void;
 }
 
-interface DrawioMessage {
-  event?: string;
-  xml?: string;
-  message?: string;
-}
-
-function decodeBase64Utf8(value?: string | null): string {
-  if (!value) return EMPTY_DRAWIO_XML;
-  const binary = window.atob(value);
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
-
-function readDrawioMessage(raw: unknown): DrawioMessage | null {
-  if (typeof raw !== 'string') return null;
-  try {
-    const parsed = JSON.parse(raw) as DrawioMessage;
-    return parsed && typeof parsed === 'object' ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
-function extractPlainText(xml: string): string | undefined {
-  try {
-    const doc = new DOMParser().parseFromString(xml, 'text/xml');
-    const values = Array.from(doc.querySelectorAll('mxCell[value]'))
-      .map((cell) => cell.getAttribute('value') ?? '')
-      .filter(Boolean)
-      .map((value) => new DOMParser().parseFromString(value, 'text/html').body.textContent ?? '')
-      .map((value) => value.trim())
-      .filter(Boolean);
-    return values.length > 0 ? values.join(' ') : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function readDrawioEmbedUrl(): URL {
-  return new URL(DRAWIO_EMBED_URL);
-}
-
-function readDrawioEmbedOrigin(): string {
-  return readDrawioEmbedUrl().origin;
-}
-
-function readWisePenTheme(): 'light' | 'dark' {
+function readWisePenTheme(): WisePenTheme {
   const root = document.documentElement;
   const dataTheme = root.getAttribute('data-theme');
 
@@ -127,29 +87,6 @@ function readWisePenColorScheme(): string {
   }
 
   return 'default';
-}
-
-function buildDrawioUrl(canEdit: boolean, language: string): string {
-  const url = readDrawioEmbedUrl();
-  const wisePenTheme = readWisePenTheme();
-  const wisePenColorScheme = readWisePenColorScheme();
-  url.searchParams.set('embed', '1');
-  url.searchParams.set('proto', 'json');
-  url.searchParams.set('spin', '1');
-  url.searchParams.set('pages', '0');
-  url.searchParams.set('hide-pages', '1');
-  url.searchParams.delete('ui');
-  url.searchParams.set('libraries', '1');
-  url.searchParams.set('noExitBtn', '1');
-  url.searchParams.set('saveAndExit', '0');
-  url.searchParams.set('wisepenTheme', wisePenTheme);
-  url.searchParams.set('wisepenColorScheme', wisePenColorScheme);
-  url.searchParams.set('dark', wisePenTheme === 'dark' ? '1' : '0');
-  url.searchParams.set('lang', language.startsWith('zh') ? 'zh' : 'en');
-  if (!canEdit) {
-    url.searchParams.set('noSaveBtn', '1');
-  }
-  return url.toString();
 }
 
 function DrawioLayoutConfig({
@@ -216,7 +153,7 @@ function DrawioLayoutConfig({
   return <>{children}</>;
 }
 
-function SaveStatusText({ state }: { state: SaveState }) {
+function SaveStatusText({ state }: { state: DrawioSaveState }) {
   const { t } = useTranslation('workspace');
   return <span className={styles.saveStatus}>{t(`drawio.status.${state}`)}</span>;
 }
@@ -284,15 +221,21 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
   const exportTimerRef = useRef<number | null>(null);
   const pendingExportForSaveRef = useRef(false);
   const [currentVersion, setCurrentVersion] = useState(initialVersion);
-  const [saveState, setSaveState] = useState<SaveState>('saved');
+  const [saveState, setSaveState] = useState<DrawioSaveState>('saved');
   const [editorReady, setEditorReady] = useState(false);
   const [editorLoaded, setEditorLoaded] = useState(false);
   const [versionOpen, setVersionOpen] = useState(false);
   const canEdit = noteInfoDisplay.canCollaborativeEdit;
   const canViewVersions = Boolean(noteInfoDisplay.ownerId);
   const title = useResourceDisplayName(resourceId, noteInfoDisplay.noteTitle, t('drawio.unnamed'));
-  const drawioUrl = buildDrawioUrl(canEdit, i18n.resolvedLanguage ?? 'zh-CN');
-  const drawioOrigin = readDrawioEmbedOrigin();
+  const drawioUrl = buildDrawioUrl({
+    embedUrl: DRAWIO_EMBED_URL,
+    canEdit,
+    language: i18n.resolvedLanguage ?? 'zh-CN',
+    theme: readWisePenTheme(),
+    colorScheme: readWisePenColorScheme(),
+  });
+  const drawioOrigin = readDrawioEmbedOrigin(DRAWIO_EMBED_URL);
 
   const { data: currentUser } = useRequest(() => userService.getUserInfo(), {
     ready: Boolean(noteInfoDisplay.ownerId),
@@ -323,7 +266,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
         resourceId,
         version: nextVersion,
         xml,
-        plainText: extractPlainText(xml),
+        plainText: extractDrawioPlainText(xml),
       });
       currentVersionRef.current = nextVersion;
       lastSavedXmlRef.current = xml;

@@ -1,147 +1,16 @@
-import { useDriveUploadQueueStore } from '@/components/Drive/_store/useDriveUploadQueueStore';
 import { DataTable, type DataTableColumn } from '@/components/Table';
-import { useDocumentService } from '@/domains';
-import type { PendingDocItem } from '@/domains/Document';
-import { DOCUMENT_PROCESS, isDocumentTerminalStatus } from '@/domains/Document';
-import { parseErrorMessage } from '@/utils/error';
 import { formatFileSize } from '@/utils/format/formatFileSize';
-import { Button, ProgressBar, toast } from '@heroui/react';
-import { useInterval, useMount, useRequest, useUnmount } from 'ahooks';
+import { Button, ProgressBar } from '@heroui/react';
 import { CircleAlert, CircleCheck } from 'lucide-react';
-import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
-import {
-  buildUploadQueueRows,
-  formatFileType,
-  isActiveLocalUpload,
-  mapCompletedPendingItemToRow,
-  type UploadQueueRow,
-} from './uploadQueueModel';
-
-const REFRESH_INTERVAL_MS = 5000;
-const COMPLETED_ROW_VISIBLE_DELAY_MS = 1500;
+import { formatFileType, type UploadQueueRow } from './uploadQueueModel';
+import { useUploadQueue } from './useUploadQueue';
 
 function UploadQueueTab() {
   const { t } = useTranslation(['drive', 'common']);
-  const documentService = useDocumentService();
-  const localUploads = useDriveUploadQueueStore((state) => state.uploads);
-  const completedRowKeysRef = useRef<Set<string>>(new Set());
-  const [pendingItems, setPendingItems] = useState<PendingDocItem[]>([]);
-  const [completedRows, setCompletedRows] = useState<UploadQueueRow[]>([]);
-  const [pollingActive, setPollingActive] = useState(false);
-  const [retryingId, setRetryingId] = useState<string | null>(null);
-  const [cancelingId, setCancelingId] = useState<string | null>(null);
-  const hasActiveLocalUploads = localUploads.some(isActiveLocalUpload);
-
-  const enqueueCompletedRows = (rows: UploadQueueRow[]) => {
-    const freshRows = rows.filter((row) => {
-      if (completedRowKeysRef.current.has(row.queueRowKey)) return false;
-      completedRowKeysRef.current.add(row.queueRowKey);
-      return true;
-    });
-    if (freshRows.length === 0) return;
-
-    setCompletedRows((prev) => [...prev, ...freshRows]);
-    const rowKeys = new Set(freshRows.map((row) => row.queueRowKey));
-    window.setTimeout(() => {
-      setCompletedRows((prev) => prev.filter((row) => !rowKeys.has(row.queueRowKey)));
-    }, COMPLETED_ROW_VISIBLE_DELAY_MS);
-  };
-
-  const {
-    run: runFetchPendingList,
-    loading: listLoading,
-    cancel: cancelPolling,
-  } = useRequest(async () => documentService.listPendingDocs(), {
-    manual: true,
-    onSuccess: (nextItems) => {
-      const readyRows = nextItems.flatMap((item, index) =>
-        item.documentStatus.status === DOCUMENT_PROCESS.READY
-          ? [mapCompletedPendingItemToRow(item, index, t)]
-          : []
-      );
-      const nextPendingItems = nextItems.filter(
-        (item) => item.documentStatus.status !== DOCUMENT_PROCESS.READY
-      );
-
-      setPendingItems(nextPendingItems);
-      if (readyRows.length > 0) {
-        removeMatchingLocalUploads(readyRows);
-        enqueueCompletedRows(readyRows);
-      }
-      setPollingActive(
-        nextPendingItems.some((item) => !isDocumentTerminalStatus(item.documentStatus.status))
-      );
-    },
-    onError: (err) => {
-      setPollingActive(false);
-      toast.danger(parseErrorMessage(err));
-    },
-  });
-
-  const { run: runRetryPendingDoc } = useRequest(
-    async (documentId: string) => {
-      await documentService.retryPendingDoc(documentId);
-    },
-    {
-      manual: true,
-      onBefore: ([documentId]) => {
-        setRetryingId(documentId ?? null);
-      },
-      onSuccess: () => {
-        toast.success(t('uploadQueue.feedback.retrySubmitted'));
-        runFetchPendingList();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
-      onFinally: () => {
-        setRetryingId(null);
-      },
-    }
-  );
-
-  const { run: runCancelPendingDoc } = useRequest(
-    async (documentId: string) => {
-      await documentService.cancelPendingDoc(documentId);
-    },
-    {
-      manual: true,
-      onBefore: ([documentId]) => {
-        setCancelingId(documentId ?? null);
-      },
-      onSuccess: () => {
-        toast.success(t('uploadQueue.feedback.canceled'));
-        runFetchPendingList();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
-      onFinally: () => {
-        setCancelingId(null);
-      },
-    }
-  );
-
-  useMount(() => {
-    runFetchPendingList();
-  });
-
-  useInterval(
-    () => {
-      if (!listLoading) {
-        runFetchPendingList();
-      }
-    },
-    pollingActive || hasActiveLocalUploads ? REFRESH_INTERVAL_MS : undefined
-  );
-
-  useUnmount(() => {
-    cancelPolling();
-  });
-
-  const items = buildUploadQueueRows(localUploads, pendingItems, completedRows, t);
+  const { items, listLoading, retryingId, cancelingId, retryPendingDoc, cancelPendingDoc } =
+    useUploadQueue();
 
   const columns = [
     {
@@ -186,7 +55,7 @@ function UploadQueueTab() {
                 size="sm"
                 isDisabled={retryingId === row.documentId}
                 onPress={() => {
-                  if (row.documentId) runRetryPendingDoc(row.documentId);
+                  if (row.documentId) retryPendingDoc(row.documentId);
                 }}
               >
                 {t('actions.retry', { ns: 'common' })}
@@ -198,7 +67,7 @@ function UploadQueueTab() {
                 size="sm"
                 isDisabled={cancelingId === row.documentId}
                 onPress={() => {
-                  if (row.documentId) runCancelPendingDoc(row.documentId);
+                  if (row.documentId) cancelPendingDoc(row.documentId);
                 }}
               >
                 {t('actions.cancel', { ns: 'common' })}
@@ -279,20 +148,6 @@ function UploadProgressCell({ row }: { row: UploadQueueRow }) {
       </ProgressBar>
     </div>
   );
-}
-
-function removeMatchingLocalUploads(rows: UploadQueueRow[]): void {
-  const completedDocumentIds = new Set(
-    rows.flatMap((row) => (row.documentId ? [row.documentId] : []))
-  );
-  if (completedDocumentIds.size === 0) return;
-
-  const { uploads, removeUpload } = useDriveUploadQueueStore.getState();
-  uploads.forEach((upload) => {
-    if (upload.documentId && completedDocumentIds.has(upload.documentId)) {
-      removeUpload(upload.id);
-    }
-  });
 }
 
 export default UploadQueueTab;

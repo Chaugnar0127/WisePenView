@@ -2,9 +2,9 @@ import type { AgentSpec } from '@/domains/Agent';
 import type { ToolOption } from '@/domains/Chat';
 import type { SkillSummary } from '@/domains/Skill';
 import { useTranslation } from 'react-i18next';
-import CapabilityPolicyPanel, { type CapabilityPolicyOption } from '../CapabilityPolicyPanel';
-import SectionShell from '../SectionShell';
-import SettingRow from '../SettingRow';
+import SectionShell from '../../shared/SectionShell';
+import SettingRow from '../../shared/SettingRow';
+import CapabilityPolicyPanel, { type CapabilityPolicyOption } from './CapabilityPolicyPanel';
 
 interface Props {
   spec: AgentSpec;

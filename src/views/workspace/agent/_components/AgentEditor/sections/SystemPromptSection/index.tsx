@@ -1,26 +1,25 @@
 import { FormField, TextArea } from '@/components/Input';
+import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { Button, Switch, Tabs } from '@heroui/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { GuidedPromptFields, SoulFieldKey } from '../../systemPrompt';
+import type { GuidedPromptFields, SoulFieldKey } from '../../../../guidedPrompt';
 import {
   buildGuidedPrompt,
   getDefaultGuidedPromptFields,
   parseGuidedPrompt,
   setSoulEnabled,
   syncGuidedPrompt,
-} from '../../systemPrompt';
-import PresetRestoreConfirmDialog from '../PresetRestoreConfirmDialog';
-import SectionShell from '../SectionShell';
+} from '../../../../guidedPrompt';
+import PresetRestoreConfirmDialog from '../../shared/PresetRestoreConfirmDialog';
+import SectionShell from '../../shared/SectionShell';
 import styles from './style.module.less';
-export type PromptMode = 'guided' | 'free';
 interface Props {
   markdown: string;
-  mode: PromptMode;
   disabled: boolean;
   onMarkdownChange: (value: string) => void;
-  onModeRequest: (mode: PromptMode) => void;
 }
+type PromptMode = 'guided' | 'free';
 const textFields: Array<{
   key: keyof GuidedPromptFields;
   rows?: number;
@@ -41,18 +40,25 @@ const soulFields: SoulFieldKey[] = [
   'soulBoundaries',
 ];
 
-export default function SystemPromptSection({
-  markdown,
-  mode,
-  disabled,
-  onMarkdownChange,
-  onModeRequest,
-}: Props) {
+export default function SystemPromptSection({ markdown, disabled, onMarkdownChange }: Props) {
   const { t } = useTranslation('agent');
+  const [mode, setMode] = useState<PromptMode>(() =>
+    parseGuidedPrompt(markdown).compatible ? 'guided' : 'free'
+  );
+  const [promptResetOpen, setPromptResetOpen] = useState(false);
   const [restoreOpen, setRestoreOpen] = useState(false);
-  const parsed = parseGuidedPrompt(markdown);
-  const fields = parsed.compatible ? parsed.fields : getDefaultGuidedPromptFields();
+  const defaultFields = getDefaultGuidedPromptFields();
+  const parsed = parseGuidedPrompt(markdown, defaultFields);
+  const fields = parsed.compatible ? parsed.fields : defaultFields;
   const update = (next: GuidedPromptFields) => onMarkdownChange(syncGuidedPrompt(markdown, next));
+  const requestMode = (nextMode: PromptMode) => {
+    if (nextMode === mode) return;
+    if (nextMode === 'free' || parsed.compatible) {
+      setMode(nextMode);
+      return;
+    }
+    setPromptResetOpen(true);
+  };
   return (
     <>
       <SectionShell
@@ -65,7 +71,7 @@ export default function SystemPromptSection({
             selectedKey={mode}
             onSelectionChange={(key) => {
               const nextMode = String(key);
-              if (nextMode === 'guided' || nextMode === 'free') onModeRequest(nextMode);
+              if (nextMode === 'guided' || nextMode === 'free') requestMode(nextMode);
             }}
           >
             <Tabs.ListContainer>
@@ -190,6 +196,20 @@ export default function SystemPromptSection({
         onConfirm={() => {
           onMarkdownChange(buildGuidedPrompt(getDefaultGuidedPromptFields(), true));
           setRestoreOpen(false);
+        }}
+      />
+      <AppAlertDialog
+        type="danger"
+        isOpen={promptResetOpen}
+        onOpenChange={setPromptResetOpen}
+        title={t('page.promptReset.title')}
+        description={t('page.promptReset.description')}
+        cancelText={t('page.promptReset.cancel')}
+        confirmText={t('page.promptReset.confirm')}
+        onConfirm={() => {
+          onMarkdownChange(buildGuidedPrompt(getDefaultGuidedPromptFields(), true));
+          setMode('guided');
+          setPromptResetOpen(false);
         }}
       />
     </>

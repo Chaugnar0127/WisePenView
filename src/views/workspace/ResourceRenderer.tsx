@@ -171,9 +171,6 @@ function ResourceRenderer({ target, onTargetChange, onClose }: ResourceRendererP
   if (resourceType === RESOURCE_KIND.SKILL && !resourceId) {
     return <SkillView />;
   }
-  if (resourceType === RESOURCE_KIND.AGENT && !resourceId) {
-    return <AgentView />;
-  }
   if (!resourceId) {
     return <UnsupportedResource {...target} onClose={onClose} />;
   }

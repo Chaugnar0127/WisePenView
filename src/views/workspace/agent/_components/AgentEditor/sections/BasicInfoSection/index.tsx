@@ -1,8 +1,8 @@
 import { FormField, Input, TextArea } from '@/components/Input';
 import type { AgentSpec } from '@/domains/Agent';
 import { useTranslation } from 'react-i18next';
-import SectionShell from '../SectionShell';
-import SettingRow from '../SettingRow';
+import SectionShell from '../../shared/SectionShell';
+import SettingRow from '../../shared/SettingRow';
 import styles from './style.module.less';
 
 interface Props {

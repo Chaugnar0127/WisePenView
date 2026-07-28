@@ -1,33 +1,5 @@
 import i18n from '@/i18n';
-
-export const AGENT_PROMPT_ROOT = 'Agent';
-export const SOUL_PROMPT_ROOT = 'SOUL（可选）';
-
-export const SOUL_FIELD_KEYS = [
-  'soulStyle',
-  'soulInitiative',
-  'soulTaste',
-  'soulTruth',
-  'soulBoundaries',
-] as const;
-
-export type SoulFieldKey = (typeof SOUL_FIELD_KEYS)[number];
-
-export interface GuidedPromptFields {
-  overview: string;
-  context: string;
-  workflow: string;
-  outputFormat: string;
-  exampleOutput: string;
-  qualityChecks: string;
-  whenToAsk: string;
-  soulRole: string;
-  soulStyle: string;
-  soulInitiative: string;
-  soulTaste: string;
-  soulTruth: string;
-  soulBoundaries: string;
-}
+import type { GuidedPromptFields } from './codec';
 
 export const getDefaultGuidedPromptFields = (): GuidedPromptFields => ({
   overview: i18n.t('defaultPrompt.overview', { ns: 'agent' }),

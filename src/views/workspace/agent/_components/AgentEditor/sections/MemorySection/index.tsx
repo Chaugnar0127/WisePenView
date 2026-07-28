@@ -1,11 +1,12 @@
 import { FormField, TextArea } from '@/components/Input';
-import { DEFAULT_AGENT_SPEC, type AgentSpec } from '@/domains/Agent';
+import type { AgentSpec } from '@/domains/Agent';
 import { Button, Label, NumberField, Slider } from '@heroui/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import PresetRestoreConfirmDialog from '../PresetRestoreConfirmDialog';
-import SectionShell from '../SectionShell';
-import SettingRow from '../SettingRow';
+import { RECOMMENDED_AGENT_MEMORY_SETTINGS } from '../../config/agentPresets';
+import PresetRestoreConfirmDialog from '../../shared/PresetRestoreConfirmDialog';
+import SectionShell from '../../shared/SectionShell';
+import SettingRow from '../../shared/SettingRow';
 import styles from './style.module.less';
 
 interface Props {
@@ -25,7 +26,7 @@ export default function MemorySection({ spec, disabled, onChange }: Props) {
     onChange({ ...spec, memoryPolicy: { ...policy, ...next } });
   };
   const restoreRecommendedSettings = () => {
-    const recommended = DEFAULT_AGENT_SPEC.memoryPolicy;
+    const recommended = RECOMMENDED_AGENT_MEMORY_SETTINGS;
     updatePolicy({
       highWatermarkRatio: recommended.highWatermarkRatio,
       lowWatermarkRatio: recommended.lowWatermarkRatio,

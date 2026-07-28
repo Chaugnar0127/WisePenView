@@ -1,11 +1,47 @@
-import {
-  AGENT_PROMPT_ROOT,
-  getDefaultGuidedPromptFields,
-  SOUL_FIELD_KEYS,
-  SOUL_PROMPT_ROOT,
-  type GuidedPromptFields,
-  type SoulFieldKey,
-} from './template';
+export const SOUL_FIELD_KEYS = [
+  'soulStyle',
+  'soulInitiative',
+  'soulTaste',
+  'soulTruth',
+  'soulBoundaries',
+] as const;
+
+export type SoulFieldKey = (typeof SOUL_FIELD_KEYS)[number];
+
+export interface GuidedPromptFields {
+  overview: string;
+  context: string;
+  workflow: string;
+  outputFormat: string;
+  exampleOutput: string;
+  qualityChecks: string;
+  whenToAsk: string;
+  soulRole: string;
+  soulStyle: string;
+  soulInitiative: string;
+  soulTaste: string;
+  soulTruth: string;
+  soulBoundaries: string;
+}
+
+const AGENT_PROMPT_ROOT = 'Agent';
+const SOUL_PROMPT_ROOT = 'SOUL（可选）';
+
+const createEmptyGuidedPromptFields = (): GuidedPromptFields => ({
+  overview: '',
+  context: '',
+  workflow: '',
+  outputFormat: '',
+  exampleOutput: '',
+  qualityChecks: '',
+  whenToAsk: '',
+  soulRole: '',
+  soulStyle: '',
+  soulInitiative: '',
+  soulTaste: '',
+  soulTruth: '',
+  soulBoundaries: '',
+});
 
 interface HeadingSection {
   title: string;
@@ -94,7 +130,10 @@ const fieldSchemas = [
 
 const pathKey = (path: readonly string[]) => path.join('\u001f');
 
-export function parseGuidedPrompt(markdown: string): GuidedPromptParseResult {
+export function parseGuidedPrompt(
+  markdown: string,
+  fallbackFields: GuidedPromptFields = createEmptyGuidedPromptFields()
+): GuidedPromptParseResult {
   const normalized = normalizeMarkdown(markdown);
   const sections = scanHeadings(normalized);
   const roots = (title: string) =>
@@ -102,7 +141,7 @@ export function parseGuidedPrompt(markdown: string): GuidedPromptParseResult {
   const agentRoots = roots(AGENT_PROMPT_ROOT);
   const soulRoots = roots(SOUL_PROMPT_ROOT);
   const soulEnabled = soulRoots.length > 0;
-  const fields = getDefaultGuidedPromptFields();
+  const fields = { ...fallbackFields };
   let compatible = agentRoots.length === 1 && (soulRoots.length === 0 || soulRoots.length === 1);
 
   fieldSchemas.forEach(([key, level, path]) => {
@@ -167,7 +206,17 @@ const replaceSectionContent = (markdown: string, path: readonly string[], conten
   if (matches.length !== 1) return normalized;
 
   const match = matches[0];
-  const replacement = content ? content.split('\n') : [];
+  const currentLines = lines.slice(match.contentStart, match.contentEnd);
+  const firstContentIndex = currentLines.findIndex((line) => line.trim().length > 0);
+  let lastContentIndex = currentLines.length - 1;
+  while (lastContentIndex >= 0 && currentLines[lastContentIndex].trim().length === 0) {
+    lastContentIndex -= 1;
+  }
+  // 仅替换正文，保留原 section 的首尾空白行和整体 Markdown 格式。
+  const leadingLines = firstContentIndex < 0 ? [] : currentLines.slice(0, firstContentIndex);
+  const trailingLines =
+    lastContentIndex < 0 ? currentLines : currentLines.slice(lastContentIndex + 1);
+  const replacement = [...leadingLines, ...(content ? content.split('\n') : []), ...trailingLines];
   lines.splice(match.contentStart, match.contentEnd - match.contentStart, ...replacement);
   return lines.join('\n');
 };
@@ -208,5 +257,3 @@ export function setSoulEnabled(markdown: string, fields: GuidedPromptFields, ena
   lines.splice(root.lineIndex, (nextRoot?.lineIndex ?? lines.length) - root.lineIndex);
   return lines.join('\n').trimEnd();
 }
-
-export type { SoulFieldKey };

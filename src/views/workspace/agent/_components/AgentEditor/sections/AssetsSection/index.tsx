@@ -5,7 +5,7 @@ import { Button, Table } from '@heroui/react';
 import { Trash2, Upload } from 'lucide-react';
 import { useRef, useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import SectionShell from '../SectionShell';
+import SectionShell from '../../shared/SectionShell';
 import styles from './style.module.less';
 interface Props {
   assets: AgentAsset[];

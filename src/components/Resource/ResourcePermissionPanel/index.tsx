@@ -533,7 +533,11 @@ function ResourcePermissionPanel({
 
   useRequest(
     async () => {
-      if (!permissionOverview || actionOptions.length === 0) return;
+      if (!permissionOverview || permissionOverview.actionOptions.length === 0) return;
+      const inheritedActionOptions = permissionOverview.actionOptions.map((option) => ({
+        ...option,
+        label: getResourcePermissionActionLabel(option.action),
+      }));
       const groupIds = Array.from(
         new Set(
           permissionOverview.subjects
@@ -548,18 +552,21 @@ function ResourcePermissionPanel({
       );
       setSubjectDrafts((currentSubjects) => {
         const baseSubjects = currentSubjects ?? permissionOverview.subjects;
-        const nextSubjects = hydrateInheritedTagActions(baseSubjects, actionOptions, (subject) =>
-          subject.primaryTagId
-            ? tagService.getRawTagById(subject.primaryTagId, subject.groupId)?.grantedActions
-            : undefined
+        const nextSubjects = hydrateInheritedTagActions(
+          baseSubjects,
+          inheritedActionOptions,
+          (subject) =>
+            subject.primaryTagId
+              ? tagService.getRawTagById(subject.primaryTagId, subject.groupId)?.grantedActions
+              : undefined
         );
         latestSubjectsRef.current = nextSubjects;
         return nextSubjects;
       });
     },
     {
-      ready: Boolean(permissionOverview && actionOptions.length > 0),
-      refreshDeps: [permissionOverview, actionOptions, tagService],
+      ready: Boolean(permissionOverview?.actionOptions.length),
+      refreshDeps: [permissionOverview, tagService],
     }
   );
 

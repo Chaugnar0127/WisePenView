@@ -1,5 +1,13 @@
 import type { AgentDetail, AgentSpec } from '../entity/agent';
 
+export interface SaveAgentDraftRequest {
+  resourceId: string;
+  draftVersion: number;
+  name?: string;
+  description?: string;
+  spec: AgentSpec;
+}
+
 export interface UploadAgentAssetRequest {
   file: File;
   path?: string;
@@ -8,8 +16,7 @@ export interface UploadAgentAssetRequest {
 export interface IAgentService {
   createAgent(title: string, name?: string, description?: string): Promise<string>;
   getAgentDetail(resourceId: string, version?: number): Promise<AgentDetail>;
-  updateAgentInfo(resourceId: string, name?: string, description?: string): Promise<void>;
-  updateAgentSpec(resourceId: string, draftVersion: number, spec: AgentSpec): Promise<void>;
+  saveAgentDraft(request: SaveAgentDraftRequest): Promise<void>;
   publishVersion(resourceId: string): Promise<void>;
   uploadAsset(
     resourceId: string,

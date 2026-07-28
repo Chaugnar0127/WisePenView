@@ -3,9 +3,6 @@ import { ResultState, Spin } from '@/components/Feedback';
 import { UnsavedChangesDialog } from '@/components/Overlay';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import VersionDropdown from '@/components/VersionDropdown';
-import { useAgentService, useChatService, useSkillService } from '@/domains';
-import type { AgentAsset, AgentDetail, AgentSpec } from '@/domains/Agent';
-import type { ChatAgentOption } from '@/domains/Chat';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
@@ -14,12 +11,11 @@ import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
-import { Button, toast } from '@heroui/react';
-import { useMemoizedFn, useRequest } from 'ahooks';
+import { Button } from '@heroui/react';
 import { Save, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useBeforeUnload, useBlocker, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AgentSectionNav from './_components/AgentSectionNav';
 import AssetsSection from './_components/AssetsSection';
 import BasicInfoSection from './_components/BasicInfoSection';
@@ -28,9 +24,8 @@ import MemorySection from './_components/MemorySection';
 import ModelSection from './_components/ModelSection';
 import SystemPromptSection, { type PromptMode } from './_components/SystemPromptSection';
 import { useAgentWorkspaceController } from './_hooks/useAgentWorkspaceController';
-import { loadAgentEditorData } from './_services/agentEditorDataService';
 import styles from './style.module.less';
-import { buildGuidedPrompt, getDefaultGuidedPromptFields, parseGuidedPrompt } from './systemPrompt';
+import { buildGuidedPrompt, getDefaultGuidedPromptFields } from './systemPrompt';
 
 interface Props {
   resourceId?: string;
@@ -47,251 +42,39 @@ const AGENT_SCROLL_CONTAINER_ID = 'agent-editor-scroll';
 
 export default function AgentView({ resourceId }: Props) {
   const { t } = useTranslation(['agent', 'common']);
-  const agentService = useAgentService();
-  const chatService = useChatService();
-  const skillService = useSkillService();
   const navigate = useNavigate();
   const openInWorkspace = useOpenInWorkspace();
-  const controller = useAgentWorkspaceController();
+  const controller = useAgentWorkspaceController({ resourceId, t });
   const [createOpen, setCreateOpen] = useState(!resourceId);
-  const [promptMode, setPromptMode] = useState<PromptMode>('guided');
   const [promptResetOpen, setPromptResetOpen] = useState(false);
   const [deleteAssetId, setDeleteAssetId] = useState<string | null>(null);
-  const [assetOverride, setAssetOverride] = useState<AgentAsset[] | null>(null);
-  const [agentOverride, setAgentOverride] = useState<AgentDetail | null>(null);
-  const [viewingVersion, setViewingVersion] = useState<number | null>(null);
   const anchors = anchorSections.map(([id, key]) => [id, t(`agent:page.anchor.${key}`)] as const);
-  const load = useRequest(
-    async () => {
-      if (!resourceId) return null;
-      return loadAgentEditorData({ resourceId, agentService, chatService, skillService });
-    },
-    {
-      ready: Boolean(resourceId),
-      refreshDeps: [resourceId],
-      onSuccess: (data) => {
-        if (!data) return;
-        setAssetOverride(null);
-        setAgentOverride(null);
-        setViewingVersion(null);
-        controller.initialize(data.agent, { savedDraft: data.savedDraft });
-        setPromptMode(
-          parseGuidedPrompt(data.agent.spec.systemPrompt).compatible ? 'guided' : 'free'
-        );
-      },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
-  const { loading: versionLoading, run: runSwitchVersion } = useRequest(
-    async (version: number) => {
-      if (!resourceId) return null;
-      return agentService.getAgentDetail(resourceId, version);
-    },
-    {
-      manual: true,
-      onSuccess: (data, params) => {
-        if (!data) return;
-        const version = params[0];
-        const isDraft = load.data?.agent.draftVersion === version;
-        setViewingVersion(isDraft ? null : version);
-        setAgentOverride(data);
-        setAssetOverride(null);
-        controller.initialize(data);
-        setPromptMode(parseGuidedPrompt(data.spec.systemPrompt).compatible ? 'guided' : 'free');
-      },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
-  const save = useRequest(
-    async () => {
-      if (!resourceId || !controller.draft || !load.data || viewingVersion !== null) return;
-      controller.markSaving();
-      await Promise.all([
-        agentService.updateAgentInfo(
-          resourceId,
-          controller.draft.name.trim(),
-          controller.draft.description.trim()
-        ),
-        agentService.updateAgentSpec(
-          resourceId,
-          load.data.agent.draftVersion,
-          controller.draft.spec
-        ),
-      ]);
-    },
-    {
-      manual: true,
-      onSuccess: () => {
-        controller.markSaved();
-        toast.success(t('agent:page.saved'));
-      },
-      onError: (error) => {
-        controller.markFailed();
-        toast.danger(parseErrorMessage(error));
-      },
-    }
-  );
-  const publish = useRequest(
-    async () => {
-      if (!resourceId) return;
-      if (controller.isDirty) await save.runAsync();
-      await agentService.publishVersion(resourceId);
-    },
-    {
-      manual: true,
-      onSuccess: () => {
-        toast.success(t('agent:page.published'));
-        load.refresh();
-      },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
-  const refreshAssetsOnly = async () => {
-    if (!resourceId) return;
-    try {
-      const latest = await agentService.getAgentDetail(resourceId);
-      setAssetOverride(latest.assets);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-    }
+  const { load, save, publish, upload, remove, blocker, versionLoading, viewingVersion } =
+    controller;
+  const handleRequestPromptMode = (mode: PromptMode) => {
+    if (controller.requestPromptMode(mode) === 'confirmReset') setPromptResetOpen(true);
   };
-  const upload = useRequest(
-    async (files: File[]) => {
-      if (!resourceId || !load.data) return;
-      for (const file of files)
-        await agentService.uploadAsset(resourceId, load.data.agent.draftVersion, { file });
-    },
-    {
-      manual: true,
-      onSuccess: () => {
-        toast.success(t('agent:page.assetUploaded'));
-        void refreshAssetsOnly();
-      },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
-  const remove = useRequest(
-    async (id: string) => {
-      if (!resourceId || !load.data) return;
-      await agentService.deleteAssets(resourceId, load.data.agent.draftVersion, [id]);
-    },
-    {
-      manual: true,
-      onSuccess: () => {
-        setDeleteAssetId(null);
-        toast.success(t('agent:page.assetDeleted'));
-        void refreshAssetsOnly();
-      },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
-  const blocker = useBlocker(controller.isDirty);
-  useBeforeUnload((event) => {
-    if (controller.isDirty) event.preventDefault();
-  });
-  const handleSaveAndLeave = async () => {
-    try {
-      await save.runAsync();
-      blocker.proceed?.();
-    } catch {
-      // 保存失败时 save request 的 onError 会展示错误提示；留在当前页面继续编辑。
-    }
-  };
-  const setSpec = (spec: AgentSpec) => controller.setDraft((current) => ({ ...current, spec }));
-  const requestMode = (mode: PromptMode) => {
-    if (mode === promptMode) return;
-    if (mode === 'free') {
-      setPromptMode('free');
-      return;
-    }
-    if (controller.draft && parseGuidedPrompt(controller.draft.spec.systemPrompt).compatible) {
-      setPromptMode('guided');
-      return;
-    }
-    setPromptResetOpen(true);
-  };
-  const handleSaveDraftForDebug = useMemoizedFn(async () => {
-    try {
-      await save.runAsync();
-      return true;
-    } catch {
-      return false;
-    }
-  });
-  const handleSave = useMemoizedFn(() => save.run());
-  const handlePublish = useMemoizedFn(() => publish.run());
-  const versionItems = (() => {
-    if (!load.data) return [];
-    const { draftVersion, publishedVersion } = load.data.agent;
-    const items = [
-      {
-        key: `v${draftVersion}`,
-        version: draftVersion,
-        current: viewingVersion === null,
-      },
-    ];
-    for (let version = publishedVersion; version >= 1; version -= 1) {
-      if (version === draftVersion) continue;
-      items.push({
-        key: `v${version}`,
-        version,
-        current: viewingVersion === version,
-      });
-    }
-    return items;
-  })();
-  const disabledVersionKeys = load.data?.agent.isOwner
-    ? new Set<string>()
-    : new Set(versionItems.map((item) => item.key));
-  const handleVersionSelect = useMemoizedFn((version: number) => {
-    if (!load.data || version === (viewingVersion ?? load.data.agent.draftVersion)) return;
-    if (controller.isDirty) {
-      toast.warning(t('agent:page.switchVersionBlocked'));
-      return;
-    }
-    runSwitchVersion(version);
-  });
-  const displayAgent = agentOverride ?? load.data?.agent;
-  const currentDraftAgent = (() => {
-    if (!load.data || !controller.draft) return null;
-    const skillPolicy = controller.draft.spec.toolAndSkillPolicy;
-    const defaultSkillIds = Array.from(
-      new Set([
-        ...(skillPolicy.onDemandSkillIds ?? []),
-        ...(skillPolicy.forceEnabledSkillIds ?? []),
-      ])
-    );
-    return {
-      agentId: `current-agent-draft-${load.data.agent.resourceId}`,
-      agentType: 'PERSONAL',
-      source: 'CURRENT_DRAFT',
-      resourceId: load.data.agent.resourceId,
-      agentVersion: load.data.agent.draftVersion,
-      label: load.data.agent.title || controller.draft.name || t('agent:page.currentAgent'),
-      defaultSkillIds,
-    };
-  })() satisfies ChatAgentOption | null;
   const headerConfig = {
     className: styles.pageWrap,
     chatAgentDebug:
-      currentDraftAgent && viewingVersion === null
+      controller.currentDraftAgent && viewingVersion === null
         ? {
-            agent: currentDraftAgent,
+            agent: controller.currentDraftAgent,
             isDirty: controller.isDirty,
             isSaving: save.loading,
-            onSaveDraft: handleSaveDraftForDebug,
+            onSaveDraft: controller.saveDraftForDebug,
           }
         : undefined,
-    header: displayAgent
+    header: controller.displayAgent
       ? {
           resource: {
-            resourceId: displayAgent.resourceId,
-            resourceName: displayAgent.title,
+            resourceId: controller.displayAgent.resourceId,
+            resourceName: controller.displayAgent.title,
             resourceIconType: 'agent',
-            currentActions: displayAgent.currentActions,
-            copyVersion: displayAgent.version,
+            currentActions: controller.displayAgent.currentActions,
+            copyVersion: controller.displayAgent.version,
             permissionResourceType: RESOURCE_KIND.AGENT,
-            ownerId: displayAgent.ownerId,
+            ownerId: controller.displayAgent.ownerId,
             titleMeta: (
               <span className={styles.saveStatus}>
                 {t(
@@ -305,14 +88,14 @@ export default function AgentView({ resourceId }: Props) {
                 )}
               </span>
             ),
-            actions: displayAgent.isOwner ? (
+            actions: controller.displayAgent.isOwner ? (
               <div className={styles.headerActions}>
                 <Button
                   variant="secondary"
                   isDisabled={
                     viewingVersion !== null || !controller.isDirty || save.loading || versionLoading
                   }
-                  onPress={handleSave}
+                  onPress={() => save.run()}
                 >
                   <Save size={15} />
                   {t('common:actions.save')}
@@ -322,16 +105,16 @@ export default function AgentView({ resourceId }: Props) {
                   isDisabled={
                     viewingVersion !== null || publish.loading || save.loading || versionLoading
                   }
-                  onPress={handlePublish}
+                  onPress={() => publish.run()}
                 >
                   <Upload size={15} />
                   {t('agent:page.publishAction')}
                 </Button>
                 <VersionDropdown
-                  items={versionItems}
-                  disabledKeys={disabledVersionKeys}
+                  items={controller.versionItems}
+                  disabledKeys={controller.disabledVersionKeys}
                   formatVersion={(version) => `v${version}.0`}
-                  onSelect={handleVersionSelect}
+                  onSelect={controller.handleVersionSelect}
                 />
               </div>
             ) : undefined,
@@ -342,7 +125,6 @@ export default function AgentView({ resourceId }: Props) {
   useResourceHostLayoutConfig(
     () => headerConfig,
     [
-      agentOverride,
       controller.draft,
       controller.isDirty,
       controller.savePhase,
@@ -425,32 +207,38 @@ export default function AgentView({ resourceId }: Props) {
           onDescriptionChange={(value) =>
             controller.setDraft((current) => ({ ...current, description: value }))
           }
-          onSpecChange={setSpec}
+          onSpecChange={controller.setSpec}
         />
         <SystemPromptSection
           markdown={controller.draft.spec.systemPrompt}
-          mode={promptMode}
-          disabled={disabled}
-          onModeRequest={requestMode}
-          onMarkdownChange={(value) => setSpec({ ...controller.draft!.spec, systemPrompt: value })}
+          mode={controller.promptMode}
+          disabled={controller.isReadOnly}
+          onModeRequest={handleRequestPromptMode}
+          onMarkdownChange={(value) =>
+            controller.setSpec({ ...controller.draft!.spec, systemPrompt: value })
+          }
         />
         <ModelSection
           spec={controller.draft.spec}
           models={load.data.models}
           disabled={disabled}
-          onChange={setSpec}
+          onChange={controller.setSpec}
         />
         <CapabilitiesSection
           spec={controller.draft.spec}
           tools={load.data.tools}
           skills={load.data.skills}
           disabled={disabled}
-          onChange={setSpec}
+          onChange={controller.setSpec}
         />
-        <MemorySection spec={controller.draft.spec} disabled={disabled} onChange={setSpec} />
+        <MemorySection
+          spec={controller.draft.spec}
+          disabled={controller.isReadOnly}
+          onChange={controller.setSpec}
+        />
         <AssetsSection
-          assets={assetOverride ?? displayAgent?.assets ?? []}
-          disabled={disabled}
+          assets={controller.assets}
+          disabled={controller.isReadOnly}
           uploading={upload.loading}
           onUpload={(files) => upload.run(files)}
           onDelete={setDeleteAssetId}
@@ -465,11 +253,11 @@ export default function AgentView({ resourceId }: Props) {
         cancelText={t('agent:page.promptReset.cancel')}
         confirmText={t('agent:page.promptReset.confirm')}
         onConfirm={() => {
-          setSpec({
+          controller.setSpec({
             ...controller.draft!.spec,
             systemPrompt: buildGuidedPrompt(getDefaultGuidedPromptFields(), true),
           });
-          setPromptMode('guided');
+          controller.setPromptMode('guided');
           setPromptResetOpen(false);
         }}
       />
@@ -484,7 +272,7 @@ export default function AgentView({ resourceId }: Props) {
         confirmText={t('agent:page.leave.confirm')}
         onCancel={() => blocker.reset?.()}
         onDiscard={() => blocker.proceed?.()}
-        onConfirm={() => void handleSaveAndLeave()}
+        onConfirm={() => void controller.handleSaveAndLeave()}
       />
       <AppAlertDialog
         type="danger"
@@ -496,8 +284,14 @@ export default function AgentView({ resourceId }: Props) {
         description={t('agent:page.deleteAsset.description')}
         confirmText={t('common:actions.delete')}
         isConfirmLoading={remove.loading}
-        onConfirm={() => {
-          if (deleteAssetId) remove.run(deleteAssetId);
+        onConfirm={async () => {
+          if (!deleteAssetId) return;
+          try {
+            await remove.runAsync(deleteAssetId);
+            setDeleteAssetId(null);
+          } catch {
+            // 请求错误已由 controller 提示，保留弹窗供用户重试。
+          }
         }}
       />
     </div>

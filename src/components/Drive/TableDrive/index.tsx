@@ -6,36 +6,22 @@ import {
   TrashDeleteModal,
 } from '@/components/Drive/Modals';
 import { FolderTable, type FolderTableBreadcrumbItem } from '@/components/Table';
-import { useDriveService } from '@/domains';
 import type { DriveNode } from '@/domains/Drive';
-import { parseErrorMessage } from '@/utils/error';
 import type { ResourceViewer } from '@/utils/navigation/resourceTarget';
 import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core';
-import { Button, toast, type SortDescriptor } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Button } from '@heroui/react';
 import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
-import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  getDriveNodeLabel,
-  isDriveActionTarget,
-  isDriveSharedFolderNode,
-  isDriveSystemFolderNode,
-  resolveCurrentFolderTagId,
-  resolveDriveScope,
-  type DriveActionTarget,
-} from '../common/driveComponentModel';
-import { useClickNode } from '../common/useClickNode';
+import { getDriveNodeLabel, resolveCurrentFolderTagId } from '../common/driveComponentModel';
 import type { DriveTableRow, TableDriveProps } from './index.type';
 import CreateMenu from './parts/CreateMenu';
 import DriveDetailPanel from './parts/DriveDetailPanel';
 import { DriveDragOverlay } from './parts/DriveDnd';
 import styles from './style.module.less';
 import { buildDriveTableColumns } from './tableColumns';
-import { buildDriveTableRowMap, isDrivePinnedFirstRow, toDriveTableRow } from './tableRows';
-import { useTableDrive } from './useTableDrive';
+import { isDrivePinnedFirstRow } from './tableRows';
 import { useTableDriveActions } from './useTableDriveActions';
-import { useTableDriveDnd } from './useTableDriveDnd';
+import { useTableDriveController } from './useTableDriveController';
 import { useTableDriveRowActions } from './useTableDriveRowActions';
 
 function toBreadcrumbItems(pathNodes: DriveNode[]): FolderTableBreadcrumbItem[] {
@@ -58,125 +44,62 @@ function TableDrive({
   actions,
 }: TableDriveProps) {
   const { t } = useTranslation(['drive', 'resource', 'common']);
-  const driveService = useDriveService();
-  const resolvedScope = resolveDriveScope(scope, groupId, rootId);
-  const finalRootId = resolvedScope.rootId;
-  const finalGroupId = resolvedScope.groupId;
-  const canOpenTrash = !finalGroupId;
-
   const {
+    activeDragRow,
+    batchDeleting,
+    canBatchMove,
+    canOpenTrash,
+    checkedRowKeys,
+    clearDragState,
     currentNodeId,
-    dataSource,
     pathNodes,
     loading,
     expandedRowKeys,
-    enterFolder,
-    handleExpandedChange,
-    refresh,
-  } = useTableDrive({
-    initialNodeId,
-    scope: resolvedScope.scope,
-  });
-  const [checkedRowKeys, setCheckedRowKeys] = useState<Set<string>>(new Set());
-  const [selectedRowId, setSelectedRowId] = useState<string>();
-  const [isDetailPanelCollapsed, setIsDetailPanelCollapsed] = useState(false);
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | undefined>();
-  const lastSortClickRef = useRef<{ column: string; time: number } | null>(null);
-
-  const handleSortChange = (descriptor: SortDescriptor) => {
-    const now = Date.now();
-    const last = lastSortClickRef.current;
-    const column = String(descriptor.column);
-
-    if (last && last.column === column && now - last.time < 300) {
-      // 双击同一列 → 回到默认未排序状态
-      lastSortClickRef.current = null;
-      setSortDescriptor(undefined);
-      return;
-    }
-
-    lastSortClickRef.current = { column, time: now };
-    setSortDescriptor(descriptor);
-  };
-  const [renameTarget, setRenameTarget] = useState<DriveActionTarget | null>(null);
-  const [moveNodes, setMoveNodes] = useState<DriveActionTarget[]>([]);
-  const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
-  const beforeTrashNodeIdRef = useRef<string | null>(null);
-
-  const handleClearSelection = () => {
-    setCheckedRowKeys(new Set());
-  };
-
-  const handleNodeActionSuccess = () => {
-    handleClearSelection();
-    refresh();
-  };
-
-  const rows = dataSource.map((node) => toDriveTableRow(node, t));
-  const rowMap = buildDriveTableRowMap(rows);
-  const columns = buildDriveTableColumns(t);
-  const {
-    sensors,
-    draggingCount,
-    activeDragRow,
-    clearDragState,
-    handleDragStart,
+    finalGroupId,
+    finalRootId,
+    handleClickNode,
     handleDragEnd,
+    handleDragStart,
+    handleEnterFolder,
+    handleExpandedChange,
+    handleNodeActionSuccess,
+    handleSortChange,
+    isDetailPanelCollapsed,
+    isTrashView,
+    moveNodes,
+    openTrash,
+    refresh,
+    renameTarget,
     renderBreadcrumbItem,
     renderNameContent,
-  } = useTableDriveDnd({
+    resolvedScope,
     rowMap,
-    pathNodes,
-    checkedRowKeys,
-    groupId: finalGroupId,
-    onMoveSuccess: handleNodeActionSuccess,
+    rows,
+    runBatchDelete,
+    selectedActionTargets,
+    selectedRow,
+    setCheckedRowKeys,
+    setDeleteTarget,
+    setIsDetailPanelCollapsed,
+    setMoveNodes,
+    setRenameTarget,
+    setSelectedRowId,
+    sharedRowKeys,
+    sortDescriptor,
+    draggingCount,
+    currentDirectoryItemCount,
+    deleteTarget,
+    sensors,
+  } = useTableDriveController({
+    actions,
+    groupId,
+    initialNodeId,
+    onCurrentNodeChange,
+    rootId,
+    scope,
+    t,
   });
-
-  const handleEnterFolder = (nodeId: string) => {
-    setCheckedRowKeys(new Set());
-    setSelectedRowId(undefined);
-    clearDragState();
-    onCurrentNodeChange?.(nodeId);
-    enterFolder(nodeId);
-  };
-  const handleClickNode = useClickNode({
-    enterFolder: handleEnterFolder,
-  });
-  const selectedRow = selectedRowId ? rowMap.get(selectedRowId) : undefined;
-  const selectedActionTargets = (() => {
-    const targets: DriveActionTarget[] = [];
-    checkedRowKeys.forEach((rowId) => {
-      const node = rowMap.get(rowId)?.node;
-      if (node && isDriveActionTarget(node) && !isDriveSystemFolderNode(node)) {
-        targets.push(node);
-      }
-    });
-    return targets;
-  })();
-  const canBatchMove =
-    checkedRowKeys.size > 0 && selectedActionTargets.length === checkedRowKeys.size;
-  const sharedRowKeys = new Set(
-    [...rowMap.values()].filter((row) => isDriveSharedFolderNode(row.node)).map((row) => row.id)
-  );
-
-  const { loading: batchDeleting, run: runBatchDelete } = useRequest(
-    async () => {
-      const ids = [...checkedRowKeys];
-      await Promise.all(
-        ids.map((nodeId) => driveService.removeNode({ nodeId, groupId: finalGroupId }))
-      );
-    },
-    {
-      manual: true,
-      onSuccess: () => {
-        toast.success(t('table.batchDeleted', { count: checkedRowKeys.size }));
-        handleNodeActionSuccess();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
-    }
-  );
+  const columns = buildDriveTableColumns(t);
 
   const checkboxSelection = {
     selectedKeys: checkedRowKeys,
@@ -189,25 +112,9 @@ function TableDrive({
     hiddenKeys: sharedRowKeys,
   };
 
-  const currentDirectoryItemCount = rows.filter((row) => row.entryType !== 'loading').length;
-
   const handleDeleteModalOpenChange = (open: boolean) => {
     if (!open) setDeleteTarget(null);
   };
-
-  const { data: trashFolderNodeId, runAsync: resolveTrashFolderNodeId } = useRequest(
-    () => driveService.getTrashFolderNodeId(finalGroupId),
-    {
-      ready: canOpenTrash,
-      refreshDeps: [finalGroupId],
-    }
-  );
-  const isTrashView = Boolean(
-    canOpenTrash &&
-    trashFolderNodeId &&
-    (currentNodeId === trashFolderNodeId ||
-      pathNodes.some((pathNode) => pathNode.id === trashFolderNodeId))
-  );
   const isEditMode = checkedRowKeys.size > 0;
   const selectionFooter = (() => {
     if (!isEditMode) return null;
@@ -228,37 +135,12 @@ function TableDrive({
             {t('actions.delete', { ns: 'common' })}
           </Button>
         ) : null}
-        <Button variant="secondary" size="sm" onPress={handleClearSelection}>
+        <Button variant="secondary" size="sm" onPress={() => setCheckedRowKeys(new Set())}>
           {t('table.clearSelection')}
         </Button>
       </div>
     );
   })();
-  const openTrash = async () => {
-    if (!canOpenTrash) {
-      return;
-    }
-
-    // 已在回收站 → 返回之前的目录
-    if (isTrashView) {
-      handleEnterFolder(beforeTrashNodeIdRef.current ?? finalRootId);
-      beforeTrashNodeIdRef.current = null;
-      return;
-    }
-
-    try {
-      const resolvedTrashFolderNodeId = trashFolderNodeId ?? (await resolveTrashFolderNodeId());
-      if (!resolvedTrashFolderNodeId) {
-        toast.danger(t('table.trashNotFound'));
-        return;
-      }
-      beforeTrashNodeIdRef.current = currentNodeId;
-      handleEnterFolder(resolvedTrashFolderNodeId);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-    }
-  };
-
   const mountTagId = resolveCurrentFolderTagId(currentNodeId, pathNodes);
   const {
     showCreateMenu,

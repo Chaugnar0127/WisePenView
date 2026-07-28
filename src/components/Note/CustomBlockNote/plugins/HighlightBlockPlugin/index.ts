@@ -1,12 +1,12 @@
 import { Highlighter } from 'lucide-react';
 
+import { createBlockKeyboardNavigationExtension } from '../../engines/editor/keyboardNavigation';
 import { projectInlinePlainText } from '../../engines/plainText';
 import { collectInlineTextMatches } from '../../engines/search/findReplace';
 import type { NoteBlockPlugin, NotePluginBundle } from '../../registry/types';
 import type { NoteRichTextAiDiffConfig } from '../DefaultContentPlugin/aiDiff';
 import { createHighlightBlockAiDiff } from './aiDiff';
 import { createHighlightBlockSpec } from './HighlightBlock';
-import { highlightBlockKeyboardNavigationExtension } from './keyboardNavigationExtension';
 import { createHighlightBlockSlashMenuItem } from './slashMenuItem';
 
 export function createHighlightBlockPlugin(
@@ -19,7 +19,7 @@ export function createHighlightBlockPlugin(
     dependencies: ['default.inline.text', 'default.inline.link', 'default.block.paragraph'],
     contentModel: 'inline',
     spec: createHighlightBlockSpec(),
-    extensions: () => [highlightBlockKeyboardNavigationExtension],
+    extensions: () => [createBlockKeyboardNavigationExtension('highlightBlock')],
     inputRules: { inlineMathDollar: true },
     capabilities: {
       markdownImport: {

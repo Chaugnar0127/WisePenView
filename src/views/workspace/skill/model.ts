@@ -1,8 +1,9 @@
 import type { SkillDetail, SkillFileNode } from '@/domains/Skill';
 import type { TFunction } from 'i18next';
 
-import type { SkillEditorSavePhase } from './_hooks/useSkillEditorController';
 import { canPreviewSkillFile, findFile, getFirstFile } from './utils/skillFileTree';
+
+export type SkillSavePhase = 'clean' | 'dirty' | 'saving' | 'failed';
 
 export type SkillConfigBadge = 'required' | 'unsaved' | 'complete';
 
@@ -16,7 +17,10 @@ export function selectSkillFile(
   return getFirstFile(files);
 }
 
-export function canEditSkill(skill: SkillDetail | undefined, viewingVersion: number | null): boolean {
+export function canEditSkill(
+  skill: SkillDetail | undefined,
+  viewingVersion: number | null
+): boolean {
   return Boolean(skill?.isOwner && skill.draftVersion === viewingVersion);
 }
 
@@ -63,7 +67,7 @@ export function canPreviewSelectedSkillFile(file: SkillFileNode | null): boolean
 }
 
 export function formatSkillSaveStatus(
-  status: SkillEditorSavePhase | undefined,
+  status: SkillSavePhase | undefined,
   t: TFunction<'skill'>
 ): string | null {
   if (status === 'dirty') return t('saveStatus.dirty');
@@ -71,4 +75,21 @@ export function formatSkillSaveStatus(
   if (status === 'failed') return t('saveStatus.failed');
   if (status === 'clean') return t('saveStatus.clean');
   return null;
+}
+
+interface ResolveSkillSavePhaseOptions {
+  hasUnsavedChanges: boolean;
+  hasFailedItems: boolean;
+  isSaving: boolean;
+}
+
+export function resolveSkillSavePhase({
+  hasUnsavedChanges,
+  hasFailedItems,
+  isSaving,
+}: ResolveSkillSavePhaseOptions): SkillSavePhase {
+  if (isSaving) return 'saving';
+  if (hasFailedItems) return 'failed';
+  if (hasUnsavedChanges) return 'dirty';
+  return 'clean';
 }

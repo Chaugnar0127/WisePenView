@@ -341,9 +341,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
           </div>
         ) : null}
         <div
-          className={`${styles.contentRow} ${
-            isOutlineOpen ? styles.contentRowOutlineOpen : styles.contentRowOutlineCollapsed
-          }`}
+          className={`${styles.contentRow} ${isOutlineOpen ? styles.contentRowOutlineOpen : ''}`}
         >
           <div className={styles.mainPanel} ref={setAiBulkActionsPortalContainer}>
             <div

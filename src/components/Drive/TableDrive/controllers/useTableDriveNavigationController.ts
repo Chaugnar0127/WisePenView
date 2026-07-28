@@ -5,15 +5,15 @@ import { findTreeNodeById } from '@/utils/tree/findTreeNodeById';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { startTransition, useRef, useState } from 'react';
-import { useDriveTreeChildren } from '../common/useDriveTreeChildren';
-import type { DriveRow } from './index.type';
+import { useDriveTreeChildren } from '../../common/useDriveTreeChildren';
+import type { DriveRow } from '../index.type';
 
-interface UseTableDriveParams {
+interface UseTableDriveNavigationControllerParams {
   initialNodeId?: string;
   scope: DriveNodeScope;
 }
 
-interface UseTableDriveReturn {
+interface UseTableDriveNavigationControllerReturn {
   currentNodeId: string;
   /** 当前层级的 dataSource（已挂上 expanded children） */
   dataSource: DriveRow[];
@@ -45,12 +45,18 @@ interface DriveRowsResult {
  * - 维护 currentNodeId / rows / expandedRowKeys / expandedChildrenMap
  * - 通过 driveService 派生 children + breadcrumb，分页状态机收敛在 service 内部
  */
-export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): UseTableDriveReturn {
+export function useTableDriveNavigationController({
+  initialNodeId,
+  scope,
+}: UseTableDriveNavigationControllerParams): UseTableDriveNavigationControllerReturn {
   const driveService = useDriveService();
+
+  // 当前 Drive 作用域及其子节点缓存
   const rootId = scope.rootId;
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
   const { childrenMap, loadChildren, reset } = useDriveTreeChildren({ groupId, scope });
 
+  // 导航定位：作用域或初始节点变化时重置当前目录
   const navigationKey = `${rootId}\u0000${initialNodeId ?? ''}`;
   const initialCurrentNodeId = initialNodeId ?? rootId;
   const [currentLocation, setCurrentLocation] = useState({
@@ -59,10 +65,16 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
   });
   const currentNodeId =
     currentLocation.navigationKey === navigationKey ? currentLocation.nodeId : initialCurrentNodeId;
+
+  // 当前目录内容及展开状态
   const [rows, setRows] = useState<DriveRow[]>([]);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+
+  // 用于异步刷新期间恢复展开分支，并避免闭包读取旧状态
   const expandedRowKeysRef = useRef<string[]>([]);
   const loadedLocationKeyRef = useRef<string | undefined>(undefined);
+
+  // 区分作用域、初始节点和当前目录的请求与缓存状态
   const locationKey = `${navigationKey}\u0000${currentNodeId}`;
 
   const updateExpandedRowKeys = (updater: string[] | ((currentKeys: string[]) => string[])) => {
@@ -139,12 +151,14 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
   );
   const pathNodes = pathResult?.locationKey === locationKey ? pathResult.nodes : [];
 
+  // 切换目录
   const enterFolder = (nodeId: string) => {
     startTransition(() => {
       setCurrentLocation({ navigationKey, nodeId });
     });
   };
 
+  // 展开 / 收起目录
   const updateExpandedRow = async (expanded: boolean, record: DriveRow) => {
     if (!expanded || (record.type !== 'root' && record.type !== 'folder')) {
       updateExpandedRowKeys((keys) => keys.filter((k) => k !== record.id));
@@ -161,6 +175,7 @@ export function useTableDrive({ initialNodeId, scope }: UseTableDriveParams): Us
     return rows.map((row) => attachChildren(row, childrenMap));
   })() satisfies DriveRow[];
 
+  // Table 展开行变更回调
   const handleExpandedChange = async (keys: string[]) => {
     const addedKey = keys.find((key) => !expandedRowKeys.includes(key));
     if (addedKey) {

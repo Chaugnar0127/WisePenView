@@ -1,28 +1,30 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import {
-  DriveDeleteModal,
-  MoveNodeModal,
-  RenameNodeModal,
-  TrashDeleteModal,
-} from '@/components/Drive/Modals';
 import { FolderTable, type FolderTableBreadcrumbItem } from '@/components/Table';
 import type { DriveNode } from '@/domains/Drive';
-import type { ResourceViewer } from '@/utils/navigation/resourceTarget';
 import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core';
 import { Button } from '@heroui/react';
 import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getDriveNodeLabel, resolveCurrentFolderTagId } from '../common/driveComponentModel';
+import {
+  getDriveNodeLabel,
+  resolveCurrentFolderTagId,
+  resolveDriveScope,
+} from '../common/driveComponentModel';
+import { useClickNode } from '../common/useClickNode';
+import {
+  useTableDriveActionsController,
+  useTableDriveDndController,
+  useTableDriveInteractionController,
+  useTableDriveNavigationController,
+  useTableDriveRowActionsController,
+  useTableDriveTrashController,
+} from './controllers';
 import type { DriveTableRow, TableDriveProps } from './index.type';
 import CreateMenu from './parts/CreateMenu';
 import DriveDetailPanel from './parts/DriveDetailPanel';
 import { DriveDragOverlay } from './parts/DriveDnd';
 import styles from './style.module.less';
-import { buildDriveTableColumns } from './tableColumns';
-import { isDrivePinnedFirstRow } from './tableRows';
-import { useTableDriveActions } from './useTableDriveActions';
-import { useTableDriveController } from './useTableDriveController';
-import { useTableDriveRowActions } from './useTableDriveRowActions';
+import { buildDriveTableColumns, isDrivePinnedFirstRow } from './tableConfig';
 
 function toBreadcrumbItems(pathNodes: DriveNode[]): FolderTableBreadcrumbItem[] {
   return pathNodes
@@ -44,202 +46,196 @@ function TableDrive({
   actions,
 }: TableDriveProps) {
   const { t } = useTranslation(['drive', 'resource', 'common']);
-  const {
-    activeDragRow,
-    batchDeleting,
-    canBatchMove,
-    canOpenTrash,
-    checkedRowKeys,
-    clearDragState,
-    currentNodeId,
-    pathNodes,
-    loading,
-    expandedRowKeys,
-    finalGroupId,
-    finalRootId,
-    handleClickNode,
-    handleDragEnd,
-    handleDragStart,
-    handleEnterFolder,
-    handleExpandedChange,
-    handleNodeActionSuccess,
-    handleSortChange,
-    isDetailPanelCollapsed,
-    isTrashView,
-    moveNodes,
-    openTrash,
-    refresh,
-    renameTarget,
-    renderBreadcrumbItem,
-    renderNameContent,
-    resolvedScope,
-    rowMap,
-    rows,
-    runBatchDelete,
-    selectedActionTargets,
-    selectedRow,
-    setCheckedRowKeys,
-    setDeleteTarget,
-    setIsDetailPanelCollapsed,
-    setMoveNodes,
-    setRenameTarget,
-    setSelectedRowId,
-    sharedRowKeys,
-    sortDescriptor,
-    draggingCount,
-    currentDirectoryItemCount,
-    deleteTarget,
-    sensors,
-  } = useTableDriveController({
-    actions,
-    groupId,
+
+  // 解析作用域，派生 groupId / rootId / scope
+  const resolvedScope = resolveDriveScope(scope, groupId, rootId);
+
+  // 初始化导航控制器
+  const navigation = useTableDriveNavigationController({
     initialNodeId,
-    onCurrentNodeChange,
-    rootId,
-    scope,
+    scope: resolvedScope.scope,
+  });
+
+  // 初始化交互控制器
+  const interaction = useTableDriveInteractionController({ dataSource: navigation.dataSource, t });
+
+  // 封装一个通用的节点操作成功回调，清理选中状态并刷新列表
+  const handleNodeActionSuccess = () => {
+    interaction.clearChecked();
+    navigation.refresh();
+  };
+
+  // 初始化拖拽控制器
+  const dnd = useTableDriveDndController({
+    rowMap: interaction.rowMap,
+    pathNodes: navigation.pathNodes,
+    checkedRowKeys: interaction.checkedRowKeys,
+    groupId: resolvedScope.groupId,
+    onMoveSuccess: handleNodeActionSuccess,
+  });
+
+  // 封装一个通用的进入目录回调，清理选中状态并刷新列表
+  const handleEnterFolder = (nodeId: string) => {
+    interaction.clearChecked();
+    interaction.clearSelectedRow();
+    dnd.clearDragState();
+    onCurrentNodeChange?.(nodeId);
+    navigation.enterFolder(nodeId);
+  };
+
+  // 封装一个通用的点击节点回调，清理选中状态并刷新列表
+  const handleClickNode = useClickNode({ enterFolder: handleEnterFolder });
+
+  // 初始化回收站控制器
+  const trash = useTableDriveTrashController({
+    currentNodeId: navigation.currentNodeId,
+    pathNodes: navigation.pathNodes,
+    rootId: resolvedScope.rootId,
+    scope: resolvedScope.scope,
+    onEnterFolder: handleEnterFolder,
     t,
   });
-  const columns = buildDriveTableColumns(t);
 
-  const checkboxSelection = {
-    selectedKeys: checkedRowKeys,
-    onSelectionChange: (keys: Set<string>) => {
-      setCheckedRowKeys(keys);
-      if (keys.size > 0) {
-        setSelectedRowId(undefined);
-      }
-    },
-    hiddenKeys: sharedRowKeys,
-  };
+  const mountTagId = resolveCurrentFolderTagId(navigation.currentNodeId, navigation.pathNodes);
 
-  const handleDeleteModalOpenChange = (open: boolean) => {
-    if (!open) setDeleteTarget(null);
-  };
-  const isEditMode = checkedRowKeys.size > 0;
-  const selectionFooter = (() => {
-    if (!isEditMode) return null;
-    return (
-      <div className={styles.selectionActions}>
-        {canBatchMove ? (
-          <Button variant="secondary" size="sm" onPress={() => setMoveNodes(selectedActionTargets)}>
-            {t('table.move')}
-          </Button>
-        ) : null}
-        {!isTrashView ? (
-          <Button
-            variant="danger"
-            size="sm"
-            isDisabled={batchDeleting}
-            onPress={() => runBatchDelete()}
-          >
-            {t('actions.delete', { ns: 'common' })}
-          </Button>
-        ) : null}
-        <Button variant="secondary" size="sm" onPress={() => setCheckedRowKeys(new Set())}>
-          {t('table.clearSelection')}
-        </Button>
-      </div>
-    );
-  })();
-  const mountTagId = resolveCurrentFolderTagId(currentNodeId, pathNodes);
-  const {
-    showCreateMenu,
-    showUploadToGroup,
-    showManagePermission,
-    createMenuItems,
-    handleCreateMenuSelect,
-    openUploadToGroup,
-    openTagAccessPermission,
-    openTagMountPermission,
-    openResourcePermission,
-    ModalHost,
-  } = useTableDriveActions({
-    currentNodeId,
-    currentRows: rows,
+  const actionsController = useTableDriveActionsController({
+    currentNodeId: navigation.currentNodeId,
+    currentRows: interaction.rows,
+    checkedRowKeys: interaction.checkedRowKeys,
     scope: resolvedScope.scope,
     actions,
-    refresh,
+    refresh: navigation.refresh,
     mountTagId,
-    isTrashView,
+    isTrashView: trash.isTrashView,
+    onNodeActionSuccess: handleNodeActionSuccess,
   });
-  const toolbar = (
-    <div className={styles.toolbarActions}>
-      {!isEditMode && showCreateMenu ? (
-        <CreateMenu items={createMenuItems} onSelect={handleCreateMenuSelect} />
-      ) : null}
-      {!isEditMode && showUploadToGroup ? (
-        <Button variant="secondary" size="sm" onPress={openUploadToGroup}>
-          {t('table.addFromPersonal')}
-        </Button>
-      ) : null}
-      {!isEditMode && canOpenTrash ? (
-        <Button variant={isTrashView ? 'primary' : 'secondary'} size="sm" onPress={openTrash}>
-          <Trash2 size={16} aria-hidden="true" />
-          {isTrashView ? t('page.backToDrive') : t('node.trash')}
-        </Button>
-      ) : null}
-      <AppIconButton
-        icon={
-          isDetailPanelCollapsed ? (
-            <PanelRightOpen size={16} aria-hidden="true" />
-          ) : (
-            <PanelRightClose size={16} aria-hidden="true" />
-          )
-        }
-        label={isDetailPanelCollapsed ? t('table.expandDetails') : t('table.collapseDetails')}
-        size="sm"
-        className={styles.detailPanelToggle}
-        onPress={() => setIsDetailPanelCollapsed((collapsed) => !collapsed)}
-      />
-    </div>
-  );
 
-  const handleRowActivate = (row: DriveTableRow, viewer?: ResourceViewer) => {
-    handleClickNode(row.node, viewer);
+  const columns = buildDriveTableColumns(t);
+  const isEditMode = interaction.checkedRowKeys.size > 0;
+  const checkboxSelection = {
+    selectedKeys: interaction.checkedRowKeys,
+    onSelectionChange: (keys: Set<string>) => {
+      interaction.setCheckedRowKeys(keys);
+      if (keys.size > 0) {
+        interaction.clearSelectedRow();
+      }
+    },
+    hiddenKeys: interaction.sharedRowKeys,
   };
 
   const handleRowSelect = (row: DriveTableRow) => {
     if (row.node.type !== 'loading') {
-      setSelectedRowId(row.id);
+      interaction.setSelectedRowId(row.id);
     }
   };
 
-  const resolveRowActions = useTableDriveRowActions({
-    groupId: finalGroupId,
+  const resolveRowActions = useTableDriveRowActionsController({
+    groupId: resolvedScope.groupId,
     isEditMode,
-    isTrashView,
-    showManagePermission,
+    isTrashView: trash.isTrashView,
+    showManagePermission: actionsController.showManagePermission,
     onEnterFolder: handleEnterFolder,
     onOpenNode: handleClickNode,
-    onRename: setRenameTarget,
-    onMoveNodes: setMoveNodes,
-    onDelete: setDeleteTarget,
-    onOpenTagAccessPermission: openTagAccessPermission,
-    onOpenTagMountPermission: openTagMountPermission,
-    onOpenResourcePermission: openResourcePermission,
+    onRename: actionsController.setRenameTarget,
+    onMoveNodes: actionsController.setMoveNodes,
+    onDelete: actionsController.setDeleteTarget,
+    onOpenTagAccessPermission: actionsController.openTagAccessPermission,
+    onOpenTagMountPermission: actionsController.openTagMountPermission,
+    onOpenResourcePermission: actionsController.openResourcePermission,
   });
 
   const breadcrumb = (() => {
-    const items = toBreadcrumbItems(pathNodes);
+    const items = toBreadcrumbItems(navigation.pathNodes);
     return (
       <>
         <FolderTable.Breadcrumb
           items={items}
           onJump={handleEnterFolder}
-          renderItem={renderBreadcrumbItem}
+          renderItem={dnd.renderBreadcrumbItem}
         />
         {breadcrumbExtra}
       </>
     );
   })();
 
+  const toolbar = (
+    <div className={styles.toolbarActions}>
+      {!isEditMode && actionsController.showCreateMenu ? (
+        <CreateMenu
+          items={actionsController.createMenuItems}
+          onSelect={actionsController.handleCreateMenuSelect}
+        />
+      ) : null}
+      {!isEditMode && actionsController.showUploadToGroup ? (
+        <Button variant="secondary" size="sm" onPress={actionsController.openUploadToGroup}>
+          {t('table.addFromPersonal')}
+        </Button>
+      ) : null}
+      {!isEditMode && trash.canOpenTrash ? (
+        <Button
+          variant={trash.isTrashView ? 'primary' : 'secondary'}
+          size="sm"
+          onPress={trash.openTrash}
+        >
+          <Trash2 size={16} aria-hidden="true" />
+          {trash.isTrashView ? t('page.backToDrive') : t('node.trash')}
+        </Button>
+      ) : null}
+      <AppIconButton
+        icon={
+          interaction.isDetailPanelCollapsed ? (
+            <PanelRightOpen size={16} aria-hidden="true" />
+          ) : (
+            <PanelRightClose size={16} aria-hidden="true" />
+          )
+        }
+        label={
+          interaction.isDetailPanelCollapsed ? t('table.expandDetails') : t('table.collapseDetails')
+        }
+        size="sm"
+        className={styles.detailPanelToggle}
+        onPress={() => interaction.setIsDetailPanelCollapsed((collapsed) => !collapsed)}
+      />
+    </div>
+  );
+
+  const selectionFooter = (() => {
+    if (!isEditMode) return null;
+    return (
+      <div className={styles.selectionActions}>
+        {interaction.canBatchMove ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            onPress={() => actionsController.setMoveNodes(interaction.selectedActionTargets)}
+          >
+            {t('table.move')}
+          </Button>
+        ) : null}
+        {!trash.isTrashView ? (
+          <Button
+            variant="danger"
+            size="sm"
+            isDisabled={actionsController.batchDeleting}
+            onPress={actionsController.runBatchDelete}
+          >
+            {t('actions.delete', { ns: 'common' })}
+          </Button>
+        ) : null}
+        <Button variant="secondary" size="sm" onPress={interaction.clearChecked}>
+          {t('table.clearSelection')}
+        </Button>
+      </div>
+    );
+  })();
+
   return (
     <DndContext
-      sensors={sensors}
+      sensors={dnd.sensors}
       collisionDetection={pointerWithin}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={clearDragState}
+      onDragStart={dnd.handleDragStart}
+      onDragEnd={dnd.handleDragEnd}
+      onDragCancel={dnd.clearDragState}
     >
       <main className={styles.listArea}>
         <div className={styles.driveFrame}>
@@ -247,22 +243,22 @@ function TableDrive({
             <div className={styles.tablePanel}>
               <FolderTable<DriveTableRow>
                 ariaLabel={t('table.aria')}
-                items={rows}
+                items={interaction.rows}
                 columns={columns}
-                loading={loading}
+                loading={navigation.loading}
                 breadcrumb={breadcrumb}
                 toolbar={toolbar}
-                expandedRowKeys={expandedRowKeys}
-                onExpandedChange={handleExpandedChange}
-                selectedRowKey={selectedRow?.id}
+                expandedRowKeys={navigation.expandedRowKeys}
+                onExpandedChange={navigation.handleExpandedChange}
+                selectedRowKey={interaction.selectedRow?.id}
                 onRowSelect={handleRowSelect}
-                onRowActivate={handleRowActivate}
-                renderNameContent={renderNameContent}
-                totalCount={currentDirectoryItemCount}
-                summary={t('table.summary', { count: currentDirectoryItemCount })}
+                onRowActivate={handleClickNode}
+                renderNameContent={dnd.renderNameContent}
+                totalCount={interaction.currentDirectoryItemCount}
+                summary={t('table.summary', { count: interaction.currentDirectoryItemCount })}
                 className={styles.table}
-                sortDescriptor={sortDescriptor}
-                onSortChange={handleSortChange}
+                sortDescriptor={interaction.sortDescriptor}
+                onSortChange={interaction.handleSortChange}
                 isPinnedFirst={isDrivePinnedFirstRow}
                 rowActions={resolveRowActions}
                 isEditMode={isEditMode}
@@ -272,71 +268,35 @@ function TableDrive({
             </div>
             <aside
               className={styles.detailPanel}
-              data-collapsed={isDetailPanelCollapsed ? 'true' : undefined}
+              data-collapsed={interaction.isDetailPanelCollapsed ? 'true' : undefined}
               aria-label={t('table.detailsAsideAria')}
             >
-              {!isDetailPanelCollapsed ? (
+              {!interaction.isDetailPanelCollapsed ? (
                 <DriveDetailPanel
-                  key={selectedRow?.id ?? (isEditMode ? 'edit-mode' : 'empty')}
-                  selectedRow={selectedRow}
+                  key={interaction.selectedRow?.id ?? (isEditMode ? 'edit-mode' : 'empty')}
+                  selectedRow={interaction.selectedRow}
                   isEditMode={isEditMode}
-                  selectedCount={checkedRowKeys.size}
-                  groupId={finalGroupId}
-                  isTrashView={isTrashView}
-                  showManagePermission={showManagePermission}
-                  onActivate={handleRowActivate}
-                  onRename={setRenameTarget}
-                  onMoveNodes={setMoveNodes}
-                  onDelete={setDeleteTarget}
-                  onOpenTagAccessPermission={openTagAccessPermission}
-                  onOpenTagMountPermission={openTagMountPermission}
-                  onOpenResourcePermission={openResourcePermission}
+                  selectedCount={interaction.checkedRowKeys.size}
+                  groupId={resolvedScope.groupId}
+                  isTrashView={trash.isTrashView}
+                  showManagePermission={actionsController.showManagePermission}
+                  onActivate={handleClickNode}
+                  onRename={actionsController.setRenameTarget}
+                  onMoveNodes={actionsController.setMoveNodes}
+                  onDelete={actionsController.setDeleteTarget}
+                  onOpenTagAccessPermission={actionsController.openTagAccessPermission}
+                  onOpenTagMountPermission={actionsController.openTagMountPermission}
+                  onOpenResourcePermission={actionsController.openResourcePermission}
                 />
               ) : null}
             </aside>
           </div>
         </div>
-        {ModalHost}
-        <RenameNodeModal
-          isOpen={Boolean(renameTarget)}
-          node={renameTarget}
-          groupId={finalGroupId}
-          onOpenChange={(open) => {
-            if (!open) setRenameTarget(null);
-          }}
-          onSuccess={refresh}
-        />
-        <MoveNodeModal
-          isOpen={moveNodes.length > 0}
-          nodes={moveNodes}
-          rootId={finalRootId}
-          groupId={finalGroupId}
-          isTrashView={isTrashView}
-          onOpenChange={(open) => {
-            if (!open) setMoveNodes([]);
-          }}
-          onSuccess={handleNodeActionSuccess}
-        />
-        {isTrashView ? (
-          <TrashDeleteModal
-            isOpen={Boolean(deleteTarget)}
-            node={deleteTarget}
-            onOpenChange={handleDeleteModalOpenChange}
-            onSuccess={handleNodeActionSuccess}
-          />
-        ) : (
-          <DriveDeleteModal
-            isOpen={Boolean(deleteTarget)}
-            node={deleteTarget}
-            groupId={finalGroupId}
-            onOpenChange={handleDeleteModalOpenChange}
-            onSuccess={handleNodeActionSuccess}
-          />
-        )}
+        {actionsController.ModalHost}
       </main>
       <DragOverlay>
-        {activeDragRow && draggingCount > 0 ? (
-          <DriveDragOverlay row={activeDragRow} count={draggingCount} />
+        {dnd.activeDragRow && dnd.draggingCount > 0 ? (
+          <DriveDragOverlay row={dnd.activeDragRow} count={dnd.draggingCount} />
         ) : null}
       </DragOverlay>
     </DndContext>

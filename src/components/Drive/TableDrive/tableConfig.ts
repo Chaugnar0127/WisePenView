@@ -1,3 +1,4 @@
+import type { FolderTableColumn } from '@/components/Table';
 import { formatFileSize } from '@/utils/format/formatFileSize';
 import type { TFunction } from 'i18next';
 import { getDriveNodeLabel, isDriveSharedFolderNode } from '../common/driveComponentModel';
@@ -34,27 +35,16 @@ export function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTab
       break;
   }
 
-  // 系统共享目录使用独立图标。
   const folderIconType =
     node.type === 'folder' && node.systemType === 'shared' ? 'shared' : undefined;
-
-  // 只有资源主节点携带资源类型。
   const resourceType = node.type === 'resource' ? node.resourceType : undefined;
-
-  // 资源和链接指向同一资源，复用资源图标。
   const resourceIconType =
     node.type === 'resource' || node.type === 'link' ? node.resourceIconType : undefined;
-
-  // 资源和链接展示文件大小，其余节点使用占位符。
   const sizeLabel =
     (node.type === 'resource' || node.type === 'link') && node.size != null
       ? formatFileSize(node.size)
       : '—';
-
-  // 只有根节点和文件夹可展开。
   const isExpandable = node.type === 'root' || node.type === 'folder';
-
-  // 递归转换已加载的子节点。
   const children = node.children?.map((child) => toDriveTableRow(child, t));
 
   return {
@@ -85,3 +75,39 @@ export function buildDriveTableRowMap(rows: DriveTableRow[]): Map<string, DriveT
 export function isDrivePinnedFirstRow(row: DriveTableRow): boolean {
   return isDriveSharedFolderNode(row.node);
 }
+
+export const buildDriveTableColumns = (
+  t: TFunction<'drive'>
+): FolderTableColumn<DriveTableRow>[] => [
+  {
+    id: 'name',
+    label: t('table.columns.name'),
+    width: 'fill',
+    align: 'start',
+    isRowHeader: true,
+    isNameColumn: true,
+    allowsSorting: true,
+    sortFolderGroup: true,
+    getSortValue: (row) => row.name,
+  },
+  {
+    id: 'size',
+    label: t('table.columns.size'),
+    width: 'folderSize',
+    renderCell: (row) => (row.entryType === 'loading' ? '' : (row.sizeLabel ?? '—')),
+  },
+  {
+    id: 'type',
+    label: t('table.columns.type'),
+    width: 'folderType',
+    allowsSorting: true,
+    getSortValue: (row) => row.typeLabel,
+    renderCell: (row) => (row.entryType === 'loading' ? '' : row.typeLabel),
+  },
+  {
+    id: 'actions',
+    label: t('table.columns.actions'),
+    width: 'folderAction',
+    isActionColumn: true,
+  },
+];

@@ -6,16 +6,16 @@ import {
   isDriveActionTarget,
   isDriveSystemFolderNode,
   type DriveActionTarget,
-} from '../common/driveComponentModel';
-import type { DriveTableRow } from './index.type';
+} from '../../common/driveComponentModel';
+import type { DriveTableRow } from '../index.type';
 
-interface UseTableDriveRowActionsParams {
+interface UseTableDriveRowActionsControllerParams {
   groupId?: string;
   isEditMode: boolean;
   isTrashView: boolean;
   showManagePermission: boolean;
   onEnterFolder: (nodeId: string) => void;
-  onOpenNode: (node: DriveActionTarget) => void;
+  onOpenNode: (row: DriveTableRow) => void;
   onRename: (node: DriveActionTarget) => void;
   onMoveNodes: (nodes: DriveActionTarget[]) => void;
   onDelete: (node: DriveActionTarget) => void;
@@ -24,7 +24,7 @@ interface UseTableDriveRowActionsParams {
   onOpenResourcePermission: (target: ResourcePermissionModalTarget) => void;
 }
 
-export function useTableDriveRowActions({
+export function useTableDriveRowActionsController({
   groupId,
   isEditMode,
   isTrashView,
@@ -37,7 +37,7 @@ export function useTableDriveRowActions({
   onOpenTagAccessPermission,
   onOpenTagMountPermission,
   onOpenResourcePermission,
-}: UseTableDriveRowActionsParams) {
+}: UseTableDriveRowActionsControllerParams) {
   const { t } = useTranslation(['drive', 'resource', 'common']);
 
   return (row: DriveTableRow): FolderTableRowAction<DriveTableRow>[] => {
@@ -56,7 +56,7 @@ export function useTableDriveRowActions({
         : {
             key: 'open',
             label: t('table.open'),
-            onPress: () => onOpenNode(actionTarget),
+            onPress: () => onOpenNode(row),
           };
 
     const actions: FolderTableRowAction<DriveTableRow>[] = [openAction];
@@ -100,6 +100,17 @@ export function useTableDriveRowActions({
       });
     }
 
+    let deleteLabel: string;
+    if (groupId != null) {
+      deleteLabel = t('delete.remove');
+    } else if (isTrashView) {
+      deleteLabel = t('delete.permanent');
+    } else if (actionTarget.type === 'link') {
+      deleteLabel = t('delete.deleteLink');
+    } else {
+      deleteLabel = t('delete.moveToTrash');
+    }
+
     actions.push(
       {
         key: 'move',
@@ -108,14 +119,7 @@ export function useTableDriveRowActions({
       },
       {
         key: 'delete',
-        label:
-          groupId != null
-            ? t('delete.remove')
-            : isTrashView
-              ? t('delete.permanent')
-              : actionTarget.type === 'link'
-                ? t('delete.deleteLink')
-                : t('delete.moveToTrash'),
+        label: deleteLabel,
         variant: 'danger',
         onPress: () => onDelete(actionTarget),
       }

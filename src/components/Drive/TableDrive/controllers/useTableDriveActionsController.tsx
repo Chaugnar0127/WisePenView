@@ -1,8 +1,12 @@
 import {
   DriveCreateModal,
+  DriveDeleteModal,
+  MoveNodeModal,
+  RenameNodeModal,
   ResourcePermissionModal,
   TagMountPermissionModal,
   TagPermissionModal,
+  TrashDeleteModal,
   UploadDocumentModal,
   UploadFileToGroupModal,
   type DriveCreateType,
@@ -22,21 +26,23 @@ import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { mountResourceToFolderTag } from '../common/driveComponentModel';
-import type { DriveTableRow, TableDriveActionConfig } from './index.type';
-import type { CreateMenuItem } from './parts/CreateMenu/index.type';
+import { mountResourceToFolderTag, type DriveActionTarget } from '../../common/driveComponentModel';
+import type { DriveTableRow, TableDriveActionConfig } from '../index.type';
+import type { CreateMenuItem } from '../parts/CreateMenu/index.type';
 
-interface UseTableDriveActionsParams {
+interface UseTableDriveActionsControllerParams {
   currentNodeId: string;
   currentRows: DriveTableRow[];
+  checkedRowKeys: Set<string>;
   scope: DriveNodeScope;
   actions?: TableDriveActionConfig;
   refresh: () => void;
   mountTagId: string | undefined;
   isTrashView: boolean;
+  onNodeActionSuccess: () => void;
 }
 
-interface UseTableDriveActionsReturn {
+interface UseTableDriveActionsControllerReturn {
   showCreateMenu: boolean;
   showUploadToGroup: boolean;
   showManagePermission: boolean;
@@ -46,6 +52,14 @@ interface UseTableDriveActionsReturn {
   openTagAccessPermission: (tagId: string) => void;
   openTagMountPermission: (tagId: string) => void;
   openResourcePermission: (target: ResourcePermissionModalTarget) => void;
+  batchDeleting: boolean;
+  runBatchDelete: () => void;
+  renameTarget: DriveActionTarget | null;
+  moveNodes: DriveActionTarget[];
+  deleteTarget: DriveActionTarget | null;
+  setRenameTarget: (target: DriveActionTarget | null) => void;
+  setMoveNodes: (nodes: DriveActionTarget[]) => void;
+  setDeleteTarget: (target: DriveActionTarget | null) => void;
   ModalHost: ReactElement;
 }
 
@@ -59,15 +73,17 @@ const DEFAULT_TOOLBAR_CONFIG: Required<NonNullable<TableDriveActionConfig['toolb
   canManageTagPermission: false,
 };
 
-export function useTableDriveActions({
+export function useTableDriveActionsController({
   currentNodeId,
   currentRows,
+  checkedRowKeys,
   scope,
   actions,
   refresh,
   mountTagId,
   isTrashView,
-}: UseTableDriveActionsParams): UseTableDriveActionsReturn {
+  onNodeActionSuccess,
+}: UseTableDriveActionsControllerParams): UseTableDriveActionsControllerReturn {
   const { t } = useTranslation('drive');
   const openInWorkspace = useOpenInWorkspace();
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
@@ -77,6 +93,22 @@ export function useTableDriveActions({
   const resourceService = useResourceService();
   const toolbarConfig = { ...DEFAULT_TOOLBAR_CONFIG, ...actions?.toolbar };
 
+  const { loading: batchDeleting, run: runBatchDelete } = useRequest(
+    async () => {
+      await Promise.all(
+        [...checkedRowKeys].map((nodeId) => driveService.removeNode({ nodeId, groupId }))
+      );
+    },
+    {
+      manual: true,
+      onSuccess: () => {
+        toast.success(t('table.batchDeleted', { count: checkedRowKeys.size }));
+        onNodeActionSuccess();
+      },
+      onError: (error) => toast.danger(parseErrorMessage(error)),
+    }
+  );
+
   const [uploadDocumentOpen, setUploadDocumentOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [tagAccessPermissionTagId, setTagAccessPermissionTagId] = useState<string>();
@@ -84,6 +116,9 @@ export function useTableDriveActions({
   const [resourcePermissionTarget, setResourcePermissionTarget] =
     useState<ResourcePermissionModalTarget | null>(null);
   const [driveCreateType, setDriveCreateType] = useState<DriveCreateType | null>(null);
+  const [renameTarget, setRenameTarget] = useState<DriveActionTarget | null>(null);
+  const [moveNodes, setMoveNodes] = useState<DriveActionTarget[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
 
   const existingFolderNames = currentRows
     .filter((row) => row.node.type === 'folder')
@@ -248,6 +283,46 @@ export function useTableDriveActions({
           onSuccess={handleDriveCreateSuccess}
         />
       ) : null}
+      <RenameNodeModal
+        isOpen={Boolean(renameTarget)}
+        node={renameTarget}
+        groupId={groupId}
+        onOpenChange={(open) => {
+          if (!open) setRenameTarget(null);
+        }}
+        onSuccess={refresh}
+      />
+      <MoveNodeModal
+        isOpen={moveNodes.length > 0}
+        nodes={moveNodes}
+        rootId={scope.rootId}
+        groupId={groupId}
+        isTrashView={isTrashView}
+        onOpenChange={(open) => {
+          if (!open) setMoveNodes([]);
+        }}
+        onSuccess={onNodeActionSuccess}
+      />
+      {isTrashView ? (
+        <TrashDeleteModal
+          isOpen={Boolean(deleteTarget)}
+          node={deleteTarget}
+          onOpenChange={(open) => {
+            if (!open) setDeleteTarget(null);
+          }}
+          onSuccess={onNodeActionSuccess}
+        />
+      ) : (
+        <DriveDeleteModal
+          isOpen={Boolean(deleteTarget)}
+          node={deleteTarget}
+          groupId={groupId}
+          onOpenChange={(open) => {
+            if (!open) setDeleteTarget(null);
+          }}
+          onSuccess={onNodeActionSuccess}
+        />
+      )}
     </>
   );
 
@@ -344,5 +419,13 @@ export function useTableDriveActions({
     openTagMountPermission: setTagMountPermissionTagId,
     openResourcePermission: setResourcePermissionTarget,
     ModalHost,
+    batchDeleting,
+    runBatchDelete,
+    renameTarget,
+    moveNodes,
+    deleteTarget,
+    setRenameTarget,
+    setMoveNodes,
+    setDeleteTarget,
   };
 }

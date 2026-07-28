@@ -1,7 +1,5 @@
 const enUSSkill = {
   page: {
-    createTitle: 'Create Skill',
-    createAction: 'Create a new Skill',
     openFailed: 'Unable to open Skill',
     backToDrive: 'Back to Drive',
     loading: 'Loading Skill...',

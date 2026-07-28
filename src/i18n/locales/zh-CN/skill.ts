@@ -1,7 +1,5 @@
 const zhCNSkill = {
   page: {
-    createTitle: '创建 Skill',
-    createAction: '创建新 Skill',
     openFailed: '无法打开 Skill',
     backToDrive: '返回云盘',
     loading: '正在加载 Skill...',

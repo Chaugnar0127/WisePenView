@@ -1,5 +1,4 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { DriveCreateModal } from '@/components/Drive/Modals';
 import { Empty, ResultState, Spin } from '@/components/Feedback';
 import Markdown from '@/components/Markdown';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
@@ -10,46 +9,27 @@ import VersionDropdown from '@/components/VersionDropdown';
 import { SkillServicesMap } from '@/domains/Skill';
 import { parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
-import {
-  useResourceHostLayoutConfig,
-  type ResourceHostLayoutConfig,
-} from '@/views/workspace/ResourceHostContext';
+import { type ResourceHostLayoutConfig } from '@/views/workspace/ResourceHostContext';
 import { Button, Tabs } from '@heroui/react';
 import { FolderPlus, Pencil, Plus, Save, Settings, Upload } from 'lucide-react';
-import { type DependencyList, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import ResourceLayoutConfig from '../_components/ResourceLayoutConfig';
 import SkillConfigPanel from './_components/SkillConfigPanel';
 import SkillSaveQueueDock from './_components/SkillSaveQueueDock';
 import UnsavedSkillChangesModal from './_components/UnsavedSkillChangesModal';
-import { useSkillWorkspaceController } from './_hooks/useSkillWorkspaceController';
 import { SKILL_CONFIG_NODE_ID } from './_hooks/useSkillNavigationGuard';
+import { useSkillWorkspaceController } from './_hooks/useSkillWorkspaceController';
 import { formatSkillSaveStatus } from './model';
 import styles from './style.module.less';
 import { canPreviewSkillFile } from './utils/skillFileTree';
 import { isMarkdownSkillFile } from './utils/skillMarkdown';
 
 interface SkillViewProps {
-  resourceId?: string;
+  resourceId: string;
 }
 
-interface SkillLayoutConfigProps {
-  children: ReactNode;
-  config?: ResourceHostLayoutConfig;
-  deps: DependencyList;
-}
-
-function SkillLayoutConfig({ children, config, deps }: SkillLayoutConfigProps) {
-  const frameConfig = {
-    className: styles.pageWrap,
-    ...(config ?? {}),
-  } satisfies ResourceHostLayoutConfig;
-  useResourceHostLayoutConfig(() => frameConfig, deps);
-
-  return <>{children}</>;
-}
-
-function SkillView({ resourceId = '' }: SkillViewProps = {}) {
+function SkillView({ resourceId }: SkillViewProps) {
   const { t } = useTranslation('skill');
   const {
     activeFiles,
@@ -62,7 +42,6 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     configLoading,
     configName,
     contentLoading,
-    createModalOpen,
     deleteLoading,
     deleteTarget,
     editing,
@@ -71,11 +50,9 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     expandedKeys,
     fileInputRef,
     handleCancelPendingIntent,
-    handleCloseCreateModal,
     handleCommitCreate,
     handleConfirmDelete,
     handleConfirmPendingIntent,
-    handleCreateSuccess,
     handleDeleteFile,
     handleDiscardPendingIntent,
     handleFileChange,
@@ -118,7 +95,6 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     selectedTreeNodeId,
     setConfigDescription,
     setConfigName,
-    setCreateModalOpen,
     setDeleteTarget,
     setEditorContent,
     skill,
@@ -254,33 +230,13 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     },
   ] satisfies DataNode[];
 
-  if (!resourceId) {
-    return (
-      <SkillLayoutConfig config={headerConfig} deps={layoutConfigDeps}>
-        <div className={styles.middleOverlay}>
-          <ResultState
-            status="info"
-            title={t('page.createTitle')}
-            extra={
-              <Button variant="primary" onPress={() => setCreateModalOpen(true)}>
-                {t('page.createAction')}
-              </Button>
-            }
-          />
-        </div>
-        <DriveCreateModal
-          type="skill"
-          isOpen={createModalOpen}
-          onOpenChange={handleCloseCreateModal}
-          onSuccess={handleCreateSuccess}
-        />
-      </SkillLayoutConfig>
-    );
-  }
-
   if (error) {
     return (
-      <SkillLayoutConfig config={headerConfig} deps={layoutConfigDeps}>
+      <ResourceLayoutConfig
+        className={styles.pageWrap}
+        config={headerConfig}
+        deps={layoutConfigDeps}
+      >
         <div className={styles.middleOverlay}>
           <ResultState
             status="warning"
@@ -293,25 +249,29 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
             }
           />
         </div>
-      </SkillLayoutConfig>
+      </ResourceLayoutConfig>
     );
   }
 
   if (loading && !skill) {
     return (
-      <SkillLayoutConfig config={headerConfig} deps={layoutConfigDeps}>
+      <ResourceLayoutConfig
+        className={styles.pageWrap}
+        config={headerConfig}
+        deps={layoutConfigDeps}
+      >
         <div className={styles.middleOverlay} aria-busy="true" aria-live="polite">
           <div className={styles.middleOverlayLoading}>
             <Spin size="large" />
             <span>{t('page.loading')}</span>
           </div>
         </div>
-      </SkillLayoutConfig>
+      </ResourceLayoutConfig>
     );
   }
 
   return (
-    <SkillLayoutConfig config={headerConfig} deps={layoutConfigDeps}>
+    <ResourceLayoutConfig className={styles.pageWrap} config={headerConfig} deps={layoutConfigDeps}>
       <div className={styles.page}>
         <div className={styles.mainArea}>
           {skill ? (
@@ -514,13 +474,7 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
         hidden
         onChange={(event) => void handleFileChange(event)}
       />
-      <DriveCreateModal
-        type="skill"
-        isOpen={createModalOpen}
-        onOpenChange={handleCloseCreateModal}
-        onSuccess={handleCreateSuccess}
-      />
-    </SkillLayoutConfig>
+    </ResourceLayoutConfig>
   );
 }
 

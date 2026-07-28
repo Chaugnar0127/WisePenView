@@ -1,16 +1,7 @@
 import { useInteractService, useSkillService } from '@/domains';
-import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
-import { useResourceHostContext } from '@/views/workspace/ResourceHostContext';
 import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
-import { useSkillEditorController } from './useSkillEditorController';
-import { useSkillFileTree } from './useSkillFileTree';
-import { useSkillMarkdownPreview } from './useSkillMarkdownPreview';
-import { SKILL_CONFIG_NODE_ID, useSkillNavigationGuard } from './useSkillNavigationGuard';
-import { useSkillSave } from './useSkillSave';
 import {
   canEditSkill,
   canPreviewSelectedSkillFile,
@@ -19,18 +10,18 @@ import {
   getSkillVersionItems,
   selectSkillFile,
 } from '../model';
+import { useSkillEditorController } from './useSkillEditorController';
+import { useSkillFileTree } from './useSkillFileTree';
+import { useSkillMarkdownPreview } from './useSkillMarkdownPreview';
+import { SKILL_CONFIG_NODE_ID, useSkillNavigationGuard } from './useSkillNavigationGuard';
+import { useSkillSave } from './useSkillSave';
 
 interface UseSkillWorkspaceControllerOptions {
   resourceId: string;
   t: TFunction<'skill'>;
 }
 
-export function useSkillWorkspaceController({
-  resourceId,
-  t,
-}: UseSkillWorkspaceControllerOptions) {
-  const navigate = useNavigate();
-  const { getNavigationScope, openResource } = useResourceHostContext();
+export function useSkillWorkspaceController({ resourceId, t }: UseSkillWorkspaceControllerOptions) {
   const skillService = useSkillService();
   const interactService = useInteractService();
   const { state: editorState, actions: editorActions } = useSkillEditorController();
@@ -46,17 +37,6 @@ export function useSkillWorkspaceController({
     configDescription,
   } = editorState;
   const { setEditing, setEditorContent, setConfigName, setConfigDescription } = editorActions;
-
-  const [createModalState, setCreateModalState] = useState(() => ({
-    resourceId,
-    open: !resourceId,
-  }));
-  let createModalOpen = createModalState.open;
-  if (createModalState.resourceId !== resourceId) {
-    createModalOpen = !resourceId;
-    setCreateModalState({ resourceId, open: createModalOpen });
-  }
-  const setCreateModalOpen = (open: boolean) => setCreateModalState({ resourceId, open });
 
   const {
     data: skill,
@@ -215,21 +195,6 @@ export function useSkillWorkspaceController({
     setEditing(true);
   };
 
-  const handleCreateSuccess = (newResourceId: string) => {
-    setCreateModalOpen(false);
-    openResource({
-      resourceId: newResourceId,
-      resourceType: RESOURCE_KIND.SKILL,
-      driveLocation: { scope: getNavigationScope() },
-      replace: true,
-    });
-  };
-
-  const handleCloseCreateModal = (open: boolean) => {
-    setCreateModalOpen(open);
-    if (!open && !resourceId) navigate('/app/drive/personal', { replace: true });
-  };
-
   return {
     activeFiles,
     canEdit,
@@ -240,7 +205,6 @@ export function useSkillWorkspaceController({
     configLoading,
     configName,
     contentLoading,
-    createModalOpen,
     deleteLoading,
     deleteTarget,
     editing,
@@ -249,11 +213,9 @@ export function useSkillWorkspaceController({
     expandedKeys,
     fileInputRef,
     handleCancelPendingIntent,
-    handleCloseCreateModal,
     handleCommitCreate,
     handleConfirmDelete,
     handleConfirmPendingIntent,
-    handleCreateSuccess,
     handleDeleteFile,
     handleDiscardPendingIntent,
     handleFileChange,
@@ -298,7 +260,6 @@ export function useSkillWorkspaceController({
     selectedTreeNodeId,
     setConfigDescription,
     setConfigName,
-    setCreateModalOpen,
     setDeleteTarget,
     setEditorContent,
     skill,

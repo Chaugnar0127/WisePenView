@@ -37,7 +37,7 @@ function createViewerConfig(
   };
 }
 
-function PdfViewer({ resourceId, config, className, onLoadError }: PdfViewerProps) {
+function PdfViewer({ resourceId, sourceUrl, config, className, onLoadError }: PdfViewerProps) {
   const { i18n } = useTranslation();
   const pdfLocale = i18n.resolvedLanguage === 'en-US' ? 'en' : 'zh-CN';
   const viewerRef = useRef<PDFViewerRef | null>(null);
@@ -72,14 +72,15 @@ function PdfViewer({ resourceId, config, className, onLoadError }: PdfViewerProp
         }
       }
       const documentId = `doc-${resourceId}`;
+      const resolvedSourceUrl =
+        sourceUrl ??
+        buildApiUrl(`/document/getDocPreview?resourceId=${encodeURIComponent(resourceId)}`);
       await docManager
         .openDocumentUrl({
-          url: buildApiUrl(`/document/getDocPreview?resourceId=${encodeURIComponent(resourceId)}`),
+          url: resolvedSourceUrl,
           documentId,
-          mode: 'range-request',
-          requestOptions: {
-            credentials: 'include',
-          },
+          mode: sourceUrl ? 'full-fetch' : 'range-request',
+          requestOptions: sourceUrl ? undefined : { credentials: 'include' },
           permissions: {
             overrides: {
               print: false,

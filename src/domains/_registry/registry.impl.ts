@@ -14,6 +14,7 @@ import { createAdminServices } from '@/domains/Admin/service/AdminServices.impl'
 import { createAgentServices } from '@/domains/Agent/service/AgentServices.impl';
 import { createAuthServices } from '@/domains/Auth/service/AuthServices.impl';
 import { createChatServices } from '@/domains/Chat/service/ChatServices.impl';
+import { createCourseServices } from '@/domains/Course/service/CourseServices.impl';
 import { createDocumentServices } from '@/domains/Document/service/DocumentServices.impl';
 import { createDriveServices } from '@/domains/Drive/service/DriveServices.impl';
 import { createGroupServices } from '@/domains/Group/service/GroupServices.impl';
@@ -35,6 +36,7 @@ import type { ServicesContextValue } from './registry.types';
 const adminService = createAdminServices();
 const authService = createAuthServices();
 const documentService = createDocumentServices();
+const courseService = createCourseServices();
 const groupService = createGroupServices();
 const imageService = createImageServices();
 const inlineCommentService = createInlineCommentServices();
@@ -74,6 +76,7 @@ const servicesValue: ServicesContextValue = {
   agentService: agentService,
   authService: authService,
   chatService: chatService,
+  courseService: courseService,
   documentService: documentService,
   driveService: driveService,
   groupService: groupService,

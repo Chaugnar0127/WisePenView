@@ -229,6 +229,7 @@ function PdfView({ resourceId }: PdfViewProps = {}) {
               key={resourceId}
               className={styles.viewer}
               resourceId={resourceId}
+              sourceUrl={docInfo.previewUrl}
               onLoadError={handleViewerLoadError}
             />
           )}

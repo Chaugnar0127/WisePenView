@@ -1,0 +1,37 @@
+import TableDrive from '@/components/Drive/TableDrive';
+import { useTranslation } from 'react-i18next';
+import { useCourseRouteContext } from './context';
+import styles from './CourseMaterialsPage.module.less';
+
+function CourseMaterialsPage() {
+  const { t } = useTranslation('course');
+  const { course } = useCourseRouteContext();
+  const canManage = course.capabilities.canManageMaterials;
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <h1>{t('materials.title')}</h1>
+        <p>{t('materials.description')}</p>
+      </header>
+      <div className={styles.driveArea}>
+        <TableDrive
+          scope={{ type: 'group', groupId: course.courseGroupId }}
+          actions={{
+            toolbar: {
+              canCreateFolder: canManage,
+              canCreateNote: canManage,
+              canCreateDrawio: canManage,
+              canCreateSkill: false,
+              canCreateAgent: false,
+              canUploadToGroup: canManage,
+              canManageTagPermission: canManage,
+            },
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default CourseMaterialsPage;

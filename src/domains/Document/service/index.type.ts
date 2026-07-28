@@ -44,6 +44,8 @@ export interface DocDisplayInfoResponse {
   docMetaInfo: DocMetaInfo;
   resourceInfo: ResourceItem;
   authorsDisplay?: Record<string, UserDisplayBase>;
+  /** 可选的受控预览源；未提供时 Viewer 使用标准文档预览接口。 */
+  previewUrl?: string;
 }
 
 export type OnlyOfficeEditorConfig = Config;

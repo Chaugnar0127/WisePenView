@@ -6,9 +6,17 @@ import AdminLayout from '@/layouts/Admin/AdminLayout';
 import AppLayout from '@/layouts/App/AppLayout';
 import AppNavigationLayout from '@/layouts/AppNavigation/AppNavigationLayout';
 import AuthLayout from '@/layouts/Auth/AuthLayout';
+import CourseLayout from '@/layouts/Course/CourseLayout';
+import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
 import HomeLayout from '@/layouts/Home/HomeLayout';
 import WorkspaceLayout from '@/layouts/Workspace/WorkspaceLayout';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
+import {
+  CourseDiscussionPage,
+  CourseInfoPage,
+  CourseMembersPage,
+} from '@/views/app/course/CourseContextPages';
+import CourseRoute from '@/views/app/course/CourseRoute';
 import RouteError from '@/views/app/error/RouteError';
 
 // 页面使用 lazy load，按路由切分 chunk
@@ -39,6 +47,11 @@ const WorkspaceResourceView = lazy(() => import('@/views/workspace/WorkspaceReso
 const ChatPage = lazy(() => import('@/views/app/chat'));
 const ResourceNotFound = lazy(() => import('@/views/app/error/ResourceNotFound'));
 const AppError = lazy(() => import('@/views/app/error/AppError'));
+const CourseListPage = lazy(() => import('@/views/app/course/CourseListPage'));
+const CourseHomePage = lazy(() => import('@/views/app/course/CourseHomePage'));
+const CourseAssignmentsPage = lazy(() => import('@/views/app/course/CourseAssignmentsPage'));
+const CourseAssignmentPage = lazy(() => import('@/views/app/course/CourseAssignmentPage'));
+const CourseMaterialsPage = lazy(() => import('@/views/app/course/CourseMaterialsPage'));
 
 const router = createBrowserRouter([
   // ==============================
@@ -180,6 +193,57 @@ const router = createBrowserRouter([
               {
                 path: 'my-group/:id',
                 element: <GroupDetail />,
+              },
+              {
+                path: 'course',
+                element: <CourseListPage />,
+              },
+              {
+                path: 'course/:courseId',
+                element: <CourseRoute />,
+                children: [
+                  {
+                    element: <CourseLayout />,
+                    children: [
+                      {
+                        index: true,
+                        element: <Navigate to="home" replace />,
+                      },
+                      {
+                        path: 'home',
+                        element: <CourseHomePage />,
+                      },
+                      {
+                        path: 'info',
+                        element: <CourseInfoPage />,
+                      },
+                      {
+                        path: 'members',
+                        element: <CourseMembersPage />,
+                      },
+                      {
+                        path: 'discussion',
+                        element: <CourseDiscussionPage />,
+                      },
+                      {
+                        path: 'assignments',
+                        element: <CourseAssignmentsPage />,
+                      },
+                      {
+                        path: 'assignments/:assignmentId',
+                        element: <CourseAssignmentPage />,
+                      },
+                      {
+                        path: 'materials',
+                        element: <CourseMaterialsPage />,
+                      },
+                    ],
+                  },
+                  {
+                    path: 'learning/:outlineNodeId?',
+                    element: <CourseLearningLayout />,
+                  },
+                ],
               },
               {
                 path: 'profile/usage',

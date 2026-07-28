@@ -26,6 +26,7 @@ const ROOT_ID = 'drive-root';
 const GROUP_ROOT_PREFIX = 'drive-root:group:';
 const SHARED_FOLDER_NODE_ID = 'folder-shared';
 const TRASH_FOLDER_NODE_ID = 'trash-root';
+const COURSE_GROUP_FIXTURE_ID = 'course-group-data-structures';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -165,6 +166,84 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
     nodes.set(rootId, root);
     return root;
   }
+
+  function seedCourseGroupFixture(): void {
+    const rootId = `${GROUP_ROOT_PREFIX}${COURSE_GROUP_FIXTURE_ID}`;
+    const root = ensureGroupRoot(rootId);
+    if (!root || root.childrenIds.length > 0) return;
+
+    const scope = root.scope;
+    const outlineFolder: FolderNode = {
+      id: 'course-outline-folder',
+      type: 'folder',
+      parentId: rootId,
+      scope,
+      tagId: 'tag-course-outline-folder',
+      name: '大纲内容',
+      description: '由课程大纲同步的学习资源',
+      childrenIds: ['course-outline-note', 'course-outline-slides'],
+    };
+    const referenceFolder: FolderNode = {
+      id: 'course-reference-folder',
+      type: 'folder',
+      parentId: rootId,
+      scope,
+      tagId: 'tag-course-reference-folder',
+      name: '课程参考资料',
+      description: '教师共享的课程补充材料',
+      childrenIds: ['course-reference-file'],
+    };
+    const templateFolder: FolderNode = {
+      id: 'course-template-folder',
+      type: 'folder',
+      parentId: rootId,
+      scope,
+      tagId: 'tag-course-template-folder',
+      name: '实验模板',
+      childrenIds: [],
+    };
+
+    nodes.set(outlineFolder.id, outlineFolder);
+    nodes.set(referenceFolder.id, referenceFolder);
+    nodes.set(templateFolder.id, templateFolder);
+    nodes.set('course-outline-note', {
+      id: 'course-outline-note',
+      type: 'resource',
+      parentId: outlineFolder.id,
+      scope,
+      resourceId: 'mock-note-2',
+      title: '顺序表与链表笔记',
+      resourceType: 'note',
+      resourceIconType: resolveResourceIconType('note'),
+      folderTagId: outlineFolder.tagId,
+    });
+    nodes.set('course-outline-slides', {
+      id: 'course-outline-slides',
+      type: 'resource',
+      parentId: outlineFolder.id,
+      scope,
+      resourceId: 'mock-course-syllabus',
+      title: '课程安排与评分说明',
+      resourceType: 'file',
+      resourceIconType: resolveResourceIconType('file'),
+      folderTagId: outlineFolder.tagId,
+    });
+    nodes.set('course-reference-file', {
+      id: 'course-reference-file',
+      type: 'resource',
+      parentId: referenceFolder.id,
+      scope,
+      resourceId: 'mock-reference-complexity',
+      title: '算法复杂度速查表.pdf',
+      resourceType: 'file',
+      resourceIconType: resolveResourceIconType('file'),
+      folderTagId: referenceFolder.tagId,
+    });
+    root.childrenIds.push(outlineFolder.id, referenceFolder.id, templateFolder.id);
+  }
+
+  // 仅为课程资料页提供可交互的 Mock 小组云盘，不改变 Drive 与 Course 的生产依赖方向。
+  seedCourseGroupFixture();
 
   function getContainer(id: string): RootNode | FolderNode | undefined {
     const node = nodes.get(id) ?? ensureGroupRoot(id);

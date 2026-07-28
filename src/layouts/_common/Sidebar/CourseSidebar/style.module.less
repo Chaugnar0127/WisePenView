@@ -1,0 +1,109 @@
+.root {
+  display: flex;
+  min-height: 0;
+  height: 100%;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: 8px 4px;
+}
+
+.search {
+  flex: 0 0 auto;
+  margin-inline: 4px;
+}
+
+.treeScroll {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+
+.tree {
+  gap: var(--space-2xs, 4px);
+  color: var(--foreground);
+  font-size: var(--font-size-md, 14px);
+
+  :global(.wisepen-tree__item) {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 2px;
+    border-radius: var(--radius-md, 6px);
+    color: var(--muted);
+    transition:
+      color 0.16s ease,
+      background-color 0.16s ease;
+
+    &:hover,
+    &:focus-within {
+      color: var(--foreground);
+      background: var(--surface-tertiary);
+    }
+  }
+
+  :global(.wisepen-tree__content) {
+    min-width: 0;
+    min-height: 40px;
+    flex: 1;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    background: transparent !important;
+
+    &:hover {
+      color: inherit;
+      background: transparent !important;
+    }
+  }
+
+  :global(.wisepen-tree__item[aria-selected='true']) {
+    color: var(--foreground);
+    background: var(--surface-tertiary);
+  }
+
+  :global(.wisepen-tree__item[aria-selected='true']) :global(.wisepen-tree__content) {
+    flex: 1;
+    padding-right: 0;
+    border-radius: 0;
+    background: transparent !important;
+  }
+
+  :global(.wisepen-tree__switcher),
+  :global(.wisepen-tree__switcher-placeholder) {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+  }
+
+  :global(.wisepen-tree__title) {
+    width: 100%;
+    min-width: 0;
+    line-height: 22px;
+  }
+}
+
+.nodeTitle {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-2xs, 4px);
+}
+
+.nodeTitle span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.state {
+  display: grid;
+  min-height: 120px;
+  place-items: center;
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+}

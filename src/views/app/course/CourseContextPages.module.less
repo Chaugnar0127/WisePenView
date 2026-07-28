@@ -1,0 +1,67 @@
+.page {
+  box-sizing: border-box;
+  width: min(100%, 920px);
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+.membersPage {
+  width: min(100%, 1200px);
+}
+
+.page section {
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.page section:first-child {
+  padding-top: 0;
+}
+
+.page h2,
+.pageHeader h2,
+.discussionState h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.page section p,
+.discussionState p {
+  margin: var(--space-sm) 0 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.pageHeader span {
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+}
+
+.memberTable {
+  margin-top: var(--space-lg);
+}
+
+.discussionState,
+.state {
+  display: grid;
+  min-height: 300px;
+  place-items: center;
+  align-content: center;
+  color: var(--muted);
+  text-align: center;
+}
+
+.discussionState h2 {
+  margin-top: var(--space-md);
+  color: var(--foreground);
+}

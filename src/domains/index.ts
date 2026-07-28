@@ -7,6 +7,7 @@ export {
   useAgentService,
   useAuthService,
   useChatService,
+  useCourseService,
   useDocumentService,
   useDriveService,
   useGroupService,

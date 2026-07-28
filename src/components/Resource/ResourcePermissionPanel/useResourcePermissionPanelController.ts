@@ -1,5 +1,4 @@
-import { useGroupService, useResourceService, useTagService, useUserService } from '@/domains';
-import type { GroupBaseInfo } from '@/domains/Group';
+import { useResourceService, useUserService } from '@/domains';
 import {
   type ResourcePermissionActionOption,
   type ResourcePermissionOverview,
@@ -16,9 +15,6 @@ import {
   createSpecifiedUserSubject,
   getSubjectActionsForDisplay,
   getSupportedActionsFromOptions,
-  hydrateGroupDisplayInfo,
-  hydrateInheritedTagActions,
-  hydrateUserDisplayInfo,
   localizePermissionActionOptions,
   type SpecifiedUserCandidate,
   updateSubjectActions,
@@ -32,9 +28,7 @@ export const useResourcePermissionPanelController = ({
   onSuccess,
 }: ResourcePermissionPanelProps) => {
   const { t } = useTranslation('resource');
-  const groupService = useGroupService();
   const resourceService = useResourceService();
-  const tagService = useTagService();
   const userService = useUserService();
   const updateQueueRef = useRef<Promise<void>>(Promise.resolve());
   const latestSubjectsRef = useRef<ResourcePermissionSubject[]>([]);
@@ -67,144 +61,6 @@ export const useResourcePermissionPanelController = ({
     specifiedUserSubjects
       .map((subject) => subject.userId)
       .filter((userId): userId is string => Boolean(userId))
-  );
-
-  useRequest(
-    async () => {
-      if (!permissionOverview) return;
-      const userSubjects = permissionOverview.subjects.filter(
-        (subject) => subject.userId && subject.kind !== 'group'
-      );
-      if (userSubjects.length === 0) return;
-
-      const userInfoById = new Map<string, SpecifiedUserCandidate>();
-      const ownerIds = new Set(
-        userSubjects
-          .filter((subject) => subject.source === 'owner')
-          .map((subject) => subject.userId)
-          .filter((userId): userId is string => Boolean(userId))
-      );
-
-      if (ownerIds.size > 0) {
-        const currentUser = await userService.getUserInfo().catch(() => undefined);
-        if (currentUser && ownerIds.has(currentUser.id)) {
-          userInfoById.set(currentUser.id, {
-            userId: currentUser.id,
-            username: currentUser.username,
-            nickname: currentUser.nickname,
-            realName: currentUser.realName,
-            avatar: currentUser.avatar,
-          });
-        }
-      }
-
-      await Promise.all(
-        userSubjects
-          .filter((subject) => subject.source !== 'owner' && subject.userId)
-          .map(async (subject) => {
-            const userId = subject.userId;
-            if (!userId || userInfoById.has(userId)) return;
-            const keywords = Array.from(
-              new Set([userId, subject.name].map((keyword) => keyword.trim()).filter(Boolean))
-            );
-            for (const keyword of keywords) {
-              const candidates = await userService
-                .queryUserSearchCandidates({ keyword, size: 6 })
-                .catch(() => []);
-              const matchedUser = candidates.find((user) => user.userId === userId);
-              if (matchedUser) {
-                userInfoById.set(userId, matchedUser);
-                return;
-              }
-            }
-          })
-      );
-
-      if (userInfoById.size === 0) return;
-      setSubjectDrafts((currentSubjects) => {
-        const baseSubjects = currentSubjects ?? permissionOverview.subjects;
-        const nextSubjects = hydrateUserDisplayInfo(baseSubjects, userInfoById, t);
-        latestSubjectsRef.current = nextSubjects;
-        return nextSubjects;
-      });
-    },
-    {
-      ready: Boolean(permissionOverview),
-      refreshDeps: [permissionOverview, userService, t],
-    }
-  );
-
-  useRequest(
-    async () => {
-      if (!permissionOverview) return;
-      const groupIds = Array.from(
-        new Set(
-          permissionOverview.subjects
-            .map((subject) => subject.groupId)
-            .filter((groupId): groupId is string => Boolean(groupId))
-        )
-      );
-      if (groupIds.length === 0) return;
-
-      const groupInfos = await Promise.all(
-        groupIds.map((groupId) => groupService.fetchGroupBaseInfo(groupId).catch(() => undefined))
-      );
-      const groupInfoById = new Map(
-        groupInfos
-          .filter((groupInfo): groupInfo is GroupBaseInfo => Boolean(groupInfo?.groupId))
-          .map((groupInfo) => [groupInfo.groupId, groupInfo])
-      );
-      if (groupInfoById.size === 0) return;
-
-      setSubjectDrafts((currentSubjects) => {
-        const baseSubjects = currentSubjects ?? permissionOverview.subjects;
-        const nextSubjects = hydrateGroupDisplayInfo(baseSubjects, groupInfoById, t);
-        latestSubjectsRef.current = nextSubjects;
-        return nextSubjects;
-      });
-    },
-    {
-      ready: Boolean(permissionOverview),
-      refreshDeps: [permissionOverview, groupService, t],
-    }
-  );
-
-  useRequest(
-    async () => {
-      if (!permissionOverview || permissionOverview.actionOptions.length === 0) return;
-      const inheritedActionOptions = localizePermissionActionOptions(
-        permissionOverview.actionOptions
-      );
-      const groupIds = Array.from(
-        new Set(
-          permissionOverview.subjects
-            .map((subject) => subject.groupId)
-            .filter((groupId): groupId is string => Boolean(groupId))
-        )
-      );
-      if (groupIds.length === 0) return;
-
-      await Promise.all(
-        groupIds.map((groupId) => tagService.getRawTagTree(groupId).catch(() => []))
-      );
-      setSubjectDrafts((currentSubjects) => {
-        const baseSubjects = currentSubjects ?? permissionOverview.subjects;
-        const nextSubjects = hydrateInheritedTagActions(
-          baseSubjects,
-          inheritedActionOptions,
-          (subject) =>
-            subject.primaryTagId
-              ? tagService.getRawTagById(subject.primaryTagId, subject.groupId)?.grantedActions
-              : undefined
-        );
-        latestSubjectsRef.current = nextSubjects;
-        return nextSubjects;
-      });
-    },
-    {
-      ready: Boolean(permissionOverview?.actionOptions.length),
-      refreshDeps: [permissionOverview, tagService],
-    }
   );
 
   const persistPermissionSubjects = (nextSubjects: ResourcePermissionSubject[]) => {

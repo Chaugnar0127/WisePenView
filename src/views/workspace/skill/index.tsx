@@ -7,33 +7,26 @@ import SkillEditor from '@/components/Skill/SkillEditor';
 import SkillFileTree from '@/components/Skill/SkillFileTree';
 import type { DataNode } from '@/components/Tree';
 import VersionDropdown from '@/components/VersionDropdown';
-import { useInteractService, useSkillService } from '@/domains';
 import { SkillServicesMap } from '@/domains/Skill';
 import { parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import {
-  useResourceHostContext,
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
 import { Button, Tabs } from '@heroui/react';
-import { useRequest } from 'ahooks';
-import type { TFunction } from 'i18next';
 import { FolderPlus, Pencil, Plus, Save, Settings, Upload } from 'lucide-react';
-import { useState, type DependencyList, type ReactNode } from 'react';
+import { type DependencyList, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import SkillConfigPanel from './_components/SkillConfigPanel';
 import SkillSaveQueueDock from './_components/SkillSaveQueueDock';
 import UnsavedSkillChangesModal from './_components/UnsavedSkillChangesModal';
-import type { SkillEditorSavePhase } from './_hooks/useSkillEditorController';
-import { useSkillEditorController } from './_hooks/useSkillEditorController';
-import { useSkillFileTree } from './_hooks/useSkillFileTree';
-import { useSkillMarkdownPreview } from './_hooks/useSkillMarkdownPreview';
-import { SKILL_CONFIG_NODE_ID, useSkillNavigationGuard } from './_hooks/useSkillNavigationGuard';
-import { useSkillSave } from './_hooks/useSkillSave';
+import { useSkillWorkspaceController } from './_hooks/useSkillWorkspaceController';
+import { SKILL_CONFIG_NODE_ID } from './_hooks/useSkillNavigationGuard';
+import { formatSkillSaveStatus } from './model';
 import styles from './style.module.less';
-import { canPreviewSkillFile, findFile, getFirstFile } from './utils/skillFileTree';
+import { canPreviewSkillFile } from './utils/skillFileTree';
 import { isMarkdownSkillFile } from './utils/skillMarkdown';
 
 interface SkillViewProps {
@@ -56,269 +49,86 @@ function SkillLayoutConfig({ children, config, deps }: SkillLayoutConfigProps) {
   return <>{children}</>;
 }
 
-function formatSaveStatus(
-  status: SkillEditorSavePhase | undefined,
-  t: TFunction<'skill'>
-): string | null {
-  if (status === 'dirty') return t('saveStatus.dirty');
-  if (status === 'saving') return t('saveStatus.saving');
-  if (status === 'failed') return t('saveStatus.failed');
-  if (status === 'clean') return t('saveStatus.clean');
-  return null;
-}
-
 function SkillView({ resourceId = '' }: SkillViewProps = {}) {
   const { t } = useTranslation('skill');
-  const navigate = useNavigate();
-  const { getNavigationScope, openResource } = useResourceHostContext();
-  const skillService = useSkillService();
-  const interactService = useInteractService();
-  const { state: editorState, actions: editorActions } = useSkillEditorController();
   const {
-    files: localFiles,
-    selectedFileId,
-    selectedTreeNodeId,
-    editing,
-    editorContent,
-    savedContent,
-    viewingVersion,
-    configName,
-    configDescription,
-  } = editorState;
-  const { setEditing, setEditorContent, setConfigName, setConfigDescription } = editorActions;
-  const [createModalState, setCreateModalState] = useState(() => ({
-    resourceId,
-    open: !resourceId,
-  }));
-  let createModalOpen = createModalState.open;
-  if (createModalState.resourceId !== resourceId) {
-    createModalOpen = !resourceId;
-    setCreateModalState({ resourceId, open: createModalOpen });
-  }
-  const setCreateModalOpen = (open: boolean) => setCreateModalState({ resourceId, open });
-
-  const {
-    data: skill,
-    loading,
-    error,
-    refresh: refreshSkill,
-  } = useRequest(() => skillService.getSkillDetail(resourceId), {
-    ready: Boolean(resourceId),
-    refreshDeps: [resourceId],
-  });
-
-  useRequest(() => interactService.recordResourceRead(resourceId), {
-    ready: Boolean(resourceId),
-    refreshDeps: [resourceId],
-  });
-
-  const activeFiles = localFiles;
-  const isConfigSelected = selectedTreeNodeId === SKILL_CONFIG_NODE_ID;
-  const selectedFile = (() => {
-    if (isConfigSelected) return null;
-    if (selectedFileId) return findFile(activeFiles, selectedFileId);
-    return getFirstFile(activeFiles);
-  })();
-  const isViewingDraft = skill ? viewingVersion === skill.draftVersion : false;
-  const canEdit = Boolean(skill?.isOwner && isViewingDraft);
-  const canPreviewSelectedFile = selectedFile ? canPreviewSkillFile(selectedFile) : false;
-  const {
-    clearDraftCache,
-    configLoading,
-    consumeRestoredEditorDraft,
-    discardLocalSkillChanges: discardEditorChanges,
-    handleSave,
-    hasConfigValuesMissing,
-    hasMissingConfig,
-    hasSaveableChanges,
-    hasSavedConfigMissing,
-    hasUnsafeNavigation,
-    hasUnsavedSkillChanges,
-    isConfigDirty,
-    isDirty,
-    isSaveQueueActive,
-    resetConfigDraft,
-    runUpdateConfigAsync,
-    saveCurrentFile,
-    saveLoading,
-    savePendingChanges,
-    savePhase,
-    visibleSaveQueueItems,
-  } = useSkillSave({
-    actions: editorActions,
+    activeFiles,
     canEdit,
-    refreshSkill,
-    selectedFile,
-    skill,
-    skillService,
-    state: editorState,
-  });
-  const {
-    applyTreeSelection,
     canEditTree,
     cancelPendingCreate,
+    canPreviewSelectedFile,
+    configBadge,
+    configDescription,
+    configLoading,
+    configName,
     contentLoading,
+    createModalOpen,
     deleteLoading,
     deleteTarget,
+    editing,
+    editorContent,
+    error,
     expandedKeys,
     fileInputRef,
+    handleCancelPendingIntent,
+    handleCloseCreateModal,
     handleCommitCreate,
     handleConfirmDelete,
+    handleConfirmPendingIntent,
+    handleCreateSuccess,
     handleDeleteFile,
+    handleDiscardPendingIntent,
     handleFileChange,
+    handleMarkdownEditorMount,
+    handleMarkdownPreviewScroll,
+    handleMarkdownViewChange,
     handleMoveFile,
+    handlePublish,
+    handleSave,
     handleStartCreate,
+    handleToggleEditing,
     handleTreeDragLeave,
     handleTreeDragOver,
     handleTreeDrop,
+    handleTreeSelect,
     handleTreeWrapClick,
-    isTreeDragOver,
-    moveLoading,
-    pendingCreate,
-    setDeleteTarget,
-  } = useSkillFileTree({
-    actions: editorActions,
-    canEdit,
-    consumeRestoredEditorDraft,
+    handleVersionSelect,
+    hasConfigValuesMissing,
+    hasSaveableChanges,
     isConfigDirty,
     isConfigSelected,
-    isDirty,
     isSaveQueueActive,
-    refreshSkill,
-    saveLoading,
-    selectedFile,
-    skill,
-    skillService,
-    state: editorState,
-  });
-
-  const configTreeBadgeText = hasConfigValuesMissing
-    ? t('config.badge.required')
-    : isConfigDirty
-      ? t('config.badge.unsaved')
-      : t('config.badge.complete');
-  const configTreeNodes = [
-    {
-      key: SKILL_CONFIG_NODE_ID,
-      draggable: false,
-      isLeaf: true,
-      title: (
-        <span className={styles.configTreeNode}>
-          <span className={styles.configTreeTitle}>
-            <span className={styles.configTreeIcon} aria-hidden="true">
-              <Settings size={14} />
-            </span>
-            <span className={styles.configTreeName}>{t('config.title')}</span>
-          </span>
-          <span className={styles.configTreeBadge}>{configTreeBadgeText}</span>
-        </span>
-      ),
-    },
-  ] satisfies DataNode[];
-  const {
-    handleCancelPendingIntent,
-    handleConfirmPendingIntent,
-    handleDiscardPendingIntent,
-    handlePublish,
-    handleTreeSelect,
-    handleVersionSelect,
+    isTreeDragOver,
+    loading,
+    markdownPreviewRef,
+    markdownResourceResolver,
+    moveLoading,
+    pendingCreate,
     pendingIntentLoading,
     pendingIntentMode,
     publishLoading,
-    versionLoading,
-  } = useSkillNavigationGuard({
-    actions: editorActions,
-    applyTreeSelection,
-    cancelPendingCreate,
-    clearDraftCache,
-    configLoading,
-    discardEditorChanges,
-    hasMissingConfig,
-    hasSavedConfigMissing,
-    hasUnsafeNavigation,
-    hasUnsavedSkillChanges,
-    isConfigDirty,
-    isConfigSelected,
-    isDirty,
-    isSaveQueueActive,
     refreshSkill,
     resetConfigDraft,
     runUpdateConfigAsync,
-    saveCurrentFile,
     saveLoading,
-    savePendingChanges,
-    skill,
-    skillService,
-    state: editorState,
-  });
-
-  const versionItems = (() => {
-    if (!skill) return [];
-    const items = [
-      {
-        key: `v${skill.draftVersion}`,
-        version: skill.draftVersion,
-        current: viewingVersion === skill.draftVersion,
-      },
-    ];
-    for (let version = skill.version; version >= 1; version -= 1) {
-      items.push({
-        key: `v${version}`,
-        version,
-        current: viewingVersion === version,
-      });
-    }
-    return items;
-  })();
-
-  const disabledVersionKeys = skill?.isOwner
-    ? new Set<string>()
-    : new Set(versionItems.map((item) => item.key));
-
-  const handleCreateSuccess = (newResourceId: string) => {
-    setCreateModalOpen(false);
-    openResource({
-      resourceId: newResourceId,
-      resourceType: RESOURCE_KIND.SKILL,
-      driveLocation: { scope: getNavigationScope() },
-      replace: true,
-    });
-  };
-
-  const {
-    onEditorMount: handleMarkdownEditorMount,
-    onPreviewScroll: handleMarkdownPreviewScroll,
-    onViewChange: handleMarkdownViewChange,
-    previewRef: markdownPreviewRef,
-    resourceResolver: markdownResourceResolver,
-    selectedView: selectedMarkdownView,
-  } = useSkillMarkdownPreview({
-    editorContent,
-    files: activeFiles,
-    onSelectFile: handleTreeSelect,
+    savePhase,
     selectedFile,
+    selectedFileId,
+    selectedMarkdownView,
+    selectedTreeNodeId,
+    setConfigDescription,
+    setConfigName,
+    setCreateModalOpen,
+    setDeleteTarget,
+    setEditorContent,
     skill,
-    skillService,
-    viewingVersion: viewingVersion ?? undefined,
-  });
-
-  const handleToggleEditing = () => {
-    if (editing) {
-      setEditorContent(savedContent);
-      setEditing(false);
-      return;
-    }
-    setEditing(true);
-  };
-
-  const handleCloseCreateModal = (open: boolean) => {
-    setCreateModalOpen(open);
-    if (!open && !resourceId) {
-      navigate('/app/drive/personal', { replace: true });
-    }
-  };
-
-  const headerSaveStatusText = formatSaveStatus(canEdit ? savePhase : undefined, t);
+    versionItems,
+    disabledVersionKeys,
+    versionLoading,
+    viewingVersion,
+    visibleSaveQueueItems,
+  } = useSkillWorkspaceController({ resourceId, t });
+  const headerSaveStatusText = formatSkillSaveStatus(canEdit ? savePhase : undefined, t);
 
   const headerConfig = {
     sidePanel: skill?.resourceInfo
@@ -425,6 +235,24 @@ function SkillView({ resourceId = '' }: SkillViewProps = {}) {
     t,
     viewingVersion,
   ];
+  const configTreeNodes = [
+    {
+      key: SKILL_CONFIG_NODE_ID,
+      draggable: false,
+      isLeaf: true,
+      title: (
+        <span className={styles.configTreeNode}>
+          <span className={styles.configTreeTitle}>
+            <span className={styles.configTreeIcon} aria-hidden="true">
+              <Settings size={14} />
+            </span>
+            <span className={styles.configTreeName}>{t('config.title')}</span>
+          </span>
+          <span className={styles.configTreeBadge}>{t(`config.badge.${configBadge}`)}</span>
+        </span>
+      ),
+    },
+  ] satisfies DataNode[];
 
   if (!resourceId) {
     return (

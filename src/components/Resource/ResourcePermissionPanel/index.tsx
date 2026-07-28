@@ -2,9 +2,7 @@ import AppAvatar from '@/components/Avatar';
 import AppIconButton from '@/components/Button/AppIconButton';
 import ResourcePermissionActionIcon from '@/components/Drive/common/resourcePermissionActionIcon';
 import {
-  areResourcePermissionActionsEqualByOptions,
   buildResourcePermissionActionKeySet,
-  filterResourcePermissionActionsByOptions,
   getResourcePermissionActionLabel,
 } from '@/components/Drive/common/resourcePermissionPolicy';
 import { AppPopover } from '@/components/Overlay';
@@ -12,14 +10,12 @@ import UserSearchCombobox from '@/components/UserSearchCombobox';
 import { useGroupService, useResourceService, useTagService, useUserService } from '@/domains';
 import type { GroupBaseInfo } from '@/domains/Group';
 import {
-  type ResourceAction,
   type ResourcePermissionActionOption,
   type ResourcePermissionOverview,
   type ResourcePermissionSource,
   type ResourcePermissionSubject,
   updateResourceActionSelection,
 } from '@/domains/Resource';
-import type { UserSearchUser } from '@/domains/User';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, Chip, ListBox, Skeleton, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -28,6 +24,18 @@ import { ChevronDown, Trash2, UserPlus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ResourcePermissionPanelProps } from './index.type';
+import {
+  createSpecifiedUserSubject,
+  getAvatarSrc,
+  getSubjectActionsForDisplay,
+  getSubjectRenderKey,
+  getSupportedActionsFromOptions,
+  hydrateGroupDisplayInfo,
+  hydrateInheritedTagActions,
+  hydrateUserDisplayInfo,
+  type SpecifiedUserCandidate,
+  updateSubjectActions,
+} from './resourcePermissionPanelModel';
 import styles from './style.module.less';
 
 interface SubjectPermissionPopoverProps {
@@ -39,11 +47,6 @@ interface SubjectPermissionPopoverProps {
   ) => void;
 }
 
-type SpecifiedUserCandidate = Pick<
-  UserSearchUser,
-  'userId' | 'username' | 'nickname' | 'realName' | 'avatar'
->;
-
 const sourceLabelKeyMap: Record<ResourcePermissionSource, string> = {
   owner: 'permission.source.owner',
   tag: 'permission.source.tag',
@@ -53,26 +56,7 @@ const sourceLabelKeyMap: Record<ResourcePermissionSource, string> = {
 const EMPTY_ACTION_OPTIONS: ResourcePermissionActionOption[] = [];
 const PANEL_SKELETON_ROWS = ['owner', 'tag', 'override', 'specifiedUser'] as const;
 
-const getSupportedActionsFromOptions = (
-  actionOptions: ResourcePermissionActionOption[]
-): ResourceAction[] =>
-  actionOptions.filter((option) => option.supported).map((option) => option.action);
-
 const getDisplayInitial = (name: string): string => name.trim().charAt(0).toUpperCase() || '?';
-
-const getAvatarSrc = (avatar?: string): string | undefined => {
-  const trimmedAvatar = avatar?.trim();
-  return trimmedAvatar || undefined;
-};
-
-const getUserCandidateDisplayName = (
-  user: SpecifiedUserCandidate,
-  t: TFunction<'resource'>
-): string =>
-  user.realName?.trim() ||
-  user.nickname?.trim() ||
-  user.username.trim() ||
-  t('permission.userFallback', { userId: user.userId });
 
 const getActionLabel = (
   action: ResourcePermissionActionOption['action'],
@@ -96,198 +80,6 @@ const formatActionSummary = (
     count: actions.length,
   });
 };
-
-const getSubjectActionsForDisplay = (subject: ResourcePermissionSubject) => {
-  if (subject.source === 'tag') {
-    return subject.inheritedActions ?? subject.effectiveActions;
-  }
-  return subject.readonly ? subject.effectiveActions : subject.editableActions;
-};
-
-const canCompareWithInheritedActions = (subject: ResourcePermissionSubject): boolean =>
-  Array.isArray(subject.inheritedActions);
-
-const getSubjectRenderKey = (subject: ResourcePermissionSubject): string => {
-  if (subject.groupId) return `group:${subject.groupId}`;
-  if (subject.userId) return `user:${subject.userId}:${subject.source}`;
-  return subject.id;
-};
-
-const updateSubjectActions = (
-  subjects: ResourcePermissionSubject[],
-  subjectId: string,
-  actions: ResourcePermissionActionOption['action'][],
-  options: ResourcePermissionActionOption[]
-): ResourcePermissionSubject[] =>
-  subjects.map((subject) => {
-    if (subject.id !== subjectId || subject.readonly) return subject;
-    const nextActions = filterResourcePermissionActionsByOptions(actions, options);
-    if (
-      subject.source === 'resourceOverride' &&
-      canCompareWithInheritedActions(subject) &&
-      areResourcePermissionActionsEqualByOptions(nextActions, subject.inheritedActions, options)
-    ) {
-      const inheritedActions = filterResourcePermissionActionsByOptions(
-        subject.inheritedActions,
-        options
-      );
-      return {
-        ...subject,
-        id: subject.groupId ? `group:${subject.groupId}:tag` : subject.id,
-        source: 'tag',
-        description: '',
-        editableActions: inheritedActions,
-        effectiveActions: inheritedActions,
-        inheritedActions,
-      };
-    }
-    if (subject.source === 'tag') {
-      return {
-        ...subject,
-        id: subject.groupId ? `group:${subject.groupId}:override` : `${subject.id}:override`,
-        source: 'resourceOverride',
-        description: '',
-        editableActions: nextActions,
-        effectiveActions: nextActions,
-      };
-    }
-    return {
-      ...subject,
-      editableActions: nextActions,
-      effectiveActions: nextActions,
-    };
-  });
-
-const createSpecifiedUserSubject = (
-  user: SpecifiedUserCandidate,
-  t: TFunction<'resource'>
-): ResourcePermissionSubject => ({
-  id: `user:${user.userId}:specified`,
-  kind: 'user',
-  source: 'specifiedUser',
-  name: getUserCandidateDisplayName(user, t),
-  description: '',
-  avatar: getAvatarSrc(user.avatar),
-  userId: user.userId,
-  effectiveActions: [],
-  editableActions: [],
-});
-
-const hydrateUserDisplayInfo = (
-  subjects: ResourcePermissionSubject[],
-  userInfoById: Map<string, SpecifiedUserCandidate>,
-  t: TFunction<'resource'>
-): ResourcePermissionSubject[] => {
-  let changed = false;
-  const nextSubjects = subjects.map((subject) => {
-    if (!subject.userId) return subject;
-    const userInfo = userInfoById.get(subject.userId);
-    if (!userInfo) return subject;
-
-    const nextName = getUserCandidateDisplayName(userInfo, t);
-    const nextAvatar = getAvatarSrc(userInfo.avatar) || getAvatarSrc(subject.avatar);
-    if (subject.name === nextName && subject.avatar === nextAvatar) {
-      return subject;
-    }
-
-    changed = true;
-    return {
-      ...subject,
-      name: nextName,
-      avatar: nextAvatar,
-    };
-  });
-
-  return changed ? nextSubjects : subjects;
-};
-
-const hydrateGroupDisplayInfo = (
-  subjects: ResourcePermissionSubject[],
-  groupInfoById: Map<string, GroupBaseInfo>,
-  t: TFunction<'resource'>
-): ResourcePermissionSubject[] => {
-  let changed = false;
-  const nextSubjects = subjects.map((subject) => {
-    if (!subject.groupId) return subject;
-    const groupInfo = groupInfoById.get(subject.groupId);
-    if (!groupInfo) return subject;
-
-    const groupName = groupInfo.groupName.trim();
-    const groupDesc = groupInfo.groupDesc.trim();
-    const groupCoverUrl = groupInfo.groupCoverUrl.trim();
-    const nextName = groupName ? t('permission.groupMembers', { groupName }) : subject.name;
-    const nextDescription =
-      subject.source === 'resourceOverride' && groupDesc ? groupDesc : subject.description;
-    const nextAvatar = groupCoverUrl || getAvatarSrc(subject.avatar);
-
-    if (
-      subject.name === nextName &&
-      subject.description === nextDescription &&
-      subject.avatar === nextAvatar
-    ) {
-      return subject;
-    }
-
-    changed = true;
-    return {
-      ...subject,
-      name: nextName,
-      description: nextDescription,
-      avatar: nextAvatar,
-    };
-  });
-
-  return changed ? nextSubjects : subjects;
-};
-
-const hydrateInheritedTagActions = (
-  subjects: ResourcePermissionSubject[],
-  options: ResourcePermissionActionOption[],
-  getInheritedActions: (subject: ResourcePermissionSubject) => ResourceAction[] | undefined
-): ResourcePermissionSubject[] =>
-  subjects.map((subject) => {
-    if (!subject.groupId || !subject.primaryTagId) return subject;
-    const inheritedActions = getInheritedActions(subject);
-    if (!inheritedActions) return subject;
-    const normalizedInheritedActions = filterResourcePermissionActionsByOptions(
-      inheritedActions,
-      options
-    );
-
-    if (subject.source === 'resourceOverride') {
-      const matchesTag = areResourcePermissionActionsEqualByOptions(
-        subject.editableActions,
-        normalizedInheritedActions,
-        options
-      );
-      if (matchesTag) {
-        return {
-          ...subject,
-          id: `group:${subject.groupId}:tag`,
-          source: 'tag',
-          description: '',
-          editableActions: normalizedInheritedActions,
-          effectiveActions: normalizedInheritedActions,
-          inheritedActions: normalizedInheritedActions,
-        };
-      }
-    }
-
-    if (subject.source === 'tag') {
-      return {
-        ...subject,
-        description: '',
-        editableActions: normalizedInheritedActions,
-        effectiveActions: normalizedInheritedActions,
-        inheritedActions: normalizedInheritedActions,
-      };
-    }
-
-    return {
-      ...subject,
-      inheritedActions: normalizedInheritedActions,
-    };
-  });
 
 function SubjectPermissionPopover({
   subject,

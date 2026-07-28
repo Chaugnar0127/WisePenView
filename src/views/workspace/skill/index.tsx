@@ -9,18 +9,33 @@ import VersionDropdown from '@/components/VersionDropdown';
 import { SkillServicesMap } from '@/domains/Skill';
 import { parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
-import { type ResourceHostLayoutConfig } from '@/views/workspace/ResourceHostContext';
-import { Button, Tabs } from '@heroui/react';
+import type { ResourceHostLayoutConfig } from '@/views/workspace/ResourceHostContext';
+import { Button, Tabs, toast } from '@heroui/react';
 import { FolderPlus, Pencil, Plus, Save, Settings, Upload } from 'lucide-react';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ResourceLayoutConfig from '../_components/ResourceLayoutConfig';
 import SkillConfigPanel from './_components/SkillConfigPanel';
 import SkillSaveQueueDock from './_components/SkillSaveQueueDock';
 import UnsavedSkillChangesModal from './_components/UnsavedSkillChangesModal';
-import { SKILL_CONFIG_NODE_ID } from './_hooks/useSkillNavigationGuard';
-import { useSkillWorkspaceController } from './_hooks/useSkillWorkspaceController';
-import { formatSkillSaveStatus } from './model';
+import { useSkillFileActionsController } from './_controllers/useSkillFileActionsController';
+import { useSkillMarkdownPreviewController } from './_controllers/useSkillMarkdownPreviewController';
+import {
+  SKILL_CONFIG_NODE_ID,
+  useSkillNavigationController,
+} from './_controllers/useSkillNavigationController';
+import { useSkillResourceController } from './_controllers/useSkillResourceController';
+import { useSkillSaveController } from './_controllers/useSkillSaveController';
+import { useSkillWorkspaceDraftController } from './_controllers/useSkillWorkspaceDraftController';
+import {
+  canEditSkill,
+  canPreviewSelectedSkillFile,
+  formatSkillSaveStatus,
+  getDisabledSkillVersionKeys,
+  getSkillConfigBadge,
+  getSkillVersionItems,
+} from './model';
 import styles from './style.module.less';
 import { canPreviewSkillFile } from './utils/skillFileTree';
 import { isMarkdownSkillFile } from './utils/skillMarkdown';
@@ -31,134 +46,162 @@ interface SkillViewProps {
 
 function SkillView({ resourceId }: SkillViewProps) {
   const { t } = useTranslation('skill');
-  const {
-    activeFiles,
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const resource = useSkillResourceController(resourceId);
+  const workspace = useSkillWorkspaceDraftController(resource.skill);
+  const canEdit = canEditSkill(resource.skill, workspace.state.viewingVersion);
+  const isConfigSelected = workspace.state.selectedTreeNodeId === SKILL_CONFIG_NODE_ID;
+  const selectedFile = isConfigSelected ? null : workspace.selectedFile;
+  const canPreviewSelectedFile = canPreviewSelectedSkillFile(selectedFile);
+  const save = useSkillSaveController({
+    activeFileSnapshots: workspace.activeFileSaveSnapshots,
     canEdit,
-    canEditTree,
-    cancelPendingCreate,
-    canPreviewSelectedFile,
-    configBadge,
-    configDescription,
-    configLoading,
-    configName,
-    contentLoading,
-    deleteLoading,
-    deleteTarget,
-    editing,
-    editorContent,
-    error,
-    expandedKeys,
-    fileInputRef,
-    handleCancelPendingIntent,
-    handleCommitCreate,
-    handleConfirmDelete,
-    handleConfirmPendingIntent,
-    handleDeleteFile,
-    handleDiscardPendingIntent,
-    handleFileChange,
-    handleMarkdownEditorMount,
-    handleMarkdownPreviewScroll,
-    handleMarkdownViewChange,
-    handleMoveFile,
-    handlePublish,
-    handleSave,
-    handleStartCreate,
-    handleToggleEditing,
-    handleTreeDragLeave,
-    handleTreeDragOver,
-    handleTreeDrop,
-    handleTreeSelect,
-    handleTreeWrapClick,
-    handleVersionSelect,
-    hasConfigValuesMissing,
-    hasSaveableChanges,
-    isConfigDirty,
-    isConfigSelected,
-    isSaveQueueActive,
-    isTreeDragOver,
-    loading,
-    markdownPreviewRef,
-    markdownResourceResolver,
-    moveLoading,
-    pendingCreate,
-    pendingIntentLoading,
-    pendingIntentMode,
-    publishLoading,
-    refreshSkill,
-    resetConfigDraft,
-    runUpdateConfigAsync,
-    saveLoading,
-    savePhase,
+    configSnapshot: workspace.configSaveSnapshot,
+    fileSnapshots: workspace.fileSaveSnapshots,
+    onConfigSaveFailed: workspace.applyConfigSaveFailure,
+    onConfigSaveStarted: workspace.markConfigSaveStarted,
+    onConfigSaved: workspace.applyConfigSave,
+    onFileSaveFailed: workspace.applyFileSaveFailure,
+    onFileSaveStarted: workspace.markFileSaveStarted,
+    onFilesSaved: workspace.applyFileSaveResults,
+    refreshSkill: resource.refreshSkill,
+    skill: resource.skill,
+  });
+  const fileActions = useSkillFileActionsController({
+    applyLoadedContent: workspace.applyLoadedContent,
+    applyMove: workspace.applyMove,
+    canEdit,
+    dirtyFileIds: workspace.dirtyFileIds,
+    files: workspace.state.files,
+    getFileDraft: workspace.getFileDraft,
+    getFileSaveSnapshots: workspace.getFileSaveSnapshots,
+    isSaving: save.isSaving,
+    onLocalFilesAdded: workspace.addLocalFiles,
+    onLocalFolderAdded: workspace.addLocalFolder,
+    onMoveSaveFailed: workspace.applyFileSaveFailure,
+    onMoveSaveStarted: workspace.markFileSaveStarted,
+    onNodesDeleted: workspace.removeNodes,
+    onPersistedMutation: resource.refreshSkill,
+    onQueueItemsRemoved: save.removeQueueItems,
+    onSelectionCleared: workspace.clearSelection,
+    onTreeNodeSelected: workspace.selectTreeNode,
     selectedFile,
-    selectedFileId,
-    selectedMarkdownView,
-    selectedTreeNodeId,
-    setConfigDescription,
-    setConfigName,
-    setDeleteTarget,
-    setEditorContent,
-    skill,
-    versionItems,
-    disabledVersionKeys,
-    versionLoading,
-    viewingVersion,
-    visibleSaveQueueItems,
-  } = useSkillWorkspaceController({ resourceId, t });
-  const headerSaveStatusText = formatSkillSaveStatus(canEdit ? savePhase : undefined, t);
+    selectedFileId: workspace.state.selectedFileId,
+    selectedTreeNodeId: workspace.state.selectedTreeNodeId,
+    skill: resource.skill,
+    viewingVersion: workspace.state.viewingVersion,
+  });
+  const navigation = useSkillNavigationController({
+    clearDraftCache: workspace.clearDraftCache,
+    configValuesMissing:
+      workspace.state.configName.trim().length === 0 ||
+      workspace.state.configDescription.trim().length === 0,
+    discardAll: workspace.discardAll,
+    editing: workspace.state.editing,
+    files: workspace.state.files,
+    hasUnsavedChanges: workspace.hasUnsavedChanges,
+    isSaving: save.isSaving,
+    onConfigSelected: () => workspace.selectConfig(SKILL_CONFIG_NODE_ID),
+    onEditingChanged: workspace.setEditing,
+    onVersionFilesLoaded: workspace.replaceVersion,
+    pendingIntent: workspace.state.pendingIntent,
+    persistedFiles: workspace.state.persistedFiles,
+    refreshSkill: resource.refreshSkill,
+    saveAll: save.saveAll,
+    savedConfigValuesMissing:
+      workspace.state.savedConfigName.trim().length === 0 ||
+      workspace.state.savedConfigDescription.trim().length === 0,
+    setPendingIntent: workspace.setPendingIntent,
+    skill: resource.skill,
+    viewingVersion: workspace.state.viewingVersion,
+  });
+  const handleTreeSelect = (nodeId: string) => {
+    if (nodeId === SKILL_CONFIG_NODE_ID) {
+      fileActions.cancelPendingCreate();
+      workspace.selectConfig(SKILL_CONFIG_NODE_ID);
+      return;
+    }
+    fileActions.handleTreeSelect(nodeId);
+  };
+  const handleEditorSave = () => {
+    if (fileActions.moveLoading) {
+      toast.warning(t('toast.moveInProgress'));
+      return;
+    }
+    save.handleSaveCurrentFile();
+  };
+  const {
+    onEditorMount: handleMarkdownEditorMount,
+    onPreviewScroll: handleMarkdownPreviewScroll,
+    onViewChange: handleMarkdownViewChange,
+    previewRef: markdownPreviewRef,
+    resourceResolver: markdownResourceResolver,
+    selectedView: selectedMarkdownView,
+  } = useSkillMarkdownPreviewController({
+    editorContent: workspace.activeContent,
+    files: workspace.state.files,
+    onSelectFile: handleTreeSelect,
+    selectedFile,
+    selectedFileKey: workspace.activeEditorKey,
+    skill: resource.skill,
+    viewingVersion: workspace.state.viewingVersion ?? undefined,
+  });
+  const versionItems = getSkillVersionItems(resource.skill, workspace.state.viewingVersion);
+  const disabledVersionKeys = getDisabledSkillVersionKeys(resource.skill, versionItems);
+  const configValuesMissing =
+    workspace.state.configName.trim().length === 0 ||
+    workspace.state.configDescription.trim().length === 0;
+  const configBadge = getSkillConfigBadge(configValuesMissing, workspace.isConfigDirty);
+  const headerSaveStatusText = formatSkillSaveStatus(canEdit ? save.savePhase : undefined, t);
 
   const headerConfig = {
-    sidePanel: skill?.resourceInfo
-      ? { resource: skill.resourceInfo, onResourceChanged: refreshSkill }
+    sidePanel: resource.skill?.resourceInfo
+      ? { resource: resource.skill.resourceInfo, onResourceChanged: resource.refreshSkill }
       : undefined,
     header: {
       resource: {
-        resourceId: skill?.resourceId ?? resourceId,
-        resourceName: skill?.title || t('page.resourceFallbackName'),
+        resourceId: resource.skill?.resourceId ?? resourceId,
+        resourceName: resource.skill?.title || t('page.resourceFallbackName'),
         resourceIconType: 'skill',
-        currentActions: skill?.currentActions,
-        copyVersion: skill?.version,
+        currentActions: resource.skill?.currentActions,
+        copyVersion: resource.skill?.version,
         permissionResourceType: RESOURCE_KIND.SKILL,
-        ownerId: skill?.ownerId,
-        onPermissionSuccess: refreshSkill,
+        ownerId: resource.skill?.ownerId,
+        onPermissionSuccess: resource.refreshSkill,
         titleMeta: headerSaveStatusText ? (
           <span
             className={`${styles.toolbarSaveStatus} ${
-              savePhase === 'dirty' || savePhase === 'failed' ? styles.toolbarSaveStatusDirty : ''
+              save.savePhase === 'dirty' || save.savePhase === 'failed'
+                ? styles.toolbarSaveStatusDirty
+                : ''
             }`}
           >
             {headerSaveStatusText}
           </span>
         ) : undefined,
-        actions: skill ? (
+        actions: resource.skill ? (
           <div className={styles.topBarActions}>
             {canEdit ? (
               <>
                 <Button
                   variant="secondary"
-                  onPress={handleToggleEditing}
+                  onPress={navigation.handleToggleEditing}
                   isDisabled={
-                    !canPreviewSelectedFile ||
-                    contentLoading ||
-                    saveLoading ||
-                    configLoading ||
-                    isSaveQueueActive ||
-                    moveLoading
+                    (!workspace.state.editing && !canPreviewSelectedFile) ||
+                    fileActions.contentLoading ||
+                    save.isSaving ||
+                    fileActions.moveLoading
                   }
                 >
                   <Pencil size={16} />
-                  <span>{t(editing ? 'header.cancelEditing' : 'header.edit')}</span>
+                  <span>{t(workspace.state.editing ? 'header.cancelEditing' : 'header.edit')}</span>
                 </Button>
-                {editing || hasSaveableChanges ? (
+                {workspace.state.editing || save.hasSaveableChanges ? (
                   <Button
                     variant="secondary"
-                    onPress={handleSave}
+                    onPress={save.handleSaveAll}
                     isDisabled={
-                      !hasSaveableChanges ||
-                      contentLoading ||
-                      saveLoading ||
-                      configLoading ||
-                      isSaveQueueActive ||
-                      moveLoading
+                      !save.hasSaveableChanges || save.isSaving || fileActions.moveLoading
                     }
                   >
                     <Save size={16} />
@@ -167,14 +210,12 @@ function SkillView({ resourceId }: SkillViewProps) {
                 ) : null}
                 <Button
                   variant="primary"
-                  onPress={handlePublish}
+                  onPress={navigation.handlePublish}
                   isDisabled={
-                    publishLoading ||
-                    contentLoading ||
-                    saveLoading ||
-                    configLoading ||
-                    isSaveQueueActive ||
-                    moveLoading
+                    navigation.publishLoading ||
+                    fileActions.contentLoading ||
+                    save.isSaving ||
+                    fileActions.moveLoading
                   }
                 >
                   <Upload size={16} />
@@ -186,7 +227,7 @@ function SkillView({ resourceId }: SkillViewProps) {
               items={versionItems}
               disabledKeys={disabledVersionKeys}
               formatVersion={SkillServicesMap.formatVersion}
-              onSelect={handleVersionSelect}
+              onSelect={navigation.handleVersionSelect}
             />
           </div>
         ) : undefined,
@@ -196,20 +237,19 @@ function SkillView({ resourceId }: SkillViewProps) {
   const layoutConfigDeps = [
     canEdit,
     canPreviewSelectedFile,
-    configLoading,
-    contentLoading,
-    editing,
-    hasSaveableChanges,
+    workspace.state.configDescription,
+    workspace.state.configName,
+    workspace.state.editing,
+    save.hasSaveableChanges,
     headerSaveStatusText,
-    isSaveQueueActive,
-    moveLoading,
-    publishLoading,
+    save.isSaving,
+    fileActions.moveLoading,
+    navigation.publishLoading,
     resourceId,
-    saveLoading,
-    savePhase,
-    skill,
+    save.savePhase,
+    resource.skill,
     t,
-    viewingVersion,
+    workspace.state.viewingVersion,
   ];
   const configTreeNodes = [
     {
@@ -230,7 +270,7 @@ function SkillView({ resourceId }: SkillViewProps) {
     },
   ] satisfies DataNode[];
 
-  if (error) {
+  if (resource.error) {
     return (
       <ResourceLayoutConfig
         className={styles.pageWrap}
@@ -241,7 +281,7 @@ function SkillView({ resourceId }: SkillViewProps) {
           <ResultState
             status="warning"
             title={t('page.openFailed')}
-            subTitle={parseErrorMessage(error)}
+            subTitle={parseErrorMessage(resource.error)}
             extra={
               <Link to="/app/drive/personal">
                 <Button variant="secondary">{t('page.backToDrive')}</Button>
@@ -253,7 +293,7 @@ function SkillView({ resourceId }: SkillViewProps) {
     );
   }
 
-  if (loading && !skill) {
+  if (resource.loading && !resource.skill) {
     return (
       <ResourceLayoutConfig
         className={styles.pageWrap}
@@ -274,27 +314,27 @@ function SkillView({ resourceId }: SkillViewProps) {
     <ResourceLayoutConfig className={styles.pageWrap} config={headerConfig} deps={layoutConfigDeps}>
       <div className={styles.page}>
         <div className={styles.mainArea}>
-          {skill ? (
+          {resource.skill ? (
             <div className={styles.contentRow}>
               <div className={styles.middlePanelSlot}>
                 <section className={styles.middlePanel}>
                   <div className={styles.middlePanelHeader}>
                     <span className={styles.middlePanelLabel}>{t('fileTree.title')}</span>
-                    {canEditTree ? (
+                    {fileActions.canEditTree ? (
                       <div className={styles.middlePanelActions}>
                         <AppIconButton
                           icon={<FolderPlus size={14} aria-hidden="true" />}
                           label={t('fileTree.newFolder')}
                           size="sm"
                           className={styles.iconBtnSm}
-                          onClick={() => handleStartCreate('folder')}
+                          onClick={() => fileActions.handleStartCreate('folder')}
                         />
                         <AppIconButton
                           icon={<Plus size={14} aria-hidden="true" />}
                           label={t('fileTree.newFile')}
                           size="sm"
                           className={styles.iconBtnSm}
-                          onClick={() => handleStartCreate('file')}
+                          onClick={() => fileActions.handleStartCreate('file')}
                         />
                         <AppIconButton
                           icon={<Upload size={14} aria-hidden="true" />}
@@ -307,30 +347,33 @@ function SkillView({ resourceId }: SkillViewProps) {
                     ) : null}
                   </div>
                   <div
-                    className={`${styles.treeWrap} ${isTreeDragOver ? styles.treeWrapDragOver : ''}`}
-                    onDragOver={handleTreeDragOver}
-                    onDragLeave={handleTreeDragLeave}
-                    onDrop={handleTreeDrop}
-                    onClick={handleTreeWrapClick}
+                    className={`${styles.treeWrap} ${
+                      fileActions.isTreeDragOver ? styles.treeWrapDragOver : ''
+                    }`}
+                    onDragOver={fileActions.handleTreeDragOver}
+                    onDragLeave={fileActions.handleTreeDragLeave}
+                    onDrop={fileActions.handleTreeDrop}
+                    onClick={fileActions.handleTreeWrapClick}
                   >
-                    {canEditTree && isTreeDragOver ? (
+                    {fileActions.canEditTree && fileActions.isTreeDragOver ? (
                       <div className={styles.treeDropHint}>{t('fileTree.dropHint')}</div>
                     ) : null}
                     <SkillFileTree
-                      files={activeFiles}
+                      files={workspace.state.files}
                       prependNodes={configTreeNodes}
-                      selectedFileId={selectedFileId}
-                      selectedNodeId={selectedTreeNodeId}
-                      expandedKeys={expandedKeys}
-                      pendingCreate={pendingCreate}
-                      isOwner={canEditTree}
+                      selectedFileId={workspace.state.selectedFileId}
+                      selectedNodeId={workspace.state.selectedTreeNodeId}
+                      expandedKeys={fileActions.expandedKeys}
+                      pendingCreate={fileActions.pendingCreate}
+                      dirtyNodeIds={workspace.dirtyNodeIds}
+                      isOwner={fileActions.canEditTree}
                       onSelect={handleTreeSelect}
-                      onCommitCreate={handleCommitCreate}
-                      onCancelCreate={cancelPendingCreate}
-                      onDeleteFile={handleDeleteFile}
-                      onMoveFile={handleMoveFile}
+                      onCommitCreate={fileActions.handleCommitCreate}
+                      onCancelCreate={fileActions.cancelPendingCreate}
+                      onDeleteFile={fileActions.handleDeleteFile}
+                      onMoveFile={fileActions.handleMoveFile}
                     />
-                    {activeFiles.length === 0 && !pendingCreate ? (
+                    {workspace.state.files.length === 0 && !fileActions.pendingCreate ? (
                       <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={t(canEdit ? 'fileTree.emptyEditable' : 'fileTree.empty')}
@@ -338,7 +381,7 @@ function SkillView({ resourceId }: SkillViewProps) {
                       />
                     ) : null}
                   </div>
-                  <SkillSaveQueueDock items={visibleSaveQueueItems} onRetry={handleSave} />
+                  <SkillSaveQueueDock items={save.visibleQueueItems} onRetry={save.handleSaveAll} />
                 </section>
               </div>
 
@@ -346,15 +389,15 @@ function SkillView({ resourceId }: SkillViewProps) {
                 <main className={styles.rightPanel}>
                   {isConfigSelected ? (
                     <SkillConfigPanel
-                      name={configName}
-                      description={configDescription}
+                      name={workspace.state.configName}
+                      description={workspace.state.configDescription}
                       canEdit={canEdit}
-                      isDirty={isConfigDirty}
-                      isLoading={configLoading}
-                      onNameChange={setConfigName}
-                      onDescriptionChange={setConfigDescription}
-                      onReset={resetConfigDraft}
-                      onSave={() => void runUpdateConfigAsync()}
+                      isDirty={workspace.isConfigDirty}
+                      isLoading={save.configSaveLoading}
+                      onNameChange={workspace.updateConfigName}
+                      onDescriptionChange={workspace.updateConfigDescription}
+                      onReset={workspace.resetConfig}
+                      onSave={() => void save.saveConfig().catch(() => undefined)}
                     />
                   ) : selectedFile ? (
                     <>
@@ -393,26 +436,28 @@ function SkillView({ resourceId }: SkillViewProps) {
                           >
                             <div className={styles.markdownPreviewContent}>
                               <Markdown
-                                content={editorContent}
+                                content={workspace.activeContent}
                                 resourceResolver={markdownResourceResolver}
                               />
                             </div>
                           </div>
                         ) : canPreviewSkillFile(selectedFile) ? (
                           <SkillEditor
-                            content={editorContent}
+                            content={workspace.activeContent}
                             fileName={selectedFile.name}
+                            modelPath={`skill://${encodeURIComponent(resourceId)}/${encodeURIComponent(
+                              workspace.activeEditorKey
+                            )}/${encodeURIComponent(selectedFile.name)}`}
                             readOnly={
-                              !editing ||
+                              !workspace.state.editing ||
                               !canEdit ||
-                              contentLoading ||
-                              saveLoading ||
-                              isSaveQueueActive ||
-                              versionLoading ||
-                              moveLoading
+                              fileActions.contentLoading ||
+                              navigation.versionLoading
                             }
-                            onSave={handleSave}
-                            onChange={setEditorContent}
+                            onSave={handleEditorSave}
+                            onChange={(content) =>
+                              workspace.updateFileContent(selectedFile.id, content)
+                            }
                             onEditorMount={handleMarkdownEditorMount}
                           />
                         ) : (
@@ -444,27 +489,53 @@ function SkillView({ resourceId }: SkillViewProps) {
 
       <AppAlertDialog
         type="danger"
-        isOpen={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-        title={t(deleteTarget?.kind === 'folder' ? 'delete.folderTitle' : 'delete.fileTitle')}
+        isOpen={!!fileActions.deleteTarget}
+        onOpenChange={() => fileActions.setDeleteTarget(null)}
+        title={t(
+          fileActions.deleteTarget?.kind === 'folder' ? 'delete.folderTitle' : 'delete.fileTitle'
+        )}
         description={
-          deleteTarget?.kind === 'folder'
-            ? t('delete.folderDescription', { name: deleteTarget?.name })
-            : t('delete.fileDescription', { name: deleteTarget?.name })
+          fileActions.deleteDirtyCount > 0
+            ? t(
+                fileActions.deleteTarget?.kind === 'folder'
+                  ? 'delete.dirtyFolderDescription'
+                  : 'delete.dirtyFileDescription',
+                {
+                  name: fileActions.deleteTarget?.name,
+                  count: fileActions.deleteDirtyCount,
+                }
+              )
+            : fileActions.deleteTarget?.kind === 'folder'
+              ? t('delete.folderDescription', { name: fileActions.deleteTarget?.name })
+              : t('delete.fileDescription', { name: fileActions.deleteTarget?.name })
         }
         confirmText={t('delete.confirm')}
-        onConfirm={handleConfirmDelete}
-        isConfirmLoading={deleteLoading}
-        isDismissable={!deleteLoading}
+        onConfirm={fileActions.handleConfirmDelete}
+        isConfirmLoading={fileActions.deleteLoading}
+        isDismissable={!fileActions.deleteLoading}
+      />
+
+      <AppAlertDialog
+        type="confirm"
+        isOpen={fileActions.pendingMove != null}
+        onOpenChange={(open) => {
+          if (!open) fileActions.setPendingMove(null);
+        }}
+        title={t('move.dirtyTitle')}
+        description={t('move.dirtyDescription')}
+        confirmText={t('move.confirm')}
+        onConfirm={fileActions.handleConfirmMove}
+        isConfirmLoading={fileActions.moveLoading}
+        isDismissable={!fileActions.moveLoading}
       />
 
       <UnsavedSkillChangesModal
-        isOpen={pendingIntentMode != null}
-        mode={pendingIntentMode ?? 'leave'}
-        isLoading={pendingIntentLoading}
-        onCancel={handleCancelPendingIntent}
-        onDiscard={handleDiscardPendingIntent}
-        onConfirm={handleConfirmPendingIntent}
+        isOpen={navigation.pendingIntentMode != null}
+        mode={navigation.pendingIntentMode ?? 'leave'}
+        isLoading={navigation.pendingIntentLoading}
+        onCancel={navigation.handleCancelPendingIntent}
+        onDiscard={navigation.handleDiscardPendingIntent}
+        onConfirm={navigation.handleConfirmPendingIntent}
       />
 
       <input
@@ -472,7 +543,7 @@ function SkillView({ resourceId }: SkillViewProps) {
         type="file"
         multiple
         hidden
-        onChange={(event) => void handleFileChange(event)}
+        onChange={(event) => void fileActions.handleFileChange(event)}
       />
     </ResourceLayoutConfig>
   );

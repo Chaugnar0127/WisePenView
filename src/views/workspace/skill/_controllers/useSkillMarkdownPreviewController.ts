@@ -1,5 +1,6 @@
 import type { MarkdownResourceResolver } from '@/components/Markdown';
-import type { ISkillService, SkillFileNode } from '@/domains/Skill';
+import { useSkillService } from '@/domains';
+import type { SkillFileNode } from '@/domains/Skill';
 import { useLatest, useUnmount } from 'ahooks';
 import type { editor as MonacoEditor } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
@@ -20,20 +21,21 @@ interface UseSkillMarkdownPreviewOptions {
   files: SkillFileNode[];
   onSelectFile: (fileId: string) => void;
   selectedFile: SkillFileNode | null;
+  selectedFileKey: string;
   skill?: { resourceId: string };
-  skillService: ISkillService;
   viewingVersion?: number;
 }
 
-export function useSkillMarkdownPreview({
+export function useSkillMarkdownPreviewController({
   editorContent,
   files,
   onSelectFile,
   selectedFile,
+  selectedFileKey,
   skill,
-  skillService,
   viewingVersion,
 }: UseSkillMarkdownPreviewOptions) {
+  const skillService = useSkillService();
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const assetUrlRef = useRef(new Map<string, string>());
@@ -41,7 +43,7 @@ export function useSkillMarkdownPreview({
   const [sourceOffsets, setSourceOffsets] = useState<Record<string, number>>({});
   const [previewRestoreRequests, setPreviewRestoreRequests] = useState<Record<string, number>>({});
   const [assetUrls, setAssetUrls] = useState<Record<string, string | null>>({});
-  const selectedView = selectedFile ? (views[selectedFile.id] ?? 'markdown') : 'markdown';
+  const selectedView = selectedFile ? (views[selectedFileKey] ?? 'markdown') : 'markdown';
   const sourceOffsetsLatest = useLatest(sourceOffsets);
 
   useUnmount(() => {
@@ -116,7 +118,7 @@ export function useSkillMarkdownPreview({
    */
   useEffect(() => {
     if (!selectedFile || selectedView !== 'preview') return;
-    const sourceOffset = sourceOffsetsLatest.current[selectedFile.id];
+    const sourceOffset = sourceOffsetsLatest.current[selectedFileKey];
     if (sourceOffset == null) return;
     const frame = window.requestAnimationFrame(() => {
       const preview = previewRef.current;
@@ -128,6 +130,7 @@ export function useSkillMarkdownPreview({
     editorContent,
     previewRestoreRequests,
     selectedFile,
+    selectedFileKey,
     selectedView,
     sourceOffsetsLatest,
   ]);
@@ -144,28 +147,28 @@ export function useSkillMarkdownPreview({
       if (model && position) {
         setSourceOffsets((current) => ({
           ...current,
-          [selectedFile.id]: model.getOffsetAt(position),
+          [selectedFileKey]: model.getOffsetAt(position),
         }));
       }
       setPreviewRestoreRequests((current) => ({
         ...current,
-        [selectedFile.id]: (current[selectedFile.id] ?? 0) + 1,
+        [selectedFileKey]: (current[selectedFileKey] ?? 0) + 1,
       }));
     } else {
       const sourceOffset = previewRef.current
         ? readMarkdownPreviewOffset(previewRef.current)
         : null;
       if (sourceOffset != null) {
-        setSourceOffsets((current) => ({ ...current, [selectedFile.id]: sourceOffset }));
+        setSourceOffsets((current) => ({ ...current, [selectedFileKey]: sourceOffset }));
       }
     }
-    setViews((current) => ({ ...current, [selectedFile.id]: nextKey }));
+    setViews((current) => ({ ...current, [selectedFileKey]: nextKey }));
   };
 
   const onEditorMount = (editor: MonacoEditor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
     if (!selectedFile || !isMarkdownSkillFile(selectedFile)) return;
-    const sourceOffset = sourceOffsets[selectedFile.id];
+    const sourceOffset = sourceOffsets[selectedFileKey];
     const model = editor.getModel();
     if (sourceOffset == null || !model) return;
     const position = model.getPositionAt(Math.min(sourceOffset, model.getValueLength()));
@@ -178,9 +181,9 @@ export function useSkillMarkdownPreview({
     const sourceOffset = readMarkdownPreviewOffset(container);
     if (sourceOffset == null) return;
     setSourceOffsets((current) =>
-      current[selectedFile.id] === sourceOffset
+      current[selectedFileKey] === sourceOffset
         ? current
-        : { ...current, [selectedFile.id]: sourceOffset }
+        : { ...current, [selectedFileKey]: sourceOffset }
     );
   };
 

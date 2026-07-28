@@ -1,6 +1,7 @@
 import {
   areResourcePermissionActionsEqualByOptions,
   filterResourcePermissionActionsByOptions,
+  getResourcePermissionActionLabel,
 } from '@/components/Drive/common/resourcePermissionPolicy';
 import type { GroupBaseInfo } from '@/domains/Group';
 import type {
@@ -20,6 +21,14 @@ export const getSupportedActionsFromOptions = (
   actionOptions: ResourcePermissionActionOption[]
 ): ResourceAction[] =>
   actionOptions.filter((option) => option.supported).map((option) => option.action);
+
+export const localizePermissionActionOptions = (
+  actionOptions: ResourcePermissionActionOption[]
+): ResourcePermissionActionOption[] =>
+  actionOptions.map((option) => ({
+    ...option,
+    label: getResourcePermissionActionLabel(option.action),
+  }));
 
 export const getAvatarSrc = (avatar?: string): string | undefined => {
   const trimmedAvatar = avatar?.trim();

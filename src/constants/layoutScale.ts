@@ -3,6 +3,8 @@ export const SIDEBAR_MIN_WIDTH = 240;
 export const SIDEBAR_MAX_WIDTH = 420;
 /** App / Workspace 侧栏收起后占位 */
 export const SIDEBAR_COLLAPSED_WIDTH = 0;
+/** Web App 侧栏收起后保留展开按钮的独立区域 */
+export const APP_WEB_SIDEBAR_COLLAPSED_WIDTH = 64;
 
 export const ADMIN_SIDEBAR_COLLAPSED_WIDTH = 80;
 

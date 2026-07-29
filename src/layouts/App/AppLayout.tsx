@@ -1,4 +1,9 @@
-import { APP_MAIN_MIN_WIDTH, LAYOUT_DENSITY, resolveLayoutDensity } from '@/constants/layoutScale';
+import {
+  APP_MAIN_MIN_WIDTH,
+  APP_WEB_SIDEBAR_COLLAPSED_WIDTH,
+  LAYOUT_DENSITY,
+  resolveLayoutDensity,
+} from '@/constants/layoutScale';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
 import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
@@ -43,7 +48,10 @@ function AppLayout() {
   const pendingSidebarWidthRef = useRef<number | null>(null);
   const sidebarWidth = clampSidebarWidth(storedSidebarWidth);
   const desktopWindow = useDesktopWindowState();
-  const sidebarPanelSize = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : sidebarWidth;
+  const collapsedSidebarWidth = desktopWindow.isDesktop
+    ? SIDEBAR_COLLAPSED_WIDTH
+    : APP_WEB_SIDEBAR_COLLAPSED_WIDTH;
+  const sidebarPanelSize = sidebarCollapsed ? collapsedSidebarWidth : sidebarWidth;
 
   const persistSidebarWidthFromPanel = () => {
     const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
@@ -98,15 +106,31 @@ function AppLayout() {
           id="app-sidebar"
           panelRef={sidebarPanelRef}
           defaultSize={sidebarPanelSize}
-          minSize={sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MIN_WIDTH}
-          maxSize={sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MAX_WIDTH}
+          minSize={sidebarCollapsed ? collapsedSidebarWidth : SIDEBAR_MIN_WIDTH}
+          maxSize={sidebarCollapsed ? collapsedSidebarWidth : SIDEBAR_MAX_WIDTH}
           groupResizeBehavior="preserve-pixel-size"
-          className={styles.leftSider}
+          className={clsx(
+            styles.leftSider,
+            sidebarCollapsed && !desktopWindow.isDesktop && styles.webCollapsedSider
+          )}
           aria-label={t('navigation.appSidebar')}
-          aria-hidden={sidebarCollapsed ? true : undefined}
+          aria-hidden={sidebarCollapsed && desktopWindow.isDesktop ? true : undefined}
           onResize={handleSidebarResize}
         >
-          {sidebarCollapsed ? null : (
+          {sidebarCollapsed && !desktopWindow.isDesktop ? (
+            <header className={styles.webCollapsedSidebar}>
+              <AppNavigationControls
+                sidebarCollapsed
+                showHistory={false}
+                canGoBack={appNavigation.canGoBack}
+                canGoForward={appNavigation.canGoForward}
+                onGoBack={appNavigation.goBack}
+                onGoForward={appNavigation.goForward}
+                onToggleSidebar={handleSidebarToggle}
+              />
+            </header>
+          ) : null}
+          {!sidebarCollapsed ? (
             <AppSidebar
               canGoBack={appNavigation.canGoBack}
               canGoForward={appNavigation.canGoForward}
@@ -114,7 +138,7 @@ function AppLayout() {
               onGoForward={appNavigation.goForward}
               onToggle={handleSidebarToggle}
             />
-          )}
+          ) : null}
         </SystemResizablePanel>
 
         <SystemResizableHandle
@@ -127,10 +151,10 @@ function AppLayout() {
           minSize={APP_MAIN_MIN_WIDTH}
           className={styles.middleLayout}
         >
-          {desktopWindow.isDesktop || sidebarCollapsed ? (
+          {desktopWindow.isDesktop ? (
             <header
               className={clsx(
-                desktopWindow.isDesktop ? styles.desktopHeader : styles.webCollapsedHeader,
+                styles.desktopHeader,
                 desktopWindow.hasMacTitleBarInset && styles.macDesktopHeader
               )}
             >

@@ -4,7 +4,6 @@ const zhCNWorkspace = {
     chatPanel: '聊天面板',
     enterZen: '进入 Zen Mode',
     exitZen: '退出 Zen Mode',
-    expandRightSidebar: '展开右侧栏',
   },
   breadcrumb: { unnamedGroup: '未命名小组', personalDrive: '个人云盘' },
   renderer: {

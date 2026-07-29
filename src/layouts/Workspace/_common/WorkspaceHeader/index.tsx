@@ -1,9 +1,6 @@
-import AppIconButton from '@/components/Button/AppIconButton';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
-import { PanelRightOpen } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 import ResourceHeader from '../ResourceHeader';
 import type { WorkspaceHeaderProps } from './index.type';
@@ -18,15 +15,12 @@ function WorkspaceHeader({
   canGoBack = false,
   canGoForward = false,
   leftSidebarCollapsed = false,
-  rightSidebarCollapsed = true,
   onGoBack,
   onGoForward,
   onToggleLeftSidebar,
-  onToggleRightSidebar,
   // onEnterZenMode,
   className,
 }: WorkspaceHeaderProps) {
-  const { t } = useTranslation('workspace');
   const desktopWindow = useDesktopWindowState();
 
   return (
@@ -59,34 +53,27 @@ function WorkspaceHeader({
           ) : null}
           {resource ? (
             <div className={styles.resourceHeader}>
-              <ResourceHeader {...resource} />
+              <ResourceHeader {...resource} trailingActions={resourceSidePanelActions} />
             </div>
           ) : (
             <div className={styles.toolbarMiddle}>
               {inlineTitle ? <div className={styles.inlineTitle}>{inlineTitle}</div> : null}
             </div>
           )}
-          <div className={styles.toolbarEnd}>
-            {resource ? null : extra}
-            {resourceSidePanelActions}
-            {/* Zen Mode 暂不上线，暂时隐藏入口按钮。 */}
-            {/* {onEnterZenMode ? (
-                <AppIconButton
-                  icon={<PanelsTopLeft size={18} aria-hidden="true" />}
-                  label={t('shell.enterZen')}
-                  onPress={onEnterZenMode}
-                />
-              ) : null} */}
-            {rightSidebarCollapsed && onToggleRightSidebar ? (
-              <div className={styles.sidebarControls}>
-                <AppIconButton
-                  icon={<PanelRightOpen size={18} aria-hidden="true" />}
-                  label={t('shell.expandRightSidebar')}
-                  onPress={onToggleRightSidebar}
-                />
-              </div>
-            ) : null}
-          </div>
+          {resource ? null : (
+            <div className={styles.toolbarEnd}>
+              {extra}
+              {resourceSidePanelActions}
+              {/* Zen Mode 暂不上线，暂时隐藏入口按钮。 */}
+              {/* {onEnterZenMode ? (
+                  <AppIconButton
+                    icon={<PanelsTopLeft size={18} aria-hidden="true" />}
+                    label={t('shell.enterZen')}
+                    onPress={onEnterZenMode}
+                  />
+                ) : null} */}
+            </div>
+          )}
         </div>
       </div>
       {titleBlock ? (

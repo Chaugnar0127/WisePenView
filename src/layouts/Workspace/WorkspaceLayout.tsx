@@ -341,6 +341,8 @@ function WorkspaceLayout() {
           ...headerConfig.resource,
           breadcrumbItems: resourceBreadcrumb.items,
           onBreadcrumbNavigate: resourceBreadcrumb.navigateToNode,
+          chatPanelCollapsed: safeChatPanelCollapsed,
+          onToggleChatPanel: handleChatPanelToggle,
         }
       : undefined;
 
@@ -360,11 +362,9 @@ function WorkspaceLayout() {
         canGoBack={appNavigation.canGoBack}
         canGoForward={appNavigation.canGoForward}
         leftSidebarCollapsed={sidebarCollapsed}
-        rightSidebarCollapsed={safeChatPanelCollapsed}
         onGoBack={appNavigation.goBack}
         onGoForward={appNavigation.goForward}
         onToggleLeftSidebar={handleSidebarToggle}
-        onToggleRightSidebar={handleChatPanelToggle}
         // Zen Mode 暂不上线，暂不向 Header 提供入口。
         // onEnterZenMode={handleEnterZenMode}
       />
@@ -459,6 +459,7 @@ function WorkspaceLayout() {
           >
             {chatPanelOpen ? (
               <ChatPanel
+                showCollapseButton={false}
                 onNewChat={handleNewChat}
                 resourceChat={{
                   provider: workspaceChatStateProvider,

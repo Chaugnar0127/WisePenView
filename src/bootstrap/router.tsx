@@ -165,6 +165,22 @@ const router = createBrowserRouter([
                 element: <Drive viewMode="favorites" />,
               },
               {
+                path: 'drive/trash',
+                element: <Drive viewMode="trash" />,
+              },
+              {
+                path: 'drive/trash/folder/:folderId',
+                element: <Drive viewMode="trash" />,
+              },
+              {
+                path: 'drive/shared',
+                element: <Drive viewMode="shared" />,
+              },
+              {
+                path: 'drive/shared/folder/:folderId',
+                element: <Drive viewMode="shared" />,
+              },
+              {
                 path: 'my-group',
                 element: <MyGroup />,
               },

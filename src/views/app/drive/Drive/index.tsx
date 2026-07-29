@@ -1,13 +1,20 @@
 import TableDrive from '@/components/Drive/TableDrive';
 import SegmentedTabs from '@/components/SegmentedTabs';
+import { useDriveService } from '@/domains';
+import { encodeNodeId } from '@/domains/Drive';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
-import SidebarDriveScopeSwitcher from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive/SidebarDriveScopeSwitcher';
+import { parseErrorMessage } from '@/utils/error';
 import {
   buildDrivePath,
+  buildDriveSystemFolderPath,
   DRIVE_FAVORITES_PATH,
+  DRIVE_SHARED_PATH,
+  DRIVE_TRASH_PATH,
   DRIVE_UPLOAD_QUEUE_PATH,
   parseDriveRouteLocation,
 } from '@/utils/navigation/driveRoute';
+import { Spinner, toast } from '@heroui/react';
+import { useRequest } from 'ahooks';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -16,7 +23,7 @@ import FavoritesTab from '../_components/FavoritesTab';
 import UploadQueueTab from '../_components/UploadQueueTab';
 import styles from './style.module.less';
 
-export type DriveViewMode = 'uploadQueue' | 'tableDrive' | 'favorites';
+export type DriveViewMode = 'uploadQueue' | 'tableDrive' | 'favorites' | 'trash' | 'shared';
 
 interface DriveProps {
   viewMode?: DriveViewMode;
@@ -26,6 +33,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   const { t } = useTranslation('drive');
   const navigate = useNavigate();
   const { folderId, groupId } = useParams();
+  const driveService = useDriveService();
   const driveLocation = parseDriveRouteLocation({ groupId, folderId });
   const workspaceScope = useWorkspaceNavigationStore((state) => state.location.scope);
 
@@ -36,7 +44,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
    * cleanup：没有订阅或延迟任务，无需清理。
    */
   useEffect(() => {
-    if (viewMode !== 'tableDrive') return;
+    if (viewMode === 'uploadQueue' || viewMode === 'favorites') return;
 
     const nextScope = parseDriveRouteLocation({ groupId }).scope;
     const currentScope = useWorkspaceNavigationStore.getState().location.scope;
@@ -47,6 +55,25 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
     }
     useWorkspaceNavigationStore.getState().navigateToScope(nextScope);
   }, [groupId, viewMode]);
+
+  const isSystemFolderView = viewMode === 'trash' || viewMode === 'shared';
+  const handleSystemFolderError = (error: unknown) => {
+    toast.danger(parseErrorMessage(error));
+    navigate(buildDrivePath({ scope: driveLocation.scope }));
+  };
+
+  const { data: systemFolderNodeId, loading: isSystemFolderLoading } = useRequest(
+    async () => {
+      if (viewMode === 'trash') return driveService.getTrashFolderNodeId();
+      const sharedFolderTagId = await driveService.getSharedFolderTagId();
+      return encodeNodeId('folder', sharedFolderTagId);
+    },
+    {
+      ready: isSystemFolderView && !folderId,
+      refreshDeps: [viewMode, folderId],
+      onError: handleSystemFolderError,
+    }
+  );
 
   const handleCurrentNodeChange = (nodeId: string) => {
     navigate(buildDrivePath({ scope: driveLocation.scope, nodeId }));
@@ -62,10 +89,24 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
       navigate(DRIVE_FAVORITES_PATH);
       return;
     }
+    if (nextViewMode === 'trash') {
+      navigate(DRIVE_TRASH_PATH);
+      return;
+    }
+    if (nextViewMode === 'shared') {
+      navigate(DRIVE_SHARED_PATH);
+      return;
+    }
     navigate(buildDrivePath({ scope: workspaceScope }));
   };
 
-  const tableDriveLocationKey = `${driveLocation.scope.rootId}\u0000${driveLocation.initialNodeId ?? driveLocation.scope.rootId}`;
+  const initialNodeId = folderId ?? systemFolderNodeId ?? driveLocation.initialNodeId;
+  const tableDriveLocationKey = `${driveLocation.scope.rootId}\u0000${initialNodeId ?? driveLocation.scope.rootId}`;
+
+  const handleSystemFolderNodeChange = (nodeId: string) => {
+    if (viewMode !== 'trash' && viewMode !== 'shared') return;
+    navigate(buildDriveSystemFolderPath({ view: viewMode, nodeId }));
+  };
 
   return (
     <div className={styles.pageContainer}>
@@ -80,8 +121,10 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
         onSelectionChange={handleViewModeChange}
         items={[
           { key: 'tableDrive', label: t('page.tabs.drive') },
+          { key: 'shared', label: t('page.tabs.shared') },
           { key: 'uploadQueue', label: t('page.tabs.uploadQueue') },
           { key: 'favorites', label: t('page.tabs.favorites') },
+          { key: 'trash', label: t('page.tabs.trash') },
         ]}
         className={styles.detailTabs}
       />
@@ -91,13 +134,22 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
           <TableDrive
             key={tableDriveLocationKey}
             scope={driveLocation.scope}
-            breadcrumbExtra={<SidebarDriveScopeSwitcher />}
             initialNodeId={driveLocation.initialNodeId}
             onCurrentNodeChange={handleCurrentNodeChange}
           />
         )}
         {viewMode === 'uploadQueue' && <UploadQueueTab />}
         {viewMode === 'favorites' && <FavoritesTab />}
+        {isSystemFolderView && (folderId || systemFolderNodeId) ? (
+          <TableDrive
+            key={tableDriveLocationKey}
+            scope={driveLocation.scope}
+            initialNodeId={initialNodeId}
+            onCurrentNodeChange={handleSystemFolderNodeChange}
+            onPathError={handleSystemFolderError}
+          />
+        ) : null}
+        {isSystemFolderView && !folderId && isSystemFolderLoading ? <Spinner /> : null}
       </div>
     </div>
   );

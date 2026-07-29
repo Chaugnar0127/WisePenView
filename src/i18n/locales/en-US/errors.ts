@@ -102,6 +102,7 @@ const enUSErrors = {
     '194': 'Failed to generate the image thumbnail.',
     '195': 'The file storage operation failed. Please try again.',
     '196': 'Failed to read skill.zip. Check whether the archive is intact.',
+    '197': 'Shared folder was not found.',
     '999': 'Operation failed. Please try again later.',
     '1000': 'System error.',
     '1001': 'Request error.',

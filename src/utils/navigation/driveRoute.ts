@@ -6,6 +6,8 @@ const GROUP_DRIVE_PATH = `${APP_DRIVE_PATH}/group`;
 
 export const DRIVE_UPLOAD_QUEUE_PATH = `${APP_DRIVE_PATH}/upload-queue`;
 export const DRIVE_FAVORITES_PATH = `${APP_DRIVE_PATH}/favorites`;
+export const DRIVE_TRASH_PATH = `${APP_DRIVE_PATH}/trash`;
+export const DRIVE_SHARED_PATH = `${APP_DRIVE_PATH}/shared`;
 
 export interface DriveRouteLocation {
   scope: DriveNodeScope;
@@ -30,6 +32,17 @@ export const buildDrivePath = ({
     return `${GROUP_DRIVE_PATH}/${encodeURIComponent(scope.groupId)}${folderPath}`;
   }
   return `${PERSONAL_DRIVE_PATH}${folderPath}`;
+};
+
+export const buildDriveSystemFolderPath = ({
+  view,
+  nodeId,
+}: {
+  view: 'trash' | 'shared';
+  nodeId?: string;
+}): string => {
+  const basePath = view === 'trash' ? DRIVE_TRASH_PATH : DRIVE_SHARED_PATH;
+  return nodeId ? `${basePath}/folder/${encodeURIComponent(nodeId)}` : basePath;
 };
 
 export const parseDriveInitialNodeId = (search: string): string | undefined => {

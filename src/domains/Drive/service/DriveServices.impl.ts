@@ -23,6 +23,7 @@ import type { CreateDriveServiceOptions, IDriveService, MoveToFolderParams } fro
 const CACHE_KEY_DEFAULT = '__default__';
 const DEFAULT_PAGE_SIZE = 50;
 const TRASH_TAG_NAME = '.Trash';
+const SHARED_TAG_NAME = '.Shared';
 const HIDDEN_TAG_PREFIX = '.';
 
 interface DriveServicesDeps {
@@ -32,7 +33,7 @@ interface DriveServicesDeps {
 
 const isVisibleFolderTag = (node: TagTreeNode): boolean => {
   const name = (node.tagName ?? '').trim();
-  if (name === TRASH_TAG_NAME) return false;
+  if (name === TRASH_TAG_NAME || name === SHARED_TAG_NAME) return false;
   return !name.startsWith(HIDDEN_TAG_PREFIX);
 };
 
@@ -165,7 +166,10 @@ export const createDriveServices = (
   const getSharedFolderTagId: IDriveService['getSharedFolderTagId'] = async () => {
     const roots = await readRawRoots();
     const existingSharedTag = findSharedFolderTag(roots);
-    return existingSharedTag?.tagId;
+    if (!existingSharedTag) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND);
+    }
+    return existingSharedTag.tagId;
   };
 
   const getRootNode: IDriveService['getRootNode'] = async (params) => {
@@ -372,7 +376,10 @@ export const createDriveServices = (
   const getTrashFolderNodeId: IDriveService['getTrashFolderNodeId'] = async (groupId) => {
     await readRawRoots(groupId);
     const trashTagId = tagService.getTrashTagId(groupId);
-    return trashTagId ? encodeNodeId('folder', trashTagId) : undefined;
+    if (!trashTagId) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_TRASH_TAG_NOT_FOUND);
+    }
+    return encodeNodeId('folder', trashTagId);
   };
 
   const buildPathByFolderTag = async (

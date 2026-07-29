@@ -26,7 +26,7 @@ import {
   APP_HEADER_NAV_KEY,
   resolveAppHeaderNavKey,
 } from '@/layouts/_common/Sidebar/appSidebarNavigation';
-import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
+import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
@@ -57,8 +57,7 @@ function SidebarDrive() {
   const { t } = useTranslation('drive');
   const location = useLocation();
   const noteService = useNoteService();
-  const navigationLocation = useWorkspaceNavigationStore((state) => state.location);
-  const scope = navigationLocation.scope;
+  const scope = useSidebarDriveScopeStore((state) => state.scope);
   const groupId = getDriveScopeGroupId(scope);
   const openInWorkspace = useOpenInWorkspace();
   const [noteTarget, setNoteTarget] = useState<RootNode | FolderNode | null>(null);
@@ -174,6 +173,7 @@ function SidebarDrive() {
     treeData,
     treeLoading,
   } = useSidebarDriveTreeController({
+    scope,
     buildTreeData: buildChildrenData,
     onOpenResource: (node) => {
       openInWorkspace({

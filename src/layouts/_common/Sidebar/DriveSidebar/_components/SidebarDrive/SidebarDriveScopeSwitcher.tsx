@@ -3,14 +3,12 @@ import { AppPopover } from '@/components/Overlay';
 import { useGroupService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
 import type { Group } from '@/domains/Group';
-import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
-import { buildDrivePath } from '@/utils/navigation/driveRoute';
+import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Check, ChevronsUpDown, HardDrive, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 
 import styles from './style.module.less';
 
@@ -18,8 +16,8 @@ const PERSONAL_SCOPE_KEY = '__personal__';
 function SidebarDriveScopeSwitcher() {
   const { t } = useTranslation('drive');
   const groupService = useGroupService();
-  const activeScope = useWorkspaceNavigationStore((state) => state.location.scope);
-  const navigate = useNavigate();
+  const activeScope = useSidebarDriveScopeStore((state) => state.scope);
+  const setScope = useSidebarDriveScopeStore((state) => state.setScope);
   const [open, setOpen] = useState(false);
   const selectedKey = activeScope.type === 'group' ? activeScope.groupId : PERSONAL_SCOPE_KEY;
 
@@ -33,7 +31,7 @@ function SidebarDriveScopeSwitcher() {
   );
 
   const handleSelectScope = (nextGroupId?: string): void => {
-    navigate(buildDrivePath({ scope: buildDriveNodeScope(nextGroupId) }));
+    setScope(buildDriveNodeScope(nextGroupId));
     setOpen(false);
   };
 

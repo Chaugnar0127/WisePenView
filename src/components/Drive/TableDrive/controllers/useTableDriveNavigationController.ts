@@ -11,6 +11,7 @@ import type { DriveRow } from '../index.type';
 interface UseTableDriveNavigationControllerParams {
   initialNodeId?: string;
   scope: DriveNodeScope;
+  onPathError?: (error: unknown) => void;
 }
 
 interface UseTableDriveNavigationControllerReturn {
@@ -48,6 +49,7 @@ interface DriveRowsResult {
 export function useTableDriveNavigationController({
   initialNodeId,
   scope,
+  onPathError,
 }: UseTableDriveNavigationControllerParams): UseTableDriveNavigationControllerReturn {
   const driveService = useDriveService();
 
@@ -142,6 +144,10 @@ export function useTableDriveNavigationController({
     {
       refreshDeps: [currentNodeId, groupId],
       onError: (err) => {
+        if (onPathError) {
+          onPathError(err);
+          return;
+        }
         toast.danger(parseErrorMessage(err));
         if (currentNodeId !== rootId) {
           setCurrentLocation({ navigationKey, nodeId: rootId });

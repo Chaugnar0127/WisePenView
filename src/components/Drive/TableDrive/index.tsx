@@ -3,7 +3,7 @@ import { FolderTable, type FolderTableBreadcrumbItem } from '@/components/Table'
 import type { DriveNode } from '@/domains/Drive';
 import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core';
 import { Button } from '@heroui/react';
-import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
+import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -43,6 +43,7 @@ function TableDrive({
   rootId,
   initialNodeId,
   onCurrentNodeChange,
+  onPathError,
   scope,
   breadcrumbExtra,
   actions,
@@ -56,6 +57,7 @@ function TableDrive({
   const navigation = useTableDriveNavigationController({
     initialNodeId,
     scope: resolvedScope.scope,
+    onPathError,
   });
 
   // 初始化交互控制器
@@ -92,10 +94,7 @@ function TableDrive({
   const trash = useTableDriveTrashController({
     currentNodeId: navigation.currentNodeId,
     pathNodes: navigation.pathNodes,
-    rootId: resolvedScope.rootId,
     scope: resolvedScope.scope,
-    onEnterFolder: handleEnterFolder,
-    t,
   });
 
   const mountTagId = resolveCurrentFolderTagId(navigation.currentNodeId, navigation.pathNodes);
@@ -195,16 +194,6 @@ function TableDrive({
       {!isEditMode && actionsController.showUploadToGroup ? (
         <Button variant="secondary" size="sm" onPress={actionsController.openUploadToGroup}>
           {t('table.addFromPersonal')}
-        </Button>
-      ) : null}
-      {!isEditMode && trash.canOpenTrash ? (
-        <Button
-          variant={trash.isTrashView ? 'primary' : 'secondary'}
-          size="sm"
-          onPress={trash.openTrash}
-        >
-          <Trash2 size={16} aria-hidden="true" />
-          {trash.isTrashView ? t('page.backToDrive') : t('node.trash')}
         </Button>
       ) : null}
       <AppIconButton

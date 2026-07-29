@@ -1,4 +1,4 @@
-import { House } from 'lucide-react';
+import { HardDrive } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { FolderTableBreadcrumbProps } from './index.type';
@@ -7,7 +7,7 @@ import styles from './style.module.less';
 function renderLabel(showRootIcon: boolean, label: ReactNode) {
   return (
     <>
-      {showRootIcon ? <House size={14} aria-hidden /> : null}
+      {showRootIcon ? <HardDrive size={14} aria-hidden /> : null}
       {label}
     </>
   );

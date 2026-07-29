@@ -64,8 +64,6 @@ function SidebarDriveNodeTitle({
     node.type === 'resource' || node.type === 'link' ? node.resourceType : undefined;
   const resourceIconType =
     node.type === 'resource' || node.type === 'link' ? node.resourceIconType : undefined;
-  const folderIconType =
-    node.type === 'folder' && node.systemType === 'shared' ? 'shared' : undefined;
   const isSystemFolder = node.type === 'folder' && Boolean(node.systemType);
   const canCreateFolder = !isSystemFolder && (node.type === 'root' || node.type === 'folder');
   const canCreateResource =
@@ -94,7 +92,6 @@ function SidebarDriveNodeTitle({
         <span className={styles.nodeIcon} aria-hidden="true">
           <EntryIcon
             entryType={node.type}
-            folderIconType={folderIconType}
             resourceType={resourceType}
             resourceIconType={resourceIconType}
             size={16}

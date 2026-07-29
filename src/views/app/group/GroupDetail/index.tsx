@@ -9,7 +9,6 @@ import UserCapsule from '@/components/UserCapsule';
 import { useGroupService } from '@/domains';
 import type { Group, GroupResConfig } from '@/domains/Group';
 import { WALLET_TARGET_TYPE } from '@/domains/Wallet';
-import SidebarDriveScopeSwitcher from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive/SidebarDriveScopeSwitcher';
 import { parseDriveInitialNodeId } from '@/utils/navigation/driveRoute';
 import ComputeWallet from '@/views/app/_common/Wallet/ComputeWallet';
 import { toast } from '@heroui/react';
@@ -95,7 +94,6 @@ function GroupDetail() {
           <div className={`${layout.tabPane} ${page.fileTabPane}`}>
             <TableDrive
               scope={{ type: 'group', groupId: gid }}
-              breadcrumbExtra={<SidebarDriveScopeSwitcher />}
               initialNodeId={initialNodeId}
               actions={{
                 toolbar: {

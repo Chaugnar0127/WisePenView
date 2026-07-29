@@ -7,11 +7,13 @@ const enUSDrive = {
     tabs: {
       drive: 'Drive',
       uploadQueue: 'Upload queue',
+      trash: 'Trash',
+      shared: 'Shared',
       favorites: 'My Favorites',
     },
   },
   node: {
-    drive: 'Drive',
+    drive: 'Personal Drive',
     trash: 'Trash',
     shared: 'Shared',
     folder: 'Folder',

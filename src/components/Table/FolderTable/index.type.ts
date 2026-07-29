@@ -1,4 +1,3 @@
-import type { FolderIconType } from '@/components/Icons/EntryIcon/index.type';
 import type { ResourceIconType } from '@/domains/Resource';
 import type { SortDescriptor } from '@heroui/react';
 import type { DragEvent, ReactNode } from 'react';
@@ -12,8 +11,6 @@ export interface FolderTableRow {
   id: string;
   name: string;
   entryType: FolderTableEntryType;
-  /** folder 类型时使用 EntryIcon 的细分图标 */
-  folderIconType?: FolderIconType;
   /** resource 类型时使用 EntryIcon */
   resourceType?: string;
   /** resource 类型时使用 EntryIcon 的细分图标 */

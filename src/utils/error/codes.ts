@@ -104,6 +104,7 @@ export const FRONTEND_CLIENT_ERROR = {
   IMAGE_THUMBNAIL_FAILED: 194,
   OSS_OPERATION_FAILED: 195,
   SKILL_ZIP_READ_FAILED: 196,
+  DRIVE_SHARED_TAG_NOT_FOUND: 197,
 } as const;
 
 export type FrontendNetworkErrorCode =

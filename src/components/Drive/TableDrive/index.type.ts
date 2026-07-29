@@ -32,6 +32,8 @@ export interface TableDriveProps {
   initialNodeId?: string;
   /** 当前目录由外部导航承载时，通知外部写入新的目录位置。 */
   onCurrentNodeChange?: (nodeId: string) => void;
+  /** 路径加载失败时由外层处理，传入后不执行默认 toast 和根目录回退。 */
+  onPathError?: (error: unknown) => void;
   scope?: DriveScope;
   /** 面包屑区域由页面提供的附加控件，避免表格依赖具体布局实现。 */
   breadcrumbExtra?: ReactNode;

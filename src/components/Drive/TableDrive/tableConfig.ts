@@ -35,8 +35,6 @@ export function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTab
       break;
   }
 
-  const folderIconType =
-    node.type === 'folder' && node.systemType === 'shared' ? 'shared' : undefined;
   const resourceType = node.type === 'resource' ? node.resourceType : undefined;
   const resourceIconType =
     node.type === 'resource' || node.type === 'link' ? node.resourceIconType : undefined;
@@ -51,7 +49,6 @@ export function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTab
     id: node.id,
     name,
     entryType: node.type,
-    folderIconType,
     resourceType,
     resourceIconType,
     sizeLabel,

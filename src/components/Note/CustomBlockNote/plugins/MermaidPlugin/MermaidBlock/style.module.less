@@ -158,3 +158,107 @@
   max-height: none;
   padding-top: var(--space-sm);
 }
+
+.aiDiffSource,
+.aiDiffPreview {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: var(--space-sm);
+  overflow: auto;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  font-size: var(--font-size-xs);
+  line-height: 1.6;
+  tab-size: 2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.aiDiffComparison {
+  display: grid;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.aiDiffPanel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.aiDiffRemoved {
+  background: var(--diff-removed);
+  border-left: 2px solid var(--diff-removed-border);
+}
+
+.aiDiffAdded {
+  background: var(--diff-added);
+  border-top: 1px solid var(--border-light);
+  border-left: 2px solid var(--diff-added-border);
+}
+
+.aiDiffHeader {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-2xs) var(--space-xs);
+}
+
+.aiDiffViewTabs {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+
+.aiDiffViewButton {
+  padding: 2px var(--space-xs);
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.aiDiffViewButtonActive {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+.aiDiffPanelContent {
+  position: relative;
+  min-height: 88px;
+}
+
+.aiDiffPreview {
+  display: grid;
+  min-height: 88px;
+  max-height: 320px;
+  place-items: center;
+  overflow: auto;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.aiDiffDiagram {
+  width: max-content;
+  min-width: 100%;
+
+  :global(svg) {
+    display: block;
+    max-width: none;
+    height: auto;
+    margin: 0 auto;
+  }
+}
+
+.aiDiffRenderError {
+  color: var(--danger);
+  white-space: pre-wrap;
+}
+
+.aiDiffPanelHidden {
+  display: none;
+}

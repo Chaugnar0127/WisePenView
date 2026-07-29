@@ -21,7 +21,6 @@ function FolderTableNameCell<T extends FolderTableRow>({
       <span className={styles.entryIcon}>
         <EntryIcon
           entryType={row.entryType}
-          folderIconType={row.folderIconType}
           resourceType={row.resourceType}
           resourceIconType={row.resourceIconType}
         />

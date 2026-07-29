@@ -419,18 +419,21 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
     return node.tagId;
   };
 
-  const getSharedFolderTagId = async (): Promise<string | undefined> => {
+  const getSharedFolderTagId = async (): Promise<string> => {
     await delay(NETWORK_DELAY_MS);
     const existing = nodes.get(SHARED_FOLDER_NODE_ID);
     if (existing?.type === 'folder') {
       return existing.tagId;
     }
-    return undefined;
+    throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND);
   };
 
-  const getTrashFolderNodeId = async (): Promise<string | undefined> => {
+  const getTrashFolderNodeId = async (): Promise<string> => {
     await delay(NETWORK_DELAY_MS);
-    return md.nodes[TRASH_FOLDER_NODE_ID] ? TRASH_FOLDER_NODE_ID : undefined;
+    if (!md.nodes[TRASH_FOLDER_NODE_ID]) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_TRASH_TAG_NOT_FOUND);
+    }
+    return TRASH_FOLDER_NODE_ID;
   };
 
   return {

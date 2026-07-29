@@ -135,7 +135,8 @@
 /* 对比模式：代码 / 公式 / 表 列排布；块贴齐无缝 */
 .review[data-ai-diff-display-mode='compare'][data-ai-diff-content-type='codeBlock'],
 .review[data-ai-diff-display-mode='compare'][data-ai-diff-content-type='math'],
-.review[data-ai-diff-display-mode='compare'][data-ai-diff-content-type='table'] {
+.review[data-ai-diff-display-mode='compare'][data-ai-diff-content-type='table'],
+.review[data-ai-diff-display-mode='compare'][data-ai-diff-content-type='mermaid'] {
   flex-direction: column;
   gap: 0;
   max-width: 100%;
@@ -149,8 +150,14 @@
   width: 100%;
 }
 
+.review[data-ai-diff-content-type='mermaid'] {
+  width: 100%;
+}
+
 .review[data-ai-diff-content-type='codeBlock'] .comparison,
-.review[data-ai-diff-content-type='codeBlock'] .aiContentPlain {
+.review[data-ai-diff-content-type='codeBlock'] .aiContentPlain,
+.review[data-ai-diff-content-type='mermaid'] .comparison,
+.review[data-ai-diff-content-type='mermaid'] .aiContentPlain {
   width: 100%;
 }
 

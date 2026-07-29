@@ -118,7 +118,6 @@ function DriveDetailPanel({
         <span className={styles.detailIcon} aria-hidden="true">
           <EntryIcon
             entryType={selectedRow.entryType}
-            folderIconType={selectedRow.folderIconType}
             resourceType={selectedRow.resourceType}
             resourceIconType={selectedRow.resourceIconType}
           />

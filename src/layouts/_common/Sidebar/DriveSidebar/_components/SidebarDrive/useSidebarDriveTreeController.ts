@@ -2,7 +2,7 @@ import { replaceDriveTreeNodeChildren } from '@/components/Drive/common/buildDri
 import { getDriveScopeGroupId } from '@/components/Drive/common/driveComponentModel';
 import type { DataNode } from '@/components/Tree';
 import { useDriveService } from '@/domains';
-import type { DriveNode } from '@/domains/Drive';
+import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { useSidebarDriveExpansionStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveExpansionStore';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
@@ -19,17 +19,24 @@ interface SidebarTreeLoadResult {
 }
 
 interface UseSidebarDriveTreeControllerOptions {
+  scope: DriveNodeScope;
   buildTreeData: (nodes: DriveNode[], nodeMap: Map<string, DriveNode>) => DataNode[];
   onOpenResource: (node: Extract<DriveNode, { type: 'resource' | 'link' }>) => void;
 }
 
+function isSameDriveScope(left: DriveNodeScope, right: DriveNodeScope): boolean {
+  if (left.rootId !== right.rootId || left.type !== right.type) return false;
+  if (left.type === 'group' && right.type === 'group') return left.groupId === right.groupId;
+  return true;
+}
+
 export function useSidebarDriveTreeController({
+  scope,
   buildTreeData,
   onOpenResource,
 }: UseSidebarDriveTreeControllerOptions) {
   const driveService = useDriveService();
   const navigationLocation = useWorkspaceNavigationStore((state) => state.location);
-  const scope = navigationLocation.scope;
   const resourceLocation = navigationLocation.resource;
   const expansionScopeKey = scope.rootId;
   const groupId = getDriveScopeGroupId(scope);
@@ -50,13 +57,18 @@ export function useSidebarDriveTreeController({
       if (!baseRoot)
         return { treeData: [], nodeMap: nextNodeMap, expandedKeys: [], selectedKeys: [] };
 
-      if (resourceLocation) {
+      const isCurrentResourceInSidebarScope = isSameDriveScope(navigationLocation.scope, scope);
+      const selectedResourceLocation = isCurrentResourceInSidebarScope
+        ? resourceLocation
+        : undefined;
+
+      if (selectedResourceLocation) {
         try {
           const pathNodes = await driveService.getNodePath({
-            nodeId: resourceLocation.parentNodeId,
+            nodeId: selectedResourceLocation.parentNodeId,
             groupId,
           });
-          if (pathNodes.at(-1)?.id === resourceLocation.parentNodeId) {
+          if (pathNodes.at(-1)?.id === selectedResourceLocation.parentNodeId) {
             pathNodes.forEach((node) => {
               if (node.type === 'folder') expandedNodeIds.add(node.id);
             });
@@ -88,21 +100,22 @@ export function useSidebarDriveTreeController({
           const children = childrenByParent.get(String(treeNode.key));
           return children ? { ...treeNode, children: buildExpandedTree(children) } : treeNode;
         });
-      const parentChildren = resourceLocation
-        ? (childrenByParent.get(resourceLocation.parentNodeId) ?? [])
+      const parentChildren = selectedResourceLocation
+        ? (childrenByParent.get(selectedResourceLocation.parentNodeId) ?? [])
         : [];
-      const locatedNode = resourceLocation
-        ? resourceLocation.nodeId
-          ? parentChildren.find((node) => node.id === resourceLocation.nodeId)
+      const locatedNode = selectedResourceLocation
+        ? selectedResourceLocation.nodeId
+          ? parentChildren.find((node) => node.id === selectedResourceLocation.nodeId)
           : parentChildren.find(
               (node) =>
-                isSidebarResourceNode(node) && node.resourceId === resourceLocation.resourceId
+                isSidebarResourceNode(node) &&
+                node.resourceId === selectedResourceLocation.resourceId
             )
         : undefined;
       const selectedNodeId =
-        resourceLocation &&
+        selectedResourceLocation &&
         isSidebarResourceNode(locatedNode) &&
-        locatedNode.resourceId === resourceLocation.resourceId
+        locatedNode.resourceId === selectedResourceLocation.resourceId
           ? locatedNode.id
           : undefined;
       const availableExpandedNodeIds = [...expandedNodeIds].filter(

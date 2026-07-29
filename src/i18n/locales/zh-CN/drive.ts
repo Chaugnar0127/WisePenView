@@ -5,8 +5,10 @@ const zhCNDrive = {
     backToDrive: '返回云盘',
     viewAria: '云盘视图',
     tabs: {
-      drive: '云盘',
+      drive: '个人云盘',
       uploadQueue: '上传队列',
+      trash: '回收站',
+      shared: '共享',
       favorites: '我的收藏',
     },
   },

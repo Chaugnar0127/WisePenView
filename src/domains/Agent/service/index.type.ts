@@ -14,7 +14,12 @@ export interface UploadAgentAssetRequest {
 }
 
 export interface IAgentService {
-  createAgent(title: string, name?: string, description?: string): Promise<string>;
+  createAgent(
+    title: string,
+    name?: string,
+    description?: string,
+    pathTagId?: string
+  ): Promise<string>;
   getAgentDetail(resourceId: string, version?: number): Promise<AgentDetail>;
   saveAgentDraft(request: SaveAgentDraftRequest): Promise<void>;
   publishVersion(resourceId: string): Promise<void>;

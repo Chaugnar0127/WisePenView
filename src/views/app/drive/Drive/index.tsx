@@ -105,6 +105,10 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
 
   const handleSystemFolderNodeChange = (nodeId: string) => {
     if (viewMode !== 'trash' && viewMode !== 'shared') return;
+    if (nodeId === driveLocation.scope.rootId) {
+      navigate(buildDrivePath({ scope: driveLocation.scope }));
+      return;
+    }
     navigate(buildDriveSystemFolderPath({ view: viewMode, nodeId }));
   };
 

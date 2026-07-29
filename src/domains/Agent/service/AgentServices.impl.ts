@@ -11,8 +11,8 @@ interface AgentServicesDeps {
 }
 
 export const createAgentServices = ({ userService }: AgentServicesDeps): IAgentService => ({
-  async createAgent(title, name, description) {
-    const resourceId = await AgentApi.createAgent({ title, name, description });
+  async createAgent(title, name, description, pathTagId) {
+    const resourceId = await AgentApi.createAgent({ title, name, description, pathTagId });
     if (!resourceId) {
       throw createClientError(FRONTEND_CLIENT_ERROR.AGENT_CREATE_RESOURCE_ID_MISSING);
     }

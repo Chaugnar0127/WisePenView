@@ -72,7 +72,7 @@ const zhCNDrive = {
   },
   upload: {
     title: '上传文档',
-    description: '文件将上传到个人云盘根目录，并同步显示在上传队列',
+    description: '文件将上传到当前目录，并同步显示在上传队列',
     addToQueue: '添加到上传队列',
     zoneLabel: '点击或拖拽文档到此区域',
     zoneDescription: '支持一次选择多个文档，也可以逐个添加',

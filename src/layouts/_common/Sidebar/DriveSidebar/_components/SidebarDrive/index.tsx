@@ -2,7 +2,6 @@ import { buildDriveTreeData } from '@/components/Drive/common/buildDriveTreeData
 import {
   getDriveNodeLabel,
   getDriveScopeGroupId,
-  mountResourceToFolderTag,
   type DriveActionTarget,
 } from '@/components/Drive/common/driveComponentModel';
 import {
@@ -20,7 +19,7 @@ import {
 } from '@/components/Note/useMarkdownNoteImport';
 import type { DataNode } from '@/components/Tree';
 import Tree from '@/components/Tree';
-import { useDocumentService, useDriveService, useNoteService, useResourceService } from '@/domains';
+import { useNoteService } from '@/domains';
 import type { DriveNode, FolderNode, RootNode } from '@/domains/Drive';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
 import {
@@ -57,16 +56,13 @@ interface SidebarDriveCreateTarget {
 function SidebarDrive() {
   const { t } = useTranslation('drive');
   const location = useLocation();
-  const driveService = useDriveService();
-  const documentService = useDocumentService();
   const noteService = useNoteService();
-  const resourceService = useResourceService();
   const navigationLocation = useWorkspaceNavigationStore((state) => state.location);
   const scope = navigationLocation.scope;
   const groupId = getDriveScopeGroupId(scope);
   const openInWorkspace = useOpenInWorkspace();
   const [noteTarget, setNoteTarget] = useState<RootNode | FolderNode | null>(null);
-  const [uploadDocumentOpen, setUploadDocumentOpen] = useState(false);
+  const [uploadDocumentPathTagId, setUploadDocumentPathTagId] = useState<string>();
   const [driveCreateTarget, setDriveCreateTarget] = useState<SidebarDriveCreateTarget | null>(null);
   const [renameTarget, setRenameTarget] = useState<DriveActionTarget | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
@@ -78,52 +74,20 @@ function SidebarDrive() {
     return node.canMountResources ? node.tagId : undefined;
   };
 
-  const mountCreatedResource = async (
-    resourceId: string,
-    target: RootNode | FolderNode
-  ): Promise<void> => {
-    const targetTagId = resolveContainerMountTagId(target);
-    if (!targetTagId) return;
-
-    const targetGroupId = getDriveScopeGroupId(target.scope);
-    if (targetGroupId) {
-      const sharedTagId = await driveService.ensureSharedFolder();
-      await mountResourceToFolderTag({
-        resourceId,
-        targetTagId: sharedTagId,
-        documentService,
-        resourceService,
-      });
-      await resourceService.mountResourcesToGroupTag({
-        resourceIds: [resourceId],
-        groupId: targetGroupId,
-        tagId: targetTagId,
-      });
-      return;
-    }
-
-    await mountResourceToFolderTag({
-      resourceId,
-      targetTagId,
-      documentService,
-      resourceService,
-    });
-  };
-
   const {
     fileInputRef: markdownFileInputRef,
     importing: importingMarkdownNote,
     openFilePicker: openMarkdownFilePicker,
     handleFileChange: handleMarkdownFileChange,
   } = useMarkdownNoteImport({
-    mountCreatedResource: async (resourceId) => {
+    getPathTagId: () => {
       const target = importTargetRef.current;
       if (!target) {
         throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
           reason: 'Markdown 导入目标不存在',
         });
       }
-      await mountCreatedResource(resourceId, target);
+      return resolveContainerMountTagId(target);
     },
     onSuccess: ({ resourceId, title }) => {
       const target = importTargetRef.current;
@@ -167,7 +131,10 @@ function SidebarDrive() {
         setDriveCreateTarget({ type: 'agent', target: node });
         break;
       case 'upload':
-        setUploadDocumentOpen(true);
+        {
+          const pathTagId = resolveContainerMountTagId(node);
+          if (pathTagId) setUploadDocumentPathTagId(pathTagId);
+        }
         break;
     }
   };
@@ -231,11 +198,11 @@ function SidebarDrive() {
       }
       const { resourceId } = await noteService.createNote({
         title: t('create.defaultNoteTitle'),
+        pathTagId: resolveContainerMountTagId(noteTarget),
       });
       if (!resourceId) {
         throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_CREATE_RESOURCE_ID_MISSING);
       }
-      await mountCreatedResource(resourceId, noteTarget);
       return {
         resourceId,
         target: noteTarget,
@@ -298,8 +265,15 @@ function SidebarDrive() {
           loadData={handleLoadData}
         />
       )}
-      {uploadDocumentOpen ? (
-        <UploadDocumentModal isOpen onOpenChange={setUploadDocumentOpen} onSuccess={refreshTree} />
+      {uploadDocumentPathTagId ? (
+        <UploadDocumentModal
+          isOpen
+          pathTagId={uploadDocumentPathTagId}
+          onOpenChange={(open) => {
+            if (!open) setUploadDocumentPathTagId(undefined);
+          }}
+          onSuccess={refreshTree}
+        />
       ) : null}
       {driveCreateTarget ? (
         <DriveCreateModal
@@ -307,19 +281,19 @@ function SidebarDrive() {
           isOpen
           parentId={driveCreateTarget.target.id}
           groupId={getDriveScopeGroupId(driveCreateTarget.target.scope)}
+          pathTagId={resolveContainerMountTagId(driveCreateTarget.target)}
           parentLabel={getDriveNodeLabel(driveCreateTarget.target)}
           existingFolderNames={existingFolderNames}
           onOpenChange={(open) => {
             if (!open) setDriveCreateTarget(null);
           }}
-          onSuccess={async (createdId, type) => {
+          onSuccess={(createdId, type) => {
             const target = driveCreateTarget.target;
             if (type === 'folder') {
               setDriveCreateTarget(null);
               refreshTree();
               return;
             }
-            await mountCreatedResource(createdId, target);
             setDriveCreateTarget(null);
             openInWorkspace({
               resourceId: createdId,

@@ -9,7 +9,6 @@ import {
   isDocumentTerminalStatus,
 } from '@/domains/Document';
 import { parseErrorMessage } from '@/utils/error';
-import { DRIVE_UPLOAD_QUEUE_PATH } from '@/utils/navigation/driveRoute';
 import { parseExtension } from '@/utils/parser/extensionParser';
 import { createUuid } from '@/utils/random/createUuid';
 import { Button, toast } from '@heroui/react';
@@ -18,7 +17,6 @@ import type { TFunction } from 'i18next';
 import { CloudUpload, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import type { UploadDocumentModalProps } from './index.type';
 import styles from './style.module.less';
 
@@ -35,10 +33,14 @@ const PROCESS_STATUS_SYNC_MAX_ATTEMPTS = 15;
 const getDocumentStatusLabel = (status: string, t: TFunction<'drive'>): string =>
   t(`uploadQueue.status.document.${status}`, { defaultValue: status });
 
-/** 文档上传：MD5 -> init -> OSS PUT；后端注册成功后保存在个人根目录。 */
-function UploadDocumentModal({ isOpen, onOpenChange, onSuccess }: UploadDocumentModalProps) {
+/** 文档上传：MD5 -> init -> OSS PUT；后端注册成功后挂载到指定目录。 */
+function UploadDocumentModal({
+  isOpen,
+  pathTagId,
+  onOpenChange,
+  onSuccess,
+}: UploadDocumentModalProps) {
   const { t } = useTranslation(['drive', 'common']);
-  const navigate = useNavigate();
   const documentService = useDocumentService();
   const startUploads = useDriveUploadQueueStore((s) => s.startUploads);
   const updateQueuedUpload = useDriveUploadQueueStore((s) => s.updateUpload);
@@ -134,6 +136,7 @@ function UploadDocumentModal({ isOpen, onOpenChange, onSuccess }: UploadDocument
           try {
             const result = await documentService.uploadDocument({
               file,
+              pathTagId,
               onUploadInitialized: (payload) => {
                 updateQueuedUpload(uploadId, {
                   documentId: payload.documentId,
@@ -196,7 +199,6 @@ function UploadDocumentModal({ isOpen, onOpenChange, onSuccess }: UploadDocument
     toast.success(t('upload.feedback.queued', { count: filesToUpload.length }));
     resetState();
     onOpenChange(false);
-    navigate(DRIVE_UPLOAD_QUEUE_PATH);
   };
 
   return (

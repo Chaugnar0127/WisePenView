@@ -17,7 +17,7 @@ import {
   MARKDOWN_NOTE_FILE_ACCEPT,
   useMarkdownNoteImport,
 } from '@/components/Note/useMarkdownNoteImport';
-import { useDocumentService, useDriveService, useNoteService, useResourceService } from '@/domains';
+import { useDriveService, useNoteService } from '@/domains';
 import type { DriveNodeScope } from '@/domains/Drive';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
@@ -26,7 +26,7 @@ import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { mountResourceToFolderTag, type DriveActionTarget } from '../../common/driveComponentModel';
+import type { DriveActionTarget } from '../../common/driveComponentModel';
 import type { DriveTableRow, TableDriveActionConfig } from '../index.type';
 import type { CreateMenuItem } from '../parts/CreateMenu/index.type';
 
@@ -89,8 +89,6 @@ export function useTableDriveActionsController({
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
   const noteService = useNoteService();
   const driveService = useDriveService();
-  const documentService = useDocumentService();
-  const resourceService = useResourceService();
   const toolbarConfig = { ...DEFAULT_TOOLBAR_CONFIG, ...actions?.toolbar };
 
   const { loading: batchDeleting, run: runBatchDelete } = useRequest(
@@ -124,38 +122,13 @@ export function useTableDriveActionsController({
     .filter((row) => row.node.type === 'folder')
     .map((row) => row.name.trim());
 
-  const mountCreatedResource = async (resourceId: string) => {
-    if (!mountTagId) return;
-    if (groupId) {
-      const sharedTagId = await driveService.ensureSharedFolder();
-      await mountResourceToFolderTag({
-        resourceId,
-        targetTagId: sharedTagId,
-        documentService,
-        resourceService,
-      });
-      await resourceService.mountResourcesToGroupTag({
-        resourceIds: [resourceId],
-        groupId,
-        tagId: mountTagId,
-      });
-      return;
-    }
-    await mountResourceToFolderTag({
-      resourceId,
-      targetTagId: mountTagId,
-      documentService,
-      resourceService,
-    });
-  };
-
   const {
     fileInputRef: markdownFileInputRef,
     importing: importingMarkdownNote,
     openFilePicker: openMarkdownFilePicker,
     handleFileChange: handleMarkdownFileChange,
   } = useMarkdownNoteImport({
-    mountCreatedResource,
+    getPathTagId: () => mountTagId,
     onSuccess: ({ resourceId, title }) => {
       refresh();
       openInWorkspace({
@@ -169,11 +142,13 @@ export function useTableDriveActionsController({
 
   const { loading: creatingNote, run: runCreateNote } = useRequest(
     async () => {
-      const { resourceId } = await noteService.createNote({ title: t('create.defaultNoteTitle') });
+      const { resourceId } = await noteService.createNote({
+        title: t('create.defaultNoteTitle'),
+        pathTagId: mountTagId,
+      });
       if (!resourceId) {
         throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_CREATE_RESOURCE_ID_MISSING);
       }
-      await mountCreatedResource(resourceId);
       return resourceId;
     },
     {
@@ -193,13 +168,12 @@ export function useTableDriveActionsController({
     }
   );
 
-  const handleDriveCreateSuccess = async (createdId: string, type: DriveCreateType) => {
+  const handleDriveCreateSuccess = (createdId: string, type: DriveCreateType) => {
     if (type === 'folder') {
       setDriveCreateType(null);
       refresh();
       return;
     }
-    await mountCreatedResource(createdId);
     setDriveCreateType(null);
     refresh();
     openInWorkspace({
@@ -218,11 +192,14 @@ export function useTableDriveActionsController({
         onChange={handleMarkdownFileChange}
         hidden
       />
-      <UploadDocumentModal
-        isOpen={uploadDocumentOpen}
-        onOpenChange={setUploadDocumentOpen}
-        onSuccess={refresh}
-      />
+      {uploadDocumentOpen && mountTagId ? (
+        <UploadDocumentModal
+          isOpen
+          pathTagId={mountTagId}
+          onOpenChange={setUploadDocumentOpen}
+          onSuccess={refresh}
+        />
+      ) : null}
       {groupId && uploadOpen ? (
         <UploadFileToGroupModal
           isOpen={uploadOpen}
@@ -276,6 +253,7 @@ export function useTableDriveActionsController({
           isOpen
           parentId={currentNodeId}
           groupId={groupId}
+          pathTagId={mountTagId}
           existingFolderNames={existingFolderNames}
           onOpenChange={(open) => {
             if (!open) setDriveCreateType(null);
@@ -364,10 +342,8 @@ export function useTableDriveActionsController({
     }
   };
 
-  const showUploadDocument =
-    scope.type === 'personal' && currentNodeId === scope.rootId && !isTrashView;
-
   const canCreateInCurrentFolder = Boolean(mountTagId);
+  const showUploadDocument = canCreateInCurrentFolder && !isTrashView;
 
   const showCreateMenu = Boolean(
     !isTrashView &&

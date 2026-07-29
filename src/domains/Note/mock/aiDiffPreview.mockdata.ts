@@ -6,6 +6,11 @@ const text = (value: string, styles: Record<string, boolean | string> = {}) => (
   styles,
 });
 
+const inlineMath = (expression: string) => ({
+  type: 'inlineMath' as const,
+  props: { expression },
+});
+
 const textBlockProps = () => ({
   backgroundColor: 'default',
   textColor: 'default',
@@ -116,6 +121,46 @@ export const NOTE_AI_DIFF_PREVIEW_MOCK = {
       children: [],
     },
     {
+      id: 'mock-ai-diff-numbered-list',
+      type: 'numberedListItem',
+      props: { ...textBlockProps(), start: 1 },
+      content: [text('先完成范围核验，再评估结论是否可推广。')],
+      'ai-content': [text('先完成范围核验与样本复查，再评估结论是否可推广。')],
+      children: [],
+    },
+    {
+      id: 'mock-ai-diff-check-list',
+      type: 'checkListItem',
+      props: { ...textBlockProps(), checked: false },
+      content: [text('补充异常样本的负责人和处理时限。')],
+      'ai-content': [text('补充异常样本的负责人、处理时限和验收标准。')],
+      children: [],
+    },
+    {
+      id: 'mock-ai-diff-toggle-list',
+      type: 'toggleListItem',
+      props: textBlockProps(),
+      content: [text('展开后查看指标计算与数据清洗规则。')],
+      'ai-content': [text('展开后查看指标计算、数据清洗和口径变更规则。')],
+      children: [],
+    },
+    {
+      id: 'mock-ai-diff-inline-math',
+      type: 'paragraph',
+      props: textBlockProps(),
+      content: [
+        text('预测误差按 '),
+        inlineMath('MAE = \\frac{1}{n}\\sum |y_i - \\hat{y}_i|'),
+        text(' 计算。'),
+      ],
+      'ai-content': [
+        text('预测误差改按 '),
+        inlineMath('RMSE = \\sqrt{\\frac{1}{n}\\sum (y_i - \\hat{y}_i)^2}'),
+        text(' 计算。'),
+      ],
+      children: [],
+    },
+    {
       id: 'mock-ai-diff-code',
       type: 'codeBlock',
       props: { language: 'typescript' },
@@ -130,6 +175,45 @@ export const NOTE_AI_DIFF_PREVIEW_MOCK = {
       type: 'math',
       props: { expression: 'E = mc^2', autoEdit: false },
       'ai-content': 'E_k = \\frac{1}{2}mv^2',
+      children: [],
+    },
+    {
+      id: 'mock-ai-diff-highlight',
+      type: 'highlightBlock',
+      props: {
+        icon: '💡',
+        highlightBackgroundColor: 'yellow',
+        highlightBorderColor: 'auto',
+        highlightTextColor: 'default',
+        textAlignment: 'left',
+      },
+      content: [text('风险提示：当前高峰期延迟仍高于服务目标。')],
+      'ai-content': {
+        content: [text('风险提示：当前高峰期延迟仍高于服务目标，应限制扩容范围。')],
+        props: {
+          icon: '⚠️',
+          highlightBackgroundColor: 'orange',
+          highlightBorderColor: 'red',
+          highlightTextColor: 'default',
+          textAlignment: 'left',
+        },
+      },
+      children: [],
+    },
+    {
+      id: 'mock-ai-diff-mermaid',
+      type: 'mermaid',
+      props: {},
+      content: [
+        text(
+          'flowchart TD\n  A[接收请求] --> B{是否命中缓存}\n  B -->|是| C[返回结果]\n  B -->|否| D[查询服务]'
+        ),
+      ],
+      'ai-content': [
+        text(
+          'flowchart TD\n  A[接收请求] --> B{是否命中缓存}\n  B -->|是| C[返回结果]\n  B -->|否| D[查询服务]\n  D --> E[写入缓存]\n  E --> C'
+        ),
+      ],
       children: [],
     },
     {

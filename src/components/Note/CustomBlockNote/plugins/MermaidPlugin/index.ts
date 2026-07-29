@@ -1,9 +1,10 @@
 import { createBlockKeyboardNavigationExtension } from '../../engines/editor/keyboardNavigation';
 import { collectInlineTextMatches } from '../../engines/search/findReplace';
 import type { NoteBlockPlugin, NotePluginBundle } from '../../registry/types';
-import { createMermaidBlockSpec } from './MermaidBlock';
+import { mermaidBlockAiDiff } from './aiDiff';
 import { mermaidCodeEditorExtension } from './codeEditorExtension';
 import { mermaidMarkdownImport } from './markdownImport';
+import { createMermaidBlockSpec } from './MermaidBlock';
 import { createMermaidSlashMenuItem } from './slashMenuItem';
 import { readMermaidSource } from './source';
 
@@ -25,7 +26,7 @@ const mermaidBlockPlugin = {
   capabilities: {
     markdownImport: { support: 'custom' },
     markdownExport: { support: 'custom' },
-    aiDiff: { support: 'unsupported', reason: '图表 DSL 暂未定义可审阅的差异语义' },
+    aiDiff: { support: 'custom' },
     plainText: { support: 'custom' },
     findReplace: { support: 'custom' },
     print: { support: 'custom' },
@@ -54,6 +55,7 @@ const mermaidBlockPlugin = {
     collectMatches: ({ node, pos, query }) =>
       collectInlineTextMatches(node, pos, query, 'mermaid.block'),
   },
+  aiDiff: mermaidBlockAiDiff,
   markdownImport: mermaidMarkdownImport,
   markdownExport: {
     project: (block) => block,

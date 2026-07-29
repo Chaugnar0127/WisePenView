@@ -16,6 +16,20 @@ const zhCNShell = {
     sessions: '会话历史',
     drive: '云盘',
   },
+  commandPalette: {
+    open: '打开命令面板',
+    tooltip: '命令与搜索',
+    inputAria: '输入命令或搜索资源',
+    placeholder: '输入命令或搜索资源...',
+    close: '关闭命令面板',
+    searching: '正在搜索资源...',
+    groups: {
+      navigation: '前往',
+      create: '新建资源',
+      settings: '设置',
+      resources: '资源',
+    },
+  },
   userMenu: {
     aria: '用户菜单',
     openAria: '打开用户菜单',

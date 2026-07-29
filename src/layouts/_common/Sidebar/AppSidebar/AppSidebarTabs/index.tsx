@@ -6,13 +6,13 @@ import {
   type AppHeaderNavKey,
 } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive';
+import CommandPaletteTrigger from '@/layouts/AppNavigation/CommandPaletteTrigger';
 import { Tabs, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
 import { FolderOpen, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import GlobalSearch from '../_components/GlobalSearch';
 import SessionListGroup from '../SessionListGroup';
 import styles from './style.module.less';
 
@@ -88,7 +88,7 @@ function AppSidebarTabs() {
                 </Tooltip>
               </Tabs.Tab>
             </Tabs.List>
-            <GlobalSearch />
+            <CommandPaletteTrigger />
           </div>
         </Tabs.ListContainer>
 

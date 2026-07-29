@@ -16,6 +16,20 @@ const enUSShell = {
     sessions: 'Chat history',
     drive: 'Drive',
   },
+  commandPalette: {
+    open: 'Open command palette',
+    tooltip: 'Commands and search',
+    inputAria: 'Type a command or search resources',
+    placeholder: 'Type a command or search resources...',
+    close: 'Close command palette',
+    searching: 'Searching resources...',
+    groups: {
+      navigation: 'Go to',
+      create: 'Create resource',
+      settings: 'Settings',
+      resources: 'Resources',
+    },
+  },
   userMenu: {
     aria: 'User menu',
     openAria: 'Open user menu',

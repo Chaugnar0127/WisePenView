@@ -1,6 +1,8 @@
+import { useKeyPress } from 'ahooks';
 import { useState } from 'react';
 import { NavigationType, Outlet, useNavigate, useNavigationType } from 'react-router-dom';
 import { AppNavigationContext, type AppNavigationContextValue } from './AppNavigationContext';
+import CommandPalette from './CommandPalette';
 
 const readHistoryIndex = (): number | null => {
   const index = window.history.state?.idx;
@@ -17,6 +19,16 @@ function AppNavigationLayout() {
     observedNavigationType: navigationType,
     furthestIndex: currentIndex,
   }));
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+
+  useKeyPress(
+    ['ctrl.k', 'meta.k'],
+    (event) => {
+      event.preventDefault();
+      setCommandPaletteOpen((open) => !open);
+    },
+    { exactMatch: true }
+  );
 
   let furthestIndex = historyState.furthestIndex;
   if (
@@ -49,11 +61,13 @@ function AppNavigationLayout() {
       currentIndex < effectiveFurthestIndex,
     goBack: () => navigate(-1),
     goForward: () => navigate(1),
+    openCommandPalette: () => setCommandPaletteOpen(true),
   };
 
   return (
     <AppNavigationContext.Provider value={value}>
       <Outlet />
+      <CommandPalette isOpen={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
     </AppNavigationContext.Provider>
   );
 }

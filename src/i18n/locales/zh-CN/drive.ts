@@ -205,6 +205,7 @@ const zhCNDrive = {
     batchDeleted: '已删除 {{count}} 项',
     movedSingle: '已移动',
     trashNotFound: '未找到回收站',
+    dropToUpload: '松开以上传文档',
     addFromPersonal: '从个人云盘添加',
     expandDetails: '展开详情侧栏',
     collapseDetails: '收起详情侧栏',

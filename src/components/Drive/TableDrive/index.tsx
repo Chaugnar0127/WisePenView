@@ -4,6 +4,7 @@ import type { DriveNode } from '@/domains/Drive';
 import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core';
 import { Button } from '@heroui/react';
 import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   getDriveNodeLabel,
@@ -14,6 +15,7 @@ import { useClickNode } from '../common/useClickNode';
 import {
   useTableDriveActionsController,
   useTableDriveDndController,
+  useTableDriveExternalDndController,
   useTableDriveInteractionController,
   useTableDriveNavigationController,
   useTableDriveRowActionsController,
@@ -22,7 +24,7 @@ import {
 import type { DriveTableRow, TableDriveProps } from './index.type';
 import CreateMenu from './parts/CreateMenu';
 import DriveDetailPanel from './parts/DriveDetailPanel';
-import { DriveDragOverlay } from './parts/DriveDnd';
+import { DriveDragOverlay, ExternalFileDroppableBreadcrumb } from './parts/DriveDnd';
 import styles from './style.module.less';
 import { buildDriveTableColumns, isDrivePinnedFirstRow } from './tableConfig';
 
@@ -97,6 +99,13 @@ function TableDrive({
   });
 
   const mountTagId = resolveCurrentFolderTagId(navigation.currentNodeId, navigation.pathNodes);
+  const externalDnd = useTableDriveExternalDndController({
+    pathTagId: mountTagId,
+    isTrashView: trash.isTrashView,
+    rowMap: interaction.rowMap,
+    pathNodes: navigation.pathNodes,
+    onUploadSuccess: navigation.refresh,
+  });
 
   const actionsController = useTableDriveActionsController({
     currentNodeId: navigation.currentNodeId,
@@ -144,6 +153,15 @@ function TableDrive({
     onOpenResourcePermission: actionsController.openResourcePermission,
   });
 
+  const renderNameContent = (content: ReactNode, row: DriveTableRow) => (
+    <span
+      className={styles.externalFileDropTarget}
+      data-drop-target={externalDnd.activeDropRowId === row.id ? 'true' : undefined}
+    >
+      {dnd.renderNameContent(content, row)}
+    </span>
+  );
+
   const breadcrumb = (() => {
     const items = toBreadcrumbItems(navigation.pathNodes);
     return (
@@ -151,7 +169,15 @@ function TableDrive({
         <FolderTable.Breadcrumb
           items={items}
           onJump={handleEnterFolder}
-          renderItem={dnd.renderBreadcrumbItem}
+          renderItem={(content, item) => (
+            <ExternalFileDroppableBreadcrumb
+              nodeId={item.id}
+              isActive={externalDnd.activeBreadcrumbNodeId === item.id}
+              handlers={externalDnd.breadcrumbDragHandlers}
+            >
+              {dnd.renderBreadcrumbItem(content, item)}
+            </ExternalFileDroppableBreadcrumb>
+          )}
         />
         {breadcrumbExtra}
       </>
@@ -253,7 +279,15 @@ function TableDrive({
                 selectedRowKey={interaction.selectedRow?.id}
                 onRowSelect={handleRowSelect}
                 onRowActivate={handleClickNode}
-                renderNameContent={dnd.renderNameContent}
+                renderNameContent={renderNameContent}
+                bodyDragHandlers={externalDnd.bodyDragHandlers}
+                bodyOverlay={
+                  externalDnd.isBackgroundDropActive ? (
+                    <div className={styles.fileDropOverlay} aria-hidden="true">
+                      {t('table.dropToUpload')}
+                    </div>
+                  ) : null
+                }
                 totalCount={interaction.currentDirectoryItemCount}
                 summary={t('table.summary', { count: interaction.currentDirectoryItemCount })}
                 className={styles.table}

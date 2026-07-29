@@ -208,6 +208,7 @@ const enUSDrive = {
     batchDeleted: 'Deleted {{count}} items',
     movedSingle: 'Moved',
     trashNotFound: 'Trash not found',
+    dropToUpload: 'Drop to upload documents',
     addFromPersonal: 'Add from Personal Drive',
     expandDetails: 'Expand details sidebar',
     collapseDetails: 'Collapse details sidebar',

@@ -24,10 +24,10 @@ function AssistantMessage({ message, model, streaming }: AssistantMessageProps) 
     .filter(isTextUIPart)
     .map((part) => part.text)
     .join('');
-  const reasoningParts = message.parts.filter(isReasoningUIPart);
-  const reasoningText = reasoningParts.map((part) => part.text).join('\n\n');
-  const firstReasoningIndex = message.parts.findIndex(isReasoningUIPart);
-  const isReasoningStreaming = reasoningParts.some((part) => part.state === 'streaming');
+  const lastReasoningIndex = message.parts.reduce(
+    (lastIndex, part, index) => (isReasoningUIPart(part) ? index : lastIndex),
+    -1
+  );
   const hasVisibleContent = message.parts.some((part) => {
     if (isTextUIPart(part)) return Boolean(part.text);
     if (isReasoningUIPart(part)) return Boolean(part.text) || part.state === 'streaming';
@@ -64,13 +64,16 @@ function AssistantMessage({ message, model, streaming }: AssistantMessageProps) 
             );
           }
           if (isReasoningUIPart(part)) {
-            if (index !== firstReasoningIndex) return null;
             return (
               <ReasoningBlock
                 key={key}
-                content={reasoningText}
-                loading={isReasoningStreaming}
-                durationSeconds={message.metadata?.reasoningDurationSeconds}
+                content={part.text}
+                loading={part.state === 'streaming'}
+                durationSeconds={
+                  index === lastReasoningIndex
+                    ? message.metadata?.reasoningDurationSeconds
+                    : undefined
+                }
               />
             );
           }

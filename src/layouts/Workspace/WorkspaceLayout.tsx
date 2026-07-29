@@ -389,14 +389,15 @@ function WorkspaceLayout() {
         aria-hidden={sidebarCollapsed ? true : undefined}
         onResize={handleLeftSidebarResize}
       >
-        <AppSidebar
-          collapsed={sidebarCollapsed}
-          canGoBack={appNavigation.canGoBack}
-          canGoForward={appNavigation.canGoForward}
-          onGoBack={appNavigation.goBack}
-          onGoForward={appNavigation.goForward}
-          onToggle={handleSidebarToggle}
-        />
+        {sidebarCollapsed ? null : (
+          <AppSidebar
+            canGoBack={appNavigation.canGoBack}
+            canGoForward={appNavigation.canGoForward}
+            onGoBack={appNavigation.goBack}
+            onGoForward={appNavigation.goForward}
+            onToggle={handleSidebarToggle}
+          />
+        )}
       </SystemResizablePanel>
 
       <SystemResizableHandle

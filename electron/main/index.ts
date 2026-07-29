@@ -88,12 +88,20 @@ function protectWindowNavigation(contents: WebContents): void {
 }
 
 function createMainWindow(): BrowserWindow {
+  const isMac = process.platform === 'darwin';
   const window = new BrowserWindow({
     minWidth: WINDOW_MIN_WIDTH,
     minHeight: WINDOW_MIN_HEIGHT,
     width: WINDOW_DEFAULT_WIDTH,
     height: WINDOW_DEFAULT_HEIGHT,
     backgroundColor: '#F8FAFB',
+    ...(isMac
+      ? {
+          titleBarStyle: 'hiddenInset' as const,
+          // 原生红绿灯坐标，可在此手动微调。
+          trafficLightPosition: { x: 20, y: 18 },
+        }
+      : {}),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -104,6 +112,13 @@ function createMainWindow(): BrowserWindow {
   });
 
   protectWindowNavigation(window.webContents);
+
+  const notifyFullScreenChanged = () => {
+    window.webContents.send(DESKTOP_CHANNEL.fullScreenChanged, window.isFullScreen());
+  };
+  window.webContents.on('did-finish-load', notifyFullScreenChanged);
+  window.on('enter-full-screen', notifyFullScreenChanged);
+  window.on('leave-full-screen', notifyFullScreenChanged);
 
   if (DEV_RENDERER_URL) {
     void window.loadURL(DEV_RENDERER_URL);

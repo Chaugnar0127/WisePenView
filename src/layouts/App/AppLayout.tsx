@@ -1,4 +1,5 @@
 import { APP_MAIN_MIN_WIDTH, LAYOUT_DENSITY, resolveLayoutDensity } from '@/constants/layoutScale';
+import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
 import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
 import {
@@ -41,6 +42,7 @@ function AppLayout() {
   const sidebarPanelRef = useRef<PanelImperativeHandle | null>(null);
   const pendingSidebarWidthRef = useRef<number | null>(null);
   const sidebarWidth = clampSidebarWidth(storedSidebarWidth);
+  const desktopWindow = useDesktopWindowState();
   const sidebarPanelSize = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : sidebarWidth;
 
   const persistSidebarWidthFromPanel = () => {
@@ -87,19 +89,6 @@ function AppLayout() {
 
   return (
     <div className={styles.root} data-layout-density={density}>
-      {sidebarCollapsed ? (
-        <div className={styles.collapsedHeaderControls}>
-          <AppNavigationControls
-            sidebarCollapsed
-            canGoBack={appNavigation.canGoBack}
-            canGoForward={appNavigation.canGoForward}
-            onGoBack={appNavigation.goBack}
-            onGoForward={appNavigation.goForward}
-            onToggleSidebar={handleSidebarToggle}
-          />
-        </div>
-      ) : null}
-
       <SystemResizablePanelGroup
         orientation="horizontal"
         className={styles.panelGroup}
@@ -117,14 +106,15 @@ function AppLayout() {
           aria-hidden={sidebarCollapsed ? true : undefined}
           onResize={handleSidebarResize}
         >
-          <AppSidebar
-            collapsed={sidebarCollapsed}
-            canGoBack={appNavigation.canGoBack}
-            canGoForward={appNavigation.canGoForward}
-            onGoBack={appNavigation.goBack}
-            onGoForward={appNavigation.goForward}
-            onToggle={handleSidebarToggle}
-          />
+          {sidebarCollapsed ? null : (
+            <AppSidebar
+              canGoBack={appNavigation.canGoBack}
+              canGoForward={appNavigation.canGoForward}
+              onGoBack={appNavigation.goBack}
+              onGoForward={appNavigation.goForward}
+              onToggle={handleSidebarToggle}
+            />
+          )}
         </SystemResizablePanel>
 
         <SystemResizableHandle
@@ -137,6 +127,28 @@ function AppLayout() {
           minSize={APP_MAIN_MIN_WIDTH}
           className={styles.middleLayout}
         >
+          {desktopWindow.isDesktop || sidebarCollapsed ? (
+            <header
+              className={clsx(
+                desktopWindow.isDesktop ? styles.desktopHeader : styles.webCollapsedHeader,
+                desktopWindow.hasMacTitleBarInset && styles.macDesktopHeader
+              )}
+            >
+              {sidebarCollapsed ? (
+                <div className={styles.collapsedHeaderControls}>
+                  <AppNavigationControls
+                    sidebarCollapsed
+                    showHistory={desktopWindow.isDesktop}
+                    canGoBack={appNavigation.canGoBack}
+                    canGoForward={appNavigation.canGoForward}
+                    onGoBack={appNavigation.goBack}
+                    onGoForward={appNavigation.goForward}
+                    onToggleSidebar={handleSidebarToggle}
+                  />
+                </div>
+              ) : null}
+            </header>
+          ) : null}
           <main className={styles.middleContent}>
             <Outlet />
           </main>

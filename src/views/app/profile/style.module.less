@@ -3,19 +3,19 @@
   flex-direction: column;
   min-height: 0;
   height: 100%;
-  max-width: 1200px;
+  max-width: var(--app-page-max-width);
   margin: 0 auto;
   padding: var(--space-lg) var(--space-xl);
   box-sizing: border-box;
 }
 
 .pageHeader {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 }
 
 .pageTitle {
-  font-size: 24px;
-  margin: 0 0 16px 0;
+  font-size: calc(var(--font-size-heading-3) + 4px);
+  margin: 0 0 var(--space-xs) 0;
   color: var(--foreground);
 }
 

@@ -40,11 +40,22 @@
     var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)))
     var(--space-lg) var(--chat-message-inline-padding, var(--space-lg));
   box-sizing: border-box;
+
+  &[data-empty='true'] {
+    /* 空会话与输入框共用对称中心轴，不需要为历史导航预留右侧空间 */
+    padding-inline-end: var(
+      --chat-welcome-inline-padding-end,
+      var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)))
+    );
+  }
 }
 
 .welcomeItem {
   flex: 1 1 auto;
+  width: 100%;
+  max-width: var(--chat-input-max-width);
   min-height: 100%;
+  margin-inline: auto;
   display: flex;
   content-visibility: visible;
 }

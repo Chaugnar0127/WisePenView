@@ -21,6 +21,7 @@
   --chat-message-inline-padding-end: calc(var(--space-xl) + var(--space-xl));
   --chat-message-max-width: none;
   --chat-content-max-width: none;
+  --chat-input-max-width: 100%;
   /* 侧栏：用户消息收窄，避免占满整栏 */
   --chat-user-message-max-width: 72%;
   --chat-avatar-size: 24px;
@@ -56,6 +57,8 @@
     --chat-message-inline-padding-end: calc(var(--space-lg) + var(--space-xl) + var(--space-md));
     --chat-content-max-width: 1040px;
     --chat-message-max-width: var(--chat-content-max-width);
+    --chat-input-max-width: 800px;
+    --chat-welcome-inline-padding-end: var(--chat-message-inline-padding);
     --chat-user-message-max-width: 520px;
     --chat-avatar-size: 28px;
     --chat-model-meta-font-size: var(--font-size-lg);
@@ -188,20 +191,27 @@
 }
 
 .footerSlot {
+  box-sizing: border-box;
   flex-shrink: 0;
   position: sticky;
   bottom: 0;
   z-index: 1;
   width: 100%;
+  min-width: 0;
   margin-top: calc(-1 * var(--space-lg));
-  padding: var(--space-lg)
-    var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)))
-    var(--space-xs) var(--chat-message-inline-padding, var(--space-lg));
+  padding: var(--space-lg) var(--chat-message-inline-padding, var(--space-lg)) var(--space-xs);
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--chat-shell-bg, var(--surface)) 0%, transparent) 0%,
     var(--chat-shell-bg, var(--surface)) 20%
   );
+}
+
+.inputColumn {
+  width: 100%;
+  max-width: var(--chat-input-max-width);
+  min-width: 0;
+  margin-inline: auto;
 }
 
 .sessionList {

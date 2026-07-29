@@ -2,7 +2,7 @@ import { FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH } from '@/constants/layoutScale';
 import { TextArea } from '@heroui/react';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChatInputStoreProvider } from './_store/ChatInputStoreProvider';
 import AttachmentStrip from './AttachmentStrip';
@@ -26,7 +26,6 @@ function ChatInputContent({
   fullWidth,
 }: ChatInputProps) {
   const { t } = useTranslation('chat');
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const inputCardRef = useRef<HTMLDivElement>(null);
   const [measuredCompactModelTrigger, setMeasuredCompactModelTrigger] = useState(false);
   const { containerProps, isDragOver, textAreaProps, toolbarProps } = useChatInputController({
@@ -65,24 +64,6 @@ function ChatInputContent({
     return () => observer.disconnect();
   }, [fullWidth]);
 
-  useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    // 先压到 0 再读 scrollHeight，避免沿用错误的大高度
-    textarea.style.height = '0px';
-    const contentHeight = textarea.scrollHeight;
-    const computedMax = window.getComputedStyle(textarea).maxHeight;
-    const parsedMax = Number.parseFloat(computedMax);
-    // calc(...) 时 parseFloat 为 NaN；侧栏与 fullWidth 共用同一回退上限
-    const maxHeightPx = Number.isFinite(parsedMax) ? parsedMax : 16 * 16 + 16;
-    const minHeightPx = Number.parseFloat(window.getComputedStyle(textarea).minHeight);
-    const floor = Number.isFinite(minHeightPx) ? minHeightPx : 0;
-    const nextHeight = Math.min(Math.max(contentHeight, floor), maxHeightPx);
-    textarea.style.height = `${nextHeight}px`;
-    textarea.style.overflowY = contentHeight > nextHeight ? 'auto' : 'hidden';
-  }, [textAreaProps.value]);
-
   const modelIconOnly = !fullWidth || measuredCompactModelTrigger;
 
   return (
@@ -113,7 +94,6 @@ function ChatInputContent({
 
         <TextArea
           {...textAreaProps}
-          ref={textareaRef}
           placeholder={t('input.placeholder')}
           rows={1}
           className={styles.textarea}

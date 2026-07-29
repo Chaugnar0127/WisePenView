@@ -59,7 +59,7 @@ function MessageList({
           <MessageScrollerContent className={styles.scrollColumn}>
             <StreamingScrollFollower active={isGenerating} messages={messages} />
 
-            <div className={styles.messagesBody}>
+            <div className={styles.messagesBody} data-empty={messages.length === 0}>
               {messages.length === 0 ? (
                 <MessageScrollerItem className={styles.welcomeItem}>
                   <Welcome />

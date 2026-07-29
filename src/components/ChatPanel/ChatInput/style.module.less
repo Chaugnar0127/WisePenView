@@ -119,8 +119,9 @@
   width: 100%;
   min-height: calc(1.6em + 16px);
   max-height: var(--chat-input-textarea-max-height, calc(16em + 16px));
-  overflow-y: hidden;
+  overflow-y: auto;
   resize: none !important;
+  field-sizing: content;
   border: none !important;
   box-shadow: none !important;
   background: transparent !important;
@@ -128,16 +129,6 @@
   font-size: var(--font-size-base);
   line-height: 1.6;
   color: var(--foreground);
-
-  /* HeroUI TextArea：样式可能落在包裹层，实际 textarea 需同步约束 */
-  :global(textarea) {
-    min-height: inherit !important;
-    max-height: inherit !important;
-    height: inherit;
-    overflow-y: inherit;
-    resize: none !important;
-    field-sizing: fixed;
-  }
 
   &::placeholder {
     color: var(--field-placeholder);

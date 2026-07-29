@@ -38,12 +38,15 @@
   }
 }
 
+.macDesktopAlignedRoot .toolbar {
+  transform: translateY(var(--desktop-header-content-offset-y, 1px));
+}
+
 .macDesktopRoot .bar {
   padding-left: 92px;
   -webkit-app-region: drag;
 
   .toolbar {
-    transform: translateY(2px);
     -webkit-app-region: no-drag;
   }
 }

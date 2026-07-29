@@ -1,13 +1,15 @@
 @import '@/styles/scrollbar.module.less';
 
 .sidebar {
+  --sidebar-drive-edge-inset: var(--space-2xs, 4px);
+
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   background: transparent;
   overflow: auto;
-  padding: 8px 4px;
+  padding: 8px var(--sidebar-drive-edge-inset);
   .appSubtleScrollbar();
 }
 
@@ -34,7 +36,10 @@
   :global(.wisepen-tree__item) {
     min-height: 40px;
     width: 100%;
-    padding: 0 2px;
+    padding: 0;
+    padding-left: calc(
+      var(--sidebar-content-inset, var(--space-lg)) - var(--sidebar-drive-edge-inset)
+    );
     color: var(--muted);
     border-radius: var(--radius-md, 6px);
     box-sizing: border-box;
@@ -85,6 +90,11 @@
     width: 20px;
     height: 20px;
     color: var(--muted);
+  }
+
+  > :global(.wisepen-tree__item):first-child
+    :global(.wisepen-tree__switcher-placeholder) {
+    display: none;
   }
 
   :global(.wisepen-tree__title) {

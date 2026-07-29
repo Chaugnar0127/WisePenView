@@ -41,7 +41,7 @@
   -webkit-app-region: drag;
 
   > * {
-    transform: translateY(1px);
+    transform: translateY(var(--desktop-header-content-offset-y, 1px));
     -webkit-app-region: no-drag;
   }
 }
@@ -51,7 +51,7 @@
   min-width: 0;
   height: 48px;
   margin: 0;
-  padding: 0 var(--space-lg);
+  padding: 0 var(--sidebar-content-inset, var(--space-lg));
   border: none;
   border-radius: var(--radius, 8px);
   background: transparent;

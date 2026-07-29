@@ -34,6 +34,7 @@ function WorkspaceHeader({
       className={clsx(
         styles.root,
         desktopWindow.isDesktop && styles.desktopRoot,
+        desktopWindow.hasMacTitleBarInset && styles.macDesktopAlignedRoot,
         leftSidebarCollapsed && desktopWindow.hasMacTitleBarInset && styles.macDesktopRoot,
         leftSidebarCollapsed &&
           desktopWindow.isDesktop &&

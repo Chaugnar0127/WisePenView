@@ -47,17 +47,19 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
           />
         </div>
         <div className={styles.footerSlot}>
-          <ChatInput
-            onSend={handleSend}
-            getUploadSessionId={ensureChatSession}
-            sending={sending}
-            onStop={stop}
-            contextPreview={resourceChatContext?.preview}
-            onClearContext={clearResourceChatContext}
-            injectedAgents={agentDebug ? [agentDebug.agent] : undefined}
-            preferredAgent={agentDebug?.agent}
-            fullWidth={fullWidth}
-          />
+          <div className={styles.inputColumn}>
+            <ChatInput
+              onSend={handleSend}
+              getUploadSessionId={ensureChatSession}
+              sending={sending}
+              onStop={stop}
+              contextPreview={resourceChatContext?.preview}
+              onClearContext={clearResourceChatContext}
+              injectedAgents={agentDebug ? [agentDebug.agent] : undefined}
+              preferredAgent={agentDebug?.agent}
+              fullWidth={fullWidth}
+            />
+          </div>
         </div>
       </div>
 

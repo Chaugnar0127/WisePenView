@@ -31,7 +31,8 @@ import { useCompactChatCollapse } from '@/layouts/_common/useCompactChatCollapse
 import { useCompactSidebarCollapse } from '@/layouts/_common/useCompactSidebarCollapse';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
-import { useEnterZenMode } from '@/layouts/ZenMode/useEnterZenMode';
+// Zen Mode 暂不上线，保留进入逻辑便于后续恢复。
+// import { useEnterZenMode } from '@/layouts/ZenMode/useEnterZenMode';
 import { normalizeResourceKind, resolveResourceViewer } from '@/utils/navigation/resourceTarget';
 import WorkspaceResourceSidePanelActions from '@/views/workspace/_components/WorkspaceResourceSidePanel/Actions';
 import { useWorkspaceResourceSidePanelStore } from '@/views/workspace/_store/useWorkspaceResourceSidePanelStore';
@@ -75,7 +76,7 @@ function WorkspaceLayout() {
   const { t } = useTranslation('workspace');
   const appNavigation = useAppNavigation();
   const openResource = useOpenInWorkspace();
-  const enterZenMode = useEnterZenMode();
+  // const enterZenMode = useEnterZenMode();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () =>
       typeof window !== 'undefined' &&
@@ -299,21 +300,21 @@ function WorkspaceLayout() {
     setLayoutConfigState({});
   };
 
-  const handleEnterZenMode = () => {
-    const { resourceId, resourceType, viewer } = routeContext;
-    if (!resourceId || !resourceType) return;
-    const resourceName =
-      layoutConfig.header === false ? undefined : layoutConfig.header?.resource?.resourceName;
-    enterZenMode(
-      {
-        resourceId,
-        resourceType,
-        resourceName,
-        viewer,
-      },
-      useWorkspaceNavigationStore.getState().location
-    );
-  };
+  // const handleEnterZenMode = () => {
+  //   const { resourceId, resourceType, viewer } = routeContext;
+  //   if (!resourceId || !resourceType) return;
+  //   const resourceName =
+  //     layoutConfig.header === false ? undefined : layoutConfig.header?.resource?.resourceName;
+  //   enterZenMode(
+  //     {
+  //       resourceId,
+  //       resourceType,
+  //       resourceName,
+  //       viewer,
+  //     },
+  //     useWorkspaceNavigationStore.getState().location
+  //   );
+  // };
 
   const resourceHostContext = {
     hostId: DEFAULT_RESOURCE_HOST_ID,
@@ -364,7 +365,8 @@ function WorkspaceLayout() {
         onGoForward={appNavigation.goForward}
         onToggleLeftSidebar={handleSidebarToggle}
         onToggleRightSidebar={handleChatPanelToggle}
-        onEnterZenMode={handleEnterZenMode}
+        // Zen Mode 暂不上线，暂不向 Header 提供入口。
+        // onEnterZenMode={handleEnterZenMode}
       />
     );
   };
@@ -389,14 +391,15 @@ function WorkspaceLayout() {
         aria-hidden={sidebarCollapsed ? true : undefined}
         onResize={handleLeftSidebarResize}
       >
-        <AppSidebar
-          collapsed={sidebarCollapsed}
-          canGoBack={appNavigation.canGoBack}
-          canGoForward={appNavigation.canGoForward}
-          onGoBack={appNavigation.goBack}
-          onGoForward={appNavigation.goForward}
-          onToggle={handleSidebarToggle}
-        />
+        {sidebarCollapsed ? null : (
+          <AppSidebar
+            canGoBack={appNavigation.canGoBack}
+            canGoForward={appNavigation.canGoForward}
+            onGoBack={appNavigation.goBack}
+            onGoForward={appNavigation.goForward}
+            onToggle={handleSidebarToggle}
+          />
+        )}
       </SystemResizablePanel>
 
       <SystemResizableHandle

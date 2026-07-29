@@ -7,14 +7,12 @@ import {
   type AppHeaderNavKey,
 } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import { ListBox, ListBoxItem } from '@heroui/react';
-import clsx from 'clsx';
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { AppHeaderNavProps } from './index.type';
 import styles from './style.module.less';
 
-function AppHeaderNav({ collapsed }: AppHeaderNavProps) {
+function AppHeaderNav() {
   const { t } = useTranslation('shell');
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,19 +73,16 @@ function AppHeaderNav({ collapsed }: AppHeaderNavProps) {
     const observer = new ResizeObserver(syncIndicator);
     if (containerEl) observer.observe(containerEl);
     return () => observer.disconnect();
-  }, [activeNavKey, collapsed]);
+  }, [activeNavKey]);
 
   return (
-    <div
-      ref={containerRef}
-      className={clsx(styles.navContainer, collapsed && styles.navContainerCollapsed)}
-    >
+    <div ref={containerRef} className={styles.navContainer}>
       <div ref={indicatorRef} className={styles.indicator} />
       <ListBox
         aria-label={t('navigation.appAria')}
         selectionMode="single"
         selectedKeys={selectedKeys}
-        className={clsx(styles.headerMenu, collapsed && styles.headerMenuCollapsed)}
+        className={styles.headerMenu}
       >
         {APP_HEADER_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -97,13 +92,13 @@ function AppHeaderNav({ collapsed }: AppHeaderNavProps) {
               key={item.key}
               ref={setItemRef(item.key)}
               textValue={label}
-              className={clsx(styles.menuItem, collapsed && styles.menuItemCollapsed)}
+              className={styles.menuItem}
               onPress={() => handleNavItemPress(item.key)}
             >
               <span className={styles.menuIcon}>
                 <Icon size={18} />
               </span>
-              {!collapsed && <span className={styles.menuLabel}>{label}</span>}
+              <span className={styles.menuLabel}>{label}</span>
             </ListBoxItem>
           );
         })}

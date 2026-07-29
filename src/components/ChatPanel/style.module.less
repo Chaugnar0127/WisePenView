@@ -21,6 +21,7 @@
   --chat-message-inline-padding-end: calc(var(--space-xl) + var(--space-xl));
   --chat-message-max-width: none;
   --chat-content-max-width: none;
+  --chat-input-max-width: 100%;
   /* 侧栏：用户消息收窄，避免占满整栏 */
   --chat-user-message-max-width: 72%;
   --chat-avatar-size: 24px;
@@ -29,18 +30,18 @@
   --history-nav-preview-font-size: var(--font-size-xs);
   --history-nav-item-padding-block: var(--space-2xs);
   --history-nav-item-padding-inline: var(--space-xs);
-  --history-nav-item-gap: var(--space-md);
-  --history-nav-panel-padding-block: var(--space-md);
-  --history-nav-panel-padding-inline: var(--space-lg);
-  --history-nav-panel-min-width: 148px;
-  --history-nav-panel-max-width: 260px;
-  --history-nav-bar-width: 12px;
-  --history-nav-bar-hover-width: 18px;
-  --history-nav-bar-active-width: 22px;
-  --history-nav-bar-height: 3px;
-  --history-nav-bar-hover-height: 5px;
-  --history-nav-bar-active-height: 6px;
-  --history-nav-bar-gap: var(--space-sm);
+  --history-nav-item-gap: var(--space-sm);
+  --history-nav-panel-padding-block: var(--space-sm);
+  --history-nav-panel-padding-inline: var(--space-md);
+  --history-nav-panel-min-width: 136px;
+  --history-nav-panel-max-width: 220px;
+  --history-nav-bar-width: 8px;
+  --history-nav-bar-hover-width: 12px;
+  --history-nav-bar-active-width: 16px;
+  --history-nav-bar-height: 2px;
+  --history-nav-bar-hover-height: 3px;
+  --history-nav-bar-active-height: 3px;
+  --history-nav-bar-gap: var(--space-xs);
 
   &.fullWidth {
     min-width: 0;
@@ -56,25 +57,27 @@
     --chat-message-inline-padding-end: calc(var(--space-lg) + var(--space-xl) + var(--space-md));
     --chat-content-max-width: 1040px;
     --chat-message-max-width: var(--chat-content-max-width);
+    --chat-input-max-width: 800px;
+    --chat-welcome-inline-padding-end: var(--chat-message-inline-padding);
     --chat-user-message-max-width: 520px;
     --chat-avatar-size: 28px;
     --chat-model-meta-font-size: var(--font-size-lg);
-    /* 历史导航：全宽放大字号与点击区 */
-    --history-nav-preview-font-size: var(--font-size-sm);
-    --history-nav-item-padding-block: var(--space-xs);
-    --history-nav-item-padding-inline: var(--space-sm);
-    --history-nav-item-gap: var(--space-lg);
-    --history-nav-panel-padding-block: var(--space-lg);
-    --history-nav-panel-padding-inline: var(--space-xl);
-    --history-nav-panel-min-width: 200px;
-    --history-nav-panel-max-width: 320px;
-    --history-nav-bar-width: 16px;
-    --history-nav-bar-hover-width: 24px;
-    --history-nav-bar-active-width: 28px;
-    --history-nav-bar-height: 4px;
-    --history-nav-bar-hover-height: 6px;
-    --history-nav-bar-active-height: 7px;
-    --history-nav-bar-gap: var(--space-md);
+    /* 全宽场景仅略微增加长度，避免历史定位器抢占正文注意力 */
+    --history-nav-preview-font-size: var(--font-size-xs);
+    --history-nav-item-padding-block: var(--space-2xs);
+    --history-nav-item-padding-inline: var(--space-xs);
+    --history-nav-item-gap: var(--space-sm);
+    --history-nav-panel-padding-block: var(--space-sm);
+    --history-nav-panel-padding-inline: var(--space-md);
+    --history-nav-panel-min-width: 156px;
+    --history-nav-panel-max-width: 240px;
+    --history-nav-bar-width: 9px;
+    --history-nav-bar-hover-width: 13px;
+    --history-nav-bar-active-width: 18px;
+    --history-nav-bar-height: 2px;
+    --history-nav-bar-hover-height: 3px;
+    --history-nav-bar-active-height: 4px;
+    --history-nav-bar-gap: 6px;
 
     .conversationPanel {
       width: 100%;
@@ -188,20 +191,27 @@
 }
 
 .footerSlot {
+  box-sizing: border-box;
   flex-shrink: 0;
   position: sticky;
   bottom: 0;
   z-index: 1;
   width: 100%;
+  min-width: 0;
   margin-top: calc(-1 * var(--space-lg));
-  padding: var(--space-lg)
-    var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)))
-    var(--space-xs) var(--chat-message-inline-padding, var(--space-lg));
+  padding: var(--space-lg) var(--chat-message-inline-padding, var(--space-lg)) var(--space-xs);
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--chat-shell-bg, var(--surface)) 0%, transparent) 0%,
     var(--chat-shell-bg, var(--surface)) 20%
   );
+}
+
+.inputColumn {
+  width: 100%;
+  max-width: var(--chat-input-max-width);
+  min-width: 0;
+  margin-inline: auto;
 }
 
 .sessionList {

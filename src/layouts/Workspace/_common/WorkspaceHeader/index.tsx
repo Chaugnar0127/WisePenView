@@ -1,7 +1,8 @@
 import AppIconButton from '@/components/Button/AppIconButton';
+import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
-import { PanelRightOpen, PanelsTopLeft } from 'lucide-react';
+import { PanelRightOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import ResourceHeader from '../ResourceHeader';
@@ -22,24 +23,39 @@ function WorkspaceHeader({
   onGoForward,
   onToggleLeftSidebar,
   onToggleRightSidebar,
-  onEnterZenMode,
+  // onEnterZenMode,
   className,
 }: WorkspaceHeaderProps) {
   const { t } = useTranslation('workspace');
+  const desktopWindow = useDesktopWindowState();
 
   return (
-    <header className={clsx(styles.root, className)}>
+    <header
+      className={clsx(
+        styles.root,
+        desktopWindow.isDesktop && styles.desktopRoot,
+        desktopWindow.hasMacTitleBarInset && styles.macDesktopAlignedRoot,
+        leftSidebarCollapsed && desktopWindow.hasMacTitleBarInset && styles.macDesktopRoot,
+        leftSidebarCollapsed &&
+          desktopWindow.isDesktop &&
+          desktopWindow.isFullScreen &&
+          styles.desktopFullScreenRoot,
+        className
+      )}
+    >
       <div className={styles.bar}>
         <div className={styles.toolbar}>
           {leftSidebarCollapsed && onToggleLeftSidebar && onGoBack && onGoForward ? (
-            <AppNavigationControls
-              sidebarCollapsed
-              canGoBack={canGoBack}
-              canGoForward={canGoForward}
-              onGoBack={onGoBack}
-              onGoForward={onGoForward}
-              onToggleSidebar={onToggleLeftSidebar}
-            />
+            <div className={styles.leftSidebarControls}>
+              <AppNavigationControls
+                sidebarCollapsed
+                canGoBack={canGoBack}
+                canGoForward={canGoForward}
+                onGoBack={onGoBack}
+                onGoForward={onGoForward}
+                onToggleSidebar={onToggleLeftSidebar}
+              />
+            </div>
           ) : null}
           {resource ? (
             <div className={styles.resourceHeader}>
@@ -53,13 +69,14 @@ function WorkspaceHeader({
           <div className={styles.toolbarEnd}>
             {resource ? null : extra}
             {resourceSidePanelActions}
-            {onEnterZenMode ? (
-              <AppIconButton
-                icon={<PanelsTopLeft size={18} aria-hidden="true" />}
-                label={t('shell.enterZen')}
-                onPress={onEnterZenMode}
-              />
-            ) : null}
+            {/* Zen Mode 暂不上线，暂时隐藏入口按钮。 */}
+            {/* {onEnterZenMode ? (
+                <AppIconButton
+                  icon={<PanelsTopLeft size={18} aria-hidden="true" />}
+                  label={t('shell.enterZen')}
+                  onPress={onEnterZenMode}
+                />
+              ) : null} */}
             {rightSidebarCollapsed && onToggleRightSidebar ? (
               <div className={styles.sidebarControls}>
                 <AppIconButton

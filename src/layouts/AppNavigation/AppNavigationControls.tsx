@@ -5,6 +5,7 @@ import styles from './AppNavigationControls.module.less';
 
 interface AppNavigationControlsProps {
   sidebarCollapsed: boolean;
+  showHistory?: boolean;
   canGoBack: boolean;
   canGoForward: boolean;
   onGoBack: () => void;
@@ -14,6 +15,7 @@ interface AppNavigationControlsProps {
 
 function AppNavigationControls({
   sidebarCollapsed,
+  showHistory = true,
   canGoBack,
   canGoForward,
   onGoBack,
@@ -38,18 +40,22 @@ function AppNavigationControls({
         label={sidebarLabel}
         onPress={onToggleSidebar}
       />
-      <AppIconButton
-        icon={<ArrowLeft size={18} aria-hidden="true" />}
-        label={t('navigation.back')}
-        isDisabled={!canGoBack}
-        onPress={onGoBack}
-      />
-      <AppIconButton
-        icon={<ArrowRight size={18} aria-hidden="true" />}
-        label={t('navigation.forward')}
-        isDisabled={!canGoForward}
-        onPress={onGoForward}
-      />
+      {showHistory ? (
+        <>
+          <AppIconButton
+            icon={<ArrowLeft size={18} aria-hidden="true" />}
+            label={t('navigation.back')}
+            isDisabled={!canGoBack}
+            onPress={onGoBack}
+          />
+          <AppIconButton
+            icon={<ArrowRight size={18} aria-hidden="true" />}
+            label={t('navigation.forward')}
+            isDisabled={!canGoForward}
+            onPress={onGoForward}
+          />
+        </>
+      ) : null}
     </div>
   );
 }

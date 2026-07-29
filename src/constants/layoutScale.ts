@@ -3,6 +3,8 @@ export const SIDEBAR_MIN_WIDTH = 240;
 export const SIDEBAR_MAX_WIDTH = 420;
 /** App / Workspace 侧栏收起后占位 */
 export const SIDEBAR_COLLAPSED_WIDTH = 0;
+/** Web App 侧栏收起后保留展开按钮的独立区域 */
+export const APP_WEB_SIDEBAR_COLLAPSED_WIDTH = 64;
 
 export const ADMIN_SIDEBAR_COLLAPSED_WIDTH = 80;
 
@@ -28,8 +30,8 @@ export const NOTE_EDITOR_MIN_WIDTH = 560;
 export const NOTE_OUTLINE_OPEN_WIDTH = 200;
 export const NOTE_OUTLINE_COLLAPSED_WIDTH = 40;
 
-/** Chat 侧栏/分栏面板下限 */
-export const CHAT_PANEL_MIN_WIDTH = 480;
+/** Chat 侧栏/分栏面板下限：扣除输入区两侧留白后，卡片至少保留 480px */
+export const CHAT_PANEL_MIN_WIDTH = 560;
 /**
  * Chat fullWidth 页最小宽
  */

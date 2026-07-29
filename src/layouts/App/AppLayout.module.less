@@ -1,4 +1,6 @@
 .root {
+  --app-page-max-width: 1200px;
+
   position: relative;
   box-sizing: border-box;
   height: 100%;
@@ -27,6 +29,10 @@
   /* 侧栏 = 抬升层，相对外壳 --background，主区仍用 --surface 纸面 */
   background: var(--surface-secondary);
   overflow: hidden;
+}
+
+.webCollapsedSider {
+  background: var(--surface);
 }
 
 .middleLayout {
@@ -66,14 +72,34 @@
   overflow: hidden;
 }
 
-.collapsedHeaderControls {
-  position: absolute;
-  z-index: 50;
-  top: 12px;
-  left: 12px;
-  padding: 2px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg, 8px);
+.desktopHeader {
+  box-sizing: border-box;
+  height: 48px;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-lg) 0 var(--space-sm);
   background: var(--surface);
-  box-shadow: var(--shadow-lg, 0 8px 24px rgba(15, 23, 42, 0.12));
+  -webkit-app-region: drag;
+}
+
+.webCollapsedSidebar {
+  box-sizing: border-box;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--space-sm);
+}
+
+.macDesktopHeader {
+  padding-left: 92px;
+
+  .collapsedHeaderControls {
+    transform: translateY(1px);
+  }
+}
+
+.collapsedHeaderControls {
+  -webkit-app-region: no-drag;
 }

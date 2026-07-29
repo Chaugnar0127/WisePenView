@@ -34,7 +34,8 @@ const ResetPassword = lazy(() => import('@/views/app/auth/ResetPassword'));
 const NewPassword = lazy(() => import('@/views/app/auth/NewPassword'));
 const VerifyEmail = lazy(() => import('@/views/app/auth/VerifyEmail'));
 const WorkspaceResourceView = lazy(() => import('@/views/workspace/WorkspaceResourceView'));
-const ZenModeLayout = lazy(() => import('@/layouts/ZenMode/ZenModeLayout'));
+// Zen Mode 暂不上线，保留实现代码便于后续恢复。
+// const ZenModeLayout = lazy(() => import('@/layouts/ZenMode/ZenModeLayout'));
 const ChatPage = lazy(() => import('@/views/app/chat'));
 const ResourceNotFound = lazy(() => import('@/views/app/error/ResourceNotFound'));
 const AppError = lazy(() => import('@/views/app/error/AppError'));
@@ -224,11 +225,12 @@ const router = createBrowserRouter([
           },
         ],
       },
-      {
-        path: 'zen',
-        element: <ZenModeLayout />,
-        errorElement: <RouteError />,
-      },
+      // Zen Mode 暂不上线，暂不注册访问路由。
+      // {
+      //   path: 'zen',
+      //   element: <ZenModeLayout />,
+      //   errorElement: <RouteError />,
+      // },
     ],
   },
 

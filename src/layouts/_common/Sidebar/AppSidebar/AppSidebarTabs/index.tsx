@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import GlobalSearch from '../_components/GlobalSearch';
 import SessionListGroup from '../SessionListGroup';
-import type { AppSidebarTabsProps } from './index.type';
 import styles from './style.module.less';
 
 const SIDEBAR_TAB = {
@@ -27,7 +26,7 @@ type SidebarTabKey = (typeof SIDEBAR_TAB)[keyof typeof SIDEBAR_TAB];
 const resolveSidebarTab = (activeNavKey: AppHeaderNavKey | undefined): SidebarTabKey =>
   activeNavKey === APP_HEADER_NAV_KEY.CHAT ? SIDEBAR_TAB.SESSIONS : SIDEBAR_TAB.DRIVE;
 
-function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
+function AppSidebarTabs() {
   const { t } = useTranslation('shell');
   const location = useLocation();
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
@@ -50,10 +49,7 @@ function AppSidebarTabs({ collapsed }: AppSidebarTabsProps) {
       : [];
 
   return (
-    <div
-      className={clsx(styles.menuContainer, collapsed && styles.menuContainerCollapsed)}
-      aria-hidden={collapsed}
-    >
+    <div className={styles.menuContainer}>
       <Tabs
         className={styles.tabs}
         selectedKey={selectedTab}

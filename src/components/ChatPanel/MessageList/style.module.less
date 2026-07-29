@@ -40,11 +40,22 @@
     var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)))
     var(--space-lg) var(--chat-message-inline-padding, var(--space-lg));
   box-sizing: border-box;
+
+  &[data-empty='true'] {
+    /* 空会话与输入框共用对称中心轴，不需要为历史导航预留右侧空间 */
+    padding-inline-end: var(
+      --chat-welcome-inline-padding-end,
+      var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)))
+    );
+  }
 }
 
 .welcomeItem {
   flex: 1 1 auto;
+  width: 100%;
+  max-width: var(--chat-input-max-width);
   min-height: 100%;
+  margin-inline: auto;
   display: flex;
   content-visibility: visible;
 }
@@ -117,7 +128,7 @@
 }
 
 .historyNavigatorRail {
-  top: 50%;
+  top: 66%;
   right: var(--space-xs);
   transform: translateY(-50%);
   display: flex;
@@ -129,8 +140,8 @@
 .historyNavigatorRailTriggerWrap {
   position: relative;
   z-index: 2;
-  max-height: min(50vh, 320px);
-  border-radius: var(--radius-md);
+  max-height: min(50vh, 280px);
+  border-radius: var(--radius-sm);
   opacity: 1;
   transform: translateX(0);
   visibility: visible;
@@ -152,11 +163,13 @@
   align-items: flex-end;
   justify-content: flex-start;
   gap: var(--history-nav-bar-gap);
-  max-height: min(50vh, 320px);
-  padding: var(--space-sm) var(--space-xs);
+  box-sizing: border-box;
+  width: 28px;
+  max-height: min(50vh, 280px);
+  padding: var(--space-xs) 5px;
   margin: 0;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: transparent;
   cursor: pointer;
   overflow-x: hidden;
@@ -229,8 +242,8 @@
   }
 
   &:hover {
-    width: var(--history-nav-bar-hover-width, 18px);
-    height: var(--history-nav-bar-hover-height, 5px);
+    width: var(--history-nav-bar-hover-width, 12px);
+    height: var(--history-nav-bar-hover-height, 3px);
     background: color-mix(in srgb, var(--accent) 55%, var(--border));
   }
 
@@ -258,18 +271,18 @@
   gap: var(--space-2xs, 2px);
   width: max-content;
   min-width: var(--history-nav-panel-min-width, 148px);
-  max-width: min(var(--history-nav-panel-max-width, 260px), calc(100vw - var(--space-2xl)));
-  max-height: min(50vh, 360px);
+  max-width: min(var(--history-nav-panel-max-width, 220px), calc(100vw - var(--space-2xl)));
+  max-height: min(50vh, 300px);
   padding: var(--history-nav-panel-padding-block, var(--space-md))
     var(--history-nav-panel-padding-inline, var(--space-lg));
-  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-  border-radius: var(--radius-xl, var(--radius-lg));
-  background: color-mix(in srgb, var(--overlay, var(--surface)) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--overlay, var(--surface)) 94%, transparent);
   box-shadow:
-    var(--card-shadow),
-    0 12px 40px color-mix(in srgb, var(--foreground) 8%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+    0 1px 2px color-mix(in srgb, var(--foreground) 5%, transparent),
+    0 8px 24px color-mix(in srgb, var(--foreground) 7%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -318,12 +331,12 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--history-nav-item-gap, var(--space-md));
+  gap: var(--history-nav-item-gap, var(--space-sm));
   width: 100%;
   min-width: 0;
   padding: var(--history-nav-item-padding-block, var(--space-2xs))
     var(--history-nav-item-padding-inline, var(--space-xs));
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   margin: 0;
   border: none;
   background: transparent;
@@ -372,8 +385,8 @@
     background: var(--surface-hover, var(--surface-secondary));
 
     .historyNavigatorBar:not([data-active='true']) {
-      width: var(--history-nav-bar-hover-width, 18px);
-      height: var(--history-nav-bar-hover-height, 5px);
+      width: var(--history-nav-bar-hover-width, 12px);
+      height: var(--history-nav-bar-hover-height, 3px);
       background: color-mix(in srgb, var(--accent) 55%, var(--border));
     }
   }

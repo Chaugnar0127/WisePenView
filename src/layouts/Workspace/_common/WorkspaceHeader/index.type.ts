@@ -20,6 +20,6 @@ export interface WorkspaceHeaderProps {
   onGoForward?: () => void;
   onToggleLeftSidebar?: () => void;
   onToggleRightSidebar?: () => void;
-  onEnterZenMode?: () => void;
+  // onEnterZenMode?: () => void;
   className?: string;
 }

@@ -1,4 +1,5 @@
 import logoImg from '@/assets/images/logo-icon.png';
+import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
 import type { SidebarHeaderProps } from './index.type';
@@ -15,6 +16,7 @@ function SidebarHeader({
   nav,
 }: SidebarHeaderProps) {
   const hasNav = Boolean(nav);
+  const desktopWindow = useDesktopWindowState();
   const logoContent = (
     <>
       <div className={styles.logoIcon}>
@@ -23,22 +25,36 @@ function SidebarHeader({
       <span className={styles.logoText}>{title}</span>
     </>
   );
+  const navigationControls =
+    onToggle && onGoBack && onGoForward ? (
+      <AppNavigationControls
+        sidebarCollapsed={collapsed}
+        showHistory={desktopWindow.isDesktop}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onGoBack={onGoBack}
+        onGoForward={onGoForward}
+        onToggleSidebar={onToggle}
+      />
+    ) : null;
 
   return (
-    <div className={styles.header}>
-      <div className={clsx(styles.headerTop, collapsed && styles.collapsedHeaderTop)}>
-        {!collapsed ? <div className={styles.logo}>{logoContent}</div> : null}
-        {onToggle && onGoBack && onGoForward ? (
-          <AppNavigationControls
-            sidebarCollapsed={collapsed}
-            canGoBack={canGoBack}
-            canGoForward={canGoForward}
-            onGoBack={onGoBack}
-            onGoForward={onGoForward}
-            onToggleSidebar={onToggle}
-          />
-        ) : null}
-      </div>
+    <div
+      className={clsx(styles.header, desktopWindow.hasMacTitleBarInset && styles.macDesktopHeader)}
+    >
+      {desktopWindow.isDesktop ? (
+        <>
+          <div className={clsx(styles.headerTop, collapsed && styles.collapsedHeaderTop)}>
+            {navigationControls}
+          </div>
+          {!collapsed ? <div className={styles.logo}>{logoContent}</div> : null}
+        </>
+      ) : (
+        <div className={clsx(styles.webHeader, collapsed && styles.collapsedWebHeader)}>
+          {!collapsed ? <div className={styles.logo}>{logoContent}</div> : null}
+          {navigationControls}
+        </div>
+      )}
 
       {hasNav ? (
         <div className={clsx(styles.headerNav, collapsed && styles.headerNavCollapsed)}>{nav}</div>

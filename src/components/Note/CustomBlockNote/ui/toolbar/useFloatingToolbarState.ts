@@ -49,13 +49,16 @@ function getDomSelectionToolbarState(view: EditorView): FloatingToolbarGeometry 
   };
 }
 
-function getSafeToolbarState(view: EditorView): FloatingToolbarGeometry {
+function getSafeToolbarState(
+  view: EditorView,
+  keepVisibleWithoutDomSelection: boolean
+): FloatingToolbarGeometry {
   const { selection, doc } = view.state;
   if (selection.empty) {
     return getDomSelectionToolbarState(view);
   }
   if (selection instanceof TextSelection) {
-    if (!getEditorDomSelectionRange(view)) {
+    if (!keepVisibleWithoutDomSelection && !getEditorDomSelectionRange(view)) {
       return { visible: false, left: 0, top: 0 };
     }
     if (doc.textBetween(selection.from, selection.to).length === 0) {
@@ -77,7 +80,8 @@ function getSafeToolbarState(view: EditorView): FloatingToolbarGeometry {
 
 export function useFloatingToolbarState(
   editor: CustomBlockNoteEditor,
-  disabled: boolean
+  disabled: boolean,
+  keepVisibleWithoutDomSelection = false
 ): FloatingToolbarState {
   const [toolbarState, setToolbarState] = useState<FloatingToolbarState>({
     mounted: false,
@@ -90,6 +94,7 @@ export function useFloatingToolbarState(
   const toolbarStateRef = useRef(toolbarState);
   const selectingPointerIdRef = useRef<number | null>(null);
   const disabledLatest = useLatest(disabled);
+  const keepVisibleWithoutDomSelectionLatest = useLatest(keepVisibleWithoutDomSelection);
 
   const cancelToolbarUnmount = () => {
     if (unmountTimerRef.current === null) return;
@@ -132,7 +137,7 @@ export function useFloatingToolbarState(
         hideToolbar();
         return;
       }
-      const next = getSafeToolbarState(view);
+      const next = getSafeToolbarState(view, keepVisibleWithoutDomSelectionLatest.current);
       if (!next.visible) {
         hideToolbar();
         return;
@@ -175,7 +180,7 @@ export function useFloatingToolbarState(
       return;
     }
     syncToolbarState();
-  }, [disabled, hideToolbar, syncToolbarState]);
+  }, [disabled, hideToolbar, keepVisibleWithoutDomSelection, syncToolbarState]);
 
   const handlePointerDown = (event: PointerEvent) => {
     if (event.button !== 0) return;

@@ -1,4 +1,3 @@
-import AppIconButton from '@/components/Button/AppIconButton';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
 import { ColorPaletteContent } from '@/components/Note/CustomBlockNote/ui/editorMenus/colorPalette';
 import type { ColorKey } from '@/components/Note/CustomBlockNote/ui/editorMenus/colorPaletteData';
@@ -20,15 +19,14 @@ import { ButtonGroup, ToggleButtonGroup } from '@heroui/react';
 import { Paintbrush, PanelLeft, PanelTop, TableCellsMerge, TableCellsSplit } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSelectedBlocks, stopToolbarMouseDown, toBlockUpdate } from '../utils';
-import { ToolbarToggleButton } from './ToolbarButton';
+import { getSelectedBlocks, toBlockUpdate } from '../utils';
+import { ToolbarButton, ToolbarToggleButton, type ButtonGroupChildProps } from './ToolbarButton';
 
 type TableCellValue = TableContent<
   InlineContentSchema,
   StyleSchema
 >['rows'][number]['cells'][number];
 type SelectedTableCell = { cell: TableCellValue; col: number; row: number };
-type SelectedTableCellIndices = Pick<SelectedTableCell, 'col' | 'row'>;
 
 function getCellKey(cell: { col: number; row: number }) {
   return `${cell.row}:${cell.col}`;
@@ -39,11 +37,46 @@ function isMergedCell(cell: TableCellValue) {
   return (props.colspan ?? 1) > 1 || (props.rowspan ?? 1) > 1;
 }
 
+interface TableCellColorButtonProps extends ButtonGroupChildProps {
+  backgroundColor: ColorKey;
+  onChange: (color: ColorKey) => void;
+}
+
+function TableCellColorButton({
+  backgroundColor,
+  onChange,
+  ...buttonGroupProps
+}: TableCellColorButtonProps) {
+  const { t } = useTranslation('note');
+  const [colorOpen, setColorOpen] = useState(false);
+
+  return (
+    <AppPopover isOpen={colorOpen} onOpenChange={setColorOpen} deferContent={false}>
+      <AppPopover.Trigger>
+        <ToolbarButton
+          {...buttonGroupProps}
+          icon={<Paintbrush size={20} aria-hidden="true" />}
+          isActive={colorOpen}
+          label={t('editor.color.cellBackground')}
+        />
+      </AppPopover.Trigger>
+      <AppPopover.Content placement="bottom" bodyPadding="none">
+        <ColorPaletteContent
+          background={{
+            color: backgroundColor,
+            onChange,
+          }}
+          onReset={() => onChange('default')}
+        />
+      </AppPopover.Content>
+    </AppPopover>
+  );
+}
+
 export function TableCellButtons() {
   const { t } = useTranslation('note');
   const editor = useBlockNoteEditor(blockNoteSchema);
   const railSelection = useTableRailSelectionState();
-  const [colorOpen, setColorOpen] = useState(false);
   const state = useEditorState({
     editor,
     selector: ({ editor }) => {
@@ -194,7 +227,7 @@ export function TableCellButtons() {
       ...row,
       cells: row.cells.map((cell) => mapTableCell(cell)),
     }));
-    for (const cell of state.selectedCells as SelectedTableCellIndices[]) {
+    for (const cell of state.selectedCells) {
       const targetCell = rows[cell.row]?.cells[cell.col];
       if (targetCell) {
         targetCell.props.backgroundColor = color;
@@ -268,25 +301,10 @@ export function TableCellButtons() {
         </ToggleButtonGroup>
       ) : null}
       <ButtonGroup size="sm" variant="ghost" aria-label={t('table.colors')}>
-        <AppPopover isOpen={colorOpen} onOpenChange={setColorOpen} deferContent={false}>
-          <AppIconButton
-            icon={<Paintbrush size={20} aria-hidden="true" />}
-            label={t('editor.color.cellBackground')}
-            size="sm"
-            isActive={colorOpen}
-            overlayTrigger={<AppPopover.Trigger />}
-            onMouseDown={stopToolbarMouseDown}
-          />
-          <AppPopover.Content placement="bottom" bodyPadding="none">
-            <ColorPaletteContent
-              background={{
-                color: state.backgroundColor,
-                onChange: applyBackgroundColor,
-              }}
-              onReset={() => applyBackgroundColor('default')}
-            />
-          </AppPopover.Content>
-        </AppPopover>
+        <TableCellColorButton
+          backgroundColor={state.backgroundColor as ColorKey}
+          onChange={applyBackgroundColor}
+        />
       </ButtonGroup>
     </>
   );

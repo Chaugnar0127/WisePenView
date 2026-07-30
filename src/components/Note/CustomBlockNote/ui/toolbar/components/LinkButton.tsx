@@ -28,7 +28,14 @@ function normalizeUrl(url: string) {
     : `${DEFAULT_LINK_PROTOCOL}://${trimmedUrl}`;
 }
 
-export function CreateLinkToolbarButton(buttonGroupProps: ButtonGroupChildProps) {
+interface CreateLinkToolbarButtonProps extends ButtonGroupChildProps {
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function CreateLinkToolbarButton({
+  onOpenChange,
+  ...buttonGroupProps
+}: CreateLinkToolbarButtonProps) {
   const { t } = useTranslation(['note', 'common']);
   const editor = useBlockNoteEditor(blockNoteSchema);
   const formattingToolbar = useExtension(FormattingToolbarExtension);
@@ -66,11 +73,13 @@ export function CreateLinkToolbarButton(buttonGroupProps: ButtonGroupChildProps)
     setUrl(state.url);
     showSelection(true, 'createLinkButton');
     setOpen(true);
+    onOpenChange?.(true);
   };
 
   const closeLinkPopover = () => {
     showSelection(false, 'createLinkButton');
     setOpen(false);
+    onOpenChange?.(false);
   };
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -123,13 +132,12 @@ export function CreateLinkToolbarButton(buttonGroupProps: ButtonGroupChildProps)
 
   return (
     <AppPopover isOpen={open} onOpenChange={handleOpenChange} deferContent={false}>
-      <AppPopover.Trigger>
-        <ToolbarButton
-          {...buttonGroupProps}
-          label={t('editor.link.add')}
-          icon={<Link size={20} />}
-        />
-      </AppPopover.Trigger>
+      <ToolbarButton
+        {...buttonGroupProps}
+        label={t('editor.link.add')}
+        icon={<Link size={20} />}
+        overlayTrigger={<AppPopover.Trigger />}
+      />
       <AppPopover.Content className={styles.formPopover} placement="bottom">
         <div className={styles.formPanel} onMouseDown={(event) => event.stopPropagation()}>
           <Input

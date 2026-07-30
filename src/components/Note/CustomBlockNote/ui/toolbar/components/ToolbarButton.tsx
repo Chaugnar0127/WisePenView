@@ -1,38 +1,55 @@
-import AppIconButton from '@/components/Button/AppIconButton';
-import type { Button } from '@heroui/react';
-import type { ComponentProps, ReactNode } from 'react';
+import { Button, ToggleButton, Tooltip } from '@heroui/react';
+import clsx from 'clsx';
+import { cloneElement, type ComponentProps, type ReactElement, type ReactNode } from 'react';
+import styles from '../style.module.less';
 import { stopToolbarMouseDown } from '../utils';
 
 export type ButtonGroupChildProps = Pick<ComponentProps<typeof Button>, '__button_group_child'>;
 
-interface ToolbarButtonProps {
+interface ToolbarButtonProps extends ButtonGroupChildProps {
   label: string;
   icon: ReactNode;
   isDisabled?: boolean;
+  isActive?: boolean;
   className?: string;
-  onMouseDownCapture?: ComponentProps<typeof AppIconButton>['onMouseDownCapture'];
   onPress?: () => void;
+  overlayTrigger?: ReactElement;
 }
 
 export function ToolbarButton({
   label,
   icon,
   isDisabled,
+  isActive,
   className,
-  onMouseDownCapture,
   onPress,
+  overlayTrigger,
+  __button_group_child: isButtonGroupChild,
 }: ToolbarButtonProps) {
-  return (
-    <AppIconButton
-      icon={icon}
-      label={label}
-      size="sm"
+  const button = (
+    <Button
+      __button_group_child={isButtonGroupChild}
+      aria-label={label}
+      aria-pressed={isActive}
+      className={clsx(styles.toolbarButton, className)}
       isDisabled={isDisabled}
-      className={className}
-      onMouseDownCapture={onMouseDownCapture}
+      isIconOnly
+      size="sm"
+      variant="ghost"
       onMouseDown={stopToolbarMouseDown}
       onPress={onPress}
-    />
+    >
+      {icon}
+    </Button>
+  );
+
+  return (
+    <Tooltip>
+      <Tooltip.Trigger>
+        {overlayTrigger ? cloneElement(overlayTrigger, undefined, button) : button}
+      </Tooltip.Trigger>
+      <Tooltip.Content placement="bottom">{label}</Tooltip.Content>
+    </Tooltip>
   );
 }
 
@@ -52,14 +69,22 @@ export function ToolbarToggleButton({
   onPress,
 }: ToolbarToggleButtonProps) {
   return (
-    <AppIconButton
-      icon={icon}
-      label={label}
-      toggleId={id}
-      size="sm"
-      isDisabled={isDisabled}
-      onMouseDown={stopToolbarMouseDown}
-      onPress={onPress}
-    />
+    <Tooltip>
+      <Tooltip.Trigger>
+        <ToggleButton
+          aria-label={label}
+          id={id}
+          isDisabled={isDisabled}
+          isIconOnly
+          size="sm"
+          variant="ghost"
+          onMouseDown={stopToolbarMouseDown}
+          onPress={onPress}
+        >
+          {icon}
+        </ToggleButton>
+      </Tooltip.Trigger>
+      <Tooltip.Content placement="bottom">{label}</Tooltip.Content>
+    </Tooltip>
   );
 }

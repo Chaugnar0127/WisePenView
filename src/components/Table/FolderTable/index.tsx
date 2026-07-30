@@ -399,7 +399,7 @@ function FolderTable<T extends FolderTableRow>({
 
   const showFooter = !showSkeletonBody && Boolean(defaultSummary) && !showSelectionFooter;
 
-  const handleCheckboxChange = (rowId: string, selected: boolean, shiftKey: boolean) => {
+  const handleSelectionChange = (rowId: string, selected: boolean, shiftKey: boolean) => {
     if (
       !checkboxSelection ||
       disabledKeys.has(rowId) ||
@@ -538,7 +538,7 @@ function FolderTable<T extends FolderTableRow>({
       return;
     }
     if (isEditMode) {
-      handleCheckboxChange(rowId, !selectedEditRowKeySet.has(rowId), shiftKey);
+      handleSelectionChange(rowId, !selectedEditRowKeySet.has(rowId), shiftKey);
       return;
     }
     handleRowPress(row as T);
@@ -759,7 +759,7 @@ function FolderTable<T extends FolderTableRow>({
                         columns={columns}
                         checkboxDisabled={isLoadMoreRow || disabledKeys.has(rowId)}
                         checkboxHidden={hiddenKeys.has(rowId)}
-                        onCheckboxChange={handleCheckboxChange}
+                        onCheckboxChange={handleSelectionChange}
                         isLoadMoreRow={isLoadMoreRow}
                         isCheckboxSelected={isCheckboxSelected}
                         isSelected={isSelected}

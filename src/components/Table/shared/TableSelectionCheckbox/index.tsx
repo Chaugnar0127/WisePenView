@@ -28,7 +28,7 @@ function TableSelectionCheckbox({
       isSelected={isSelected}
       isIndeterminate={isIndeterminate}
       isDisabled={isDisabled}
-      onPointerDown={(event) => {
+      onPointerDownCapture={(event) => {
         shiftKeyRef.current = event.shiftKey;
       }}
       onKeyDown={(event) => {

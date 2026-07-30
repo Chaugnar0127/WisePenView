@@ -218,6 +218,9 @@ function TableDrive({
     if (!isEditMode) return null;
     return (
       <div className={styles.selectionActions}>
+        <Button variant="secondary" size="sm" onPress={interaction.clearChecked}>
+          {t('table.clearSelection')}
+        </Button>
         {interaction.canBatchMove ? (
           <Button
             variant="secondary"
@@ -237,9 +240,6 @@ function TableDrive({
             {t('actions.delete', { ns: 'common' })}
           </Button>
         ) : null}
-        <Button variant="secondary" size="sm" onPress={interaction.clearChecked}>
-          {t('table.clearSelection')}
-        </Button>
       </div>
     );
   })();

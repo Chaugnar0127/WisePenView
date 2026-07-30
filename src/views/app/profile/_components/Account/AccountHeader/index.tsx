@@ -1,6 +1,6 @@
 import AppAvatar from '@/components/Avatar';
+import { UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
-import UploadZone from '@/components/UploadZone';
 import { useImageService, useUserService } from '@/domains';
 import { assertImageProxyUploadLimit } from '@/domains/Image';
 import { IDENTITY, USER_STATUS } from '@/domains/User';

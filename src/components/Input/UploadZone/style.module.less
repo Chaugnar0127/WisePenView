@@ -10,6 +10,19 @@
 }
 
 .dropArea {
+  --upload-zone-background: color-mix(
+    in oklab,
+    var(--surface-tertiary) 35%,
+    var(--surface) 65%
+  );
+  --upload-zone-background-hover: color-mix(
+    in oklab,
+    var(--surface-tertiary) 70%,
+    var(--surface) 30%
+  );
+  --upload-zone-border: color-mix(in oklab, var(--border) 82%, var(--surface) 18%);
+  --upload-zone-border-hover: color-mix(in oklab, var(--border) 90%, var(--surface) 10%);
+
   display: flex;
   width: 100%;
   min-height: 188px;
@@ -18,9 +31,9 @@
   justify-content: center;
   gap: var(--space-xs);
   padding: var(--space-xl) var(--space-lg);
-  border: var(--line-width) dashed var(--border);
+  border: var(--line-width) dashed var(--upload-zone-border);
   border-radius: var(--radius-xl);
-  background: var(--surface);
+  background: var(--upload-zone-background);
   color: var(--foreground);
   cursor: pointer;
   outline: none;
@@ -29,6 +42,11 @@
     background var(--motion-duration-mid) ease,
     box-shadow var(--motion-duration-mid) ease,
     color var(--motion-duration-mid) ease;
+}
+
+.dropArea:hover:not([data-disabled='true']):not([data-active='true']):not(:focus-visible) {
+  border-color: var(--upload-zone-border-hover);
+  background: var(--upload-zone-background-hover);
 }
 
 .dropArea:focus-visible,

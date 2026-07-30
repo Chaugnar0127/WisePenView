@@ -215,4 +215,5 @@ function mergeFiles(currentFiles: File[], nextFiles: File[]): File[] {
   return Array.from(fileMap.values());
 }
 
+export type { UploadZoneProps };
 export default UploadZone;

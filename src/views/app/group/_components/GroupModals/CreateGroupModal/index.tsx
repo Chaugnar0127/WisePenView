@@ -1,6 +1,5 @@
-import { Input, Select, TextArea } from '@/components/Input';
+import { Input, Select, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
-import UploadZone from '@/components/UploadZone';
 import { useGroupService, useImageService, useUserService } from '@/domains';
 import type { CreateGroupRequest } from '@/domains/Group';
 import { ALLOWED_GROUP_TYPES_MAP, GROUP_TYPE } from '@/domains/Group';

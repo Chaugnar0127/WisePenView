@@ -46,3 +46,6 @@ export type {
 
 export { default as TextArea } from './TextArea';
 export type { TextAreaProps } from './TextArea';
+
+export { default as UploadZone } from './UploadZone';
+export type { UploadZoneProps } from './UploadZone';

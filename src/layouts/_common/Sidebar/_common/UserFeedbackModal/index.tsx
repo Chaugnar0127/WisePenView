@@ -1,7 +1,6 @@
-import { Input, TextArea } from '@/components/Input';
+import { Input, TextArea, UploadZone } from '@/components/Input';
 import { AppPopover } from '@/components/Overlay';
 import AppModal from '@/components/Overlay/AppModal';
-import UploadZone from '@/components/UploadZone';
 import { FEEDBACK_TYPE, useImageService, useUserService, type FeedbackType } from '@/domains';
 import { parseErrorMessage } from '@/utils/error';
 import {

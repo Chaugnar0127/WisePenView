@@ -169,6 +169,19 @@
     line-height: 1.8 !important;
   }
 
+  :global(.bn-editor .bn-inline-content a),
+  :global(.bn-editor .bn-inline-content [data-inline-content-type='link']) {
+    color: var(--link, var(--accent)) !important;
+    cursor: pointer;
+    text-decoration: underline !important;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: var(--accent-hover) !important;
+    }
+  }
+
   :global(.bn-editor .bn-block-content[data-content-type='heading']) {
     font-size: 26px !important;
     font-weight: var(--font-weight-medium) !important;

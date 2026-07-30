@@ -1,4 +1,3 @@
-import AppIconButton from '@/components/Button/AppIconButton';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
 import {
   applyBlockTypeToBlocks,
@@ -12,8 +11,8 @@ import clsx from 'clsx';
 import { Check, Heading } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
-import { getSelectedBlocks, stopToolbarMouseDown } from '../utils';
-import type { ButtonGroupChildProps } from './ToolbarButton';
+import { getSelectedBlocks } from '../utils';
+import { ToolbarButton, type ButtonGroupChildProps } from './ToolbarButton';
 
 function BlockTypeDropdownItem({
   item,
@@ -36,7 +35,7 @@ function BlockTypeDropdownItem({
   );
 }
 
-export function BlockTypeMenu(_buttonGroupProps: ButtonGroupChildProps) {
+export function BlockTypeMenu(buttonGroupProps: ButtonGroupChildProps) {
   const { t } = useTranslation('note');
   const editor = useBlockNoteEditor(blockNoteSchema);
   const state = useEditorState({
@@ -75,13 +74,13 @@ export function BlockTypeMenu(_buttonGroupProps: ButtonGroupChildProps) {
 
   return (
     <Dropdown>
-      <AppIconButton
-        icon={<SelectedIcon size={20} aria-hidden="true" />}
-        label={t('editor.blockType.label')}
-        size="sm"
-        overlayTrigger={<Dropdown.Trigger />}
-        onMouseDown={stopToolbarMouseDown}
-      />
+      <Dropdown.Trigger>
+        <ToolbarButton
+          {...buttonGroupProps}
+          icon={<SelectedIcon size={20} aria-hidden="true" />}
+          label={t('editor.blockType.label')}
+        />
+      </Dropdown.Trigger>
       <Dropdown.Popover className={styles.blockTypeMenuPopover} placement="bottom start">
         <Dropdown.Menu
           aria-label={t('editor.blockType.label')}

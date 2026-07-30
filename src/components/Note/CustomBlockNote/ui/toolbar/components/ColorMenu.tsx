@@ -1,4 +1,3 @@
-import AppIconButton from '@/components/Button/AppIconButton';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
 import { ColorPaletteContent } from '@/components/Note/CustomBlockNote/ui/editorMenus/colorPalette';
 import {
@@ -14,12 +13,11 @@ import {
   blockHasInlineContent,
   colorStyleExists,
   getSelectedBlocks,
-  stopToolbarMouseDown,
   toStyleUpdate,
 } from '../utils';
-import type { ButtonGroupChildProps } from './ToolbarButton';
+import { ToolbarButton, type ButtonGroupChildProps } from './ToolbarButton';
 
-export function ColorMenu(_buttonGroupProps: ButtonGroupChildProps) {
+export function ColorMenu(buttonGroupProps: ButtonGroupChildProps) {
   const { t } = useTranslation('note');
   const editor = useBlockNoteEditor(blockNoteSchema);
   const [open, setOpen] = useState(false);
@@ -77,14 +75,16 @@ export function ColorMenu(_buttonGroupProps: ButtonGroupChildProps) {
 
   return (
     <AppPopover isOpen={open} onOpenChange={setOpen} deferContent={false}>
-      <AppIconButton
-        icon={<Baseline size={20} className={selectedTextColor.textClassName} aria-hidden="true" />}
-        label={t('editor.color.label')}
-        size="sm"
-        isActive={open}
-        overlayTrigger={<AppPopover.Trigger />}
-        onMouseDown={stopToolbarMouseDown}
-      />
+      <AppPopover.Trigger>
+        <ToolbarButton
+          {...buttonGroupProps}
+          icon={
+            <Baseline size={20} className={selectedTextColor.textClassName} aria-hidden="true" />
+          }
+          isActive={open}
+          label={t('editor.color.label')}
+        />
+      </AppPopover.Trigger>
       <AppPopover.Content placement="bottom" bodyPadding="none">
         <ColorPaletteContent
           text={

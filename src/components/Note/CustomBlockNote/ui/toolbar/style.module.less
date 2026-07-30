@@ -66,6 +66,13 @@
   display: none;
 }
 
+.toolbarButton[aria-pressed='true'] {
+  --button-bg: var(--accent-soft);
+  --button-bg-hover: var(--accent-soft-hover);
+  --button-bg-pressed: var(--accent-soft-hover);
+  --button-fg: var(--accent-soft-foreground);
+}
+
 .askAiBtn {
   margin-left: var(--space-xs);
   margin-right: var(--space-xs);

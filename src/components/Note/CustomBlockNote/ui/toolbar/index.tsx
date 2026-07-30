@@ -21,7 +21,7 @@ import {
 import { ButtonGroup, Separator, Toolbar } from '@heroui/react';
 import { useEventListener } from 'ahooks';
 import { MessageSquarePlus, Search, Sparkles } from 'lucide-react';
-import { type ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BlockTypeMenu } from './components/BlockTypeMenu';
 import { ColorMenu } from './components/ColorMenu';
@@ -102,12 +102,15 @@ function useBlockTypeFileGroupVisible() {
   });
 }
 
-type CustomFormattingToolbarProps = Omit<NoteToolbarProps, 'isFindModeActive'>;
+type CustomFormattingToolbarProps = Omit<NoteToolbarProps, 'isFindModeActive'> & {
+  onLinkPopoverOpenChange?: (open: boolean) => void;
+};
 
 function CustomFormattingToolbar({
   onAskAi,
   onAddComment,
   onOpenFind,
+  onLinkPopoverOpenChange,
 }: CustomFormattingToolbarProps) {
   const { t } = useTranslation('note');
   const readOnly = useNoteEditorReadOnlyContext();
@@ -141,7 +144,7 @@ function CustomFormattingToolbar({
           <ToolbarSeparator />
           <NestButtons />
           <ToolbarSeparator />
-          <CreateLinkToolbarButton />
+          <CreateLinkToolbarButton onOpenChange={onLinkPopoverOpenChange} />
           <ToolbarSeparator />
         </>
       ) : null}
@@ -171,7 +174,8 @@ function TextSelectionFormattingToolbar({
   ...toolbarProps
 }: TextSelectionFormattingToolbarProps) {
   const editor = useBlockNoteEditor();
-  const toolbarState = useFloatingToolbarState(editor, hidden);
+  const [linkPopoverOpen, setLinkPopoverOpen] = useState(false);
+  const toolbarState = useFloatingToolbarState(editor, hidden, linkPopoverOpen);
 
   if (!toolbarState.mounted) {
     return null;
@@ -186,7 +190,7 @@ function TextSelectionFormattingToolbar({
         top: toolbarState.top,
       }}
     >
-      <CustomFormattingToolbar {...toolbarProps} />
+      <CustomFormattingToolbar {...toolbarProps} onLinkPopoverOpenChange={setLinkPopoverOpen} />
     </div>
   );
 }

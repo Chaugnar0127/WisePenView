@@ -42,6 +42,12 @@ export default function AgentHeaderActions({
         <Save size={15} />
         {t('common:actions.save')}
       </Button>
+      <VersionDropdown
+        items={versionItems}
+        disabledKeys={disabledVersionKeys}
+        formatVersion={(version) => `v${version}.0`}
+        onSelect={onVersionSelect}
+      />
       <Button
         variant="primary"
         isDisabled={viewingVersion !== null || publishLoading || saveLoading || versionLoading}
@@ -50,12 +56,6 @@ export default function AgentHeaderActions({
         <Upload size={15} />
         {t('agent:page.publishAction')}
       </Button>
-      <VersionDropdown
-        items={versionItems}
-        disabledKeys={disabledVersionKeys}
-        formatVersion={(version) => `v${version}.0`}
-        onSelect={onVersionSelect}
-      />
     </div>
   );
 }

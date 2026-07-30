@@ -53,7 +53,7 @@
   width: fit-content;
   color: var(--text-tertiary);
   font-size: var(--chat-model-meta-font-size, var(--font-size-base));
-  font-weight: 500;
+  font-weight: var(--font-weight-semibold);
   line-height: 1.2;
 }
 
@@ -80,6 +80,7 @@
   background-color: var(--accent-soft);
   color: var(--foreground);
   font-size: var(--chat-message-font-size);
+  font-weight: var(--chat-user-message-font-weight, var(--font-weight-medium));
   line-height: var(--chat-message-line-height);
 }
 

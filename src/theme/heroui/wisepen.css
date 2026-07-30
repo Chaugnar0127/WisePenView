@@ -4,7 +4,7 @@
   .default,
   [data-theme='light'],
   [data-theme='default'] {
-    /* 榛樿 路 瀛︽湳 light */
+    /* 默认 · 学术 light */
     color-scheme: light;
     --white: oklch(100% 0 0);
     --black: oklch(0% 0 0);
@@ -21,7 +21,7 @@
     --accent: #127abb;    --accent-foreground: #ffffff;
     --foreground: #111827;
     --paper: #ffffff;
-    /* 鏇存帴杩戠焊闈紝閬垮厤澶栧３/娆＄骇闈㈠彂姝荤伆 */
+    /* 更接近纸面，避免外壳/次级面发死灰 */
     --canvas: #f8fafb;
     --danger: #ef4444;
     --danger-foreground: #ffffff;
@@ -53,14 +53,16 @@
     --diff-removed-selected: #ef9a9a;
     --diff-modified: #e8f0fe;
     --diff-modified-border: #1967d2;
-    /* L2 閫変腑锛氭墍鍦ㄨ/鍧楁祬搴曪紙閫昏緫鍏辩敤锛屾繁鑹插彟鍐欙級 */
+    /* L2 选中：所在行/块浅底（逻辑共用，深色另写） */
     --diff-row-selected: var(--default-soft);
-    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --card-shadow: 0 1px 3px color-mix(in srgb, var(--accent) 8%, transparent),
+      0 4px 16px color-mix(in srgb, var(--accent) 5%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--accent) 4%, transparent);
     --radius: 0.5rem;
     --field-radius: 0.75rem;
     --surface-shadow:
-      0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
-      0 0 1px 0 rgba(0, 0, 0, 0.06);
+      0 1px 3px color-mix(in srgb, var(--accent) 8%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--accent) 4%, transparent);
     --overlay-shadow:
       0 2px 8px 0 rgba(0, 0, 0, 0.06), 0 -6px 12px 0 rgba(0, 0, 0, 0.03),
       0 14px 28px 0 rgba(0, 0, 0, 0.08);
@@ -74,12 +76,12 @@
   .dark,
   [data-theme='dark'] {
     color-scheme: dark;
-    /* 榛樿 路 瀛︽湳 dark */
+    /* 默认 · 学术 dark */
     --accent: #71bfee;    --accent-foreground: #111827;
-    --foreground: #f9fafb;
+    --foreground: #e8edf5;
     --paper: #14161a;
     --canvas: #0e0f12;
-    --danger: #ef4444;
+    --danger: #f87171;
     --danger-foreground: #ffffff;
     --field-border: transparent;
     --scrollbar: var(--scrollbar-thumb);
@@ -91,14 +93,14 @@
     --scrollbar-size: 8px;
     --scrollbar-radius: 999px;
     --scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-    --success: #22c55e;
+    --success: #4ade80;
     --success-foreground: #111827;
-    --warning: #f59e0b;
+    --warning: #fbbf24;
     --warning-foreground: #111827;
     --text-inverse: #111827;
-    --info: #3b82f6;
-    --error: #ef4444;
-    /* AI Diff 娣辫壊锛氬弬鑰?Cursor锛涢€変腑鎬佸啀鎻愪寒涓€妗ｏ紝瀵规瘮鏇存槑鏄?*/
+    --info: #60a5fa;
+    --error: #f87171;
+    /* AI Diff 深色：参考 Cursor；选中态再提亮一档，对比更明显 */
     --diff-added: #373d29;
     --diff-added-border: #6a7a4a;
     --diff-added-fg: var(--foreground);
@@ -110,14 +112,15 @@
     --diff-modified: #1a2433;
     --diff-modified-border: #4a7ab5;
     --diff-row-selected: color-mix(in srgb, var(--foreground) 10%, var(--surface));
-    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    --surface-shadow: 0 0 0 0 transparent inset;
-    --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.3) inset;
-    --field-shadow: 0 0 0 0 transparent inset;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
+      0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+    --surface-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 7%, transparent);
+    --overlay-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
+    --field-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 5%, transparent);
     --backdrop: rgba(0, 0, 0, 0.6);
   }
 
-  /* HeroUI 涓婚椤?Radius */
+  /* HeroUI 主题页 Radius */
   html[data-theme-radius='none'] {
     --radius: 0;
   }
@@ -138,7 +141,7 @@
     --radius: 0.75rem;
   }
 
-  /* HeroUI 涓婚椤?Radius Form */
+  /* HeroUI 主题页 Radius Form */
   html[data-theme-form-radius='none'] {
     --field-radius: 0;
   }
@@ -163,7 +166,7 @@
     --field-radius: 1rem;
   }
 
-  /* custom 7 palettes: floral, aqua, sunset, emerald, lavender, vanilla
+  /* custom 6 palettes: floral, aqua, sunset, emerald, lavender
    * Schemes only set brand + paper/canvas anchors; neutrals derive in shared ladder.
    */
 
@@ -297,34 +300,6 @@
     --preview-color-3: #835ec7;
   }
 
-  /* Vanilla */
-  html[data-color-scheme='vanilla'] {
-    --accent: #bdbd38;    /* mustard solid: dark fg for contrast */
-    --accent-foreground: #161622;
-    --foreground: #252525;
-    --paper: #ffffff;
-    --canvas: #f6f4f0;
-    --text-inverse: #161622;
-    --card-shadow: 0 2px 8px rgba(196, 160, 48, 0.08);
-    --preview-color-1: #ffffff;
-    --preview-color-2: #d7d770;
-    --preview-color-3: #bdbd38;
-  }
-  html[data-color-scheme='vanilla'].dark,
-  html[data-color-scheme='vanilla'][data-theme='dark'] {
-    color-scheme: dark;
-    --accent: #f4f4ca;    --accent-foreground: #0d1117;
-    --foreground: #f2ece2;
-    --paper: #171716;
-    --canvas: #121212;
-    --text-inverse: #0d1117;
-    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --preview-color-1: #363522;
-    --preview-color-2: #f4f4ca;
-    --preview-color-3: #f4f4ca;
-  }
-
-
   /* default preview (three colors) */
   html.light [data-scheme-preview='default'],
   html[data-theme='light'] [data-scheme-preview='default'] {
@@ -340,7 +315,7 @@
     --preview-color-3: #71bfee;
   }
 
-  /* previews for new palettes 鈥?explicit colors with contrast */
+  /* previews for new palettes — explicit colors with contrast */
 
   /* Floral */
   html.light [data-scheme-preview='floral'], html[data-theme='light'] [data-scheme-preview='floral'] {
@@ -402,19 +377,8 @@
     --preview-color-3: #835ec7;
   }
 
-  /* Vanilla */
-  html.light [data-scheme-preview='vanilla'], html[data-theme='light'] [data-scheme-preview='vanilla'] {
-    --preview-color-1: #ffffff;
-    --preview-color-2: #d7d770;
-    --preview-color-3: #bdbd38;
-  }
-  html.dark [data-scheme-preview='vanilla'], html[data-theme='dark'] [data-scheme-preview='vanilla'] {
-    --preview-color-1: #3e3333;
-    --preview-color-2: #f4f4ca;
-    --preview-color-3: #f4f4ca;
-  }
-
-  /* WisePen 鎺掔増 / 闂磋窛 / Table 琛岄珮 */
+  /* WisePen 桌面端排版：正文 14px、辅助文本 12px，重点层级使用 16px 以上字号。 */
+  /* 字重只通过 Regular、Medium、Semibold、Bold 四档表达层级，避免同层级出现多套数值。 */
   :root,
   .light,
   .default,
@@ -432,6 +396,8 @@
     --font-size-heading-5: 16px;
     --font-weight-regular: 400;
     --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
     --line-height-base: 22px;
     --line-height-sm: 20px;
     --line-height-md: 22px;
@@ -506,7 +472,7 @@
     --row-height-comfortable: var(--table-row-height);
     --row-height-compact: var(--table-row-height);
 
-    /* Table 甯冨眬 / 鍒楀锛圠ess @table-* 缁?table.module.less 寮曠敤锛?*/
+    /* Table 布局 / 列宽（Less @table-* 供 table.module.less 引用） */
     --table-header-row-height: var(--table-row-height);
     --table-footer-row-height: var(--line-height-xs);
     --table-footer-padding-block: var(--space-2xs);
@@ -546,7 +512,7 @@
     /* 延迟显示 Tooltip，减少鼠标经密集图标区时的视觉干扰。 */
     --tooltip-delay: 800ms;
     --tooltip-close-delay: 100ms;
-    /* Table 鍦嗚锛歴hell / 琛屽唴鎸夐挳 / 涓嬫媺灞傜粺涓€锛涘皬鎺т欢锛堝睍寮€閽€丆hip锛夌敤 inner */
+    /* Table 圆角：shell / 行内按钮 / 下拉层统一；小控件（展开按钮、Chip）用 inner */
     --table-shell-radius: var(--radius-xl);
     --table-control-radius: var(--table-shell-radius);
     --table-overlay-radius: var(--table-shell-radius);
@@ -563,7 +529,7 @@
     --motion-duration-fast: 0.1s;
     --motion-duration-mid: 0.2s;
 
-    /* 绾搁潰甯︽瀬寮辫壊娓╋紱姝ｆ枃鐣ョ櫧锛涢《鏍忕敤绾焊 */
+    /* 纸面带极弱色温；正文略白；顶栏用纯纸 */
     --header-surface: var(--paper);
     --surface: color-mix(in oklab, var(--accent) 0.5%, var(--paper));
     --surface-foreground: var(--foreground);
@@ -575,7 +541,7 @@
     --segment: var(--surface);
     --segment-foreground: var(--foreground);
 
-    /* L 鍙伴樁锛氬急 accent 鑹叉俯涓轰富锛涘皯鎺?foreground锛岄伩鍏嶅彂姝荤伆 */
+    /* L 台阶：弱 accent 色温为主；少掺 foreground，避免发死灰 */
     --background: color-mix(in oklab, var(--accent) 4%, var(--canvas));
     --surface-secondary: color-mix(in oklab, var(--accent) 5%, var(--paper));
     --surface-secondary-foreground: var(--foreground);
@@ -586,11 +552,11 @@
     );
     --surface-tertiary-foreground: var(--foreground);
 
-    /* HeroUI 鎺т欢榛樿搴?鈮?tertiary锛屼笉鍙﹀紑绗洓濂楀竷灞€鐏?*/
+    /* HeroUI 控件默认底约等于 tertiary，不另开第四套布局层 */
     --default: var(--surface-tertiary);
     --default-foreground: var(--foreground);
 
-    /* aliases 鈫?鍚屼竴濂椾笁灞傚３锛岀姝㈠啀 mix 鍑哄苟琛岀伆闃?*/
+    /* aliases → 同一套三层壳，禁止再 mix 出并行灰阶 */
     --surface-hover: var(--surface-secondary);
     --surface-muted: var(--surface-tertiary);
     --background-alt: var(--surface-tertiary);
@@ -654,10 +620,10 @@
     --accent-soft-hover: color-mix(in srgb, var(--accent) 20%, var(--surface));
     --accent-softer: color-mix(in srgb, var(--accent) 8%, var(--surface));
     --accent-border: color-mix(in srgb, var(--accent) 32%, var(--border));
-    /* 瀹炲績鎸夐挳鎮仠锛氭祬鑹插姞娣憋紱dark 鍧楀唴鏀逛负鎻愪寒 */
+    /* 实心按钮悬停：浅色加深；dark 块内改为提亮 */
     --accent-hover: color-mix(in oklab, var(--accent) 86%, #000);
     --card-glow: 0 0 0 2px var(--accent-soft);
-    /* HeroUI / 鏃фˉ锛氫笟鍔¤鍙敤 --accent* */
+    /* HeroUI / 旧桥：业务请只用 --accent* */
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
     --primary-hover: var(--accent-hover);
@@ -689,71 +655,71 @@
   }
 
 
-  /* Dark锛氳壊娓╂瀬寮憋紝閬垮厤鏁撮〉鍙戣壊锛涘眰绾т富瑕侀潬鏄庡害 */
+  /* Dark：色温极弱，避免整页发色；层级主要靠明度 */
   .dark,
   [data-theme='dark'],
   html[data-color-scheme].dark,
   html[data-color-scheme][data-theme='dark'] {
     --header-surface: var(--paper);
-    --surface: color-mix(in oklab, var(--accent) 0.3%, var(--paper));
+    --surface: color-mix(in oklab, var(--accent) 1.5%, var(--paper));
     --overlay: var(--surface);
     --field-background: var(--surface);
     --card-surface: var(--surface);
     --segment: var(--surface);
 
-    --background: color-mix(in oklab, var(--accent) 2%, var(--canvas));
+    --background: color-mix(in oklab, var(--accent) 4%, var(--canvas));
     --surface-secondary: color-mix(
       in oklab,
-      var(--accent) 2.5%,
-      color-mix(in oklab, var(--foreground) 4%, var(--paper))
+      var(--accent) 5%,
+      color-mix(in oklab, var(--foreground) 5%, var(--paper))
     );
     --surface-tertiary: color-mix(
       in oklab,
-      var(--accent) 2%,
-      color-mix(in oklab, var(--foreground) 3%, var(--canvas))
+      var(--accent) 7%,
+      color-mix(in oklab, var(--foreground) 6%, var(--canvas))
     );
     --default: var(--surface-tertiary);
 
     --border: color-mix(
       in oklab,
-      var(--accent) 4%,
+      var(--accent) 7%,
       color-mix(in oklab, var(--foreground) 16%, var(--paper))
     );
     --border-light: color-mix(
       in oklab,
-      var(--accent) 2.5%,
+      var(--accent) 5%,
       color-mix(in oklab, var(--foreground) 12%, var(--paper))
     );
     --separator: color-mix(
       in oklab,
-      var(--accent) 2%,
+      var(--accent) 5%,
       color-mix(in oklab, var(--foreground) 10%, var(--paper))
     );
 
     --muted: color-mix(
       in oklab,
-      var(--accent) 4%,
+      var(--accent) 7%,
       color-mix(in oklab, var(--foreground) 70%, var(--paper))
     );
     --text-tertiary: color-mix(
       in oklab,
-      var(--accent) 4%,
+      var(--accent) 7%,
       color-mix(in oklab, var(--foreground) 38%, var(--paper))
     );
     --text-disabled: color-mix(
       in oklab,
-      var(--accent) 2%,
+      var(--accent) 5%,
       color-mix(in oklab, var(--foreground) 22%, var(--paper))
     );
 
-    /* soft 閫変腑搴曚篃鐣ラ檷锛岄伩鍏嶅ぇ鍧楀彂鑹?*/
+    /* soft 选中底也略降，避免大块发色 */
     --accent-soft: color-mix(in srgb, var(--accent) 10%, var(--surface));
     --accent-soft-hover: color-mix(in srgb, var(--accent) 16%, var(--surface));
     --accent-softer: color-mix(in srgb, var(--accent) 6%, var(--surface));
     --accent-border: color-mix(in srgb, var(--accent) 24%, var(--border));
     --accent-hover: color-mix(in oklab, var(--accent) 88%, #fff);
 
-    /* AI Diff 娣辫壊锛氬弬鑰?Cursor锛涢€変腑鎬佸啀鎻愪寒涓€妗ｏ紝瀵规瘮鏇存槑鏄?*/
+    /* AI Diff 深色：参考 Cursor；选中态再提亮一档，对比更明显 */
     --diff-added: #373d29;
     --diff-added-border: #6a7a4a;
     --diff-added-fg: var(--foreground);

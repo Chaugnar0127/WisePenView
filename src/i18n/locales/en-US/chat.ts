@@ -7,6 +7,7 @@ const enUSChat = {
   },
   panel: {
     newChat: 'New chat',
+    expand: 'Expand chat panel',
     collapse: 'Collapse chat panel',
     create: 'New chat',
     sessionList: {

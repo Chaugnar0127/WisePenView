@@ -7,6 +7,7 @@ const zhCNChat = {
   },
   panel: {
     newChat: '新对话',
+    expand: '展开聊天面板',
     collapse: '收起聊天面板',
     create: '新建对话',
     sessionList: {

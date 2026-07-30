@@ -4,7 +4,6 @@ const enUSWorkspace = {
     chatPanel: 'Chat panel',
     enterZen: 'Enter Zen Mode',
     exitZen: 'Exit Zen Mode',
-    expandRightSidebar: 'Expand right sidebar',
   },
   breadcrumb: { unnamedGroup: 'Unnamed group', personalDrive: 'Personal Drive' },
   renderer: {

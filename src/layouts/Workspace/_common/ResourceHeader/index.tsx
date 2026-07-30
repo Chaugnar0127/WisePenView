@@ -16,6 +16,8 @@ import {
   HardDrive,
   Link2,
   MessageSquare,
+  PanelRightClose,
+  PanelRightOpen,
   Printer,
   Search,
   Settings2,
@@ -277,8 +279,11 @@ function ResourceHeader({
   actions,
   moreMenu,
   hideBreadcrumb,
+  trailingActions,
+  chatPanelCollapsed,
+  onToggleChatPanel,
 }: ResourceHeaderProps) {
-  const { t } = useTranslation('resource');
+  const { t } = useTranslation(['resource', 'chat']);
   const userService = useUserService();
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
   const normalizedOwnerId = normalizeId(ownerId);
@@ -359,6 +364,24 @@ function ResourceHeader({
                   onOpenPermission={() => setIsPermissionModalOpen(true)}
                 />
               )}
+            />
+          ) : null}
+          {trailingActions}
+          {onToggleChatPanel ? (
+            <AppIconButton
+              icon={
+                chatPanelCollapsed ? (
+                  <PanelRightOpen size={18} aria-hidden="true" />
+                ) : (
+                  <PanelRightClose size={18} aria-hidden="true" />
+                )
+              }
+              label={
+                chatPanelCollapsed
+                  ? t('panel.expand', { ns: 'chat' })
+                  : t('panel.collapse', { ns: 'chat' })
+              }
+              onPress={onToggleChatPanel}
             />
           ) : null}
         </div>

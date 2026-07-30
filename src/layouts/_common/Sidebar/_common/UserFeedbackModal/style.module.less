@@ -15,14 +15,14 @@
 }
 
 .fieldLabel {
-  color: #27272a;
+  color: var(--foreground);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .requiredMark {
   margin-left: 2px;
-  color: var(--danger, #ef4444);
+  color: var(--danger);
 }
 
 .typeTrigger {
@@ -30,21 +30,21 @@
   min-height: var(--control-height, 36px);
   justify-content: space-between;
   border-width: 1.5px;
-  border-color: color-mix(in oklab, var(--border, #e4e7ec) 82%, var(--surface, #ffffff) 18%);
+  border-color: color-mix(in oklab, var(--border) 82%, var(--surface) 18%);
   background-color: color-mix(
     in oklab,
-    var(--surface-tertiary, #f0f3f6) 35%,
-    var(--surface, #ffffff) 65%
+    var(--surface-tertiary) 35%,
+    var(--surface) 65%
   );
   color: var(--foreground);
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
 
   &:hover {
-    border-color: color-mix(in oklab, var(--border, #e4e7ec) 90%, var(--surface, #ffffff) 10%);
+    border-color: color-mix(in oklab, var(--border) 90%, var(--surface) 10%);
     background-color: color-mix(
       in oklab,
-      var(--surface-tertiary, #f0f3f6) 70%,
-      var(--surface, #ffffff) 30%
+      var(--surface-tertiary) 70%,
+      var(--surface) 30%
     );
   }
 }

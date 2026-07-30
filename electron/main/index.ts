@@ -99,7 +99,7 @@ function createMainWindow(): BrowserWindow {
       ? {
           titleBarStyle: 'hiddenInset' as const,
           // 原生红绿灯坐标，可在此手动微调。
-          trafficLightPosition: { x: 20, y: 18 },
+          trafficLightPosition: { x: 20, y: 19 },
         }
       : {}),
     webPreferences: {

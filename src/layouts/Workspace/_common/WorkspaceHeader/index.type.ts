@@ -15,11 +15,9 @@ export interface WorkspaceHeaderProps {
   canGoBack?: boolean;
   canGoForward?: boolean;
   leftSidebarCollapsed?: boolean;
-  rightSidebarCollapsed?: boolean;
   onGoBack?: () => void;
   onGoForward?: () => void;
   onToggleLeftSidebar?: () => void;
-  onToggleRightSidebar?: () => void;
   // onEnterZenMode?: () => void;
   className?: string;
 }

@@ -54,7 +54,6 @@ const enUSProfile = {
       sunset: { label: 'Sunset', description: 'Warm orange palette' },
       emerald: { label: 'Emerald', description: 'Emerald green palette' },
       lavender: { label: 'Lavender', description: 'Lavender purple palette' },
-      sprout: { label: 'Sprout', description: 'Fresh green palette' },
     },
   },
   form: {

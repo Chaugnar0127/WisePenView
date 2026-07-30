@@ -6,6 +6,7 @@ export interface AppNavigationContextValue {
   canGoForward: boolean;
   goBack: () => void;
   goForward: () => void;
+  openCommandPalette: () => void;
 }
 
 export const AppNavigationContext = createContext<AppNavigationContextValue | null>(null);

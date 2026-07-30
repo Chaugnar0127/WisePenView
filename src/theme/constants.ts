@@ -19,7 +19,6 @@ export const COLOR_SCHEME = {
   SUNSET: 'sunset',
   EMERALD: 'emerald',
   LAVENDER: 'lavender',
-  SPROUT: 'vanilla',
 } as const;
 
 export type ColorScheme = (typeof COLOR_SCHEME)[keyof typeof COLOR_SCHEME];
@@ -98,11 +97,6 @@ export const COLOR_SCHEME_OPTIONS: ColorSchemeOption[] = [
     id: COLOR_SCHEME.LAVENDER,
     labelKey: 'appearance.scheme.lavender.label',
     descriptionKey: 'appearance.scheme.lavender.description',
-  },
-  {
-    id: COLOR_SCHEME.SPROUT,
-    labelKey: 'appearance.scheme.sprout.label',
-    descriptionKey: 'appearance.scheme.sprout.description',
   },
 ];
 

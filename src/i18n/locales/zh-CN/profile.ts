@@ -54,7 +54,6 @@ const zhCNProfile = {
       sunset: { label: '暮橘', description: '暖橘色系' },
       emerald: { label: '翠微', description: '翠绿色系' },
       lavender: { label: '紫烟', description: '薰衣草紫' },
-      sprout: { label: '春芽', description: '春芽色系' },
     },
   },
   form: {

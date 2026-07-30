@@ -341,15 +341,6 @@ export default defineConfig([
     },
   },
   {
-    // 全局搜索是 command palette 形态，允许直接使用底层 Modal。
-    files: [
-      'src/layouts/_common/Sidebar/AppSidebar/_components/GlobalSearch/SearchModal/**/*.{ts,tsx}',
-    ],
-    rules: {
-      'no-restricted-imports': buildRestrictedImportsRule({ allowOverlayPrimitive: true }),
-    },
-  },
-  {
     // Mock Service 的唯一合法装配入口。
     files: ['src/domains/_registry/registry.mock.ts'],
     rules: {

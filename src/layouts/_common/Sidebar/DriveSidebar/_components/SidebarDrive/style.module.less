@@ -25,12 +25,15 @@
   padding: 8px 12px 6px;
   color: var(--text-tertiary);
   font-size: 12px;
+  font-weight: var(--font-weight-medium);
   line-height: 18px;
 }
 
 .tree {
   color: var(--foreground);
-  font-size: var(--font-size-md, 14px);
+  font-size: var(--font-size-base, 14px);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-base, 22px);
   gap: var(--space-2xs, 4px);
 
   :global(.wisepen-tree__item) {
@@ -72,6 +75,7 @@
   :global(.wisepen-tree__item[aria-selected='true']) {
     color: var(--foreground);
     background: var(--surface-tertiary);
+    font-weight: var(--font-weight-semibold);
   }
 
   :global(.wisepen-tree__item[aria-selected='true']) :global(.wisepen-tree__content) {
@@ -139,7 +143,7 @@
   min-width: 0;
   overflow: hidden;
   color: inherit;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

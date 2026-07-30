@@ -21,7 +21,7 @@ export function useTableDriveInteractionController({
 }: UseTableDriveInteractionControllerParams) {
   const [checkedRowKeys, setCheckedRowKeys] = useState<Set<string>>(new Set());
   const [selectedRowId, setSelectedRowId] = useState<string>();
-  const [isDetailPanelCollapsed, setIsDetailPanelCollapsed] = useState(false);
+  const [isDetailPanelCollapsed, setIsDetailPanelCollapsed] = useState(true);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const lastSortClickRef = useRef<{ column: string; time: number } | null>(null);
 

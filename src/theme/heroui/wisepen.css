@@ -377,7 +377,8 @@
     --preview-color-3: #835ec7;
   }
 
-  /* WisePen 排版 / 间距 / Table 行高 */
+  /* WisePen 桌面端排版：正文 14px、辅助文本 12px，重点层级使用 16px 以上字号。 */
+  /* 字重只通过 Regular、Medium、Semibold、Bold 四档表达层级，避免同层级出现多套数值。 */
   :root,
   .light,
   .default,
@@ -395,6 +396,8 @@
     --font-size-heading-5: 16px;
     --font-weight-regular: 400;
     --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
     --line-height-base: 22px;
     --line-height-sm: 20px;
     --line-height-md: 22px;

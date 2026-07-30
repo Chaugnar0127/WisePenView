@@ -2,14 +2,20 @@
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
-  font-weight: var(--chat-message-font-weight, var(--font-weight-regular));
+  font-family: inherit;
+  font-size: var(--chat-message-font-size, var(--font-size-base));
+  line-height: var(--chat-message-line-height, var(--line-height-base));
+  font-weight: var(
+    --chat-markdown-font-weight,
+    var(--chat-message-font-weight, var(--font-weight-regular))
+  );
 
   :global(h1),
   :global(h2),
   :global(h3) {
     margin: 0 0 var(--space-md);
     color: var(--foreground);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   :global(h4),
@@ -17,7 +23,7 @@
   :global(h6) {
     margin: 0 0 var(--space-sm);
     color: var(--foreground);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   :global(h1) {
@@ -55,7 +61,7 @@
   }
 
   :global(strong) {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   :global(a) {
@@ -127,6 +133,7 @@
       ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
       monospace;
     font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-regular);
   }
 
   :global(:not(pre) > code) {
@@ -147,7 +154,7 @@
   }
 
   :global(th) {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 }
 
@@ -287,7 +294,7 @@
     background-color: var(--accent-soft);
     color: var(--accent);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     line-height: 1;
     text-decoration: none;
     white-space: nowrap;

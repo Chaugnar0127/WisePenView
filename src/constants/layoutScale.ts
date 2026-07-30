@@ -31,7 +31,7 @@ export const NOTE_OUTLINE_OPEN_WIDTH = 200;
 export const NOTE_OUTLINE_COLLAPSED_WIDTH = 40;
 
 /** Chat 侧栏/分栏面板下限：扣除输入区两侧留白后，卡片至少保留 480px */
-export const CHAT_PANEL_MIN_WIDTH = 560;
+export const CHAT_PANEL_MIN_WIDTH = 480;
 /**
  * Chat fullWidth 页最小宽
  */

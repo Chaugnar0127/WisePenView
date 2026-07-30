@@ -20,6 +20,7 @@ interface SidebarTreeLoadResult {
 
 interface UseSidebarDriveTreeControllerOptions {
   scope: DriveNodeScope;
+  rootDisplayName?: string;
   buildTreeData: (nodes: DriveNode[], nodeMap: Map<string, DriveNode>) => DataNode[];
   onOpenResource: (node: Extract<DriveNode, { type: 'resource' | 'link' }>) => void;
 }
@@ -32,6 +33,7 @@ function isSameDriveScope(left: DriveNodeScope, right: DriveNodeScope): boolean 
 
 export function useSidebarDriveTreeController({
   scope,
+  rootDisplayName,
   buildTreeData,
   onOpenResource,
 }: UseSidebarDriveTreeControllerOptions) {
@@ -136,6 +138,7 @@ export function useSidebarDriveTreeController({
         expansionScopeKey,
         scope.rootId,
         groupId,
+        rootDisplayName,
         resourceLocation?.resourceId,
         resourceLocation?.parentNodeId,
         resourceLocation?.nodeId,

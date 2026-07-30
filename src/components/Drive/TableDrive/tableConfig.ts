@@ -91,6 +91,9 @@ export const buildDriveTableColumns = (
     id: 'size',
     label: t('table.columns.size'),
     width: 'folderSize',
+    allowsSorting: true,
+    getSortValue: (row) =>
+      row.node.type === 'resource' || row.node.type === 'link' ? row.node.size : undefined,
     renderCell: (row) => (row.entryType === 'loading' ? '' : (row.sizeLabel ?? '—')),
   },
   {

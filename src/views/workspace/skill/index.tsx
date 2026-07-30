@@ -208,6 +208,12 @@ function SkillView({ resourceId }: SkillViewProps) {
                     <span>{t('header.save')}</span>
                   </Button>
                 ) : null}
+                <VersionDropdown
+                  items={versionItems}
+                  disabledKeys={disabledVersionKeys}
+                  formatVersion={SkillServicesMap.formatVersion}
+                  onSelect={navigation.handleVersionSelect}
+                />
                 <Button
                   variant="primary"
                   onPress={navigation.handlePublish}
@@ -223,12 +229,6 @@ function SkillView({ resourceId }: SkillViewProps) {
                 </Button>
               </>
             ) : null}
-            <VersionDropdown
-              items={versionItems}
-              disabledKeys={disabledVersionKeys}
-              formatVersion={SkillServicesMap.formatVersion}
-              onSelect={navigation.handleVersionSelect}
-            />
           </div>
         ) : undefined,
       },

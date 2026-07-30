@@ -2,8 +2,8 @@ import {
   getSupportedDriveDocumentFiles,
   useDriveDocumentUpload,
 } from '@/components/Drive/common/useDriveDocumentUpload';
+import { UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
-import UploadZone from '@/components/UploadZone';
 import { Button, toast } from '@heroui/react';
 import { CloudUpload, X } from 'lucide-react';
 import { useState } from 'react';

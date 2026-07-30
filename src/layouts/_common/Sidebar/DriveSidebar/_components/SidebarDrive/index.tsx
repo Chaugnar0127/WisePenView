@@ -19,7 +19,7 @@ import {
 } from '@/components/Note/useMarkdownNoteImport';
 import type { DataNode } from '@/components/Tree';
 import Tree from '@/components/Tree';
-import { useNoteService } from '@/domains';
+import { useGroupService, useNoteService } from '@/domains';
 import type { DriveNode, FolderNode, RootNode } from '@/domains/Drive';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
 import {
@@ -56,6 +56,7 @@ interface SidebarDriveCreateTarget {
 function SidebarDrive() {
   const { t } = useTranslation('drive');
   const location = useLocation();
+  const groupService = useGroupService();
   const noteService = useNoteService();
   const scope = useSidebarDriveScopeStore((state) => state.scope);
   const groupId = getDriveScopeGroupId(scope);
@@ -67,6 +68,21 @@ function SidebarDrive() {
   const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
   const importTargetRef = useRef<RootNode | FolderNode | null>(null);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
+  const { data: groupBaseInfo } = useRequest(
+    async () => {
+      if (!groupId) return undefined;
+      return groupService.fetchGroupBaseInfo(groupId);
+    },
+    {
+      ready: Boolean(groupId),
+      refreshDeps: [groupId, groupService],
+    }
+  );
+  const rootDisplayName = groupId
+    ? groupBaseInfo && groupBaseInfo.groupId === groupId
+      ? groupBaseInfo.groupName || undefined
+      : undefined
+    : t('navigator.personalDrive');
 
   const resolveContainerMountTagId = (node: RootNode | FolderNode): string | undefined => {
     if (node.type === 'folder') return node.tagId;
@@ -152,6 +168,7 @@ function SidebarDrive() {
         renderTitle: (node) => (
           <SidebarDriveNodeTitle
             node={node}
+            rootDisplayName={node.type === 'root' ? rootDisplayName : undefined}
             scopeSwitcher={node.type === 'root' ? <SidebarDriveScopeSwitcher /> : undefined}
             onCreateNode={handleCreateNode}
             onRenameNode={setRenameTarget}
@@ -174,6 +191,7 @@ function SidebarDrive() {
     treeLoading,
   } = useSidebarDriveTreeController({
     scope,
+    rootDisplayName,
     buildTreeData: buildChildrenData,
     onOpenResource: (node) => {
       openInWorkspace({

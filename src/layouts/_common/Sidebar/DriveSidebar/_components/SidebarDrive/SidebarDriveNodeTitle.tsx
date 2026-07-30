@@ -18,6 +18,7 @@ export type SidebarDriveCreateAction =
 
 interface SidebarDriveNodeTitleProps {
   node: DriveNode;
+  rootDisplayName?: string;
   scopeSwitcher?: ReactNode;
   onCreateNode: (node: RootNode | FolderNode, action: SidebarDriveCreateAction) => void;
   onRenameNode: (node: DriveActionTarget) => void;
@@ -34,9 +35,10 @@ function getNodeDisplayName(
   driveName: string,
   sharedFolder: string,
   unnamedFolder: string,
-  loadingLabel: string
+  loadingLabel: string,
+  rootDisplayName?: string
 ): string {
-  if (node.type === 'root') return node.name || driveName;
+  if (node.type === 'root') return rootDisplayName || node.name || driveName;
   if (node.type === 'folder') {
     if (node.systemType === 'shared') return sharedFolder;
     return node.name || unnamedFolder;
@@ -47,6 +49,7 @@ function getNodeDisplayName(
 
 function SidebarDriveNodeTitle({
   node,
+  rootDisplayName,
   scopeSwitcher,
   onCreateNode,
   onRenameNode,
@@ -78,7 +81,8 @@ function SidebarDriveNodeTitle({
     t('drive:node.drive'),
     t('drive:node.shared'),
     t('drive:node.unnamedFolder'),
-    t('drive:node.loading')
+    t('drive:node.loading'),
+    rootDisplayName
   );
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const handleCreate = (action: SidebarDriveCreateAction) => {

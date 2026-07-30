@@ -1,6 +1,5 @@
-import { Input, TextArea } from '@/components/Input';
+import { Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
-import UploadZone from '@/components/UploadZone';
 import { useGroupService, useImageService } from '@/domains';
 import type { EditGroupRequest, Group } from '@/domains/Group';
 import { parseErrorMessage } from '@/utils/error';

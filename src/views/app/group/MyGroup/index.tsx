@@ -127,13 +127,13 @@ function MyGroup() {
           <span className={layout.pageSubtitle}>{t('list.subtitle')}</span>
         </div>
         <div className={layout.actionsRow}>
-          <Button onPress={() => setJoinGroupModalOpen(true)}>
-            <UserPlus size={16} aria-hidden="true" />
-            {t('list.join')}
-          </Button>
-          <Button variant="primary" onPress={() => setCreateGroupModalOpen(true)}>
+          <Button variant="secondary" onPress={() => setCreateGroupModalOpen(true)}>
             <Plus size={16} aria-hidden="true" />
             {t('list.create')}
+          </Button>
+          <Button variant="primary" onPress={() => setJoinGroupModalOpen(true)}>
+            <UserPlus size={16} aria-hidden="true" />
+            {t('list.join')}
           </Button>
         </div>
       </div>

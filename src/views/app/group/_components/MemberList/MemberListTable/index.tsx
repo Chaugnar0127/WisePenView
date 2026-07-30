@@ -6,7 +6,7 @@ import {
   type DataTableColumn,
   type ManageTableColumn,
 } from '@/components/Table';
-import type { GroupMember } from '@/domains/Group';
+import { ROLE, type GroupMember } from '@/domains/Group';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { Label, ListBox, TextField } from '@heroui/react';
 import type { TFunction } from 'i18next';
@@ -238,6 +238,8 @@ function buildReadonlyColumns(
       label: t('member.table.columns.role'),
       width: 'sm',
       align: 'center',
+      allowsSorting: true,
+      getSortValue: (member) => ROLE[member.role],
       renderCell: (member) => renderRole(member.role, t),
     },
     {

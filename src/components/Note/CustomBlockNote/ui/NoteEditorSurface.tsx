@@ -10,6 +10,7 @@ import type { NoteEditorRuntimeCoordinator } from '../registry/useNoteEditorRunt
 import styles from '../style.module.less';
 import NoteSideMenu from './sideMenu';
 import NoteSlashMenu from './slashMenu';
+import { NoteEmojiPicker } from './slashMenu/emojiPicker';
 import NoteTableHandles from './tableHandles';
 import NoteToolbar from './toolbar';
 
@@ -51,6 +52,7 @@ export function NoteEditorSurface({
           theme={resolvedTheme}
           formattingToolbar={false}
           slashMenu={false}
+          emojiPicker={false}
           sideMenu={false}
           tableHandles={false}
           editable={!readOnly}
@@ -62,6 +64,7 @@ export function NoteEditorSurface({
             onOpenFind={onOpenFind}
             isFindModeActive={isFindModeActive}
           />
+          <NoteEmojiPicker />
           <NoteSlashMenu editor={editor} plugins={notePluginRegistry.contentPlugins} />
           <NoteSideMenu plugins={notePluginRegistry.contentPlugins} />
           <NoteTableHandles />

@@ -1,3 +1,4 @@
+import { SuggestionMenu } from '@blocknote/core/extensions';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
 import { getDefaultReactSlashMenuItems } from '@blocknote/react';
 
@@ -8,6 +9,8 @@ import type { NoteContentPlugin, PluginEditor } from '../../registry/types';
  * BlockNote 默认 slash 菜单项在源码中带稳定字段 `key`，但未对外公开类型；这里收敛窄化避免使用 any。
  */
 type SlashMenuItemWithKey = DefaultReactSuggestionItem & { key?: string };
+
+const EMOJI_TRIGGER_CHARACTER = ':';
 
 /**
  * BlockNote 在 `getDefaultReactSlashMenuItems` 里为每个默认项设置了稳定字段 `key`，
@@ -36,9 +39,22 @@ function getFilteredDefaultReactSlashMenuItems(
   hiddenKeys: ReadonlySet<string> | readonly string[]
 ): DefaultReactSuggestionItem[] {
   const hidden = hiddenKeys instanceof Set ? hiddenKeys : new Set(hiddenKeys);
-  return getDefaultReactSlashMenuItems(editor).filter((item) => {
+  return getDefaultReactSlashMenuItems(editor).flatMap((item) => {
     const key = getSlashMenuItemKey(item);
-    return key === undefined || !hidden.has(key);
+    if (key !== undefined && hidden.has(key)) return [];
+    if (key !== 'emoji') return [item];
+
+    return [
+      {
+        ...item,
+        onItemClick: () => {
+          editor.getExtension(SuggestionMenu)?.openSuggestionMenu(EMOJI_TRIGGER_CHARACTER, {
+            deleteTriggerCharacter: false,
+            ignoreQueryLength: true,
+          });
+        },
+      },
+    ];
   });
 }
 

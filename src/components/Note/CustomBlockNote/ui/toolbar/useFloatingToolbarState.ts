@@ -99,6 +99,7 @@ export function useFloatingToolbarState(
   const toolbarStateRef = useRef(toolbarState);
   const selectingPointerIdRef = useRef<number | null>(null);
   const blockHandleDraggingRef = useRef(false);
+  const suppressToolbarRef = useRef(false);
   const disabledLatest = useLatest(disabled);
   const keepVisibleWithoutDomSelectionLatest = useLatest(keepVisibleWithoutDomSelection);
 
@@ -139,7 +140,12 @@ export function useFloatingToolbarState(
       frameRef.current = null;
       const view = getMountedEditorView(editor);
       if (!view) return;
-      if (disabledLatest.current || blockHandleDraggingRef.current || view.dragging) {
+      if (
+        disabledLatest.current ||
+        blockHandleDraggingRef.current ||
+        suppressToolbarRef.current ||
+        view.dragging
+      ) {
         hideToolbar();
         return;
       }
@@ -164,7 +170,7 @@ export function useFloatingToolbarState(
   });
 
   const syncToolbarStateIfNeeded = () => {
-    if (blockHandleDraggingRef.current) return;
+    if (blockHandleDraggingRef.current || suppressToolbarRef.current) return;
     if (selectingPointerIdRef.current !== null) return;
     const view = getMountedEditorView(editor);
     if (!view) return;
@@ -190,10 +196,22 @@ export function useFloatingToolbarState(
   }, [disabled, hideToolbar, keepVisibleWithoutDomSelection, syncToolbarState]);
 
   const handlePointerDown = (event: PointerEvent) => {
-    if (event.button !== 0) return;
     const view = getMountedEditorView(editor);
     if (!view || !(event.target instanceof Node) || !view.dom.contains(event.target)) return;
+    if (event.button !== 0) {
+      suppressToolbarRef.current = true;
+      hideToolbar();
+      return;
+    }
+    suppressToolbarRef.current = false;
     selectingPointerIdRef.current = event.pointerId;
+    hideToolbar();
+  };
+
+  const handleContextMenu = (event: MouseEvent) => {
+    const view = getMountedEditorView(editor);
+    if (!view || !(event.target instanceof Node) || !view.dom.contains(event.target)) return;
+    suppressToolbarRef.current = true;
     hideToolbar();
   };
 
@@ -224,6 +242,7 @@ export function useFloatingToolbarState(
     tiptapEditor.on('update', syncToolbarStateIfNeeded);
     document.addEventListener('selectionchange', syncToolbarStateIfNeeded);
     document.addEventListener('pointerdown', handlePointerDown, true);
+    document.addEventListener('contextmenu', handleContextMenu, true);
     document.addEventListener('pointerup', handlePointerEnd, true);
     document.addEventListener('pointercancel', handlePointerEnd, true);
     document.addEventListener('dragstart', handleDragStart, true);
@@ -235,6 +254,7 @@ export function useFloatingToolbarState(
       tiptapEditor.off('update', syncToolbarStateIfNeeded);
       document.removeEventListener('selectionchange', syncToolbarStateIfNeeded);
       document.removeEventListener('pointerdown', handlePointerDown, true);
+      document.removeEventListener('contextmenu', handleContextMenu, true);
       document.removeEventListener('pointerup', handlePointerEnd, true);
       document.removeEventListener('pointercancel', handlePointerEnd, true);
       document.removeEventListener('dragstart', handleDragStart, true);

@@ -379,6 +379,11 @@ html::-webkit-scrollbar-thumb:hover {
   -webkit-user-select: text;
 }
 
+#root img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
 @layer utilities {
   .scrollbar-thin {
     scrollbar-color: var(--scrollbar-color);

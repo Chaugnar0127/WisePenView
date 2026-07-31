@@ -20,7 +20,7 @@ function SidebarHeader({
   const logoContent = (
     <>
       <div className={styles.logoIcon}>
-        <img src={logoImg} alt="WisePen" />
+        <img src={logoImg} alt="WisePen" draggable={false} />
       </div>
       <span className={styles.logoText}>{title}</span>
     </>

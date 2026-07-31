@@ -399,6 +399,7 @@
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
+    --field-text-font-weight: var(--font-weight-medium);
     --line-height-base: 22px;
     --line-height-sm: 20px;
     --line-height-md: 22px;

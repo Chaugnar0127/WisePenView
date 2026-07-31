@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 
 const EMOJI_TRIGGER_CHARACTER = ':';
 const EMOJI_PICKER_FLOATING_OFFSET = 10;
+const EMOJI_PICKER_UPWARD_OFFSET = 18;
 const EMOJI_PICKER_VIEWPORT_PADDING = 10;
 
 function clampFloatingPosition(value: number, min: number, max: number) {
@@ -76,12 +77,12 @@ function NoteEmojiPicker() {
         middleware: [
           {
             name: 'noteEmojiPickerPlacement',
-            fn({ x, rects, elements }) {
-              const referenceRect = elements.reference.getBoundingClientRect();
+            fn({ x, y, rects }) {
               const viewportWidth = window.innerWidth;
               const viewportHeight = window.innerHeight;
-              const bottomY = referenceRect.bottom + EMOJI_PICKER_FLOATING_OFFSET;
-              const topY = referenceRect.top - EMOJI_PICKER_FLOATING_OFFSET - rects.floating.height;
+              const bottomY = y + EMOJI_PICKER_FLOATING_OFFSET;
+              const topY =
+                y - rects.reference.height - EMOJI_PICKER_UPWARD_OFFSET - rects.floating.height;
               const bottomOverflows =
                 bottomY + rects.floating.height > viewportHeight - EMOJI_PICKER_VIEWPORT_PADDING;
               const preferredY = bottomOverflows ? topY : bottomY;

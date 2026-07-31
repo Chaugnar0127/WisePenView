@@ -1,6 +1,6 @@
 import type { ResourceIconType } from '@/domains/Resource';
 import type { SortDescriptor } from '@heroui/react';
-import type { DragEvent, ReactNode } from 'react';
+import type { DragEvent, ReactElement, ReactNode } from 'react';
 import type { FolderColumnWidth } from '../shared/TableBase/columnWidth';
 import type { TableColumnBase, TableLoadMore } from '../shared/TableBase/index.type';
 import type { TableRowAction } from '../shared/TableRowActions/index.type';
@@ -89,6 +89,8 @@ export interface FolderTableProps<T extends FolderTableRow> {
   onRowActivate?: (row: T) => void;
   /** 包装名称列的图标与名称内容，用于在业务层扩展交互能力 */
   renderNameContent?: (content: ReactNode, row: T, ctx: FolderTableRowContext<T>) => ReactNode;
+  /** 包装整行节点，用于业务层扩展行级交互能力。 */
+  renderRow?: (rowElement: ReactElement, row: T, ctx: FolderTableRowContext<T>) => ReactNode;
   /** 仅作用于行和其下方空白区域的原生拖放事件。 */
   bodyDragHandlers?: FolderTableBodyDragHandlers;
   /** 渲染在列头下方的 body 覆盖层，不遮挡面包屑和工具栏。 */

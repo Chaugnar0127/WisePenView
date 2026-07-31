@@ -1,23 +1,69 @@
 import EntryIcon from '@/components/Icons/EntryIcon';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
-import { type DragEvent, type ReactNode } from 'react';
+import clsx from 'clsx';
+import {
+  cloneElement,
+  type DragEvent,
+  type MouseEventHandler,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveTableRow } from '../../index.type';
 import styles from '../../style.module.less';
 
-interface DriveDndNameContentProps {
+const ROW_DND_IGNORE_TARGET_SELECTOR = [
+  'a',
+  'button',
+  'input',
+  'select',
+  'textarea',
+  '[contenteditable="true"]',
+  '[role="button"]',
+  '[role="checkbox"]',
+  '[role="link"]',
+  '[role="menuitem"]',
+  '[data-row-click-ignore="true"]',
+  '[data-slot="selection"]',
+  '[slot="selection"]',
+  '.checkbox',
+].join(',');
+
+interface DriveDndRowElementProps {
+  className?: string;
+  onMouseDownCapture?: MouseEventHandler<HTMLElement>;
+  ref?: Ref<HTMLElement>;
+}
+
+interface DriveDndRowProps {
   row: DriveTableRow;
   draggableDisabled: boolean;
   droppableDisabled: boolean;
-  children: ReactNode;
+  children: ReactElement;
 }
 
-export function DriveDndNameContent({
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null): void {
+  if (!ref) return;
+
+  if (typeof ref === 'function') {
+    ref(value);
+    return;
+  }
+
+  ref.current = value;
+}
+
+function isRowDndIgnoredTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest(ROW_DND_IGNORE_TARGET_SELECTOR));
+}
+
+export function DriveDndRow({
   row,
   draggableDisabled,
   droppableDisabled,
   children,
-}: DriveDndNameContentProps) {
+}: DriveDndRowProps) {
   const draggable = useDraggable({
     id: `drive-row:${row.id}`,
     disabled: draggableDisabled,
@@ -28,27 +74,33 @@ export function DriveDndNameContent({
     disabled: droppableDisabled,
     data: { targetNodeId: row.node.id },
   });
-  const setDraggableNodeRef = draggable.setNodeRef;
-  const setActivatorNodeRef = draggable.setActivatorNodeRef;
-  const setDroppableNodeRef = droppable.setNodeRef;
-  const setNodeRef = (node: HTMLElement | null) => {
-    setDraggableNodeRef(node);
-    setActivatorNodeRef(node);
-    setDroppableNodeRef(node?.closest<HTMLElement>('[data-folder-row-id]') ?? null);
+  const childProps = children.props as DriveDndRowElementProps;
+
+  const setRowNodeRef = (node: HTMLElement | null) => {
+    assignRef(childProps.ref, node);
+    draggable.setNodeRef(node);
+    draggable.setActivatorNodeRef(node);
+    droppable.setNodeRef(node);
+  };
+  const handleMouseDownCapture: MouseEventHandler<HTMLElement> = (event) => {
+    childProps.onMouseDownCapture?.(event);
+    if (event.defaultPrevented || isRowDndIgnoredTarget(event.target)) return;
+
+    draggable.listeners?.onMouseDown?.(event);
   };
 
-  return (
-    <span
-      ref={setNodeRef}
-      className={styles.dndNameContent}
-      data-dragging={draggable.isDragging ? 'true' : undefined}
-      data-drop-target={droppable.isOver ? 'true' : undefined}
-      onMouseDownCapture={(event) => {
-        draggable.listeners?.onMouseDown?.(event);
-      }}
-    >
-      {children}
-    </span>
+  return cloneElement(
+    children as ReactElement<DriveDndRowElementProps>,
+    {
+      ref: setRowNodeRef,
+      className: clsx(childProps.className, styles.dndBodyRow),
+      'data-dragging': draggable.isDragging ? 'true' : undefined,
+      'data-drive-dnd-drop-target': droppable.isOver ? 'true' : undefined,
+      onMouseDownCapture: handleMouseDownCapture,
+    } as Partial<DriveDndRowElementProps> & {
+      'data-dragging'?: string;
+      'data-drive-dnd-drop-target'?: string;
+    }
   );
 }
 

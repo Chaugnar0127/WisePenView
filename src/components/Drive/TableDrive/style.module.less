@@ -101,17 +101,11 @@
   gap: var(--space-xs);
 }
 
-.dndNameContent {
-  display: inline-flex;
-  min-width: 0;
-  cursor: grab;
-
-  &[data-dragging='true'] {
-    cursor: grabbing;
-  }
+.dndBodyRow {
+  cursor: pointer;
 }
 
-:global(.table__row):has(.dndNameContent[data-drop-target='true']) {
+:global(.table__row[data-drive-dnd-drop-target='true']) {
   :global(.table__cell) {
     background: var(--accent-soft);
   }

@@ -41,6 +41,7 @@ import {
   type CSSProperties,
   type KeyboardEvent,
   type MouseEvent,
+  type ReactElement,
   type ReactNode,
   type UIEvent,
 } from 'react';
@@ -179,6 +180,11 @@ interface FolderTableBodyRowProps<T extends FolderTableRow> {
   ) => ReactNode;
   resolveBodyCellClass: (column: FolderTableColumn<T>) => string;
   row: FolderTableVisibleRow & T;
+  renderRow?: (
+    rowElement: ReactElement,
+    row: FolderTableVisibleRow & T,
+    ctx: FolderTableRowContext<T>
+  ) => ReactNode;
 }
 
 function areBodyRowPropsEqual<T extends FolderTableRow>(
@@ -196,7 +202,8 @@ function areBodyRowPropsEqual<T extends FolderTableRow>(
     prev.isSelected === next.isSelected &&
     prev.showCheckboxSelection === next.showCheckboxSelection &&
     prev.renderCellContent === next.renderCellContent &&
-    prev.resolveBodyCellClass === next.resolveBodyCellClass
+    prev.resolveBodyCellClass === next.resolveBodyCellClass &&
+    prev.renderRow === next.renderRow
   );
 }
 
@@ -212,6 +219,7 @@ function FolderTableBodyRowBase<T extends FolderTableRow>({
   renderCellContent,
   resolveBodyCellClass,
   row,
+  renderRow,
 }: FolderTableBodyRowProps<T>) {
   const { t } = useTranslation('table');
   const rowId = row.id;
@@ -221,7 +229,7 @@ function FolderTableBodyRowBase<T extends FolderTableRow>({
     depth: row.depth,
   };
 
-  return (
+  const rowElement = (
     <Table.Row
       id={rowId}
       textValue={row.name}
@@ -275,6 +283,8 @@ function FolderTableBodyRowBase<T extends FolderTableRow>({
       })}
     </Table.Row>
   );
+
+  return renderRow ? renderRow(rowElement, row, ctx) : rowElement;
 }
 
 const FolderTableBodyRow = memo(
@@ -295,6 +305,7 @@ function FolderTable<T extends FolderTableRow>({
   onRowSelect,
   onRowActivate,
   renderNameContent,
+  renderRow,
   bodyDragHandlers,
   bodyOverlay,
   rowActions,
@@ -767,6 +778,7 @@ function FolderTable<T extends FolderTableRow>({
                         renderCellContent={renderCellContent}
                         resolveBodyCellClass={resolveBodyCellClass}
                         row={row as FolderTableVisibleRow & T}
+                        renderRow={renderRow}
                       />
                     );
                   })}

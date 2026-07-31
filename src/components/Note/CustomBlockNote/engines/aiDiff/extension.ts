@@ -18,8 +18,9 @@ import type {
   NoteTransactionAnalysis,
   NoteTransactionService,
 } from '../../registry/types';
+import { scrollNoteEditorTargetIntoView } from '../../runtime/noteEditorScrollTarget';
 import type { NoteAiDiffActionRequest } from './action';
-import { resolveNoteAiDiffBlock } from './contentState';
+import { resolveNoteAiDiffBlock, stableStringify } from './contentState';
 import {
   createAiDiffReviewWidget,
   type AiDiffReviewNavigation,
@@ -96,19 +97,22 @@ function selectAiDiffChange(view: EditorView, changeKey: string | null): void {
   );
 }
 
-function scrollAiDiffChangeIntoView(view: EditorView, changeKey: string): void {
+function findAiDiffChangeElement(view: EditorView, changeKey: string): HTMLElement | null {
   const byKey = view.dom.querySelector<HTMLElement>(
     `[data-ai-diff-change-key="${CSS.escape(changeKey)}"]`
   );
-  if (byKey) {
-    byKey.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    return;
-  }
+  if (byKey) return byKey;
   const blockId = changeKey.split('::')[0] ?? changeKey;
-  const review = view.dom.querySelector<HTMLElement>(
-    `[data-ai-diff-review="${CSS.escape(blockId)}"]`
-  );
-  review?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  return view.dom.querySelector<HTMLElement>(`[data-ai-diff-review="${CSS.escape(blockId)}"]`);
+}
+
+function scrollAiDiffChangeIntoView(view: EditorView, changeKey: string): void {
+  const target = findAiDiffChangeElement(view, changeKey);
+  if (target?.isConnected) {
+    scrollNoteEditorTargetIntoView(target, {
+      ignoreScrollableWithin: view.dom,
+    });
+  }
 }
 
 function goToAiDiffChange(view: EditorView, changeKey: string): void {
@@ -186,6 +190,18 @@ function isAiDiffInteractiveTarget(target: EventTarget | null): boolean {
   return target instanceof Element && Boolean(target.closest('button, input, textarea, select'));
 }
 
+function isAiDiffGlobalKeyboardTarget(view: EditorView, event: KeyboardEvent): boolean {
+  if (view.dom.contains(event.target as Node | null)) return true;
+  const state = aiDiffExtensionPluginKey.getState(view.state);
+  if (state?.selectedChangeKey) return true;
+
+  const activeElement = document.activeElement;
+  if (!activeElement || activeElement === document.body) return true;
+  if (!(activeElement instanceof HTMLElement)) return false;
+  if (activeElement.isContentEditable) return false;
+  return !activeElement.closest('button, input, textarea, select, [role="search"], [role="menu"]');
+}
+
 function isAiDiffReadOnlyTarget(target: EventTarget | null): boolean {
   return (
     target instanceof Element &&
@@ -195,58 +211,24 @@ function isAiDiffReadOnlyTarget(target: EventTarget | null): boolean {
   );
 }
 
-/** AI Diff 展示内容始终只读；确认键优先于代码块默认的 Enter 编辑行为。 */
+/** AI Diff 展示内容始终只读；箭头浏览，Enter 接受，Esc 拒绝。 */
 function handleAiDiffKeyDown(view: EditorView, event: KeyboardEvent): boolean {
   if (isAiDiffInteractiveTarget(event.target)) return false;
 
   const state = aiDiffExtensionPluginKey.getState(view.state);
+  const targetsAiDiff = isAiDiffReadOnlyTarget(event.target);
   if (
     !state?.actionsEnabled ||
     state.displayMode !== AI_DIFF_DISPLAY_MODE.COMPARE ||
-    event.altKey ||
-    event.ctrlKey ||
-    event.metaKey
+    event.altKey
   ) {
     if (
-      isAiDiffReadOnlyTarget(event.target) &&
-      (event.key === 'Enter' || event.key === 'Backspace' || event.key === 'Delete')
+      targetsAiDiff &&
+      (event.key === 'Enter' ||
+        event.key === 'Escape' ||
+        event.key === 'Backspace' ||
+        event.key === 'Delete')
     ) {
-      event.preventDefault();
-      return true;
-    }
-    return false;
-  }
-
-  if (event.key === 'Enter' && isAiDiffReadOnlyTarget(event.target)) {
-    if (!event.shiftKey && applySelectedAiDiffAction(view, 'accept')) {
-      event.preventDefault();
-      return true;
-    }
-    event.preventDefault();
-    return true;
-  }
-
-  if (
-    isAiDiffReadOnlyTarget(event.target) &&
-    (event.key === 'Backspace' || event.key === 'Delete')
-  ) {
-    if (
-      event.key === 'Backspace' &&
-      !event.shiftKey &&
-      applySelectedAiDiffAction(view, 'discard')
-    ) {
-      event.preventDefault();
-      return true;
-    }
-    event.preventDefault();
-    return true;
-  }
-
-  if (event.shiftKey) return false;
-
-  if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-    const handled = navigateAiDiffByArrow(view, event.key === 'ArrowUp' ? 'up' : 'down');
-    if (handled) {
       event.preventDefault();
       return true;
     }
@@ -254,14 +236,20 @@ function handleAiDiffKeyDown(view: EditorView, event: KeyboardEvent): boolean {
   }
 
   if (event.key === 'Enter') {
-    if (!applySelectedAiDiffAction(view, 'accept')) return false;
-    event.preventDefault();
-    return true;
+    if (applySelectedAiDiffAction(view, 'accept')) {
+      event.preventDefault();
+      return true;
+    }
+    if (targetsAiDiff) {
+      event.preventDefault();
+      return true;
+    }
+    return false;
   }
 
-  if (event.key === 'Escape' || event.key === 'Backspace') {
+  if (event.key === 'Escape') {
     if (!applySelectedAiDiffAction(view, 'discard')) {
-      if (isAiDiffReadOnlyTarget(event.target)) {
+      if (targetsAiDiff) {
         event.preventDefault();
         return true;
       }
@@ -269,6 +257,25 @@ function handleAiDiffKeyDown(view: EditorView, event: KeyboardEvent): boolean {
     }
     event.preventDefault();
     return true;
+  }
+
+  if (targetsAiDiff && (event.key === 'Backspace' || event.key === 'Delete')) {
+    event.preventDefault();
+    return true;
+  }
+
+  if (
+    !event.shiftKey &&
+    !event.ctrlKey &&
+    !event.metaKey &&
+    (event.key === 'ArrowUp' || event.key === 'ArrowDown')
+  ) {
+    const handled = navigateAiDiffByArrow(view, event.key === 'ArrowUp' ? 'up' : 'down');
+    if (handled) {
+      event.preventDefault();
+      return true;
+    }
+    return false;
   }
 
   return false;
@@ -457,6 +464,20 @@ function buildDecorations(params: {
     const aiDiff = registry.blockPlugins.get(item.block.type)?.aiDiff;
     if (!aiDiff) return;
     const changeUnitsForBlock = changeUnits.filter((unit) => unit.blockId === item.blockId);
+    const selectedKeyForBlock = changeUnitsForBlock.some(
+      (unit) => unit.key === runtime.selectedChangeKey
+    )
+      ? runtime.selectedChangeKey
+      : null;
+    const widgetKey = [
+      'ai-diff-review',
+      item.blockId,
+      runtime.displayMode,
+      runtime.actionsEnabled ? 'editable' : 'readonly',
+      selectedKeyForBlock ?? 'idle',
+      stableStringify(item.projection.current),
+      stableStringify(item.projection.aiBlock),
+    ].join(':');
 
     decorations.push(
       Decoration.widget(
@@ -476,7 +497,7 @@ function buildDecorations(params: {
             aiDiff,
             registry,
           }),
-        { side: 1, stopEvent: () => true }
+        { key: widgetKey, side: 1, stopEvent: () => true }
       )
     );
   });
@@ -538,6 +559,19 @@ function createAiDiffExtension(
               };
             }
             let cachedBlockNodes: readonly { node: PMNode; pos: number }[] | undefined;
+            const canReusePreviousAiBlockPositions =
+              !tr.docChanged &&
+              previous.aiBlockPositions.size > 0 &&
+              meta?.aiContentByBlockId === undefined &&
+              meta?.displayMode === undefined;
+            if (canReusePreviousAiBlockPositions) {
+              cachedBlockNodes = [...previous.aiBlockPositions.values()]
+                .map((position) => ({
+                  node: newState.doc.nodeAt(position.from),
+                  pos: position.from,
+                }))
+                .filter((item): item is { node: PMNode; pos: number } => item.node !== null);
+            }
             if (tr.docChanged && !meta) {
               const analysis = transactionService.analyze([tr]);
               const touchesAiBlock =
@@ -660,9 +694,10 @@ function createAiDiffExtension(
         view: (view) => {
           let queuedFrame: number | null = null;
           const handleKeyDownCapture = (event: KeyboardEvent) => {
+            if (!isAiDiffGlobalKeyboardTarget(view, event)) return;
             if (handleAiDiffKeyDown(view, event)) event.stopPropagation();
           };
-          view.dom.addEventListener('keydown', handleKeyDownCapture, true);
+          document.addEventListener('keydown', handleKeyDownCapture, true);
           return {
             update: (view, previousState) => {
               const selectedChangeKey = aiDiffExtensionPluginKey.getState(
@@ -678,7 +713,7 @@ function createAiDiffExtension(
               });
             },
             destroy: () => {
-              view.dom.removeEventListener('keydown', handleKeyDownCapture, true);
+              document.removeEventListener('keydown', handleKeyDownCapture, true);
               if (queuedFrame !== null) window.cancelAnimationFrame(queuedFrame);
             },
           };

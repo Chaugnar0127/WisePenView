@@ -1,13 +1,13 @@
 /* eslint-disable react-refresh/only-export-components -- BlockNote block spec 与展示组件同文件 */
 import type { BlockConfig } from '@blocknote/core';
 import { createReactBlockSpec, type ReactCustomBlockRenderProps } from '@blocknote/react';
+import { Tabs } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Check, Copy } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/Button/AppIconButton';
-import SegmentedTabs from '@/components/SegmentedTabs';
 import i18n from '@/i18n';
 import { copyText } from '@/utils/browser/copyText';
 import { useNoteEditorReadOnlyContext } from '../../../engines/editor/readOnly';
@@ -91,17 +91,24 @@ function MermaidBlockView({ block, contentRef, editor }: MermaidBlockRenderProps
       <div className={styles.header} contentEditable={false}>
         <span className={styles.title}>mermaid</span>
         <div className={styles.toolbarActions} data-mermaid-toolbar-actions="">
-          <SegmentedTabs
-            ariaLabel={t('mermaid.displayMode')}
-            items={[
-              { key: 'code', label: t('mermaid.source') },
-              { key: 'graph', label: t('mermaid.graph') },
-            ]}
+          <Tabs
             selectedKey={view}
             onSelectionChange={(key) => setView(key as MermaidView)}
-            size="sm"
             className={styles.tabs}
-          />
+          >
+            <Tabs.ListContainer>
+              <Tabs.List className={styles.tabsList} aria-label={t('mermaid.displayMode')}>
+                <Tabs.Tab id="code" className={styles.tab}>
+                  {t('mermaid.source')}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+                <Tabs.Tab id="graph" className={styles.tab}>
+                  {t('mermaid.graph')}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              </Tabs.List>
+            </Tabs.ListContainer>
+          </Tabs>
           <AppIconButton
             icon={
               copied ? (

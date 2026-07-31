@@ -1,8 +1,4 @@
-import {
-  isAiDiffContentEmpty,
-  isAiDiffContentEqual,
-  stableStringify,
-} from '../../engines/aiDiff/contentState';
+import { isAiDiffContentEmpty, isAiDiffContentEqual } from '../../engines/aiDiff/contentState';
 import type {
   NoteAiDiffAcceptedBlockUpdate,
   NoteAiDiffProjection,
@@ -13,11 +9,7 @@ import {
   type NoteRichTextAiDiffConfig,
 } from '../DefaultContentPlugin/aiDiff';
 import styles from './HighlightBlock/style.module.less';
-import {
-  applyHighlightAppearance,
-  readHighlightBlockProps,
-  toHighlightBlockStoredProps,
-} from './model';
+import { applyHighlightAppearance, readHighlightBlockProps } from './model';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -27,26 +19,16 @@ function isStructuredHighlightAiContent(value: unknown): value is Record<string,
   return isRecord(value) && ('content' in value || 'props' in value);
 }
 
+function readHighlightAiContent(block: Record<string, unknown>, aiContent: unknown): unknown {
+  if (!isStructuredHighlightAiContent(aiContent)) return aiContent;
+  return 'content' in aiContent ? aiContent.content : block.content;
+}
+
 function resolveAiBlock(
   block: Record<string, unknown>,
   aiContent: unknown
 ): Record<string, unknown> {
-  if (!isStructuredHighlightAiContent(aiContent)) {
-    return { ...block, content: aiContent };
-  }
-
-  const currentProps = isRecord(block.props) ? block.props : {};
-  const candidateProps = isRecord(aiContent.props) ? aiContent.props : {};
-  const normalizedProps = toHighlightBlockStoredProps(
-    readHighlightBlockProps({
-      props: { ...currentProps, ...candidateProps },
-    })
-  );
-  return {
-    ...block,
-    props: { ...currentProps, ...normalizedProps },
-    content: 'content' in aiContent ? aiContent.content : block.content,
-  };
+  return { ...block, content: readHighlightAiContent(block, aiContent) };
 }
 
 function resolveHighlightAiDiff(
@@ -54,12 +36,7 @@ function resolveHighlightAiDiff(
   aiContent: unknown
 ): NoteAiDiffProjection | null {
   const aiBlock = resolveAiBlock(block, aiContent);
-  const currentProps = readHighlightBlockProps(block);
-  const nextProps = readHighlightBlockProps(aiBlock);
-  if (
-    isAiDiffContentEqual(block.content, aiBlock.content) &&
-    stableStringify(currentProps) === stableStringify(nextProps)
-  ) {
+  if (isAiDiffContentEqual(block.content, aiBlock.content)) {
     return null;
   }
 
@@ -79,10 +56,7 @@ function acceptHighlightAiContent(
   aiContent: unknown
 ): NoteAiDiffAcceptedBlockUpdate {
   const aiBlock = resolveAiBlock(block, aiContent);
-  return {
-    props: { ...toHighlightBlockStoredProps(readHighlightBlockProps(aiBlock)) },
-    content: aiBlock.content,
-  };
+  return { content: aiBlock.content };
 }
 
 function createHighlightAiRoot(aiBlock: Record<string, unknown>): {
@@ -104,10 +78,7 @@ function createHighlightAiRoot(aiBlock: Record<string, unknown>): {
   return { root, content };
 }
 
-/**
- * 高亮块 AI payload 支持原有 inline content，也支持 `{ content, props }`，
- * 后者可让 AI 单独修改色块、边框、文字颜色或图标。
- */
+/** 高亮块 AI Diff 只接受内容变化；样式、对齐和图标始终沿用当前块。 */
 export function createHighlightBlockAiDiff(config: NoteRichTextAiDiffConfig): NoteBlockAiDiff {
   const richTextAiDiff = createRichTextBlockAiDiff(config);
   return {

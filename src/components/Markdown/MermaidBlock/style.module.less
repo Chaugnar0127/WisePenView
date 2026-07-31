@@ -4,6 +4,22 @@
   flex: 0 0 auto;
 }
 
+.tabsList {
+  width: auto;
+}
+
+.tab {
+  min-width: 0;
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.tab[data-selected='true'] {
+  color: var(--accent-soft-foreground);
+}
+
 .graph {
   box-sizing: border-box;
   width: min(100%, 1200px);

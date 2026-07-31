@@ -9,9 +9,14 @@ import ResourceFavoriteButton from './ResourceFavoriteButton';
 interface ResourceFavoriteActionProps {
   resourceId: string;
   onSuccess?: () => unknown | Promise<unknown>;
+  showLabel?: boolean;
 }
 
-function ResourceFavoriteAction({ resourceId, onSuccess }: ResourceFavoriteActionProps) {
+function ResourceFavoriteAction({
+  resourceId,
+  onSuccess,
+  showLabel = false,
+}: ResourceFavoriteActionProps) {
   const interactService = useInteractService();
   const [pickerOpen, setPickerOpen] = useState(false);
   const {
@@ -56,6 +61,7 @@ function ResourceFavoriteAction({ resourceId, onSuccess }: ResourceFavoriteActio
       <ResourceFavoriteButton
         isFavorited={Boolean(collectionIds?.length)}
         isDisabled={loadingStatus || loadingUnfavorite || !collectionIds}
+        showLabel={showLabel}
         onPress={handlePress}
       />
       {pickerOpen ? (

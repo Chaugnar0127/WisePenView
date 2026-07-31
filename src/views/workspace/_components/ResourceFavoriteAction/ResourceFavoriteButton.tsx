@@ -1,19 +1,45 @@
 import AppIconButton from '@/components/Button/AppIconButton';
+import { ToggleButton } from '@heroui/react';
 import { Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface ResourceFavoriteButtonProps {
   isFavorited: boolean;
   isDisabled: boolean;
+  showLabel?: boolean;
   onPress: () => void;
 }
 
-function ResourceFavoriteButton({ isFavorited, isDisabled, onPress }: ResourceFavoriteButtonProps) {
+function ResourceFavoriteButton({
+  isFavorited,
+  isDisabled,
+  showLabel = false,
+  onPress,
+}: ResourceFavoriteButtonProps) {
   const { t } = useTranslation('resource');
   const label = isFavorited ? t('favorite.action.favorited') : t('favorite.action.favorite');
+  const icon = (
+    <Bookmark size={16} aria-hidden="true" fill={isFavorited ? 'currentColor' : 'none'} />
+  );
+
+  if (showLabel) {
+    return (
+      <ToggleButton
+        variant="ghost"
+        size="sm"
+        isSelected={isFavorited}
+        isDisabled={isDisabled}
+        onPress={onPress}
+      >
+        {icon}
+        <span>{t('comment.feedback.favoriteLabel')}</span>
+      </ToggleButton>
+    );
+  }
+
   return (
     <AppIconButton
-      icon={<Bookmark size={16} aria-hidden="true" fill={isFavorited ? 'currentColor' : 'none'} />}
+      icon={icon}
       label={label}
       size="sm"
       isActive={isFavorited}

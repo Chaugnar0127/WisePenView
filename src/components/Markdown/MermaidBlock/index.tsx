@@ -1,4 +1,4 @@
-import SegmentedTabs from '@/components/SegmentedTabs';
+import { Tabs } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -44,17 +44,24 @@ function MermaidBlock({ code, language, streaming }: MermaidBlockProps) {
       code={code}
       language={language}
       actions={
-        <SegmentedTabs
-          ariaLabel={t('markdown.mermaidMode')}
-          items={[
-            { key: 'code', label: t('markdown.code') },
-            { key: 'graph', label: t('markdown.graph') },
-          ]}
+        <Tabs
           selectedKey={view}
           onSelectionChange={(key) => setView(key as MermaidView)}
-          size="sm"
           className={styles.tabs}
-        />
+        >
+          <Tabs.ListContainer>
+            <Tabs.List className={styles.tabsList} aria-label={t('markdown.mermaidMode')}>
+              <Tabs.Tab id="code" className={styles.tab}>
+                {t('markdown.code')}
+                <Tabs.Indicator />
+              </Tabs.Tab>
+              <Tabs.Tab id="graph" className={styles.tab}>
+                {t('markdown.graph')}
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            </Tabs.List>
+          </Tabs.ListContainer>
+        </Tabs>
       }
     >
       {view === 'code' || streaming ? <HighlightedCode code={code} language={language} /> : null}

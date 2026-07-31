@@ -190,13 +190,6 @@ export const NOTE_AI_DIFF_PREVIEW_MOCK = {
       content: [text('风险提示：当前高峰期延迟仍高于服务目标。')],
       'ai-content': {
         content: [text('风险提示：当前高峰期延迟仍高于服务目标，应限制扩容范围。')],
-        props: {
-          icon: '⚠️',
-          highlightBackgroundColor: 'orange',
-          highlightBorderColor: 'red',
-          highlightTextColor: 'default',
-          textAlignment: 'left',
-        },
       },
       children: [],
     },

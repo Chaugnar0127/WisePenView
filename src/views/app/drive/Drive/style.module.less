@@ -28,8 +28,23 @@
 }
 
 .detailTabs {
+  width: max-content;
+  max-width: 100%;
   margin-top: var(--space-md);
   margin-bottom: var(--space-lg);
+
+  :global(.tabs__list-container) {
+    max-width: 100%;
+  }
+
+  :global(.tabs__list) {
+    width: auto;
+  }
+
+  :global(.tabs__tab) {
+    flex: 0 0 auto;
+    width: auto;
+  }
 }
 
 .previewContent {

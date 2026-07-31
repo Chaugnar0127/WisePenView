@@ -1,9 +1,8 @@
 import { Empty } from '@/components/Feedback';
-import SegmentedTabs from '@/components/SegmentedTabs';
 import { useGroupService } from '@/domains';
 import type { FetchGroupListRequest, Group } from '@/domains/Group';
 import { GROUP_ROLE_FILTER_MAP } from '@/domains/Group';
-import { Button, Card, Pagination, Skeleton, toast } from '@heroui/react';
+import { Button, Card, Pagination, Skeleton, Tabs, toast } from '@heroui/react';
 import { usePagination } from 'ahooks';
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -138,18 +137,27 @@ function MyGroup() {
         </div>
       </div>
 
-      <SegmentedTabs
-        ariaLabel={t('list.filterAria')}
+      <Tabs
+        variant="secondary"
         selectedKey={activeTab}
-        onSelectionChange={handleTabChange}
-        items={[
-          { key: 'all', label: t('list.all') },
-          { key: 'joined', label: t('list.joined') },
-          { key: 'managed', label: t('list.managed') },
-        ]}
+        onSelectionChange={(key) => handleTabChange(String(key))}
         className={layout.detailTabs}
-        size="sm"
-      />
+      >
+        <Tabs.ListContainer>
+          <Tabs.List className={page.filterTabsList} aria-label={t('list.filterAria')}>
+            {[
+              { key: 'all', label: t('list.all') },
+              { key: 'joined', label: t('list.joined') },
+              { key: 'managed', label: t('list.managed') },
+            ].map((item) => (
+              <Tabs.Tab key={item.key} id={item.key} className={page.filterTab}>
+                {item.label}
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs.ListContainer>
+      </Tabs>
 
       {loading ? (
         <div

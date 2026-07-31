@@ -63,18 +63,20 @@ function ResourceFeedbackSummary({
           {t('comment.feedback.title')}
         </h3>
         <div className={styles.feedbackActions}>
-          {favoriteAction}
-          <ToggleButton
-            variant="ghost"
-            size="sm"
-            isSelected={liked}
-            isDisabled={likePending}
-            className={styles.helpfulButton}
-            onChange={onLikeChange}
-          >
-            <ThumbsUp size={14} aria-hidden fill={liked ? 'currentColor' : 'none'} />
-            <span className={styles.helpfulCount}>{formatReadCount(likeCount)}</span>
-          </ToggleButton>
+          <div className={styles.feedbackButtonGroup}>
+            {favoriteAction}
+            <ToggleButton
+              variant="ghost"
+              size="sm"
+              isSelected={liked}
+              isDisabled={likePending}
+              className={styles.helpfulButton}
+              onChange={onLikeChange}
+            >
+              <ThumbsUp size={14} aria-hidden fill={liked ? 'currentColor' : 'none'} />
+              <span className={styles.helpfulCount}>{formatReadCount(likeCount)}</span>
+            </ToggleButton>
+          </div>
           <Rating
             value={score}
             size="sm"

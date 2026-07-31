@@ -1,7 +1,6 @@
-import { Button } from '@heroui/react';
-import { Bookmark, BookmarkCheck } from 'lucide-react';
+import AppIconButton from '@/components/Button/AppIconButton';
+import { Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import styles from './style.module.less';
 
 interface ResourceFavoriteButtonProps {
   isFavorited: boolean;
@@ -11,27 +10,21 @@ interface ResourceFavoriteButtonProps {
 
 function ResourceFavoriteButton({ isFavorited, isDisabled, onPress }: ResourceFavoriteButtonProps) {
   const { t } = useTranslation('resource');
-  const Icon = isFavorited ? BookmarkCheck : Bookmark;
+  const label = isFavorited ? t('favorite.action.favorited') : t('favorite.action.favorite');
   return (
-    <Button
-      variant="secondary"
-      className={styles.panelButton}
-      aria-pressed={isFavorited}
+    <AppIconButton
+      icon={<Bookmark size={16} aria-hidden="true" fill={isFavorited ? 'currentColor' : 'none'} />}
+      label={label}
+      size="sm"
+      isActive={isFavorited}
       isDisabled={isDisabled}
+      tooltip={{
+        content: isFavorited
+          ? t('favorite.action.manageCollections')
+          : t('favorite.action.addToCollection'),
+      }}
       onPress={onPress}
-    >
-      <Icon size={16} aria-hidden="true" />
-      <span className={styles.panelCopy}>
-        <strong>
-          {isFavorited ? t('favorite.action.favorited') : t('favorite.action.favorite')}
-        </strong>
-        <span>
-          {isFavorited
-            ? t('favorite.action.manageCollections')
-            : t('favorite.action.addToCollection')}
-        </span>
-      </span>
-    </Button>
+    />
   );
 }
 

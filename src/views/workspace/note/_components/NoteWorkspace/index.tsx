@@ -1,8 +1,7 @@
 ﻿import { Spin } from '@/components/Feedback';
 import InlineComment from '@/components/InlineComment';
-import SegmentedTabs from '@/components/SegmentedTabs';
 import { useMemoizedFn, useUnmount } from 'ahooks';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CustomBlockNote from '@/components/Note/CustomBlockNote';
@@ -10,7 +9,7 @@ import type {
   NoteBodyEditorHandle,
   NoteOutlineItem,
 } from '@/components/Note/CustomBlockNote/index.type';
-import type { AiDiffDisplayMode, NoteInfoDisplayData } from '@/domains/Note';
+import type { NoteInfoDisplayData } from '@/domains/Note';
 import { AI_DIFF_DISPLAY_MODE, encodeNoteClientContentSignature } from '@/domains/Note';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
@@ -18,7 +17,7 @@ import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
-import { Alert, Button } from '@heroui/react';
+import { Alert, Button, Tabs } from '@heroui/react';
 import { History } from 'lucide-react';
 import { useNoteFindMode } from '../../_hooks/useNoteFindMode';
 import { useAiDiffDisplayStore } from '../../_store/useAiDiffDisplayStore';
@@ -151,6 +150,17 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
     }, 700);
   });
 
+  const handleAiDiffDisplayModeChange = (key: Key) => {
+    const nextMode = String(key);
+    if (
+      nextMode === AI_DIFF_DISPLAY_MODE.OLD_ONLY ||
+      nextMode === AI_DIFF_DISPLAY_MODE.NEW_ONLY ||
+      nextMode === AI_DIFF_DISPLAY_MODE.COMPARE
+    ) {
+      setAiDiffDisplayMode(nextMode);
+    }
+  };
+
   const showAiDiffDisplayModeSwitch = hasAiDiffContent;
 
   /**
@@ -251,21 +261,35 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
           </span>
         ),
         leadingActions: showAiDiffDisplayModeSwitch ? (
-          <SegmentedTabs<AiDiffDisplayMode>
-            ariaLabel={t('aiDiff.displayMode')}
-            selectedKey={aiDiffDisplayMode}
+          <Tabs
+            variant="secondary"
             className={styles.aiDiffDisplayModeSwitch}
-            items={[
-              { value: AI_DIFF_DISPLAY_MODE.OLD_ONLY, label: t('aiDiff.mode.oldOnly') },
-              { value: AI_DIFF_DISPLAY_MODE.NEW_ONLY, label: t('aiDiff.mode.newOnly') },
-              { value: AI_DIFF_DISPLAY_MODE.COMPARE, label: t('aiDiff.mode.compare') },
-            ].map((option) => ({
-              key: option.value,
-              label: option.label,
-              disabled: showFullPageSpin,
-            }))}
-            onSelectionChange={setAiDiffDisplayMode}
-          />
+            selectedKey={aiDiffDisplayMode}
+            onSelectionChange={handleAiDiffDisplayModeChange}
+          >
+            <Tabs.ListContainer>
+              <Tabs.List
+                className={styles.aiDiffDisplayModeList}
+                aria-label={t('aiDiff.displayMode')}
+              >
+                {[
+                  { value: AI_DIFF_DISPLAY_MODE.OLD_ONLY, label: t('aiDiff.mode.oldOnly') },
+                  { value: AI_DIFF_DISPLAY_MODE.NEW_ONLY, label: t('aiDiff.mode.newOnly') },
+                  { value: AI_DIFF_DISPLAY_MODE.COMPARE, label: t('aiDiff.mode.compare') },
+                ].map((option) => (
+                  <Tabs.Tab
+                    key={option.value}
+                    id={option.value}
+                    className={styles.aiDiffDisplayModeTab}
+                    isDisabled={showFullPageSpin}
+                  >
+                    {option.label}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs.ListContainer>
+          </Tabs>
         ) : null,
         moreMenu: {
           actions: [

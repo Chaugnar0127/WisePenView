@@ -4,6 +4,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-xs);
+  height: @row-content-height;
   min-width: 0;
 
   &[data-depth='1'] {
@@ -43,12 +44,18 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
+  height: @table-line-height-body;
+  line-height: @table-line-height-body;
   min-width: 0;
+  transform: translateY(2px);
 }
 
 .entryIcon {
   display: inline-flex;
   flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: @table-line-height-body;
   line-height: 0;
 
   :global(svg) {

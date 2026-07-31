@@ -4,23 +4,11 @@ import { useRef } from 'react';
 import { findInlineCommentAnchorElement } from '../engines/inlineComments/extension';
 import type { NoteEditorAnchor } from '../index.type';
 import type { CustomBlockNoteEditor } from '../registry/noteEditorComposition';
-
-export type NoteScrollTargetResolver = () => HTMLElement | null;
-
-function findScrollableAncestor(element: HTMLElement): HTMLElement | null {
-  let parent = element.parentElement;
-  while (parent) {
-    const { overflowY } = window.getComputedStyle(parent);
-    if (
-      (overflowY === 'auto' || overflowY === 'scroll') &&
-      parent.scrollHeight > parent.clientHeight
-    ) {
-      return parent;
-    }
-    parent = parent.parentElement;
-  }
-  return null;
-}
+import {
+  scrollNoteEditorTargetIntoView,
+  type NoteScrollTargetResolver,
+} from './noteEditorScrollTarget';
+export type { NoteScrollTargetResolver } from './noteEditorScrollTarget';
 
 function resolveCurrentBlockElement(editor: CustomBlockNoteEditor): HTMLElement | null {
   const view = editor.prosemirrorView;
@@ -43,23 +31,7 @@ export function useNoteEditorScroll(editor: CustomBlockNoteEditor) {
       queuedFrameRef.current = null;
       const target = resolveTarget();
       if (!target?.isConnected) return;
-      const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        ? 'auto'
-        : 'smooth';
-      const scrollContainer = findScrollableAncestor(target);
-      if (!scrollContainer) {
-        target.scrollIntoView({ behavior, block: 'center', inline: 'nearest' });
-        return;
-      }
-
-      const containerRect = scrollContainer.getBoundingClientRect();
-      const targetRect = target.getBoundingClientRect();
-      const targetTop = scrollContainer.scrollTop + targetRect.top - containerRect.top;
-      const scrollTop = Math.max(
-        0,
-        targetTop - (scrollContainer.clientHeight - targetRect.height) / 2
-      );
-      scrollContainer.scrollTo({ top: scrollTop, behavior });
+      scrollNoteEditorTargetIntoView(target);
     });
   });
 

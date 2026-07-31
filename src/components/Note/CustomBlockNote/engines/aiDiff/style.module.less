@@ -119,6 +119,14 @@
   color: var(--foreground);
 }
 
+.review[data-ai-diff-display-mode='newOnly'] > .aiContent {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border-left: none;
+  border-radius: 0;
+}
+
 /* 整段新增：绿底拉满行宽，与整段删除的红底一致 */
 .review[data-ai-diff-change-kind='create'] {
   width: 100%;
@@ -318,6 +326,21 @@
   background: var(--diff-removed-selected);
 }
 
+/* 高亮块区域保留原 callout 色，只加深其中的文字 diff 底。 */
+.reviewSelected[data-ai-diff-content-type='highlightBlock'] .inlineDelete,
+.review[data-ai-diff-selected='true'][data-ai-diff-content-type='highlightBlock'] .inlineDelete {
+  background: var(--diff-removed-selected);
+}
+
+.reviewSelected[data-ai-diff-content-type='highlightBlock'] .inlineAdd,
+.review[data-ai-diff-selected='true'][data-ai-diff-content-type='highlightBlock'] .inlineAdd {
+  background: var(--diff-added-selected);
+}
+
+.currentSelected[data-content-type='highlightBlock'] .inlineDelete {
+  background: var(--diff-removed-selected);
+}
+
 /* 代码块：选中时加深行级红/绿（对比视图挂在 .comparison 内，不走 .aiContent） */
 .reviewSelected[data-ai-diff-content-type='codeBlock'] :global([data-diff-kind='delete']),
 .review[data-ai-diff-selected='true'][data-ai-diff-content-type='codeBlock']
@@ -327,6 +350,19 @@
 
 .reviewSelected[data-ai-diff-content-type='codeBlock'] :global([data-diff-kind='insert']),
 .review[data-ai-diff-selected='true'][data-ai-diff-content-type='codeBlock']
+  :global([data-diff-kind='insert']) {
+  background: var(--diff-added-selected);
+}
+
+/* Mermaid：自渲染对比面板挂在 .comparison 内，需要单独同步选中态。 */
+.reviewSelected[data-ai-diff-content-type='mermaid'] :global([data-diff-kind='delete']),
+.review[data-ai-diff-selected='true'][data-ai-diff-content-type='mermaid']
+  :global([data-diff-kind='delete']) {
+  background: var(--diff-removed-selected);
+}
+
+.reviewSelected[data-ai-diff-content-type='mermaid'] :global([data-diff-kind='insert']),
+.review[data-ai-diff-selected='true'][data-ai-diff-content-type='mermaid']
   :global([data-diff-kind='insert']) {
   background: var(--diff-added-selected);
 }

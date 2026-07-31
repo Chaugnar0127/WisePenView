@@ -511,7 +511,7 @@
     --table-chip-padding-block: 4px;
     --table-chip-padding-inline: 14px;
     /* 延迟显示 Tooltip，减少鼠标经密集图标区时的视觉干扰。 */
-    --tooltip-delay: 800ms;
+    --tooltip-delay: 400ms;
     --tooltip-close-delay: 100ms;
     /* Table 圆角：shell / 行内按钮 / 下拉层统一；小控件（展开按钮、Chip）用 inner */
     --table-shell-radius: var(--radius-xl);

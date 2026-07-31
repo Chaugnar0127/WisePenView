@@ -1,3 +1,4 @@
+import ColorTextIcon from '@/components/Icons/Custom/ColorTextIcon';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
 import { ColorPaletteContent } from '@/components/Note/CustomBlockNote/ui/editorMenus/colorPalette';
 import {
@@ -6,7 +7,6 @@ import {
 } from '@/components/Note/CustomBlockNote/ui/editorMenus/colorPaletteData';
 import { AppPopover } from '@/components/Overlay';
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
-import { Baseline } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -78,10 +78,7 @@ export function ColorMenu(buttonGroupProps: ButtonGroupChildProps) {
       <AppPopover.Trigger>
         <ToolbarButton
           {...buttonGroupProps}
-          icon={
-            <Baseline size={20} className={selectedTextColor.textClassName} aria-hidden="true" />
-          }
-          isActive={open}
+          icon={<ColorTextIcon textClassName={selectedTextColor.textClassName} />}
           label={t('editor.color.label')}
         />
       </AppPopover.Trigger>

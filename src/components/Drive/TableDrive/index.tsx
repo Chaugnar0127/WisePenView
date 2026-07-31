@@ -269,6 +269,7 @@ function TableDrive({
                 onRowSelect={handleRowSelect}
                 onRowActivate={handleClickNode}
                 renderNameContent={renderNameContent}
+                renderRow={dnd.renderRow}
                 bodyDragHandlers={externalDnd.bodyDragHandlers}
                 bodyOverlay={
                   externalDnd.isBackgroundDropActive ? (

@@ -1,12 +1,9 @@
 /* eslint-disable react-refresh/only-export-components -- BlockNote block spec 与展示组件同文件 */
 import AppIconButton from '@/components/Button/AppIconButton';
+import { EmojiPickerContent } from '@/components/EmojiPicker';
 import { AppPopover } from '@/components/Overlay';
 import { createReactBlockSpec, type ReactCustomBlockRenderProps } from '@blocknote/react';
-import data from '@emoji-mart/data';
-import en from '@emoji-mart/data/i18n/en.json';
-import zh from '@emoji-mart/data/i18n/zh.json';
 import { useMemoizedFn } from 'ahooks';
-import { Picker } from 'emoji-mart';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -20,44 +17,17 @@ import styles from './style.module.less';
 
 type HighlightBlockRenderProps = ReactCustomBlockRenderProps<typeof highlightBlockConfig>;
 
-interface EmojiMartSelection {
-  native?: string;
-}
-
 function HighlightIconPicker({ block, editor }: HighlightBlockRenderProps) {
-  const { t, i18n } = useTranslation('note');
+  const { t } = useTranslation('note');
   const [open, setOpen] = useState(false);
   const props = readHighlightBlockProps(block as unknown as Record<string, unknown>);
-  const emojiLocale = i18n.resolvedLanguage === 'en-US' ? 'en' : 'zh';
-  const emojiTranslations = emojiLocale === 'en' ? en : zh;
 
-  const handleSelect = useMemoizedFn((emoji: EmojiMartSelection) => {
-    const icon = emoji.native?.trim();
+  const handleSelect = useMemoizedFn((emojiId: string) => {
+    const icon = emojiId.trim();
     if (!icon) return;
     editor.updateBlock(block, { props: { icon } });
     setOpen(false);
     window.setTimeout(() => editor.focus());
-  });
-
-  const mountPicker = useMemoizedFn((container: HTMLDivElement | null) => {
-    if (!container) return;
-    const picker = new Picker({
-      data,
-      i18n: emojiTranslations,
-      locale: emojiLocale,
-      set: 'native',
-      theme: 'auto',
-      perLine: 8,
-      emojiButtonRadius: '6px',
-      emojiButtonSize: 34,
-      emojiSize: 22,
-      navPosition: 'top',
-      previewPosition: 'none',
-      skinTonePosition: 'search',
-      onEmojiSelect: handleSelect,
-    }) as unknown as HTMLElement;
-    picker.className = styles.emojiMartPicker;
-    container.replaceChildren(picker);
   });
 
   return (
@@ -76,12 +46,7 @@ function HighlightIconPicker({ block, editor }: HighlightBlockRenderProps) {
         }}
       />
       <AppPopover.Content placement="bottom start" bodyPadding="none">
-        <div
-          key={emojiLocale}
-          ref={mountPicker}
-          className={styles.emojiMartHost}
-          aria-label={t('highlight.emojiPicker')}
-        />
+        <EmojiPickerContent ariaLabel={t('highlight.emojiPicker')} onSelect={handleSelect} />
       </AppPopover.Content>
     </AppPopover>
   );

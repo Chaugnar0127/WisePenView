@@ -11,8 +11,8 @@ import { Check, RotateCcw, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import EmojiPicker from '@/components/EmojiPicker';
 import CommentComposer from './CommentComposer';
-import EmojiPicker from './EmojiPicker';
 import type {
   InlineCommentDeletePayload,
   InlineCommentProps,

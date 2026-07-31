@@ -11,11 +11,11 @@ import {
 } from '@dnd-kit/core';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isDriveActionTarget, isDriveSharedFolderNode } from '../../common/driveComponentModel';
 import type { DriveTableRow } from '../index.type';
-import { DriveDndNameContent, DriveDroppableBreadcrumb } from '../parts/DriveDnd';
+import { DriveDndRow, DriveDroppableBreadcrumb } from '../parts/DriveDnd';
 
 interface UseTableDriveDndControllerParams {
   rowMap: Map<string, DriveTableRow>;
@@ -168,15 +168,17 @@ export function useTableDriveDndController({
     );
   };
 
-  const renderNameContent = (content: ReactNode, row: DriveTableRow) => (
-    <DriveDndNameContent
+  const renderRow = (rowElement: ReactElement, row: DriveTableRow) => (
+    <DriveDndRow
       row={row}
       draggableDisabled={movingByDrag || !isDriveDragSource(row)}
       droppableDisabled={movingByDrag || draggingCount === 0 || !isDriveMoveTarget(row.node)}
     >
-      {content}
-    </DriveDndNameContent>
+      {rowElement}
+    </DriveDndRow>
   );
+
+  const renderNameContent = (content: ReactNode, _row: DriveTableRow) => content;
 
   return {
     sensors,
@@ -186,6 +188,7 @@ export function useTableDriveDndController({
     handleDragStart,
     handleDragEnd,
     renderBreadcrumbItem,
+    renderRow,
     renderNameContent,
   };
 }

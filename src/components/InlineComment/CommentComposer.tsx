@@ -8,7 +8,7 @@ import { ImagePlus, Send, X } from 'lucide-react';
 import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import EmojiPicker from './EmojiPicker';
+import EmojiPicker from '@/components/EmojiPicker';
 import type { InlineCommentProps, InlineCommentSubmitPayload } from './index.type';
 import styles from './style.module.less';
 

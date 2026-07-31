@@ -3,15 +3,13 @@
  */
 import TableDrive from '@/components/Drive/TableDrive';
 import { Spin } from '@/components/Feedback';
-import type { SegmentedTabItem } from '@/components/SegmentedTabs';
-import SegmentedTabs from '@/components/SegmentedTabs';
 import UserCapsule from '@/components/UserCapsule';
 import { useGroupService } from '@/domains';
 import type { Group, GroupResConfig } from '@/domains/Group';
 import { WALLET_TARGET_TYPE } from '@/domains/Wallet';
 import { parseDriveInitialNodeId } from '@/utils/navigation/driveRoute';
 import ComputeWallet from '@/views/app/_common/Wallet/ComputeWallet';
-import { toast } from '@heroui/react';
+import { Tabs, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -32,7 +30,10 @@ type GroupDetailLoaded = {
 
 type GroupDetailTabKey = 'files' | 'members' | 'wallet' | 'token-transfer' | 'description';
 
-type GroupDetailTabItem = SegmentedTabItem<GroupDetailTabKey> & {
+type GroupDetailTabItem = {
+  key: GroupDetailTabKey;
+  label: string;
+  disabled?: boolean;
   children: ReactNode;
 };
 
@@ -233,13 +234,34 @@ function GroupDetail() {
         </div>
       </div>
 
-      <SegmentedTabs<GroupDetailTabKey>
-        ariaLabel={t('detail.aria')}
+      <Tabs
+        variant="secondary"
         className={layout.detailTabs}
         selectedKey={activeDetailTabKey}
-        onSelectionChange={handleDetailTabChange}
-        items={tabItems.map(({ key, label, disabled }) => ({ key, label, disabled }))}
-      />
+        onSelectionChange={(key) => {
+          const nextKey = String(key);
+          if (
+            nextKey === 'files' ||
+            nextKey === 'members' ||
+            nextKey === 'wallet' ||
+            nextKey === 'token-transfer' ||
+            nextKey === 'description'
+          ) {
+            handleDetailTabChange(nextKey);
+          }
+        }}
+      >
+        <Tabs.ListContainer>
+          <Tabs.List aria-label={t('detail.aria')}>
+            {tabItems.map((item) => (
+              <Tabs.Tab key={item.key} id={item.key} isDisabled={item.disabled}>
+                {item.label}
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs.ListContainer>
+      </Tabs>
       <div className={page.tabContent}>{activeTabContent}</div>
     </div>
   );

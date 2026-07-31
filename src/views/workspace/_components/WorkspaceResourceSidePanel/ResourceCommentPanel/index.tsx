@@ -1,13 +1,12 @@
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
-import SegmentedTabs from '@/components/SegmentedTabs';
 import { useInteractService, useUserService } from '@/domains';
 import type { CommentSortBy, ResourceComment } from '@/domains/Interact';
 import type { ResourceItem } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Separator, toast } from '@heroui/react';
+import { Button, Separator, Tabs, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useState } from 'react';
+import { useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import ResourceFavoriteAction from '../../ResourceFavoriteAction';
 import CommentComposer from './CommentComposer';
@@ -217,6 +216,13 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     void loadComments(1, false, nextSortBy);
   };
 
+  const handleSortSelectionChange = (key: Key) => {
+    const nextSortBy = String(key);
+    if (nextSortBy === 'CREATE_TIME' || nextSortBy === 'LIKE_COUNT') {
+      handleSortChange(nextSortBy);
+    }
+  };
+
   return (
     <div className={styles.panel}>
       <div className={styles.content}>
@@ -243,13 +249,26 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
             <h3 id="resource-comments-title" className={styles.sectionTitle}>
               {t('resource:comment.count', { count: commentCount })}
             </h3>
-            <SegmentedTabs<CommentSortBy>
-              ariaLabel={t('resource:comment.sortAria')}
-              items={commentSortOptions}
+            <Tabs
+              variant="secondary"
               selectedKey={sortBy}
-              size="sm"
-              onSelectionChange={handleSortChange}
-            />
+              onSelectionChange={handleSortSelectionChange}
+              className={styles.commentSortTabs}
+            >
+              <Tabs.ListContainer>
+                <Tabs.List
+                  className={styles.commentSortTabsList}
+                  aria-label={t('resource:comment.sortAria')}
+                >
+                  {commentSortOptions.map((option) => (
+                    <Tabs.Tab key={option.key} id={option.key} className={styles.commentSortTab}>
+                      {option.label}
+                      <Tabs.Indicator />
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
+              </Tabs.ListContainer>
+            </Tabs>
           </div>
 
           {commentsError ? (

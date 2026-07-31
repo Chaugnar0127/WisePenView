@@ -1,5 +1,4 @@
 import TableDrive from '@/components/Drive/TableDrive';
-import SegmentedTabs from '@/components/SegmentedTabs';
 import { useDriveService } from '@/domains';
 import { encodeNodeId } from '@/domains/Drive';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
@@ -13,9 +12,9 @@ import {
   DRIVE_UPLOAD_QUEUE_PATH,
   parseDriveRouteLocation,
 } from '@/utils/navigation/driveRoute';
-import { Spinner, toast } from '@heroui/react';
+import { Spinner, Tabs, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useEffect } from 'react';
+import { useEffect, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -100,6 +99,19 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
     navigate(buildDrivePath({ scope: workspaceScope }));
   };
 
+  const handleViewModeSelectionChange = (key: Key) => {
+    const nextViewMode = String(key);
+    if (
+      nextViewMode === 'uploadQueue' ||
+      nextViewMode === 'tableDrive' ||
+      nextViewMode === 'favorites' ||
+      nextViewMode === 'trash' ||
+      nextViewMode === 'shared'
+    ) {
+      handleViewModeChange(nextViewMode);
+    }
+  };
+
   const initialNodeId = folderId ?? systemFolderNodeId ?? driveLocation.initialNodeId;
   const tableDriveLocationKey = `${driveLocation.scope.rootId}\u0000${initialNodeId ?? driveLocation.scope.rootId}`;
 
@@ -119,19 +131,29 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
         <span className={styles.pageSubtitle}>{t('page.subtitle')}</span>
       </header>
 
-      <SegmentedTabs<DriveViewMode>
-        ariaLabel={t('page.viewAria')}
+      <Tabs
+        variant="secondary"
         selectedKey={viewMode}
-        onSelectionChange={handleViewModeChange}
-        items={[
-          { key: 'tableDrive', label: t('page.tabs.drive') },
-          { key: 'shared', label: t('page.tabs.shared') },
-          { key: 'uploadQueue', label: t('page.tabs.uploadQueue') },
-          { key: 'favorites', label: t('page.tabs.favorites') },
-          { key: 'trash', label: t('page.tabs.trash') },
-        ]}
+        onSelectionChange={handleViewModeSelectionChange}
         className={styles.detailTabs}
-      />
+      >
+        <Tabs.ListContainer>
+          <Tabs.List aria-label={t('page.viewAria')}>
+            {[
+              { key: 'tableDrive', label: t('page.tabs.drive') },
+              { key: 'shared', label: t('page.tabs.shared') },
+              { key: 'uploadQueue', label: t('page.tabs.uploadQueue') },
+              { key: 'favorites', label: t('page.tabs.favorites') },
+              { key: 'trash', label: t('page.tabs.trash') },
+            ].map((item) => (
+              <Tabs.Tab key={item.key} id={item.key}>
+                {item.label}
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs.ListContainer>
+      </Tabs>
 
       <div className={styles.previewContent}>
         {viewMode === 'tableDrive' && (

@@ -29,7 +29,7 @@ export function useNoteEditorRuntimeCoordinator({
   const {
     resourceId,
     collaboration: collaborationBinding,
-    state: { aiDiffDisplayMode, readOnly, blockLocalDocWrites },
+    state: { readOnly, blockLocalDocWrites },
     aiDiffPreview,
     onOutlineChange,
     onActiveHeadingChange,
@@ -49,7 +49,6 @@ export function useNoteEditorRuntimeCoordinator({
     definition,
     doc: collaborationBinding.doc,
     undoManager: collaboration.undoManager,
-    aiDiffDisplayMode,
     readOnly,
     blockLocalDocWrites,
     onPresenceChange: onAiDiffPresenceChange,
@@ -85,11 +84,16 @@ export function useNoteEditorRuntimeCoordinator({
   const scroll = useNoteEditorScroll(editor);
   const commands = useNoteEditorCommands(
     editor,
-    aiDiff.setExportDisplayModeOverride,
     scroll.scrollToTarget,
     !readOnly && !blockLocalDocWrites && collaborationBinding.ready
   );
-  const editorHandle = { ...commands, scrollToAnchor: scroll.scrollToAnchor };
+  const editorHandle = {
+    exportMarkdown: commands.exportMarkdown,
+    exportPdf: commands.exportPdf,
+    focus: commands.focus,
+    openFind: commands.openFind,
+    scrollToAnchor: scroll.scrollToAnchor,
+  };
   const handleSelectionChange = useMemoizedFn(() => {
     document.captureSelection();
     outlineRuntime.syncActiveItem();
@@ -116,6 +120,7 @@ export function useNoteEditorRuntimeCoordinator({
     inlineComments: {
       handleCreate: handleCreateInlineComment,
     },
+    find: commands.find,
   };
 }
 

@@ -1,7 +1,7 @@
 ﻿import { Spin } from '@/components/Feedback';
 import InlineComment from '@/components/InlineComment';
 import { useMemoizedFn, useUnmount } from 'ahooks';
-import { useEffect, useRef, useState, type Key } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CustomBlockNote from '@/components/Note/CustomBlockNote';
@@ -10,19 +10,16 @@ import type {
   NoteOutlineItem,
 } from '@/components/Note/CustomBlockNote/index.type';
 import type { NoteInfoDisplayData } from '@/domains/Note';
-import { AI_DIFF_DISPLAY_MODE, encodeNoteClientContentSignature } from '@/domains/Note';
+import { encodeNoteClientContentSignature } from '@/domains/Note';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
-import { Alert, Button, Tabs } from '@heroui/react';
+import { Alert, Button } from '@heroui/react';
 import { History } from 'lucide-react';
-import { useNoteFindMode } from '../../_hooks/useNoteFindMode';
-import { useAiDiffDisplayStore } from '../../_store/useAiDiffDisplayStore';
 import styles from '../../style.module.less';
-import FindBar from '../FindBar';
 import NoteInfoBar from '../NoteInfoBar';
 import NoteOutline, { NOTE_OUTLINE_TITLE_ID } from '../NoteOutline';
 import NoteTitle, { type NoteTitleHandle, type NoteTitleSaveStatus } from '../NoteTitle';
@@ -37,12 +34,9 @@ interface NoteWorkspaceProps {
 
 function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteWorkspaceProps) {
   const { t } = useTranslation('note');
-  const aiDiffDisplayMode = useAiDiffDisplayStore((state) => state.displayMode);
-  const setAiDiffDisplayMode = useAiDiffDisplayStore((state) => state.setDisplayMode);
   const bodyEditorRef = useRef<NoteBodyEditorHandle>(null);
   const titleEditorRef = useRef<NoteTitleHandle>(null);
   const mainScrollRef = useRef<HTMLDivElement>(null);
-  const findModeScopeRef = useRef<HTMLDivElement>(null);
   const titleAnchorRef = useRef<HTMLDivElement>(null);
   const scrollBarHideTimerRef = useRef<number | null>(null);
   const [isMainScrolling, setIsMainScrolling] = useState(false);
@@ -51,8 +45,10 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   const [activeHeadingId, setActiveHeadingId] = useState<string | undefined>(undefined);
   const [aiBulkActionsPortalContainer, setAiBulkActionsPortalContainer] =
     useState<HTMLDivElement | null>(null);
+  const [findBarPortalContainer, setFindBarPortalContainer] = useState<HTMLDivElement | null>(null);
+  const [aiDiffControlsPortalContainer, setAiDiffControlsPortalContainer] =
+    useState<HTMLDivElement | null>(null);
   const [titleSaveStatus, setTitleSaveStatus] = useState<NoteTitleSaveStatus>('saved');
-  const [hasAiDiffContent, setHasAiDiffContent] = useState(false);
   const fallbackNoteTitle = noteInfoDisplay.noteTitle;
   const [aiDiffBodyContentHash, setAiDiffBodyContentHash] = useState<string | undefined>(undefined);
   const noteClientContentSignature = aiDiffBodyContentHash
@@ -107,11 +103,6 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   } = workspace;
   const headerSaveStatus = resolveNoteHeaderSaveStatus(saveStatus, titleSaveStatus);
   const saveStatusText = t(`save.${headerSaveStatus}`);
-  const findMode = useNoteFindMode({
-    editorRef: bodyEditorRef,
-    scopeRef: findModeScopeRef,
-    canReplace: isConnected && noteInfoDisplay.canCollaborativeEdit,
-  });
   const focusBody = () => {
     bodyEditorRef.current?.focus();
   };
@@ -149,19 +140,6 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
       scrollBarHideTimerRef.current = null;
     }, 700);
   });
-
-  const handleAiDiffDisplayModeChange = (key: Key) => {
-    const nextMode = String(key);
-    if (
-      nextMode === AI_DIFF_DISPLAY_MODE.OLD_ONLY ||
-      nextMode === AI_DIFF_DISPLAY_MODE.NEW_ONLY ||
-      nextMode === AI_DIFF_DISPLAY_MODE.COMPARE
-    ) {
-      setAiDiffDisplayMode(nextMode);
-    }
-  };
-
-  const showAiDiffDisplayModeSwitch = hasAiDiffContent;
 
   /**
    * @wisepen-manual-effect
@@ -260,37 +238,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
             {saveStatusText}
           </span>
         ),
-        leadingActions: showAiDiffDisplayModeSwitch ? (
-          <Tabs
-            variant="secondary"
-            className={styles.aiDiffDisplayModeSwitch}
-            selectedKey={aiDiffDisplayMode}
-            onSelectionChange={handleAiDiffDisplayModeChange}
-          >
-            <Tabs.ListContainer>
-              <Tabs.List
-                className={styles.aiDiffDisplayModeList}
-                aria-label={t('aiDiff.displayMode')}
-              >
-                {[
-                  { value: AI_DIFF_DISPLAY_MODE.OLD_ONLY, label: t('aiDiff.mode.oldOnly') },
-                  { value: AI_DIFF_DISPLAY_MODE.NEW_ONLY, label: t('aiDiff.mode.newOnly') },
-                  { value: AI_DIFF_DISPLAY_MODE.COMPARE, label: t('aiDiff.mode.compare') },
-                ].map((option) => (
-                  <Tabs.Tab
-                    key={option.value}
-                    id={option.value}
-                    className={styles.aiDiffDisplayModeTab}
-                    isDisabled={showFullPageSpin}
-                  >
-                    {option.label}
-                    <Tabs.Indicator />
-                  </Tabs.Tab>
-                ))}
-              </Tabs.List>
-            </Tabs.ListContainer>
-          </Tabs>
-        ) : null,
+        leadingActions: <div ref={setAiDiffControlsPortalContainer} />,
         moreMenu: {
           actions: [
             {
@@ -305,7 +253,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
               onAction: () => setIsInlineCommentHistoryOpen(true),
             },
           ],
-          onSearch: findMode.openFind,
+          onSearch: () => bodyEditorRef.current?.openFind(),
           onPrint: handlePrintPdf,
           download: {
             label: t('export.downloadMarkdown'),
@@ -320,7 +268,6 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
     () => resourceHostConfig,
     [
       activeInlineCommentThreadId,
-      aiDiffDisplayMode,
       currentUser?.id,
       exportPending,
       headerSaveStatus,
@@ -336,7 +283,6 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
       resourceId,
       resourceName,
       saveStatusText,
-      showAiDiffDisplayModeSwitch,
       showFullPageSpin,
       status,
       t,
@@ -345,25 +291,8 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
 
   return (
     <>
-      <div className={styles.mainScroll} ref={findModeScopeRef}>
-        {findMode.findMode ? (
-          <div className={styles.findBarDock}>
-            <FindBar
-              query={findMode.findMode.query}
-              replacement={findMode.findMode.replacement}
-              result={findMode.findMode.result}
-              replaced={findMode.findMode.replaced}
-              canReplace={findMode.canReplace}
-              onQueryChange={findMode.changeFindQuery}
-              onReplacementChange={findMode.changeReplacement}
-              onPrevious={findMode.findPrevious}
-              onNext={findMode.findNext}
-              onReplaceCurrent={findMode.replaceCurrent}
-              onReplaceAll={findMode.replaceAll}
-              onClose={findMode.closeFind}
-            />
-          </div>
-        ) : null}
+      <div className={styles.mainScroll}>
+        <div className={styles.findBarDock} ref={setFindBarPortalContainer} />
         <div
           className={`${styles.contentRow} ${isOutlineOpen ? styles.contentRowOutlineOpen : ''}`}
         >
@@ -419,18 +348,16 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
                         ready: isConnected,
                       }}
                       state={{
-                        aiDiffDisplayMode,
                         readOnly: isEditorReadOnly,
                         blockLocalDocWrites,
                       }}
                       onOutlineChange={setOutlineItems}
                       onActiveHeadingChange={setActiveHeadingId}
-                      onAiDiffPresenceChange={setHasAiDiffContent}
                       onAskAi={handleAskAi}
-                      onOpenFind={findMode.openFind}
-                      isFindModeActive={findMode.isFindModeActive}
                       portalContainers={{
                         aiBulkActions: aiBulkActionsPortalContainer,
+                        aiDiffControls: aiDiffControlsPortalContainer,
+                        findBar: findBarPortalContainer,
                       }}
                       onAiDiffBodyContentHashChange={setAiDiffBodyContentHash}
                       inlineComments={inlineCommentsBinding}

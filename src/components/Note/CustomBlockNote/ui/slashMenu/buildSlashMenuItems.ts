@@ -1,7 +1,7 @@
-import { SuggestionMenu } from '@blocknote/core/extensions';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
 import { getDefaultReactSlashMenuItems } from '@blocknote/react';
 
+import { openNoteEmojiPicker } from '../../plugins/EmojiPlugin/emojiExtension';
 import type { CustomBlockNoteEditor } from '../../registry/noteEditorComposition';
 import type { NoteContentPlugin, PluginEditor } from '../../registry/types';
 
@@ -9,8 +9,6 @@ import type { NoteContentPlugin, PluginEditor } from '../../registry/types';
  * BlockNote 默认 slash 菜单项在源码中带稳定字段 `key`，但未对外公开类型；这里收敛窄化避免使用 any。
  */
 type SlashMenuItemWithKey = DefaultReactSuggestionItem & { key?: string };
-
-const EMOJI_TRIGGER_CHARACTER = ':';
 
 /**
  * BlockNote 在 `getDefaultReactSlashMenuItems` 里为每个默认项设置了稳定字段 `key`，
@@ -48,10 +46,7 @@ function getFilteredDefaultReactSlashMenuItems(
       {
         ...item,
         onItemClick: () => {
-          editor.getExtension(SuggestionMenu)?.openSuggestionMenu(EMOJI_TRIGGER_CHARACTER, {
-            deleteTriggerCharacter: false,
-            ignoreQueryLength: true,
-          });
+          openNoteEmojiPicker(editor.prosemirrorView);
         },
       },
     ];

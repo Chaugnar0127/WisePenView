@@ -590,6 +590,24 @@
   }
 }
 
+.aiDiffDisplayModeSwitch {
+  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.aiDiffDisplayModeList {
+  width: auto;
+}
+
+.aiDiffDisplayModeTab {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 30px;
+  padding: 0 var(--space-sm);
+  white-space: nowrap;
+}
+
 /* BlockNote 拖拽预览会脱离 editorShell 挂到 body，默认显示样式必须单独补给预览。 */
 :global(.bn-drag-preview) {
   --bn-font-family: var(--app-font-family);

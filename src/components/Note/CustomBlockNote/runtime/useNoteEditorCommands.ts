@@ -1,8 +1,6 @@
-import type { AiDiffDisplayMode } from '@/domains/Note';
 import { AI_DIFF_DISPLAY_MODE } from '@/domains/Note';
 import { TextSelection } from '@tiptap/pm/state';
 import { useMemoizedFn } from 'ahooks';
-import { type Dispatch, type SetStateAction } from 'react';
 
 import { exportNoteMarkdown } from '../engines/markdown/markdownExport';
 import { printNotePdfViaBrowser, waitForEditorPaint } from '../engines/print/noteBrowserPrint';
@@ -17,18 +15,33 @@ import {
   collectFindReplaceMatches,
   selectNoteReplaceOperations,
 } from '../engines/search/findReplace';
-import type { NoteBodyEditorHandle, NoteFindResult } from '../index.type';
+import type { NoteBodyEditorHandle, NoteFindResult, NoteReplaceResult } from '../index.type';
 import { notePluginRegistry, type CustomBlockNoteEditor } from '../registry/noteEditorComposition';
+import { useNoteInteractionStore } from './noteInteractionStore';
 import type { NoteScrollTargetResolver } from './useNoteEditorScroll';
 
-type NoteEditorCommands = Omit<NoteBodyEditorHandle, 'scrollToAnchor'>;
+type NoteEditorCommands = Pick<
+  NoteBodyEditorHandle,
+  'focus' | 'openFind' | 'exportPdf' | 'exportMarkdown'
+> & {
+  find: {
+    clearFind: () => void;
+    collapseSelection: () => void;
+    findMatches: (query: string) => NoteFindResult | null;
+    findNext: () => NoteFindResult | null;
+    findPrev: () => NoteFindResult | null;
+    replaceCurrent: (replacement: string) => NoteReplaceResult;
+    replaceAll: (replacement: string) => NoteReplaceResult;
+  };
+};
 
 export function useNoteEditorCommands(
   editor: CustomBlockNoteEditor,
-  setExportDisplayModeOverride: Dispatch<SetStateAction<AiDiffDisplayMode | null>>,
   scrollToTarget: (resolveTarget: NoteScrollTargetResolver) => void,
   canReplace: boolean
 ): NoteEditorCommands {
+  const dispatch = useNoteInteractionStore((state) => state.dispatch);
+  const displayMode = useNoteInteractionStore((state) => state.review.displayMode);
   const dispatchSearchMeta = useMemoizedFn((meta: SearchExtensionMeta) => {
     const view = editor.prosemirrorView;
     view.dispatch(view.state.tr.setMeta(searchPluginKey, meta).setMeta('addToHistory', false));
@@ -36,6 +49,7 @@ export function useNoteEditorCommands(
 
   const clearFind = useMemoizedFn(() => {
     dispatchSearchMeta({ query: '', matches: [], activeIndex: -1 });
+    dispatch({ type: 'FIND_RESULT_CHANGED', result: null });
   });
 
   const collapseSelection = useMemoizedFn(() => {
@@ -72,11 +86,14 @@ export function useNoteEditorCommands(
       tr.setMeta('addToHistory', false);
       view.dispatch(tr);
       scrollToTarget(() => findActiveSearchMatchElement(editor.prosemirrorView.dom));
-      return { current: activeIndex + 1, total: matches.length };
+      const result = { current: activeIndex + 1, total: matches.length };
+      dispatch({ type: 'FIND_RESULT_CHANGED', result });
+      return result;
     } else {
       dispatchSearchMeta({ query: trimmedQuery, matches: [], activeIndex: -1 });
     }
 
+    dispatch({ type: 'FIND_RESULT_CHANGED', result: null });
     return null;
   });
 
@@ -98,7 +115,9 @@ export function useNoteEditorCommands(
       view.dispatch(tr);
       scrollToTarget(() => findActiveSearchMatchElement(editor.prosemirrorView.dom));
     }
-    return { current: activeIndex + 1, total: state.matches.length };
+    const result = { current: activeIndex + 1, total: state.matches.length };
+    dispatch({ type: 'FIND_RESULT_CHANGED', result });
+    return result;
   });
 
   const findPrev = useMemoizedFn((): NoteFindResult | null => {
@@ -119,7 +138,9 @@ export function useNoteEditorCommands(
       view.dispatch(tr);
       scrollToTarget(() => findActiveSearchMatchElement(editor.prosemirrorView.dom));
     }
-    return { current: activeIndex + 1, total: state.matches.length };
+    const result = { current: activeIndex + 1, total: state.matches.length };
+    dispatch({ type: 'FIND_RESULT_CHANGED', result });
+    return result;
   });
 
   const getSearchResult = useMemoizedFn((): NoteFindResult | null => {
@@ -159,14 +180,17 @@ export function useNoteEditorCommands(
     },
     exportPdf: async (options) => {
       try {
-        setExportDisplayModeOverride(AI_DIFF_DISPLAY_MODE.OLD_ONLY);
+        dispatch({
+          type: 'REVIEW_DISPLAY_MODE_CHANGED',
+          displayMode: AI_DIFF_DISPLAY_MODE.OLD_ONLY,
+        });
         await waitForEditorPaint();
         await printNotePdfViaBrowser(editor, notePluginRegistry, {
           title: options?.title,
           titleRoot: options?.titleRoot,
         });
       } finally {
-        setExportDisplayModeOverride(null);
+        dispatch({ type: 'REVIEW_DISPLAY_MODE_CHANGED', displayMode });
       }
     },
     exportMarkdown: () => ({
@@ -179,13 +203,18 @@ export function useNoteEditorCommands(
       mimeType: 'text/markdown;charset=utf-8',
       extension: 'md',
     }),
-    findMatches,
-    findNext,
-    findPrev,
-    replaceCurrent,
-    replaceAll,
-    canReplace: () => canReplace,
-    clearFind,
-    collapseSelection,
+    openFind: (initialQuery) => {
+      dispatch({ type: 'FIND_OPEN', initialQuery });
+      if (initialQuery) findMatches(initialQuery);
+    },
+    find: {
+      clearFind,
+      collapseSelection,
+      findMatches,
+      findNext,
+      findPrev,
+      replaceCurrent,
+      replaceAll,
+    },
   };
 }

@@ -1,7 +1,6 @@
 import type { Doc } from 'yjs';
 
 import type {
-  AiDiffDisplayMode,
   NoteAiDiffPreviewData,
   NoteInlineCommentDraft,
   NoteInlineCommentSession,
@@ -27,27 +26,12 @@ export interface NoteReplaceResult {
 
 export interface NoteBodyEditorHandle {
   focus: () => void;
+  openFind: (initialQuery?: string) => void;
   scrollToAnchor: (anchor: NoteEditorAnchor) => void;
   /** 通过系统打印对话框另存为 PDF（克隆 DOM + 打印前临时仅旧文本） */
   exportPdf: (options?: { title?: string; titleRoot?: HTMLElement | null }) => Promise<void>;
   /** 导出正文 Markdown artifact（AIDiff 按仅旧文本投影） */
   exportMarkdown: () => NoteMarkdownArtifact;
-  /** 在文档中搜索文本（大小写不敏感），返回当前匹配及总数 */
-  findMatches: (query: string) => NoteFindResult | null;
-  /** 跳转到下一个匹配 */
-  findNext: () => NoteFindResult | null;
-  /** 跳转到上一个匹配 */
-  findPrev: () => NoteFindResult | null;
-  /** 替换当前匹配，返回本次写入数量与替换后的查找结果。 */
-  replaceCurrent: (replacement: string) => NoteReplaceResult;
-  /** 替换全部匹配，作为一次协同写入和一次撤销记录提交。 */
-  replaceAll: (replacement: string) => NoteReplaceResult;
-  /** 当前状态是否允许本地写入。 */
-  canReplace: () => boolean;
-  /** 清除搜索状态，保留当前文本选区 */
-  clearFind: () => void;
-  /** 折叠当前文本选区，隐藏选中高亮 */
-  collapseSelection: () => void;
 }
 
 interface NoteMarkdownArtifact {
@@ -70,7 +54,6 @@ interface NoteCollaborationBinding {
 }
 
 interface NoteEditorState {
-  aiDiffDisplayMode: AiDiffDisplayMode;
   /** UI/editable：连接中或无 EDIT 时为 true */
   readOnly: boolean;
   /**
@@ -82,6 +65,8 @@ interface NoteEditorState {
 
 interface NotePortalContainers {
   aiBulkActions: HTMLElement | null;
+  findBar: HTMLElement | null;
+  aiDiffControls: HTMLElement | null;
 }
 
 export interface NoteInlineCommentsBinding {
@@ -100,8 +85,6 @@ export interface CustomBlockNoteProps {
   onActiveHeadingChange?: (activeId: string | undefined) => void;
   onAiDiffPresenceChange?: (hasAiDiffContent: boolean) => void;
   onAskAi: (context: NoteSelectionSnapshot) => void;
-  onOpenFind: (initialQuery?: string) => void;
-  isFindModeActive: boolean;
   onAiDiffBodyContentHashChange?: (hash: string | undefined) => void;
   inlineComments?: NoteInlineCommentsBinding;
 }

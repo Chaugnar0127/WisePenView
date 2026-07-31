@@ -30,7 +30,10 @@ export interface InlineCommentItemApiResponse {
   content?: string | null;
   imageUrls?: string[] | null;
   mentionUserIds?: string[] | null;
-  reactions?: Record<string, InlineCommentReactionApiResponse | null | undefined> | null;
+  reactions?: Record<
+    string,
+    InlineCommentReactionApiResponse | InlineCommentReactionApiResponse[] | null | undefined
+  > | null;
   reactionGroups?: InlineCommentReactionGroupApiResponse[] | null;
   createTime?: number | null;
   updateTime?: number | null;
@@ -100,6 +103,7 @@ export interface DeleteInlineCommentItemReactionApiRequest {
   inlineCommentId: string;
   itemId: string;
   contentVersion?: number;
+  emojiId?: string;
 }
 
 export interface DeleteInlineCommentItemApiRequest {

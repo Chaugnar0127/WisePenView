@@ -104,8 +104,13 @@ export class NoteInlineCommentSession {
     return this.reloadCreatedItem(threadId, itemId);
   }
 
-  async changeReaction(threadId: string, itemId: string, emojiId?: string): Promise<void> {
-    if (emojiId) {
+  async changeReaction(
+    threadId: string,
+    itemId: string,
+    emojiId: string,
+    selected: boolean
+  ): Promise<void> {
+    if (!selected) {
       await this.inlineCommentService.setInlineCommentItemReaction({
         resourceId: this.resourceId,
         inlineCommentId: threadId,
@@ -117,6 +122,7 @@ export class NoteInlineCommentSession {
         resourceId: this.resourceId,
         inlineCommentId: threadId,
         itemId,
+        emojiId,
       });
     }
     await this.refreshAfterMutation();

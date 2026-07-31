@@ -22,8 +22,38 @@ import {
 
 type CreateBlockNoteOptions = NonNullable<Parameters<typeof useCreateBlockNote>[0]>;
 type BlockNoteCollaborationConfig = NonNullable<CreateBlockNoteOptions['collaboration']>;
+type NotePasteHandler = NonNullable<CreateBlockNoteOptions['pasteHandler']>;
 
 const NOTE_EDITOR_PROPS = collectNoteEditorProps(notePluginRegistry);
+const STRUCTURED_CLIPBOARD_TYPES = new Set([
+  'blocknote/html',
+  'text/markdown',
+  'Files',
+  'vscode-editor-data',
+]);
+
+function shouldPastePlainTextIntoEmptyHeading({
+  event,
+  editor,
+}: Pick<Parameters<NotePasteHandler>[0], 'event' | 'editor'>) {
+  const text = event.clipboardData?.getData('text/plain');
+  if (!text) return false;
+  if (event.clipboardData?.types.some((type) => STRUCTURED_CLIPBOARD_TYPES.has(type))) return false;
+
+  const currentBlock = editor.getTextCursorPosition().block;
+  return currentBlock.type === 'heading' && Array.isArray(currentBlock.content)
+    ? currentBlock.content.length === 0
+    : false;
+}
+
+const handlePasteIntoNote: NotePasteHandler = ({ event, editor, defaultPasteHandler }) => {
+  if (shouldPastePlainTextIntoEmptyHeading({ event, editor })) {
+    editor.pasteText(event.clipboardData?.getData('text/plain') ?? '');
+    return true;
+  }
+
+  return defaultPasteHandler();
+};
 
 export function useNoteEditorDefinition({
   resourceId,
@@ -83,6 +113,7 @@ export function useNoteEditorDefinition({
       trailingBlock: true,
       disableExtensions: ['history', 'yUndo'],
       uploadFile,
+      pasteHandler: handlePasteIntoNote,
       extensions: editorExtensions,
       _tiptapOptions: {
         editorProps: NOTE_EDITOR_PROPS,

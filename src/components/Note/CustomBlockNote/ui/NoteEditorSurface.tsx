@@ -157,7 +157,8 @@ export function NoteEditorSurface({
   const findActive = useNoteInteractionStore((state) => state.find.active);
   const access = useNoteInteractionStore((state) => state.access);
   const review = useNoteInteractionStore((state) => state.review);
-  const bodyReadOnly = access.readOnly || access.blockLocalDocWrites || review.hasContent;
+  const bodyReadOnly =
+    access.readOnly || access.blockLocalDocWrites || review.hasContent || findActive;
 
   return (
     <div

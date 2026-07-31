@@ -21,7 +21,8 @@ export interface InlineCommentSubmitPayload {
 export interface InlineCommentReactionPayload {
   threadId: string;
   itemId: string;
-  emojiId?: string;
+  emojiId: string;
+  selected: boolean;
 }
 
 export interface InlineCommentDeletePayload {

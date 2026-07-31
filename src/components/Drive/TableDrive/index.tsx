@@ -1,7 +1,13 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import { FolderTable, type FolderTableBreadcrumbItem } from '@/components/Table';
 import type { DriveNode } from '@/domains/Drive';
-import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core';
+import {
+  DndContext,
+  DragOverlay,
+  pointerWithin,
+  type Modifier,
+  type Modifiers,
+} from '@dnd-kit/core';
 import { Button } from '@heroui/react';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -27,6 +33,48 @@ import DriveDetailPanel from './parts/DriveDetailPanel';
 import { DriveDragOverlay, ExternalFileDroppableBreadcrumb } from './parts/DriveDnd';
 import styles from './style.module.less';
 import { buildDriveTableColumns, isDrivePinnedFirstRow } from './tableConfig';
+
+const DRIVE_DRAG_OVERLAY_CURSOR_OFFSET = { x: 12, y: 12 };
+
+function getDragActivatorCoordinates(event: Event | null): { x: number; y: number } | null {
+  if (
+    !event ||
+    !('clientX' in event) ||
+    !('clientY' in event) ||
+    typeof event.clientX !== 'number' ||
+    typeof event.clientY !== 'number'
+  ) {
+    return null;
+  }
+
+  return { x: event.clientX, y: event.clientY };
+}
+
+const attachDriveDragOverlayToCursor: Modifier = ({
+  activatorEvent,
+  activeNodeRect,
+  transform,
+}) => {
+  const activatorCoordinates = getDragActivatorCoordinates(activatorEvent);
+  if (!activatorCoordinates || !activeNodeRect) return transform;
+
+  // DragOverlay 默认沿用整行的拖拽起点，这里改为让小提示固定跟随鼠标。
+  return {
+    ...transform,
+    x:
+      transform.x +
+      activatorCoordinates.x -
+      activeNodeRect.left +
+      DRIVE_DRAG_OVERLAY_CURSOR_OFFSET.x,
+    y:
+      transform.y +
+      activatorCoordinates.y -
+      activeNodeRect.top +
+      DRIVE_DRAG_OVERLAY_CURSOR_OFFSET.y,
+  };
+};
+
+const driveDragOverlayModifiers: Modifiers = [attachDriveDragOverlayToCursor];
 
 function toBreadcrumbItems(pathNodes: DriveNode[]): FolderTableBreadcrumbItem[] {
   return pathNodes
@@ -318,7 +366,7 @@ function TableDrive({
         </div>
         {actionsController.ModalHost}
       </main>
-      <DragOverlay>
+      <DragOverlay modifiers={driveDragOverlayModifiers}>
         {dnd.activeDragRow && dnd.draggingCount > 0 ? (
           <DriveDragOverlay row={dnd.activeDragRow} count={dnd.draggingCount} />
         ) : null}

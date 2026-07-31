@@ -45,6 +45,7 @@ import {
   useExtensionState,
 } from '@blocknote/react';
 import { Dropdown } from '@heroui/react';
+import { useEventListener } from 'ahooks';
 import clsx from 'clsx';
 import {
   AlignCenter,
@@ -219,7 +220,13 @@ function QuickBlockTypes({
   );
 }
 
-function CustomSideMenu({ plugins }: { plugins: readonly NoteContentPlugin[] }) {
+function CustomSideMenu({
+  hiddenByTextInteraction,
+  plugins,
+}: {
+  hiddenByTextInteraction: boolean;
+  plugins: readonly NoteContentPlugin[];
+}) {
   const { t } = useTranslation('note');
   const editor = useBlockNoteEditor(blockNoteSchema);
   const sideMenu = useExtension(SideMenuExtension, { editor });
@@ -553,6 +560,7 @@ function CustomSideMenu({ plugins }: { plugins: readonly NoteContentPlugin[] }) 
     <div
       className={clsx('bn-side-menu', styles.sideMenu)}
       data-block-type={block.type}
+      data-interaction-hidden={hiddenByTextInteraction && !dragging ? 'true' : undefined}
       {...Object.fromEntries(
         Object.entries(ownerSideMenuState?.attributes ?? {}).map(([key, value]) => [
           `data-${key}`,
@@ -724,6 +732,17 @@ function CustomSideMenu({ plugins }: { plugins: readonly NoteContentPlugin[] }) 
 
 export default function NoteSideMenu({ plugins }: { plugins: readonly NoteContentPlugin[] }) {
   const readOnly = useNoteEditorReadOnlyContext();
+  const editor = useBlockNoteEditor(blockNoteSchema);
+  const [isPointerSelectingText, setIsPointerSelectingText] = useState(false);
+  const handleEditorPointerDown = (event: Event) => {
+    if (!(event instanceof globalThis.PointerEvent) || event.button !== 0) return;
+    setIsPointerSelectingText(true);
+  };
+  const handlePointerSelectionEnd = () => setIsPointerSelectingText(false);
+
+  useEventListener('pointerdown', handleEditorPointerDown, { target: editor.domElement });
+  useEventListener('pointerup', handlePointerSelectionEnd);
+  useEventListener('pointercancel', handlePointerSelectionEnd);
 
   if (readOnly) {
     return null;
@@ -731,7 +750,9 @@ export default function NoteSideMenu({ plugins }: { plugins: readonly NoteConten
 
   return (
     <SideMenuController
-      sideMenu={() => <CustomSideMenu plugins={plugins} />}
+      sideMenu={() => (
+        <CustomSideMenu hiddenByTextInteraction={isPointerSelectingText} plugins={plugins} />
+      )}
       floatingUIOptions={{
         useFloatingOptions: {
           placement: 'left-start',

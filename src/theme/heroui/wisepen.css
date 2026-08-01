@@ -519,6 +519,14 @@
     --table-control-radius: var(--table-shell-radius);
     --table-overlay-radius: var(--table-shell-radius);
     --table-inner-radius: var(--radius-lg);
+    /* Overlay 层级统一由主题维护，避免业务样式各自猜数字造成互相遮挡。 */
+    --app-z-index-editor-menu: 180;
+    --app-z-index-editor-toolbar: 220;
+    --app-z-index-popover: 400;
+    --app-z-index-editor-floating: 450;
+    --app-z-index-tooltip: 500;
+    --app-z-index-modal: 1000;
+    --app-z-index-toast: 1100;
     --table-drive-layout-max-height: calc(100dvh - var(--layout-drive-chrome-height, 240px));
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
     --shadow-md: var(--card-shadow);

@@ -3,11 +3,12 @@ import type {
   GetUserInteractionRecordApiResponse,
   RateApiRequest,
   ResourceInteractionApiRequest,
+  ResourceLikeApiRequest,
 } from './InteractApi.type';
 
 /** /resource/interaction/* 子路由 API */
-function toggleLike(req: ResourceInteractionApiRequest): Promise<void> {
-  return apiPost('/resource/interaction/toggleLike', req);
+function setLike(req: ResourceLikeApiRequest): Promise<void> {
+  return apiPost('/resource/interaction/like', req);
 }
 
 function rate(req: RateApiRequest): Promise<void> {
@@ -24,4 +25,4 @@ function getUserInteractionRecord(
   return apiGet('/resource/interaction/getResourceUserInteractionRecord', { params: req });
 }
 
-export const InteractApi = { toggleLike, rate, read, getUserInteractionRecord };
+export const InteractApi = { setLike, rate, read, getUserInteractionRecord };

@@ -59,10 +59,14 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   const [previewImageUrl, setPreviewImageUrl] = useState<string>();
 
   const { data: currentUser } = useRequest(() => userService.getUserInfo());
-  const { data: interaction, refresh: refreshInteraction } = useRequest(
-    () => interactService.getResourceInteraction(resourceId),
-    { ready: Boolean(resourceId), refreshDeps: [resourceId] }
-  );
+  const {
+    data: interaction,
+    loading: interactionLoading,
+    refresh: refreshInteraction,
+  } = useRequest(() => interactService.getResourceInteraction(resourceId), {
+    ready: Boolean(resourceId),
+    refreshDeps: [resourceId],
+  });
 
   const notifyResourceChanged = () => {
     void Promise.resolve(onResourceChanged?.())
@@ -72,7 +76,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
 
   const { run: submitResourceLike, loading: resourceLikePending } = useRequest(
     async (liked: boolean) => {
-      await interactService.toggleResourceLike(resourceId);
+      await interactService.setResourceLike(resourceId, liked);
       return liked;
     },
     {
@@ -237,7 +241,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
           favoriteCount={resource.favoriteCount}
           liked={activeOptimisticLike?.liked ?? interaction?.liked ?? false}
           likeCount={activeOptimisticLike?.count ?? resourceLikeCount}
-          likePending={resourceLikePending}
+          likePending={interactionLoading || resourceLikePending || !interaction}
           onLikeChange={handleResourceLikeChange}
           favoriteAction={
             <ResourceFavoriteAction

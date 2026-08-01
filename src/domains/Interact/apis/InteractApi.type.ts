@@ -3,6 +3,11 @@ export interface ResourceInteractionApiRequest {
   resourceId: string;
 }
 
+/** POST /resource/interaction/like 请求体 */
+export interface ResourceLikeApiRequest extends ResourceInteractionApiRequest {
+  liked: boolean;
+}
+
 /** POST /resource/interaction/rate 请求体 */
 export interface RateApiRequest extends ResourceInteractionApiRequest {
   /** 1–5 整数 */

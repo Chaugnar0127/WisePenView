@@ -39,10 +39,9 @@ async function getResourceInteraction(resourceId: string): Promise<ResourceInter
   return { ...state, likedCommentIds: getMockCommentLikeIds(resourceId) };
 }
 
-async function toggleResourceLike(resourceId: string): Promise<void> {
+async function setResourceLike(resourceId: string, liked: boolean): Promise<void> {
   await delay(100);
-  const state = getInteractionState(resourceId);
-  state.liked = !state.liked;
+  getInteractionState(resourceId).liked = liked;
 }
 
 async function rateResource(params: RateResourceRequest): Promise<void> {
@@ -56,7 +55,7 @@ async function recordResourceRead(): Promise<void> {
 
 export const InteractServicesMock: IInteractService = {
   getResourceInteraction,
-  toggleResourceLike,
+  setResourceLike,
   rateResource,
   recordResourceRead,
   listComments: listMockComments,

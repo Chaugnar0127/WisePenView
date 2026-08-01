@@ -22,8 +22,8 @@ async function getResourceInteraction(resourceId: string) {
   return InteractServicesMap.mapResourceInteractionRecordFromApi(data);
 }
 
-async function toggleResourceLike(resourceId: string): Promise<void> {
-  await InteractApi.toggleLike({ resourceId });
+async function setResourceLike(resourceId: string, liked: boolean): Promise<void> {
+  await InteractApi.setLike({ resourceId, liked });
 }
 
 async function rateResource(params: RateResourceRequest): Promise<void> {
@@ -91,7 +91,7 @@ const listFavoritedResources = async (params: ListFavoritedResourcesRequest) =>
 
 export const createInteractServices = (): IInteractService => ({
   getResourceInteraction,
-  toggleResourceLike,
+  setResourceLike,
   rateResource,
   recordResourceRead,
   listComments,

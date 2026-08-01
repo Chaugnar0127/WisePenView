@@ -22,8 +22,6 @@ export interface IDriveService {
   removeNode(params: RemoveNodeParams): Promise<void>;
   renameNode(params: RenameNodeParams): Promise<void>;
   createFolder(params: CreateFolderParams): Promise<string>;
-  /** 获取后端初始化的个人云盘系统共享目录；缺失时抛出客户端错误。 */
-  getSharedFolderTagId(): Promise<string>;
 }
 
 export interface GetRootNodeParams {

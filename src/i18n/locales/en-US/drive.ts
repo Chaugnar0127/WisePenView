@@ -8,7 +8,6 @@ const enUSDrive = {
       drive: 'Drive',
       uploadQueue: 'Upload queue',
       trash: 'Trash',
-      shared: 'Shared',
       favorites: 'My Favorites',
     },
   },

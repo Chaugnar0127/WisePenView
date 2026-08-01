@@ -167,6 +167,7 @@ function DataTable<T extends object>({
             <Table.Header>
               {columns.map((column) => {
                 const columnAlign = resolveColumnAlign(column.align);
+                const headerAlign = column.isRowHeader ? 'start' : columnAlign;
 
                 return (
                   <Table.Column
@@ -179,14 +180,16 @@ function DataTable<T extends object>({
                       column.className
                     )}
                   >
-                    <TableCellAlign align={columnAlign}>
-                      {renderSortableColumnLabel(
-                        column.label,
-                        column.id,
-                        sortDescriptor,
-                        column.allowsSorting
-                      )}
-                    </TableCellAlign>
+                    {({ sortDirection }) => (
+                      <TableCellAlign align={headerAlign}>
+                        {renderSortableColumnLabel(
+                          column.label,
+                          sortDirection,
+                          column.allowsSorting,
+                          headerAlign
+                        )}
+                      </TableCellAlign>
+                    )}
                   </Table.Column>
                 );
               })}

@@ -1,12 +1,9 @@
 import type { SortDescriptor } from '@heroui/react';
 import type { ReactNode } from 'react';
-
-export interface TableSortIndicatorProps {
-  direction?: SortDescriptor['direction'];
-}
+import type { TableCellAlignValue } from '../TableBase/cellAlign';
 
 export interface TableSortColumnLabelProps {
   label: ReactNode;
-  columnId: string;
-  sortDescriptor?: SortDescriptor;
+  sortDirection?: SortDescriptor['direction'];
+  align?: TableCellAlignValue;
 }

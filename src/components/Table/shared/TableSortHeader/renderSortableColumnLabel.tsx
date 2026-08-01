@@ -3,12 +3,12 @@ import type { TableSortColumnLabelProps } from './index.type';
 
 export function renderSortableColumnLabel(
   label: TableSortColumnLabelProps['label'],
-  columnId: string,
-  sortDescriptor: TableSortColumnLabelProps['sortDescriptor'],
-  allowsSorting?: boolean
+  sortDirection: TableSortColumnLabelProps['sortDirection'],
+  allowsSorting?: boolean,
+  align?: TableSortColumnLabelProps['align']
 ) {
   if (!allowsSorting) {
     return label;
   }
-  return <TableSortColumnLabel label={label} columnId={columnId} sortDescriptor={sortDescriptor} />;
+  return <TableSortColumnLabel label={label} sortDirection={sortDirection} align={align} />;
 }

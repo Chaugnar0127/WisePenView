@@ -1,27 +1,20 @@
-import type { NoteSaveStatus } from '@/domains/Note';
 import type { NoteCollaborationUser } from '@/components/Note/CustomBlockNote/index.type';
+import type { NoteSaveStatus } from '@/domains/Note';
 import type { User } from '@/domains/User';
 import type { NoteTitleSaveStatus } from '../NoteTitle';
 
-const NOTE_COLLABORATION_COLORS = [
-  '#2563eb',
-  '#16a34a',
-  '#dc2626',
-  '#d97706',
-  '#7c3aed',
-  '#0891b2',
-  '#db2777',
-  '#4f46e5',
-  '#059669',
-  '#ea580c',
+const NOTE_COLLABORATION_PRIMARY_COLORS = [
+  '#127abb',
+  '#bb455c',
+  '#2ea9ae',
+  '#d17155',
+  '#2f8a64',
+  '#835ec7',
 ] as const;
 
 export type NoteHeaderSaveStatus = NoteSaveStatus | 'failed';
 
-export function getNoteCollaborationUserName(
-  user: User | undefined,
-  fallbackName: string
-): string {
+export function getNoteCollaborationUserName(user: User | undefined, fallbackName: string): string {
   return user?.nickname?.trim() || user?.realName?.trim() || user?.username?.trim() || fallbackName;
 }
 
@@ -30,7 +23,7 @@ export function pickNoteCollaborationColor(seed: string): string {
   for (let i = 0; i < seed.length; i += 1) {
     hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
   }
-  return NOTE_COLLABORATION_COLORS[hash % NOTE_COLLABORATION_COLORS.length];
+  return NOTE_COLLABORATION_PRIMARY_COLORS[hash % NOTE_COLLABORATION_PRIMARY_COLORS.length];
 }
 
 export function buildNoteCollaborationUser(

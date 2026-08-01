@@ -241,7 +241,7 @@ function TableRailFormattingToolbar({
       reference={reference}
       useFloatingOptions={useFloatingOptions}
       focusManagerProps={{ disabled: true }}
-      elementProps={{ className: styles.floatingLayer, style: { zIndex: 120 } }}
+      elementProps={{ className: styles.floatingLayer }}
     >
       {show ? <CustomFormattingToolbar {...toolbarProps} /> : null}
     </GenericPopover>

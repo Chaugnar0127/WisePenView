@@ -15,6 +15,10 @@
   }
 }
 
+.floatingLayer {
+  z-index: calc(var(--bn-ui-base-z-index, 0) + var(--note-editor-toolbar-layer, 120));
+}
+
 :global(.bodyBlockNoteView) {
   position: relative;
 }

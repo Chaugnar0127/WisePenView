@@ -5,18 +5,34 @@ import {
   useEditorState,
   type GenericPopoverReference,
 } from '@blocknote/react';
+import { useEventListener } from 'ahooks';
 import { useEffect } from 'react';
 
 import { useNoteEditorReadOnlyContext } from '../../engines/editor/readOnly';
 import { blockNoteSchema } from '../../registry/noteEditorComposition';
-import { closeNoteEmojiPicker, insertNoteEmoji, noteEmojiPluginKey } from './emojiExtension';
+import {
+  closeNoteEmojiPicker,
+  createNoteEmojiAnchor,
+  insertNoteEmoji,
+  noteEmojiPluginKey,
+} from './emojiExtension';
 
 const EMOJI_PICKER_FLOATING_OFFSET = 10;
 const EMOJI_PICKER_UPWARD_OFFSET = 18;
 const EMOJI_PICKER_VIEWPORT_PADDING = 10;
+const NOTE_EMOJI_PICKER_POPOVER_CLASS = 'wise-note-emoji-picker-popover';
 
 function clampFloatingPosition(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), Math.max(min, max));
+}
+
+function isInsideNoteEmojiPicker(event: PointerEvent) {
+  return event
+    .composedPath()
+    .some(
+      (target) =>
+        target instanceof HTMLElement && target.classList.contains(NOTE_EMOJI_PICKER_POPOVER_CLASS)
+    );
 }
 
 function NoteEmojiPickerPopover() {
@@ -29,8 +45,15 @@ function NoteEmojiPickerPopover() {
   });
   const reference = session
     ? ({
-        element: (editor.domElement?.firstChild || undefined) as Element | undefined,
-        getBoundingClientRect: () => session.anchor,
+        element: editor.domElement?.firstElementChild ?? undefined,
+        cacheMountedBoundingClientRect: false,
+        getBoundingClientRect: () => {
+          try {
+            return createNoteEmojiAnchor(editor.prosemirrorView, session.to);
+          } catch {
+            return session.anchor;
+          }
+        },
       } satisfies GenericPopoverReference)
     : undefined;
 
@@ -43,6 +66,13 @@ function NoteEmojiPickerPopover() {
   useEffect(() => {
     if (readOnly) closeNoteEmojiPicker(editor.prosemirrorView);
   }, [editor.prosemirrorView, readOnly]);
+
+  const handleDocumentPointerDown = (event: PointerEvent) => {
+    if (!session || isInsideNoteEmojiPicker(event)) return;
+    closeNoteEmojiPicker(editor.prosemirrorView);
+  };
+
+  useEventListener('pointerdown', handleDocumentPointerDown, { target: document, capture: true });
 
   if (!session || !reference) return null;
 
@@ -79,7 +109,7 @@ function NoteEmojiPickerPopover() {
           },
         ],
       }}
-      elementProps={{ style: { zIndex: 70 } }}
+      elementProps={{ className: NOTE_EMOJI_PICKER_POPOVER_CLASS, style: { zIndex: 70 } }}
     >
       <EmojiPickerContent
         onSelect={(emoji) => {

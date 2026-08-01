@@ -14,7 +14,7 @@ type NoteEmojiPluginMeta = { type: 'OPEN'; session: NoteEmojiPickerSession } | {
 
 export const noteEmojiPluginKey = new PluginKey<NoteEmojiPickerSession | null>('noteEmojiPicker');
 
-function createAnchor(view: EditorView, position: number): DOMRect {
+export function createNoteEmojiAnchor(view: EditorView, position: number): DOMRect {
   const coords = view.coordsAtPos(position);
   return new DOMRect(
     coords.left,
@@ -35,7 +35,7 @@ export function openNoteEmojiPicker(view: EditorView): void {
     session: {
       from,
       to,
-      anchor: createAnchor(view, to),
+      anchor: createNoteEmojiAnchor(view, to),
     },
   });
 }

@@ -66,6 +66,37 @@
     color: var(--foreground);
   }
 
+  :global(.bn-editor .wise-note-collaboration-cursor) {
+    position: relative;
+    word-break: normal;
+    pointer-events: none;
+  }
+
+  :global(.bn-editor .wise-note-collaboration-cursor__caret) {
+    position: absolute;
+    top: 1px;
+    bottom: -2px;
+    left: -1px;
+    width: 2px;
+  }
+
+  :global(.bn-editor .wise-note-collaboration-cursor__label) {
+    position: absolute;
+    top: -18px;
+    left: 0;
+    display: inline-block;
+    min-height: 18px;
+    padding: 1px 4px 2px;
+    border-radius: 2px;
+    font-family: var(--app-font-family);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 15px;
+    white-space: nowrap;
+    user-select: none;
+  }
+
   :global(.bn-block-content.ProseMirror-selectednode > *),
   :global(.ProseMirror-selectednode > .bn-block-content > *) {
     outline: none !important;

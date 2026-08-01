@@ -202,6 +202,9 @@ export function useSlashMenuNavigation({
 
     const animationFrame = requestAnimationFrame(() => {
       syncAvailableHeight(viewport);
+      if (items.length > 0) {
+        activateKeyboardItem(0);
+      }
       updateScrollEdges();
     });
     const floatingLayer = viewport.parentElement?.parentElement;

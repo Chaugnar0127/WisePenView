@@ -58,9 +58,10 @@ function NoteSuggestionMenuList({
     handleScroll,
     hoveredIndex,
     isKeyboardNavigating,
+    isMouseNavigating,
     viewportRef,
   } = useSlashMenuNavigation({ editor, items, onItemClick });
-  const hoveredItemId = getSlashMenuItemId(hoveredIndex);
+  const hoveredItemId = hoveredIndex === undefined ? undefined : getSlashMenuItemId(hoveredIndex);
 
   return (
     <div
@@ -68,6 +69,7 @@ function NoteSuggestionMenuList({
       data-can-scroll-down={canScrollDown || undefined}
       data-can-scroll-up={canScrollUp || undefined}
       data-keyboard-navigation={isKeyboardNavigating || undefined}
+      data-mouse-navigation={isMouseNavigating || undefined}
     >
       <span aria-hidden className={styles.keyboardFrame} />
       <div ref={viewportRef} className={styles.menuViewport} onScroll={handleScroll}>

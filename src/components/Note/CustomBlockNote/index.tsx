@@ -5,9 +5,21 @@ import { useImperativeHandle, type Ref } from 'react';
 import type { CustomBlockNoteProps, NoteBodyEditorHandle } from './index.type';
 import { useNoteEditorRuntimeCoordinator } from './registry/useNoteEditorRuntimeCoordinator';
 import { useNoteEditorDefinition } from './runtime';
+import { NoteInteractionStoreProvider } from './runtime/NoteInteractionStoreProvider';
 import { NoteEditorSurface } from './ui/NoteEditorSurface';
 
 function CustomBlockNote({
+  ref,
+  ...props
+}: CustomBlockNoteProps & { ref?: Ref<NoteBodyEditorHandle> }) {
+  return (
+    <NoteInteractionStoreProvider access={props.state}>
+      <CustomBlockNoteRuntime ref={ref} {...props} />
+    </NoteInteractionStoreProvider>
+  );
+}
+
+function CustomBlockNoteRuntime({
   ref,
   ...props
 }: CustomBlockNoteProps & { ref?: Ref<NoteBodyEditorHandle> }) {

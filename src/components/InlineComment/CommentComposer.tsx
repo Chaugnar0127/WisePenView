@@ -1,10 +1,11 @@
 import AppIconButton from '@/components/Button/AppIconButton';
+import { Input } from '@/components/Input';
 import { useImageService } from '@/domains';
 import { parseErrorMessage } from '@/utils/error';
 import { createUuid } from '@/utils/random/createUuid';
-import { TextArea } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { useRequest, useUnmount } from 'ahooks';
-import { ImagePlus, Send, X } from 'lucide-react';
+import { ImagePlus, X } from 'lucide-react';
 import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -22,6 +23,7 @@ interface PendingImage {
 interface CommentComposerProps {
   placeholder: string;
   imageUpload: InlineCommentProps['imageUpload'];
+  onCancel?: () => void;
   onSubmit(payload: InlineCommentSubmitPayload): Promise<void>;
 }
 
@@ -44,7 +46,7 @@ function PendingImagePreview({ image, onRemove }: { image: PendingImage; onRemov
   );
 }
 
-function CommentComposer({ placeholder, imageUpload, onSubmit }: CommentComposerProps) {
+function CommentComposer({ placeholder, imageUpload, onCancel, onSubmit }: CommentComposerProps) {
   const { t } = useTranslation('common');
   const imageService = useImageService();
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -64,7 +66,7 @@ function CommentComposer({ placeholder, imageUpload, onSubmit }: CommentComposer
     setSubmitError(undefined);
   };
 
-  const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
+  const handlePaste = (event: ClipboardEvent<HTMLInputElement>) => {
     const files = Array.from(event.clipboardData.items)
       .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
       .map((item) => item.getAsFile())
@@ -104,26 +106,61 @@ function CommentComposer({ placeholder, imageUpload, onSubmit }: CommentComposer
     }
   );
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return;
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
     event.preventDefault();
     void submitComment();
   };
 
+  const showActions = Boolean(content.trim()) || pendingImages.length > 0;
+
   return (
     <div className={styles.composer}>
-      <TextArea
-        value={content}
-        rows={2}
-        autoFocus
-        disabled={submitting}
-        className={styles.composerTextarea}
-        aria-label={placeholder}
-        placeholder={placeholder}
-        onChange={(event) => setContent(event.target.value)}
-        onPaste={handlePaste}
-        onKeyDown={handleKeyDown}
-      />
+      <div className={styles.composerInputWrap}>
+        <Input
+          value={content}
+          autoFocus
+          disabled={submitting}
+          className={styles.composerInput}
+          aria-label={placeholder}
+          placeholder={placeholder}
+          onChange={(event) => setContent(event.target.value)}
+          onPaste={handlePaste}
+          onKeyDown={handleKeyDown}
+        />
+        <div className={styles.composerInlineActions}>
+          <EmojiPicker
+            label={t('inlineComment.insertEmoji')}
+            disabled={submitting}
+            onSelect={(emojiId) => setContent((currentContent) => `${currentContent}${emojiId}`)}
+          />
+          {imageUpload !== false ? (
+            <AppIconButton
+              icon={<ImagePlus size={15} aria-hidden />}
+              label={t('inlineComment.addImage')}
+              size="sm"
+              isDisabled={submitting}
+              className={styles.imageButton}
+              tooltip={{ content: t('inlineComment.addImage') }}
+              onPress={() => imageInputRef.current?.click()}
+            />
+          ) : null}
+        </div>
+      </div>
+      {imageUpload !== false ? (
+        <input
+          ref={imageInputRef}
+          className={styles.imageInput}
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={submitting}
+          onChange={(event) => {
+            appendImages(Array.from(event.target.files ?? []));
+            event.currentTarget.value = '';
+          }}
+        />
+      ) : null}
 
       {pendingImages.length > 0 ? (
         <div className={styles.pendingImages}>
@@ -141,48 +178,24 @@ function CommentComposer({ placeholder, imageUpload, onSubmit }: CommentComposer
         </div>
       ) : null}
 
-      <div className={styles.composerToolbar}>
-        <EmojiPicker
-          label={t('inlineComment.insertEmoji')}
-          disabled={submitting}
-          onSelect={(emojiId) => setContent((currentContent) => `${currentContent}${emojiId}`)}
-        />
-        {imageUpload !== false ? (
-          <>
-            <AppIconButton
-              icon={<ImagePlus size={15} aria-hidden />}
-              label={t('inlineComment.addImage')}
-              size="sm"
-              isDisabled={submitting}
-              className={styles.iconButton}
-              onPress={() => imageInputRef.current?.click()}
-            />
-            <input
-              ref={imageInputRef}
-              className={styles.imageInput}
-              type="file"
-              accept="image/*"
-              multiple
-              disabled={submitting}
-              onChange={(event) => {
-                appendImages(Array.from(event.target.files ?? []));
-                event.currentTarget.value = '';
-              }}
-            />
-          </>
-        ) : null}
-        <AppIconButton
-          icon={<Send size={14} aria-hidden />}
-          label={t('inlineComment.sendComment')}
-          size="sm"
-          variant="primary"
-          isDisabled={!canSubmit || submitting}
-          className={styles.sendButton}
-          tooltip={{ content: t('inlineComment.send') }}
-          aria-busy={submitting || undefined}
-          onPress={() => void submitComment()}
-        />
-      </div>
+      {showActions ? (
+        <div className={styles.composerActions}>
+          {onCancel ? (
+            <Button variant="ghost" size="sm" isDisabled={submitting} onPress={onCancel}>
+              {t('actions.cancel')}
+            </Button>
+          ) : null}
+          <Button
+            variant="primary"
+            size="sm"
+            isDisabled={!canSubmit || submitting}
+            aria-busy={submitting || undefined}
+            onPress={() => void submitComment()}
+          >
+            {t('inlineComment.send')}
+          </Button>
+        </div>
+      ) : null}
 
       {submitError ? <p className={styles.errorText}>{submitError}</p> : null}
     </div>

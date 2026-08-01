@@ -262,19 +262,36 @@
 }
 
 .reaction {
-  display: inline-flex;
-  height: 26px;
-  align-items: center;
-  gap: var(--space-2xs);
-  padding: 0 var(--space-xs);
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  background: var(--surface-secondary);
-  color: var(--muted);
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
 }
 
-.reactionSelected {
+.reaction:disabled {
+  cursor: default;
+}
+
+.reactionChip {
+  min-height: 28px;
+  max-width: 100%;
+  padding: 0 var(--space-sm);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.reactionUser {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reactionChipSelected {
   border-color: color-mix(in srgb, var(--accent) 38%, var(--border-light));
   background: var(--accent-soft);
   color: var(--accent-soft-foreground);
@@ -282,45 +299,56 @@
 
 .composer {
   min-width: 0;
-  padding: var(--space-xs);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--surface);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
-.composer:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 10%, transparent);
+.composerInputWrap {
+  position: relative;
+  min-width: 0;
 }
 
-.composerTextarea {
+.composerInput:global(.input) {
   width: 100%;
-  min-height: 46px;
-  resize: none !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: var(--space-xs) !important;
-  color: var(--foreground);
+  min-height: 36px;
+  border-radius: 6px;
   font-size: var(--font-size-sm);
   line-height: 1.5;
 }
 
-.composerToolbar {
-  justify-content: flex-start;
-  gap: 1px;
+.composerInput:global(.input) :global(input) {
+  padding-right: 64px;
 }
 
-.sendButton {
+.composerInlineActions {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  transform: translateY(-50%);
+}
+
+.imageButton {
   width: 28px;
   min-width: 28px;
   height: 28px;
-  margin-left: auto;
   padding: 0;
 }
 
 .imageInput {
   display: none;
+}
+
+.composerActions {
+  display: flex;
+  min-width: 0;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
 }
 
 .stateText,

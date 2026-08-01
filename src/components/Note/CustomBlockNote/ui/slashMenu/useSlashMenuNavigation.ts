@@ -106,11 +106,12 @@ export function useSlashMenuNavigation({
   onItemClick,
 }: UseSlashMenuNavigationProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
-  const hoveredIndexRef = useRef(0);
+  const hoveredIndexRef = useRef<number | undefined>(undefined);
   const keyboardIndexRef = useRef<number | undefined>(undefined);
   const mousePositionRef = useRef<{ clientX: number; clientY: number } | undefined>(undefined);
-  const [hoveredIndex, setHoveredIndex] = useState(0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined);
   const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
+  const [isMouseNavigating, setIsMouseNavigating] = useState(false);
   const [scrollEdges, setScrollEdges] = useState<ScrollEdges>({
     canScrollDown: false,
     canScrollUp: false,
@@ -142,8 +143,12 @@ export function useSlashMenuNavigation({
   });
 
   const moveKeyboardSelection = useMemoizedFn((offset: number) => {
-    const baseIndex = keyboardIndexRef.current ?? hoveredIndexRef.current;
-    activateKeyboardItem((baseIndex + offset + items.length) % items.length);
+    const activeIndex = keyboardIndexRef.current ?? hoveredIndexRef.current;
+    if (activeIndex === undefined) {
+      activateKeyboardItem(offset > 0 ? 0 : items.length - 1);
+      return;
+    }
+    activateKeyboardItem((activeIndex + offset + items.length) % items.length);
   });
 
   const handleItemMouseMove = (index: number, event: MouseEvent) => {
@@ -159,6 +164,7 @@ export function useSlashMenuNavigation({
     keyboardIndexRef.current = undefined;
     setHoveredIndex(index);
     setIsKeyboardNavigating(false);
+    setIsMouseNavigating(true);
     syncEditorActiveDescendant(index);
   };
 
@@ -190,18 +196,18 @@ export function useSlashMenuNavigation({
 
       if (event.key !== 'Enter' || event.isComposing) return;
       stopMenuKeyboardEvent(event);
-      const selectedIndex = keyboardIndexRef.current ?? hoveredIndexRef.current;
+      const selectedIndex = keyboardIndexRef.current ?? hoveredIndexRef.current ?? 0;
       onItemClick?.(items[selectedIndex]);
     };
 
     const animationFrame = requestAnimationFrame(() => {
       syncAvailableHeight(viewport);
       updateScrollEdges();
-      syncEditorActiveDescendant(hoveredIndexRef.current);
     });
     const floatingLayer = viewport.parentElement?.parentElement;
     const keepActiveItemAnchored = () => {
       const activeIndex = keyboardIndexRef.current ?? hoveredIndexRef.current;
+      if (activeIndex === undefined) return;
       scrollItemIntoAnchor(viewport, activeIndex);
       if (keyboardIndexRef.current !== undefined) {
         positionKeyboardFrame(viewport, activeIndex);
@@ -241,6 +247,7 @@ export function useSlashMenuNavigation({
     handleScroll: updateScrollEdges,
     hoveredIndex,
     isKeyboardNavigating,
+    isMouseNavigating,
     viewportRef,
   };
 }

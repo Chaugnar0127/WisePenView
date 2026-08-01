@@ -46,16 +46,16 @@
 
 .feedback {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  min-width: 0;
+  align-items: center;
 }
 
 .feedbackActions {
   display: flex;
   min-width: 0;
-  flex-wrap: wrap;
+  flex: 1;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-sm);
 }
 
@@ -64,14 +64,39 @@
   min-width: 0;
   flex: 0 0 auto;
   align-items: center;
+  gap: var(--space-sm);
+}
+
+.feedbackActionItem {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
   gap: var(--space-xs);
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+}
+
+.feedbackSeparator {
+  width: 1px;
+  height: 16px;
+  flex: 0 0 1px;
+  background: var(--border-light);
+}
+
+.feedbackReadonlyButton {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0 var(--space-sm);
+  color: var(--muted);
 }
 
 .helpfulButton {
   max-width: 100%;
 }
 
-.helpfulCount {
+.feedbackCount {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -296,28 +321,39 @@
 
 .composer {
   min-width: 0;
-  padding: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background: var(--surface);
+  box-shadow: var(--card-shadow);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .composer:focus-within {
-  border-color: var(--accent-border);
+  border-color: var(--accent-softer);
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 .composerTextarea {
   width: 100%;
-  min-height: 44px;
+  min-height: calc(1.6em + 16px);
+  max-height: calc(16em + 16px);
+  overflow-y: auto;
   resize: none !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  padding: var(--space-xs) !important;
+  padding: var(--space-xs) 0 !important;
   color: var(--foreground);
-  font-size: var(--font-size-sm);
-  line-height: 1.5;
+  field-sizing: content;
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+
+  &::placeholder {
+    color: var(--field-placeholder);
+  }
 }
 
 .composerActions,
@@ -328,6 +364,7 @@
 }
 
 .composerActions {
+  min-height: 36px;
   justify-content: space-between;
 }
 

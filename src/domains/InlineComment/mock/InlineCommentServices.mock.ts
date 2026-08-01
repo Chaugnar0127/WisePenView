@@ -150,7 +150,10 @@ const setInlineCommentItemReaction = async (
     items: thread.items.map((item) =>
       item.itemId === params.itemId
         ? updateItemReactions(item, [
-            ...item.reactions.filter((reaction) => reaction.userId !== currentUser.id),
+            ...item.reactions.filter(
+              (reaction) =>
+                reaction.userId !== currentUser.id || reaction.emojiId !== params.emojiId
+            ),
             { userId: currentUser.id, emojiId: params.emojiId, createdAt: now },
           ])
         : item
@@ -168,7 +171,10 @@ const deleteInlineCommentItemReaction = async (
       item.itemId === params.itemId
         ? updateItemReactions(
             item,
-            item.reactions.filter((reaction) => reaction.userId !== currentUser.id)
+            item.reactions.filter(
+              (reaction) =>
+                reaction.userId !== currentUser.id || reaction.emojiId !== params.emojiId
+            )
           )
         : item
     ),

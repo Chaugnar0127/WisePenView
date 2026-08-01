@@ -2,6 +2,7 @@ import { createAiDiffEditorExtension } from '../engines/aiDiff/extension';
 import { searchEditorExtension } from '../engines/search/extension';
 import { codeBlockPlugin } from '../plugins/CodeBlockPlugin';
 import { createDefaultContentPlugin } from '../plugins/DefaultContentPlugin';
+import { emojiEditorExtension } from '../plugins/EmojiPlugin/emojiExtension';
 import { createHighlightBlockPlugin } from '../plugins/HighlightBlockPlugin';
 import { latexPlugin } from '../plugins/LatexPlugin';
 import { mermaidPlugin } from '../plugins/MermaidPlugin';
@@ -41,7 +42,7 @@ const noteEditorServices = {
 
 export const notePluginRegistry = createNotePluginRegistry({
   root: notePluginTree,
-  editorExtensions: [aiDiffEditorExtension, searchEditorExtension],
+  editorExtensions: [aiDiffEditorExtension, emojiEditorExtension, searchEditorExtension],
   services: noteEditorServices,
 });
 

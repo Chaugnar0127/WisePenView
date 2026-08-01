@@ -1,5 +1,5 @@
 .toolbarPopover {
-  position: fixed;
+  position: absolute;
   z-index: calc(var(--bn-ui-base-z-index, 0) + var(--note-editor-toolbar-layer, 120));
   transform: translate(-15%, -100%);
   opacity: 0;
@@ -13,6 +13,10 @@
   &[data-visible='false'] {
     animation: toolbarFadeOut 120ms ease-in both;
   }
+}
+
+:global(.bodyBlockNoteView) {
+  position: relative;
 }
 
 @keyframes toolbarFadeIn {

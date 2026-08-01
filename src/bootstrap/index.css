@@ -291,6 +291,11 @@ select {
   font: inherit;
 }
 
+input,
+textarea {
+  font-weight: var(--field-text-font-weight, var(--font-weight-medium, 500));
+}
+
 html {
   height: 100dvh;
   max-height: 100dvh;
@@ -326,6 +331,62 @@ html::-webkit-scrollbar-thumb:hover {
   max-height: 100dvh;
   min-height: 0;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#root :is(input, textarea, [contenteditable='true'], [contenteditable=''], [role='textbox']) {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#root
+  :is(
+    input,
+    textarea,
+    [contenteditable='true'],
+    [contenteditable=''],
+    [role='textbox'],
+    .markdown,
+    .bn-editor,
+    .ProseMirror,
+    .cm-editor,
+    .cm-content,
+    .monaco-editor,
+    .pdfViewer,
+    .textLayer,
+    .docx-wrapper,
+    iframe
+  )
+  :is(*) {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#root
+  :is(
+    .markdown,
+    .bn-editor,
+    .ProseMirror,
+    .cm-editor,
+    .cm-content,
+    .monaco-editor,
+    .pdfViewer,
+    .textLayer,
+    .docx-wrapper,
+    pre,
+    code,
+    kbd,
+    samp,
+    iframe
+  ) {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#root img {
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 @layer utilities {

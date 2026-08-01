@@ -147,8 +147,8 @@
   :global(.bodyBlockNoteView .bn-editor) {
     font-size: 16px;
     line-height: 1.8;
-    /* 保留少量可点击留白以便在文末继续输入；过大（如 60vh）会在短笔记下方出现大块空区 */
-    padding-bottom: min(12vh, 8rem);
+    /* 保留接近 Notion 的文末留白，让最后一段内容可以滚离窗口底部 */
+    padding-bottom: 50vh;
   }
 
   :global(.bn-editor .bn-block-outer) {
@@ -588,6 +588,24 @@
   :global(.bn-editor .bn-block-content[data-content-type='codeBlock'] .shiki) {
     background: transparent !important;
   }
+}
+
+.aiDiffDisplayModeSwitch {
+  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.aiDiffDisplayModeList {
+  width: auto;
+}
+
+.aiDiffDisplayModeTab {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 30px;
+  padding: 0 var(--space-sm);
+  white-space: nowrap;
 }
 
 /* BlockNote 拖拽预览会脱离 editorShell 挂到 body，默认显示样式必须单独补给预览。 */

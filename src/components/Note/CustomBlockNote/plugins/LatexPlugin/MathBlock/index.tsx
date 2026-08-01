@@ -8,7 +8,7 @@ import type {
 } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
 import 'katex/dist/katex.min.css';
-import type { ComponentType } from 'react';
+import type { ComponentType, MouseEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNoteEditorReadOnlyContext } from '../../../engines/editor/readOnly';
@@ -206,6 +206,19 @@ function MathBlockView(props: MathBlockRenderProps) {
     setIsEditing(true);
   };
 
+  const handleRootMouseDownCapture = (event: MouseEvent<HTMLDivElement>) => {
+    if (readOnly) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (canEnterEdit) enterEdit();
+  };
+
+  const handleRootClickCapture = (event: MouseEvent<HTMLDivElement>) => {
+    if (readOnly) return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   const handleTextareaBlur = () => {
     if (blurCommitTimerRef.current !== null) {
       clearTimeout(blurCommitTimerRef.current);
@@ -257,9 +270,8 @@ function MathBlockView(props: MathBlockRenderProps) {
         role={canEnterEdit ? 'button' : undefined}
         tabIndex={canEnterEdit ? 0 : -1}
         aria-label={canEnterEdit ? t('latex.blockEdit') : undefined}
-        onClick={() => {
-          if (canEnterEdit) enterEdit();
-        }}
+        onMouseDownCapture={handleRootMouseDownCapture}
+        onClickCapture={handleRootClickCapture}
         onKeyDown={(e) => {
           if (!canEnterEdit) return;
           if (e.key === 'Enter' || e.key === ' ') {

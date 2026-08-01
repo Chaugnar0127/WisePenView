@@ -34,6 +34,10 @@ import type {
   UpdateInlineCommentItemRequest,
 } from '../service/index.type';
 
+type InlineCommentUserReactionApiValue = NonNullable<
+  InlineCommentItemApiResponse['reactions']
+>[string];
+
 function requiredId(value: string | null | undefined, field: string): string {
   const id = normalizeId(value);
   if (!id) {
@@ -100,6 +104,17 @@ function mapReactionGroups(
   });
 }
 
+function mapUserReactions(
+  userId: string,
+  reactions: InlineCommentUserReactionApiValue | null | undefined
+): InlineCommentItem['reactions'] {
+  return (Array.isArray(reactions) ? reactions : [reactions]).flatMap((reaction) => {
+    const emojiId = reaction?.emojiId?.trim();
+    if (!userId || !emojiId) return [];
+    return [{ userId, emojiId, createdAt: optionalTimestamp(reaction?.createTime) }];
+  });
+}
+
 function mapItem(raw: InlineCommentItemApiResponse): InlineCommentItem {
   const itemId = requiredId(raw.itemId, 'itemId');
   const authorId = requiredId(raw.authorId, 'authorId');
@@ -110,11 +125,9 @@ function mapItem(raw: InlineCommentItemApiResponse): InlineCommentItem {
     content: raw.content ?? '',
     imageUrls: raw.imageUrls ?? [],
     mentionUserIds: raw.mentionUserIds ?? [],
-    reactions: Object.entries(raw.reactions ?? {}).flatMap(([userId, reaction]) => {
-      const emojiId = reaction?.emojiId?.trim();
-      if (!userId || !emojiId) return [];
-      return [{ userId, emojiId, createdAt: optionalTimestamp(reaction?.createTime) }];
-    }),
+    reactions: Object.entries(raw.reactions ?? {}).flatMap(([userId, reactions]) =>
+      mapUserReactions(userId, reactions)
+    ),
     reactionGroups: mapReactionGroups(raw.reactionGroups),
     createdAt: requiredTimestamp(raw.createTime, 'item.createTime'),
     updatedAt: requiredTimestamp(raw.updateTime, 'item.updateTime'),

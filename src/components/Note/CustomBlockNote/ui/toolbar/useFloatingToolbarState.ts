@@ -24,6 +24,10 @@ function getMountedEditorView(editor: CustomBlockNoteEditor): EditorView | null 
   }
 }
 
+function isSideMenuEventTarget(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && target.closest('.bn-side-menu') !== null;
+}
+
 function getEditorDomSelectionRange(view: EditorView): Range | null {
   const selection = getRootDomSelection(view.root);
   if (!selection || selection.isCollapsed || selection.rangeCount === 0) return null;
@@ -31,6 +35,22 @@ function getEditorDomSelectionRange(view: EditorView): Range | null {
   const isInsideEditor = (node: Node) =>
     view.dom.contains(node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement);
   return isInsideEditor(range.startContainer) && isInsideEditor(range.endContainer) ? range : null;
+}
+
+function getToolbarPositioningRoot(view: EditorView): HTMLElement {
+  return view.dom.closest<HTMLElement>('.bodyBlockNoteView') ?? view.dom;
+}
+
+function mapViewportRectToToolbarState(
+  view: EditorView,
+  rect: Pick<DOMRect, 'left' | 'top'>
+): FloatingToolbarGeometry {
+  const rootRect = getToolbarPositioningRoot(view).getBoundingClientRect();
+  return {
+    visible: true,
+    left: rect.left - rootRect.left,
+    top: Math.max(8, rect.top - rootRect.top - 10),
+  };
 }
 
 function getDomSelectionToolbarState(view: EditorView): FloatingToolbarGeometry {
@@ -42,11 +62,7 @@ function getDomSelectionToolbarState(view: EditorView): FloatingToolbarGeometry 
   if (rect.width === 0 && rect.height === 0) {
     return { visible: false, left: 0, top: 0 };
   }
-  return {
-    visible: true,
-    left: rect.left,
-    top: Math.max(8, rect.top - 10),
-  };
+  return mapViewportRectToToolbarState(view, rect);
 }
 
 function getSafeToolbarState(
@@ -57,22 +73,19 @@ function getSafeToolbarState(
   if (selection.empty) {
     return getDomSelectionToolbarState(view);
   }
-  if (selection instanceof TextSelection) {
-    if (!keepVisibleWithoutDomSelection && !getEditorDomSelectionRange(view)) {
-      return { visible: false, left: 0, top: 0 };
-    }
-    if (doc.textBetween(selection.from, selection.to).length === 0) {
-      return getDomSelectionToolbarState(view);
-    }
+  if (!(selection instanceof TextSelection)) {
+    return { visible: false, left: 0, top: 0 };
+  }
+  if (!keepVisibleWithoutDomSelection && !getEditorDomSelectionRange(view)) {
+    return { visible: false, left: 0, top: 0 };
+  }
+  if (doc.textBetween(selection.from, selection.to).length === 0) {
+    return getDomSelectionToolbarState(view);
   }
 
   try {
     const startRect = view.coordsAtPos(selection.from);
-    return {
-      visible: true,
-      left: startRect.left,
-      top: Math.max(8, startRect.top - 10),
-    };
+    return mapViewportRectToToolbarState(view, startRect);
   } catch {
     return getDomSelectionToolbarState(view);
   }
@@ -93,6 +106,8 @@ export function useFloatingToolbarState(
   const unmountTimerRef = useRef<number | null>(null);
   const toolbarStateRef = useRef(toolbarState);
   const selectingPointerIdRef = useRef<number | null>(null);
+  const blockHandleDraggingRef = useRef(false);
+  const suppressToolbarRef = useRef(false);
   const disabledLatest = useLatest(disabled);
   const keepVisibleWithoutDomSelectionLatest = useLatest(keepVisibleWithoutDomSelection);
 
@@ -133,7 +148,12 @@ export function useFloatingToolbarState(
       frameRef.current = null;
       const view = getMountedEditorView(editor);
       if (!view) return;
-      if (disabledLatest.current) {
+      if (
+        disabledLatest.current ||
+        blockHandleDraggingRef.current ||
+        suppressToolbarRef.current ||
+        view.dragging
+      ) {
         hideToolbar();
         return;
       }
@@ -158,6 +178,7 @@ export function useFloatingToolbarState(
   });
 
   const syncToolbarStateIfNeeded = () => {
+    if (blockHandleDraggingRef.current || suppressToolbarRef.current) return;
     if (selectingPointerIdRef.current !== null) return;
     const view = getMountedEditorView(editor);
     if (!view) return;
@@ -183,10 +204,37 @@ export function useFloatingToolbarState(
   }, [disabled, hideToolbar, keepVisibleWithoutDomSelection, syncToolbarState]);
 
   const handlePointerDown = (event: PointerEvent) => {
-    if (event.button !== 0) return;
     const view = getMountedEditorView(editor);
     if (!view || !(event.target instanceof Node) || !view.dom.contains(event.target)) return;
+    if (event.button !== 0) {
+      suppressToolbarRef.current = true;
+      hideToolbar();
+      return;
+    }
+    suppressToolbarRef.current = false;
     selectingPointerIdRef.current = event.pointerId;
+    hideToolbar();
+  };
+
+  const handleContextMenu = (event: MouseEvent) => {
+    const view = getMountedEditorView(editor);
+    if (!view || !(event.target instanceof Node) || !view.dom.contains(event.target)) return;
+    suppressToolbarRef.current = true;
+    hideToolbar();
+  };
+
+  const handleDragStart = (event: DragEvent) => {
+    if (!isSideMenuEventTarget(event.target)) return;
+    blockHandleDraggingRef.current = true;
+    window.requestAnimationFrame(() => {
+      if (!blockHandleDraggingRef.current) return;
+      hideToolbar();
+    });
+  };
+
+  const handleDragEnd = () => {
+    if (!blockHandleDraggingRef.current) return;
+    blockHandleDraggingRef.current = false;
     hideToolbar();
   };
 
@@ -202,16 +250,24 @@ export function useFloatingToolbarState(
     tiptapEditor.on('update', syncToolbarStateIfNeeded);
     document.addEventListener('selectionchange', syncToolbarStateIfNeeded);
     document.addEventListener('pointerdown', handlePointerDown, true);
+    document.addEventListener('contextmenu', handleContextMenu, true);
     document.addEventListener('pointerup', handlePointerEnd, true);
     document.addEventListener('pointercancel', handlePointerEnd, true);
+    document.addEventListener('dragstart', handleDragStart, true);
+    document.addEventListener('dragend', handleDragEnd, true);
+    document.addEventListener('drop', handleDragEnd, true);
     document.addEventListener('keyup', syncToolbarStateIfNeeded, true);
     return () => {
       tiptapEditor.off('selectionUpdate', syncToolbarStateIfNeeded);
       tiptapEditor.off('update', syncToolbarStateIfNeeded);
       document.removeEventListener('selectionchange', syncToolbarStateIfNeeded);
       document.removeEventListener('pointerdown', handlePointerDown, true);
+      document.removeEventListener('contextmenu', handleContextMenu, true);
       document.removeEventListener('pointerup', handlePointerEnd, true);
       document.removeEventListener('pointercancel', handlePointerEnd, true);
+      document.removeEventListener('dragstart', handleDragStart, true);
+      document.removeEventListener('dragend', handleDragEnd, true);
+      document.removeEventListener('drop', handleDragEnd, true);
       document.removeEventListener('keyup', syncToolbarStateIfNeeded, true);
     };
   });

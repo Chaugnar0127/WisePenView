@@ -1,11 +1,10 @@
-import type { AiDiffDisplayMode } from '@/domains/Note';
 import { AI_DIFF_DISPLAY_MODE } from '@/domains/Note';
-import { useState } from 'react';
 import type * as Y from 'yjs';
 
 import { useAiDiffSidecar } from '../engines/aiDiff/useAiDiffSidecar';
 import type { CustomBlockNoteProps } from '../index.type';
 import { notePluginRegistry, type CustomBlockNoteEditor } from '../registry/noteEditorComposition';
+import { useNoteInteractionStore } from './noteInteractionStore';
 import type { NoteEditorDefinition } from './useNoteEditorDefinition';
 
 export function useNoteAiDiff({
@@ -13,7 +12,6 @@ export function useNoteAiDiff({
   definition,
   doc,
   undoManager,
-  aiDiffDisplayMode,
   readOnly,
   blockLocalDocWrites,
   onPresenceChange,
@@ -22,23 +20,24 @@ export function useNoteAiDiff({
   definition: NoteEditorDefinition;
   doc: CustomBlockNoteProps['collaboration']['doc'];
   undoManager: Y.UndoManager;
-  aiDiffDisplayMode: AiDiffDisplayMode;
   readOnly: boolean;
   blockLocalDocWrites: boolean;
   onPresenceChange: CustomBlockNoteProps['onAiDiffPresenceChange'];
 }) {
-  const [exportDisplayModeOverride, setExportDisplayModeOverride] =
-    useState<AiDiffDisplayMode | null>(null);
-  const effectiveDisplayMode = exportDisplayModeOverride ?? aiDiffDisplayMode;
+  const displayMode = useNoteInteractionStore((state) => state.review.displayMode);
+  const dispatch = useNoteInteractionStore((state) => state.dispatch);
   const hasContent = useAiDiffSidecar({
     doc,
     noteFragment: definition.noteFragment,
     editor,
     registry: notePluginRegistry,
-    displayMode: effectiveDisplayMode,
+    displayMode,
     readOnly: readOnly || blockLocalDocWrites,
     undoManager,
-    onPresenceChange,
+    onPresenceChange: (present) => {
+      dispatch({ type: 'REVIEW_CONTENT_CHANGED', hasContent: present });
+      onPresenceChange?.(present);
+    },
   });
 
   return {
@@ -46,7 +45,6 @@ export function useNoteAiDiff({
       hasContent &&
       !readOnly &&
       !blockLocalDocWrites &&
-      aiDiffDisplayMode === AI_DIFF_DISPLAY_MODE.COMPARE,
-    setExportDisplayModeOverride,
+      displayMode === AI_DIFF_DISPLAY_MODE.COMPARE,
   };
 }

@@ -5,7 +5,7 @@ import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import AppModal from '@/components/Overlay/AppModal';
 import type { InlineCommentItem, InlineCommentReactionGroup } from '@/domains/InlineComment';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, toast } from '@heroui/react';
+import { Button, Chip, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Check, RotateCcw, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -85,7 +85,15 @@ function CommentItem({
   const { t, i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
   const { loading: changingReaction, runAsync: changeReaction } = useRequest(
-    async (emojiId?: string) => onReactionChange({ threadId, itemId: item.itemId, emojiId }),
+    async (emojiId: string) => {
+      const selectedGroup = item.reactionGroups.find((group) => group.emojiId === emojiId);
+      await onReactionChange({
+        threadId,
+        itemId: item.itemId,
+        emojiId,
+        selected: selectedGroup?.reactedByCurrentUser ?? false,
+      });
+    },
     {
       manual: true,
       onError: (error) => toast.danger(parseErrorMessage(error)),
@@ -93,8 +101,7 @@ function CommentItem({
   );
 
   const handleEmojiSelect = (emojiId: string) => {
-    const selectedGroup = item.reactionGroups.find((group) => group.emojiId === emojiId);
-    void changeReaction(selectedGroup?.reactedByCurrentUser ? undefined : emojiId);
+    void changeReaction(emojiId);
   };
 
   const formattedTime = formatDateTime(item.createdAt, locale) ?? t('inlineComment.timeUnknown');
@@ -157,33 +164,51 @@ function CommentItem({
         ) : null}
         {item.reactionGroups.length > 0 ? (
           <div className={styles.reactions}>
-            {item.reactionGroups.map((group) => (
-              <button
-                key={group.emojiId}
-                type="button"
-                disabled={changingReaction}
-                className={`${styles.reaction} ${
-                  group.reactedByCurrentUser ? styles.reactionSelected : ''
-                }`}
-                aria-label={t(
-                  group.reactedByCurrentUser
-                    ? 'inlineComment.reactionRemove'
-                    : 'inlineComment.reactionAdd',
-                  {
-                    users: formatReactionUsers(
-                      group,
-                      locale,
-                      t('inlineComment.reactionCount', { count: group.count })
-                    ),
-                    emoji: group.emojiId,
-                  }
-                )}
-                onClick={() => handleEmojiSelect(group.emojiId)}
-              >
-                <span aria-hidden>{group.emojiId}</span>
-                <span>{group.count}</span>
-              </button>
-            ))}
+            {item.reactionGroups.flatMap((group) => {
+              const reactionUsers = formatReactionUsers(
+                group,
+                locale,
+                t('inlineComment.reactionCount', { count: group.count })
+              );
+              const reactionItems =
+                group.users.length > 0
+                  ? group.users.map((user, index) => ({
+                      key: `${group.emojiId}-${user.name}-${index}`,
+                      label: user.name,
+                    }))
+                  : [{ key: group.emojiId, label: String(group.count) }];
+
+              return reactionItems.map((reactionItem) => (
+                <button
+                  key={reactionItem.key}
+                  type="button"
+                  disabled={changingReaction}
+                  className={`${styles.reaction} ${
+                    group.reactedByCurrentUser ? styles.reactionSelected : ''
+                  }`}
+                  aria-label={t(
+                    group.reactedByCurrentUser
+                      ? 'inlineComment.reactionRemove'
+                      : 'inlineComment.reactionAdd',
+                    {
+                      users: reactionUsers,
+                      emoji: group.emojiId,
+                    }
+                  )}
+                  onClick={() => handleEmojiSelect(group.emojiId)}
+                >
+                  <Chip
+                    variant="soft"
+                    className={`${styles.reactionChip} ${
+                      group.reactedByCurrentUser ? styles.reactionChipSelected : ''
+                    }`}
+                  >
+                    <span aria-hidden>{group.emojiId}</span>
+                    <Chip.Label className={styles.reactionUser}>{reactionItem.label}</Chip.Label>
+                  </Chip>
+                </button>
+              ));
+            })}
           </div>
         ) : null}
       </div>
@@ -435,6 +460,7 @@ function InlineComment({
               key={draft.key}
               placeholder={t('inlineComment.addComment')}
               imageUpload={imageUpload}
+              onCancel={onDraftClose}
               onSubmit={onCreate}
             />
           </article>

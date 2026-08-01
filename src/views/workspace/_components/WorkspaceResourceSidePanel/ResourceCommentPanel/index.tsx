@@ -29,11 +29,12 @@ interface OptimisticLikeState {
   liked: boolean;
 }
 
-interface OptimisticScoreState {
-  resourceId: string;
-  baseScore: number;
-  score: number;
-}
+// TODO: rating 功能暂时下线；未来恢复评分提交时再打开乐观评分状态。
+// interface OptimisticScoreState {
+//   resourceId: string;
+//   baseScore: number;
+//   score: number;
+// }
 
 interface PendingDeletion {
   comment: ResourceComment;
@@ -47,7 +48,8 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   const resourceId = resource.resourceId;
   const resourceLikeCount = resource.likeCount ?? 0;
   const [optimisticLike, setOptimisticLike] = useState<OptimisticLikeState>();
-  const [optimisticScore, setOptimisticScore] = useState<OptimisticScoreState>();
+  // TODO: rating 功能暂时下线；未来恢复评分提交时再打开乐观评分状态。
+  // const [optimisticScore, setOptimisticScore] = useState<OptimisticScoreState>();
   const [commentLikeIds, setCommentLikeIds] = useState<ReadonlySet<string>>();
   const [pendingLikeIds, setPendingLikeIds] = useState<ReadonlySet<string>>(new Set());
   const [comments, setComments] = useState<ResourceComment[]>([]);
@@ -83,20 +85,21 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     }
   );
 
-  const { run: submitResourceScore, loading: resourceScorePending } = useRequest(
-    async (score: number) => {
-      await interactService.rateResource({ resourceId, score });
-      return score;
-    },
-    {
-      manual: true,
-      onSuccess: notifyResourceChanged,
-      onError: (error) => {
-        setOptimisticScore(undefined);
-        toast.danger(parseErrorMessage(error));
-      },
-    }
-  );
+  // TODO: rating 功能暂时下线；未来恢复评分提交时再打开评分请求。
+  // const { run: submitResourceScore, loading: resourceScorePending } = useRequest(
+  //   async (score: number) => {
+  //     await interactService.rateResource({ resourceId, score });
+  //     return score;
+  //   },
+  //   {
+  //     manual: true,
+  //     onSuccess: notifyResourceChanged,
+  //     onError: (error) => {
+  //       setOptimisticScore(undefined);
+  //       toast.danger(parseErrorMessage(error));
+  //     },
+  //   }
+  // );
 
   const {
     data: commentPageData,
@@ -179,15 +182,17 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     }
   );
 
-  const interactionScore = interaction?.score ?? 0;
+  // TODO: rating 功能暂时下线；未来恢复评分展示时再读取 interaction.score。
+  // const interactionScore = interaction?.score ?? 0;
   const activeOptimisticLike =
     optimisticLike?.resourceId === resourceId && optimisticLike.baseCount === resourceLikeCount
       ? optimisticLike
       : undefined;
-  const activeOptimisticScore =
-    optimisticScore?.resourceId === resourceId && optimisticScore.baseScore === interactionScore
-      ? optimisticScore
-      : undefined;
+  // TODO: rating 功能暂时下线；未来恢复评分提交时再打开乐观评分读取。
+  // const activeOptimisticScore =
+  //   optimisticScore?.resourceId === resourceId && optimisticScore.baseScore === interactionScore
+  //     ? optimisticScore
+  //     : undefined;
   const commentCount = commentPageData?.total ?? resource.commentCount ?? 0;
   const hasMoreComments = Boolean(commentPageData && commentPage < commentPageData.totalPage);
   const commentSortOptions: Array<{ key: CommentSortBy; label: string }> = [
@@ -206,10 +211,11 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     submitResourceLike(liked);
   };
 
-  const handleScoreChange = (score: number) => {
-    setOptimisticScore({ resourceId, baseScore: interactionScore, score });
-    submitResourceScore(score);
-  };
+  // TODO: rating 功能暂时下线；未来恢复评分提交时再打开打星处理。
+  // const handleScoreChange = (score: number) => {
+  //   setOptimisticScore({ resourceId, baseScore: interactionScore, score });
+  //   submitResourceScore(score);
+  // };
 
   const handleSortChange = (nextSortBy: CommentSortBy) => {
     setSortBy(nextSortBy);
@@ -229,16 +235,16 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
         <ResourceFeedbackSummary
           readCount={resource.readCount}
           favoriteCount={resource.favoriteCount}
-          scoreAvg={resource.scoreAvg}
           liked={activeOptimisticLike?.liked ?? interaction?.liked ?? false}
           likeCount={activeOptimisticLike?.count ?? resourceLikeCount}
-          score={activeOptimisticScore?.score ?? interactionScore}
           likePending={resourceLikePending}
-          ratePending={resourceScorePending}
           onLikeChange={handleResourceLikeChange}
-          onRateChange={handleScoreChange}
           favoriteAction={
-            <ResourceFavoriteAction resourceId={resourceId} onSuccess={onResourceChanged} />
+            <ResourceFavoriteAction
+              resourceId={resourceId}
+              showLabel
+              onSuccess={onResourceChanged}
+            />
           }
         />
 

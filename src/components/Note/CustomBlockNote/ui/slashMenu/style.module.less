@@ -122,8 +122,8 @@
   line-height: var(--line-height-sm);
 }
 
-.menuShell:not([data-keyboard-navigation]) .item:hover,
-.menuShell:not([data-keyboard-navigation]) .item[data-hovered],
+.menuShell[data-mouse-navigation]:not([data-keyboard-navigation]) .item:hover,
+.menuShell[data-mouse-navigation]:not([data-keyboard-navigation]) .item[data-hovered],
 .item[data-menu-hovered] {
   background: var(--accent-soft);
   color: var(--foreground);

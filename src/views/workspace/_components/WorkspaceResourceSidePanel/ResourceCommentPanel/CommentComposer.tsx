@@ -4,7 +4,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { createUuid } from '@/utils/random/createUuid';
 import { Button, TextArea } from '@heroui/react';
 import { useRequest, useUnmount } from 'ahooks';
-import { ImagePlus, Send, X } from 'lucide-react';
+import { ArrowUp, ImagePlus, X } from 'lucide-react';
 import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -156,7 +156,7 @@ function CommentComposer({ placeholder, autoFocus, onCancel, onSubmit }: Comment
             </Button>
           ) : null}
           <AppIconButton
-            icon={<Send size={15} aria-hidden />}
+            icon={<ArrowUp size={15} aria-hidden />}
             label={t('resource:comment.publish')}
             size="sm"
             variant="primary"

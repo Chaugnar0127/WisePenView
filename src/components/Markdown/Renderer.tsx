@@ -425,17 +425,17 @@ function renderHeading(
   const children = renderInlineNodes(node.children, renderContext, key, linkMode);
   switch (node.depth) {
     case 1:
-      return <h1>{children}</h1>;
+      return <h1 key={key}>{children}</h1>;
     case 2:
-      return <h2>{children}</h2>;
+      return <h2 key={key}>{children}</h2>;
     case 3:
-      return <h3>{children}</h3>;
+      return <h3 key={key}>{children}</h3>;
     case 4:
-      return <h4>{children}</h4>;
+      return <h4 key={key}>{children}</h4>;
     case 5:
-      return <h5>{children}</h5>;
+      return <h5 key={key}>{children}</h5>;
     case 6:
-      return <h6>{children}</h6>;
+      return <h6 key={key}>{children}</h6>;
   }
 }
 
@@ -466,8 +466,13 @@ function renderList(
     );
   });
 
-  if (node.ordered) return <ol start={node.start ?? undefined}>{items}</ol>;
-  return <ul>{items}</ul>;
+  if (node.ordered)
+    return (
+      <ol key={keyPrefix} start={node.start ?? undefined}>
+        {items}
+      </ol>
+    );
+  return <ul key={keyPrefix}>{items}</ul>;
 }
 
 function renderTable(
@@ -486,7 +491,7 @@ function renderTable(
   };
 
   return (
-    <div className={styles.tableWrapper}>
+    <div key={keyPrefix} className={styles.tableWrapper}>
       <table>
         {head ? (
           <thead>
@@ -537,17 +542,17 @@ function renderBlockNode(
 ): ReactNode {
   const mathExpression = readMathExpression(node, 'math');
   if (mathExpression != null) {
-    return renderMathFormula(mathExpression, true);
+    return renderMathFormula(mathExpression, true, key);
   }
 
   switch (node.type) {
     case 'paragraph':
-      return <p>{renderInlineNodes(node.children, renderContext, key, linkMode)}</p>;
+      return <p key={key}>{renderInlineNodes(node.children, renderContext, key, linkMode)}</p>;
     case 'heading':
       return renderHeading(node, renderContext, key, linkMode);
     case 'blockquote':
       return (
-        <blockquote>
+        <blockquote key={key}>
           {node.children.map((child, index) =>
             renderBlockNode(child, renderContext, `${key}-${index}`, streaming, linkMode)
           )}
@@ -558,16 +563,21 @@ function renderBlockNode(
     case 'table':
       return renderTable(node, renderContext, key, linkMode);
     case 'thematicBreak':
-      return <hr />;
+      return <hr key={key} />;
     case 'code':
       if (isMermaidLanguage(node.lang ?? undefined)) {
         return (
-          <MermaidBlock code={node.value} language={node.lang ?? undefined} streaming={streaming} />
+          <MermaidBlock
+            key={key}
+            code={node.value}
+            language={node.lang ?? undefined}
+            streaming={streaming}
+          />
         );
       }
-      return <CodeBlock code={node.value} language={node.lang ?? undefined} />;
+      return <CodeBlock key={key} code={node.value} language={node.lang ?? undefined} />;
     case 'html':
-      return <>{node.value}</>;
+      return <Fragment key={key}>{node.value}</Fragment>;
     case 'definition':
     case 'footnoteDefinition':
       return null;

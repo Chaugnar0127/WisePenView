@@ -95,6 +95,97 @@ function folderRowHasChildren(row: FolderTableRow): boolean {
   );
 }
 
+function isFolderContainerRow(row: FolderTableRow): boolean {
+  return row.entryType === 'root' || row.entryType === 'folder';
+}
+
+function collectDescendantSelectableRowIds<T extends FolderTableRow>(
+  row: T,
+  disabledKeys: Set<string>,
+  hiddenKeys: Set<string>
+): string[] {
+  const result: string[] = [];
+  const visit = (children: T[] | undefined) => {
+    children?.forEach((child) => {
+      if (
+        child.entryType !== 'loading' &&
+        !disabledKeys.has(child.id) &&
+        !hiddenKeys.has(child.id)
+      ) {
+        result.push(child.id);
+      }
+      visit(child.children as T[] | undefined);
+    });
+  };
+  visit(row.children as T[] | undefined);
+  return result;
+}
+
+function normalizeTreeSelection<T extends FolderTableRow>(
+  rows: T[],
+  selectedKeys: Set<string>,
+  disabledKeys: Set<string>,
+  hiddenKeys: Set<string>,
+  ancestorSelected = false
+): Set<string> {
+  const nextKeys = new Set(selectedKeys);
+  rows.forEach((row) => {
+    const selectable =
+      row.entryType !== 'loading' && !disabledKeys.has(row.id) && !hiddenKeys.has(row.id);
+    const currentSelected = selectable && selectedKeys.has(row.id);
+    if (selectable && ancestorSelected) {
+      nextKeys.delete(row.id);
+    }
+    const childAncestorSelected =
+      ancestorSelected || (currentSelected && isFolderContainerRow(row));
+    if (row.children?.length) {
+      const normalizedChildren = normalizeTreeSelection(
+        row.children as T[],
+        nextKeys,
+        disabledKeys,
+        hiddenKeys,
+        childAncestorSelected
+      );
+      nextKeys.clear();
+      normalizedChildren.forEach((key) => nextKeys.add(key));
+    }
+  });
+  return nextKeys;
+}
+
+function buildVisualSelectedRowKeySet<T extends FolderTableRow>(
+  visibleRows: Array<FolderTableVisibleRow & T>,
+  selectedKeys: Set<string>,
+  disabledKeys: Set<string>,
+  hiddenKeys: Set<string>
+): Set<string> {
+  const result = new Set<string>();
+  const selectedAncestorDepths: number[] = [];
+
+  visibleRows.forEach((row) => {
+    while (
+      selectedAncestorDepths.length > 0 &&
+      (selectedAncestorDepths[selectedAncestorDepths.length - 1] ?? 0) >= row.depth
+    ) {
+      selectedAncestorDepths.pop();
+    }
+
+    const selectable =
+      row.entryType !== 'loading' && !disabledKeys.has(row.id) && !hiddenKeys.has(row.id);
+    const inheritedSelected = selectedAncestorDepths.length > 0;
+    const explicitlySelected = selectedKeys.has(row.id);
+
+    if (selectable && (explicitlySelected || inheritedSelected)) {
+      result.add(row.id);
+    }
+    if (selectable && explicitlySelected && isFolderContainerRow(row)) {
+      selectedAncestorDepths.push(row.depth);
+    }
+  });
+
+  return result;
+}
+
 function resolveMaxBodyHeight(value: number | string | undefined): string | undefined {
   if (value === undefined) {
     return undefined;
@@ -392,8 +483,14 @@ function FolderTable<T extends FolderTableRow>({
       (row) => row.entryType !== 'loading' && !disabledKeys.has(row.id) && !hiddenKeys.has(row.id)
     )
     .map((row) => row.id);
+  const visualSelectedEditRowKeySet = buildVisualSelectedRowKeySet(
+    visibleRows,
+    selectedEditRowKeySet,
+    disabledKeys,
+    hiddenKeys
+  );
   const selectedVisibleCount = selectableVisibleRowIds.filter((id) =>
-    selectedRowKeySet.has(id)
+    visualSelectedEditRowKeySet.has(id)
   ).length;
   const allVisibleSelected =
     selectableVisibleRowIds.length > 0 && selectedVisibleCount === selectableVisibleRowIds.length;
@@ -420,27 +517,38 @@ function FolderTable<T extends FolderTableRow>({
       return;
     }
 
-    const nextKeys = new Set(selectedEditRowKeySet);
+    let nextKeys = new Set(selectedEditRowKeySet);
     const anchorId = selectionAnchorRef.current;
     const anchorIndex = anchorId ? selectableVisibleRowIds.indexOf(anchorId) : -1;
     const rowIndex = selectableVisibleRowIds.indexOf(rowId);
+    const applyRowSelection = (id: string) => {
+      const row = visibleRowMap.get(id);
+      if (selected) {
+        nextKeys.add(id);
+        if (row && isFolderContainerRow(row)) {
+          collectDescendantSelectableRowIds(row, disabledKeys, hiddenKeys).forEach((descendantId) =>
+            nextKeys.delete(descendantId)
+          );
+        }
+        return;
+      }
+      nextKeys.delete(id);
+      if (row && isFolderContainerRow(row)) {
+        collectDescendantSelectableRowIds(row, disabledKeys, hiddenKeys).forEach((descendantId) =>
+          nextKeys.delete(descendantId)
+        );
+      }
+    };
 
     if (shiftKey && anchorIndex >= 0 && rowIndex >= 0) {
       const start = Math.min(anchorIndex, rowIndex);
       const end = Math.max(anchorIndex, rowIndex);
-      selectableVisibleRowIds.slice(start, end + 1).forEach((id) => {
-        if (selected) {
-          nextKeys.add(id);
-        } else {
-          nextKeys.delete(id);
-        }
-      });
-    } else if (selected) {
-      nextKeys.add(rowId);
+      selectableVisibleRowIds.slice(start, end + 1).forEach(applyRowSelection);
     } else {
-      nextKeys.delete(rowId);
+      applyRowSelection(rowId);
     }
 
+    nextKeys = normalizeTreeSelection(sortedItems, nextKeys, disabledKeys, hiddenKeys);
     selectionAnchorRef.current = rowId;
     checkboxSelection.onSelectionChange(nextKeys);
   };
@@ -449,7 +557,7 @@ function FolderTable<T extends FolderTableRow>({
     if (!checkboxSelection) {
       return;
     }
-    const nextKeys = new Set(selectedEditRowKeySet);
+    let nextKeys = new Set(selectedEditRowKeySet);
     selectableVisibleRowIds.forEach((id) => {
       if (allVisibleSelected) {
         nextKeys.delete(id);
@@ -457,6 +565,7 @@ function FolderTable<T extends FolderTableRow>({
         nextKeys.add(id);
       }
     });
+    nextKeys = normalizeTreeSelection(sortedItems, nextKeys, disabledKeys, hiddenKeys);
     selectionAnchorRef.current = undefined;
     checkboxSelection.onSelectionChange(nextKeys);
   };
@@ -549,7 +658,7 @@ function FolderTable<T extends FolderTableRow>({
       return;
     }
     if (isEditMode) {
-      handleSelectionChange(rowId, !selectedEditRowKeySet.has(rowId), shiftKey);
+      handleSelectionChange(rowId, !visualSelectedEditRowKeySet.has(rowId), shiftKey);
       return;
     }
     handleRowPress(row as T);
@@ -647,7 +756,11 @@ function FolderTable<T extends FolderTableRow>({
     );
 
   const resolveHeaderAlign = (column: FolderTableColumn<T>) =>
-    column.isActionColumn ? 'center' : resolveColumnAlign(column.align);
+    column.isNameColumn
+      ? 'start'
+      : column.isActionColumn
+        ? 'center'
+        : resolveColumnAlign(column.align);
 
   const resolveBodyCellClass = (column: FolderTableColumn<T>) =>
     joinClassNames(
@@ -736,14 +849,16 @@ function FolderTable<T extends FolderTableRow>({
                   isRowHeader={column.isRowHeader ?? column.isNameColumn}
                   className={resolveColumnHeaderClass(column)}
                 >
-                  <TableCellAlign align={resolveHeaderAlign(column)}>
-                    {renderSortableColumnLabel(
-                      column.label,
-                      column.id,
-                      sortDescriptor,
-                      column.allowsSorting
-                    )}
-                  </TableCellAlign>
+                  {({ sortDirection }) => (
+                    <TableCellAlign align={resolveHeaderAlign(column)}>
+                      {renderSortableColumnLabel(
+                        column.label,
+                        sortDirection,
+                        column.allowsSorting,
+                        resolveHeaderAlign(column)
+                      )}
+                    </TableCellAlign>
+                  )}
                 </Table.Column>
               ))}
             </Table.Header>
@@ -761,8 +876,10 @@ function FolderTable<T extends FolderTableRow>({
                   {visibleRows.map((row) => {
                     const rowId = row.id;
                     const isLoadMoreRow = row.entryType === 'loading';
-                    const isSelected = selectedRowKeySet.has(rowId);
-                    const isCheckboxSelected = selectedEditRowKeySet.has(rowId);
+                    const isSelected = isEditMode
+                      ? visualSelectedEditRowKeySet.has(rowId)
+                      : selectedRowKeySet.has(rowId);
+                    const isCheckboxSelected = visualSelectedEditRowKeySet.has(rowId);
 
                     return (
                       <FolderTableBodyRow

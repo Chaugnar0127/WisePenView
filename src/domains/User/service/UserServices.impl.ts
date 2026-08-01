@@ -1,5 +1,6 @@
 import type { User, UserAccountProfile } from '@/domains/User';
 import { registerServiceCacheCleaner } from '@/domains/_shared/cacheRegistry';
+import { createTtlCache } from '@/domains/_shared/ttlCache';
 import { UserApi } from '../apis/UserApi';
 import { UserServicesMap } from '../mapper/UserServices.map';
 import type {
@@ -22,6 +23,9 @@ type CachedUserSafe = Pick<
   User,
   'id' | 'username' | 'nickname' | 'avatar' | 'identityType' | 'realName'
 >;
+
+const USER_INFO_CACHE_KEY = 'current-user';
+const USER_INFO_CACHE_TTL_MS = 5 * 60_000;
 
 /** 全量拉取，为 Account 等页服务，不缓存 */
 const getFullUserInfo = async (): Promise<UserAccountProfile> => {
@@ -99,11 +103,11 @@ const submitFeedback = async (params: SubmitFeedbackRequest): Promise<void> => {
 };
 
 export const createUserServices = (): IUserService => {
-  /** 闭包级缓存，仅存非敏感展示字段，退出登录时通过 clearUserCache 清理 */
-  let cachedUserInfo: CachedUserSafe | null = null;
+  /** 闭包级缓存，仅存非敏感展示字段，退出登录时清理，读缓存自动过期。 */
+  const userInfoCache = createTtlCache<string, CachedUserSafe>(USER_INFO_CACHE_TTL_MS);
 
   const clearUserCache = (): void => {
-    cachedUserInfo = null;
+    userInfoCache.clear();
   };
 
   registerServiceCacheCleaner(clearUserCache);
@@ -111,12 +115,14 @@ export const createUserServices = (): IUserService => {
   /** 展示用精简信息，带缓存；无缓存或 forceRefresh 时走 getFullUserInfo 再落缓存 */
   const getUserInfo = async (options?: { forceRefresh?: boolean }): Promise<User> => {
     const forceRefresh = options?.forceRefresh ?? false;
+    const cachedUserInfo = userInfoCache.get(USER_INFO_CACHE_KEY);
     if (!forceRefresh && cachedUserInfo) {
       return cachedUserInfo;
     }
     const data = await getFullUserInfo();
-    cachedUserInfo = UserServicesMap.mapUserSafeFromAccountProfile(data);
-    return cachedUserInfo;
+    const userInfo = UserServicesMap.mapUserSafeFromAccountProfile(data);
+    userInfoCache.set(USER_INFO_CACHE_KEY, userInfo);
+    return userInfo;
   };
 
   /** 更新用户信息：按实际传入字段分别 PUT，避免「只改头像」时带空 body 误伤资料表 */
@@ -135,7 +141,7 @@ export const createUserServices = (): IUserService => {
     }
     await Promise.all(tasks);
 
-    cachedUserInfo = null;
+    userInfoCache.delete(USER_INFO_CACHE_KEY);
   };
 
   return {

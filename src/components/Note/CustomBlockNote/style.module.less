@@ -46,7 +46,7 @@
     --bn-shadow-light: var(--surface-shadow);
     --bn-border: 1px solid var(--border-light);
     --bn-border-radius: var(--radius-md);
-    --bn-ui-base-z-index: 100;
+    --bn-ui-base-z-index: var(--app-z-index-editor-menu, 180);
     --prosemirror-highlight: var(--foreground);
     --prosemirror-highlight-bg: var(--surface);
 
@@ -309,7 +309,7 @@
   :global(
     .bn-editor .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
   ) {
-    z-index: 1200;
+    z-index: var(--app-z-index-editor-toolbar, 220);
   }
 
   :global(
@@ -317,7 +317,7 @@
       .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
       > div.wise-code-block-toolbarWrapper
   ) {
-    z-index: 1201;
+    z-index: calc(var(--app-z-index-editor-toolbar, 220) + 1);
   }
 
   :global(.bn-editor .bn-block-content[data-content-type='codeBlock'] .wise-code-block-toolbar) {
@@ -434,7 +434,7 @@
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    z-index: 1202;
+    z-index: calc(var(--app-z-index-editor-toolbar, 220) + 2);
     box-sizing: border-box;
     width: 220px;
     padding: 6px;
@@ -767,7 +767,7 @@
   .bn-drag-preview
     .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
 ) {
-  z-index: 1200;
+  z-index: var(--app-z-index-editor-toolbar, 220);
 }
 
 :global(
@@ -775,7 +775,7 @@
     .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
     > div.wise-code-block-toolbarWrapper
 ) {
-  z-index: 1201;
+  z-index: calc(var(--app-z-index-editor-toolbar, 220) + 1);
 }
 
 :global(
@@ -896,7 +896,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: 1202;
+  z-index: calc(var(--app-z-index-editor-toolbar, 220) + 2);
   box-sizing: border-box;
   width: 220px;
   padding: 6px;

@@ -51,7 +51,7 @@
 /* 行内公式编辑：脱离文档流，浮在正文之上 */
 .inlineEditPopover {
   position: fixed;
-  z-index: 10050;
+  z-index: var(--app-z-index-editor-floating, 450);
   padding: 0;
   border: 1px solid var(--border-light);
   border-radius: var(--app-radius-popover, min(32px, var(--radius-3xl)));

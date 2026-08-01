@@ -1,4 +1,5 @@
 import { registerServiceCacheCleaner } from '@/domains/_shared/cacheRegistry';
+import { createTtlCache } from '@/domains/_shared/ttlCache';
 import type { IResourceService } from '@/domains/Resource';
 import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
 import type { TagListByTagResponse, TagTreeNode } from '@/domains/Tag';
@@ -15,6 +16,7 @@ import type {
 } from './index.type';
 
 const CACHE_KEY_DEFAULT = '__default__';
+const TAG_TREE_CACHE_TTL_MS = 15_000;
 /** 系统保留前缀：以 `.` 开头的 tag（如 `.Trash`）对 Tag 视图不可见 */
 const HIDDEN_TAG_PREFIX = '.';
 const TRASH_FOLDER_NAME = '.Trash';
@@ -50,16 +52,16 @@ interface TagServicesDeps {
 export const createTagServices = (deps: TagServicesDeps): ITagService => {
   const { resourceService } = deps;
 
-  /** 按 groupId 存储已拉取的原始标签树；写操作后通过 clearTagTreeCache 清除 */
-  const rawTagTreeCache = new Map<string, TagTreeNode[]>();
-  /** 扁平索引：cacheKey → (tagId → TagTreeNode)，与 rawTagTreeCache 同步维护 */
-  const rawTagFlatCache = new Map<string, Map<string, TagTreeNode>>();
-  /** 按 groupId 存储已拉取的过滤后标签树；写操作后通过 clearTagTreeCache 清除 */
-  const tagTreeCache = new Map<string, TagTreeNode[]>();
-  /** 扁平索引：cacheKey → (tagId → TagTreeNode)，与 tagTreeCache 同步维护 */
-  const tagFlatCache = new Map<string, Map<string, TagTreeNode>>();
-  /** 系统回收站属于原始标签树元数据，不进入 UI 过滤后的 tagTreeCache。 */
-  const trashTagIdCache = new Map<string, string>();
+  /** 按 groupId 存储已拉取的原始标签树；写操作后清除，读缓存自动过期。 */
+  const rawTagTreeCache = createTtlCache<string, TagTreeNode[]>(TAG_TREE_CACHE_TTL_MS);
+  /** 扁平索引：cacheKey → (tagId → TagTreeNode)，与 rawTagTreeCache 同步维护并自动过期。 */
+  const rawTagFlatCache = createTtlCache<string, Map<string, TagTreeNode>>(TAG_TREE_CACHE_TTL_MS);
+  /** 按 groupId 存储已拉取的过滤后标签树；写操作后清除，读缓存自动过期。 */
+  const tagTreeCache = createTtlCache<string, TagTreeNode[]>(TAG_TREE_CACHE_TTL_MS);
+  /** 扁平索引：cacheKey → (tagId → TagTreeNode)，与 tagTreeCache 同步维护并自动过期。 */
+  const tagFlatCache = createTtlCache<string, Map<string, TagTreeNode>>(TAG_TREE_CACHE_TTL_MS);
+  /** 系统回收站属于原始标签树元数据，不进入 UI 过滤后的 tagTreeCache，并跟随原始树过期。 */
+  const trashTagIdCache = createTtlCache<string, string>(TAG_TREE_CACHE_TTL_MS);
 
   const syncTrashTagId = (groupId: string | undefined, roots: TagTreeNode[]): void => {
     const cacheKey = normalizeTagGroupId(groupId) ?? CACHE_KEY_DEFAULT;
@@ -107,6 +109,8 @@ export const createTagServices = (deps: TagServicesDeps): ITagService => {
     if (cached && !options?.refresh) {
       return cached;
     }
+    tagTreeCache.delete(cacheKey);
+    tagFlatCache.delete(cacheKey);
     const params = TagServicesMap.mapGetTagTreeRequest(normalizedGroupId);
     const data = await TagApi.getTagTree(params);
     const roots = TagServicesMap.mapTagTreeFromApi(data);
@@ -121,15 +125,18 @@ export const createTagServices = (deps: TagServicesDeps): ITagService => {
     return rawTagFlatCache.get(cacheKey)?.get(tagId);
   };
 
-  const getTagTree = async (groupId?: string): Promise<TagTreeNode[]> => {
+  const getTagTree = async (
+    groupId?: string,
+    options?: { refresh?: boolean }
+  ): Promise<TagTreeNode[]> => {
     const normalizedGroupId = normalizeTagGroupId(groupId);
     const cacheKey = normalizedGroupId ?? CACHE_KEY_DEFAULT;
     const cached = tagTreeCache.get(cacheKey);
-    if (cached) {
+    if (cached && !options?.refresh) {
       return cached;
     }
 
-    const rawRoots = await getRawTagTree(normalizedGroupId);
+    const rawRoots = await getRawTagTree(normalizedGroupId, options);
     // 剥离路径型（folder）与系统保留前缀（`.` 开头）
     const nonFolderRoots: TagTreeNode[] = rawRoots.filter(
       (item) => !(item.tagName && item.tagName.startsWith('/'))

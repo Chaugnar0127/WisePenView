@@ -120,6 +120,7 @@ function UploadZone({
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
+        onClick={openFilePicker}
         onKeyDown={handleKeyDown}
       >
         <span className={styles.uploadIcon} aria-hidden="true">
@@ -127,11 +128,6 @@ function UploadZone({
         </span>
         <span className={styles.uploadText}>{label ?? t('uploadZone.label')}</span>
         <span className={styles.uploadHint}>{description ?? t('uploadZone.single')}</span>
-        <Button variant="outline" size="sm" isDisabled={disabled} onPress={openFilePicker}>
-          {multiple || selectedFiles.length === 0
-            ? t('uploadZone.select')
-            : t('uploadZone.reselect')}
-        </Button>
       </div>
 
       {selectedFiles.length > 0 && (

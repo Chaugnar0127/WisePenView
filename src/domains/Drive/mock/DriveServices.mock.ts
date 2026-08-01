@@ -419,15 +419,6 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
     return node.tagId;
   };
 
-  const getSharedFolderTagId = async (): Promise<string> => {
-    await delay(NETWORK_DELAY_MS);
-    const existing = nodes.get(SHARED_FOLDER_NODE_ID);
-    if (existing?.type === 'folder') {
-      return existing.tagId;
-    }
-    throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND);
-  };
-
   const getTrashFolderNodeId = async (): Promise<string> => {
     await delay(NETWORK_DELAY_MS);
     if (!md.nodes[TRASH_FOLDER_NODE_ID]) {
@@ -448,7 +439,6 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
     removeNode,
     renameNode,
     createFolder,
-    getSharedFolderTagId,
   };
 }
 

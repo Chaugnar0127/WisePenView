@@ -22,8 +22,6 @@ export interface IDriveService {
   removeNode(params: RemoveNodeParams): Promise<void>;
   renameNode(params: RenameNodeParams): Promise<void>;
   createFolder(params: CreateFolderParams): Promise<string>;
-  /** 获取后端初始化的个人云盘系统共享目录；缺失时抛出客户端错误。 */
-  getSharedFolderTagId(): Promise<string>;
 }
 
 export interface GetRootNodeParams {
@@ -36,6 +34,8 @@ export interface ListNodeChildrenParams {
   groupId?: string;
   /** 仅限制返回的资源/link 数量，文件夹始终完整返回。 */
   resourceLimit?: number;
+  /** 强制刷新底层目录树缓存，适用于用户点击展开等实时性入口。 */
+  refresh?: boolean;
 }
 
 export interface GetNodePathParams {

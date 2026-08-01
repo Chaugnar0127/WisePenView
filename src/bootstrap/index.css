@@ -229,6 +229,26 @@
   .popover__dialog {
     padding: 0;
   }
+
+  /* 所有 HeroUI 轻浮层共享层级，Modal 仍然拥有更高的阻断优先级。 */
+  .popover,
+  .dropdown__popover,
+  .select__popover,
+  .combo-box__popover,
+  .autocomplete__popover,
+  .date-picker__popover,
+  .date-range-picker__popover,
+  .color-picker__popover {
+    z-index: var(--app-z-index-popover);
+  }
+
+  .tooltip {
+    z-index: var(--app-z-index-tooltip);
+  }
+
+  .modal__backdrop {
+    z-index: var(--app-z-index-modal);
+  }
 }
 
 :root {

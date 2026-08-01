@@ -23,7 +23,6 @@ import type { CreateDriveServiceOptions, IDriveService, MoveToFolderParams } fro
 const CACHE_KEY_DEFAULT = '__default__';
 const DEFAULT_PAGE_SIZE = 50;
 const TRASH_TAG_NAME = '.Trash';
-const SHARED_TAG_NAME = '.Shared';
 const HIDDEN_TAG_PREFIX = '.';
 
 interface DriveServicesDeps {
@@ -33,21 +32,9 @@ interface DriveServicesDeps {
 
 const isVisibleFolderTag = (node: TagTreeNode): boolean => {
   const name = (node.tagName ?? '').trim();
-  if (name === TRASH_TAG_NAME || name === SHARED_TAG_NAME) return false;
+  if (name === TRASH_TAG_NAME) return false;
+  if (name === DRIVE_SHARED_TAG_NAME) return true;
   return !name.startsWith(HIDDEN_TAG_PREFIX);
-};
-
-const findSharedFolderTag = (roots: TagTreeNode[]): TagTreeNode | undefined => {
-  const queue: TagTreeNode[] = [...roots];
-  while (queue.length > 0) {
-    const node = queue.shift();
-    if (!node) continue;
-    if (node.tagName === DRIVE_SHARED_TAG_NAME) return node;
-    if (Array.isArray(node.children) && node.children.length > 0) {
-      queue.push(...node.children);
-    }
-  }
-  return undefined;
 };
 
 const resolveGroupKey = (groupId?: string): string => {
@@ -146,30 +133,24 @@ export const createDriveServices = (
     return roots;
   };
 
-  const getPersonalRootTag = async (groupId?: string): Promise<TagTreeNode> => {
+  const getPersonalRootTag = async (
+    groupId?: string,
+    options?: { refresh?: boolean }
+  ): Promise<TagTreeNode> => {
     const groupKey = resolveGroupKey(groupId);
     const cachedRootTagId = personalRootTagIdByGroup.get(groupKey);
-    if (cachedRootTagId) {
+    if (cachedRootTagId && !options?.refresh) {
       const existing = tagService.getRawTagById(cachedRootTagId, resolveGroupIdFromKey(groupKey));
       if (existing) return existing;
     }
 
-    const roots = await readRawRoots(groupId);
+    const roots = await readRawRoots(groupId, options);
     const rootTag = roots.find((item) => item.tagName === '/');
     if (!rootTag) {
       throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_PERSONAL_ROOT_NOT_FOUND);
     }
     personalRootTagIdByGroup.set(groupKey, rootTag.tagId);
     return rootTag;
-  };
-
-  const getSharedFolderTagId: IDriveService['getSharedFolderTagId'] = async () => {
-    const roots = await readRawRoots();
-    const existingSharedTag = findSharedFolderTag(roots);
-    if (!existingSharedTag) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND);
-    }
-    return existingSharedTag.tagId;
   };
 
   const getRootNode: IDriveService['getRootNode'] = async (params) => {
@@ -236,7 +217,11 @@ export const createDriveServices = (
     return { parentTagId: undefined, isVirtualRoot: false };
   };
 
-  const loadFolderNodes = async (nodeId: string, groupId?: string): Promise<FolderNode[]> => {
+  const loadFolderNodes = async (
+    nodeId: string,
+    groupId?: string,
+    options?: { refresh?: boolean }
+  ): Promise<FolderNode[]> => {
     const decoded = decodeNodeId(nodeId);
     if (decoded.kind === 'root') {
       const normalizedGroupId =
@@ -244,12 +229,12 @@ export const createDriveServices = (
       const rootNodeId = encodeRootNodeId(normalizedGroupId);
       const scope = buildDriveNodeScope(normalizedGroupId);
       if (normalizedGroupId) {
-        const roots = await readRawRoots(normalizedGroupId);
+        const roots = await readRawRoots(normalizedGroupId, options);
         return orderDriveFolderNodes(
           roots.filter(isVisibleFolderTag).map((tag) => mapTagToFolderNode(tag, rootNodeId, scope))
         );
       }
-      const personalRoot = await getPersonalRootTag();
+      const personalRoot = await getPersonalRootTag(undefined, options);
       const children = personalRoot.children ?? [];
       return orderDriveFolderNodes(
         children.filter(isVisibleFolderTag).map((tag) => mapTagToFolderNode(tag, rootNodeId, scope))
@@ -259,7 +244,7 @@ export const createDriveServices = (
     if (decoded.kind !== 'folder') return [];
     const normalizedGroupId = resolveEffectiveGroupId(nodeId, groupId);
     const scope = buildDriveNodeScope(normalizedGroupId);
-    await readRawRoots(normalizedGroupId);
+    await readRawRoots(normalizedGroupId, options);
     const tag = tagService.getRawTagById(decoded.tagId, normalizedGroupId);
     const children = tag?.children ?? [];
     return orderDriveFolderNodes(
@@ -337,10 +322,11 @@ export const createDriveServices = (
     nodeId,
     groupId,
     resourceLimit,
+    refresh,
   }) => {
     const effectiveGroupId = resolveEffectiveGroupId(nodeId, groupId);
     const groupKey = resolveGroupKey(effectiveGroupId);
-    const folderNodes = await loadFolderNodes(nodeId, effectiveGroupId);
+    const folderNodes = await loadFolderNodes(nodeId, effectiveGroupId, { refresh });
     const resourceNodes = await fetchResourceNodes(nodeId, effectiveGroupId, resourceLimit);
     const dedup = new Map<string, DriveNode>();
     [...folderNodes, ...resourceNodes].forEach((node) => dedup.set(node.id, node));
@@ -950,6 +936,5 @@ export const createDriveServices = (
     removeNode,
     renameNode,
     createFolder,
-    getSharedFolderTagId,
   };
 };

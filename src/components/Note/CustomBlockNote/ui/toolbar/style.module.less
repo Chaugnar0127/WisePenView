@@ -1,6 +1,6 @@
 .toolbarPopover {
   position: absolute;
-  z-index: calc(var(--bn-ui-base-z-index, 0) + var(--note-editor-toolbar-layer, 120));
+  z-index: var(--app-z-index-editor-toolbar, 220);
   transform: translate(-15%, -100%);
   opacity: 0;
   pointer-events: none;
@@ -13,6 +13,10 @@
   &[data-visible='false'] {
     animation: toolbarFadeOut 120ms ease-in both;
   }
+}
+
+.floatingLayer {
+  z-index: var(--app-z-index-editor-toolbar, 220);
 }
 
 :global(.bodyBlockNoteView) {

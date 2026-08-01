@@ -109,7 +109,10 @@ function NoteEmojiPickerPopover() {
           },
         ],
       }}
-      elementProps={{ className: NOTE_EMOJI_PICKER_POPOVER_CLASS, style: { zIndex: 70 } }}
+      elementProps={{
+        className: NOTE_EMOJI_PICKER_POPOVER_CLASS,
+        style: { zIndex: 'var(--app-z-index-editor-floating)' },
+      }}
     >
       <EmojiPickerContent
         onSelect={(emoji) => {

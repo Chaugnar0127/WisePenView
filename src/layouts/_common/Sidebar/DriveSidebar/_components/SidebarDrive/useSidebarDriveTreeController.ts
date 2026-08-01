@@ -172,6 +172,7 @@ export function useSidebarDriveTreeController({
       const children = await driveService.listNodeChildren({
         nodeId: node.id,
         groupId: getDriveScopeGroupId(node.scope),
+        refresh: true,
       });
       const childNodeMap = new Map<string, DriveNode>();
       const childData = buildTreeData(children, childNodeMap);
@@ -192,11 +193,14 @@ export function useSidebarDriveTreeController({
     setSelectedKeys([key]);
     onOpenResource(node);
   };
-  const handleExpand = (nextKeys: React.Key[]) => {
+  const handleExpand = (nextKeys: React.Key[], info: { node: DataNode; expanded: boolean }) => {
     setExpandedKeys(nextKeys);
     useSidebarDriveExpansionStore
       .getState()
       .setExpandedNodeIds(expansionScopeKey, nextKeys.map(String));
+    if (info.expanded && info.node.children !== undefined) {
+      void handleLoadData(info.node);
+    }
   };
 
   return {

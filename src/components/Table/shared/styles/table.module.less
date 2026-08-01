@@ -135,6 +135,86 @@
   }
 }
 
+.tableHeaderBlock() {
+  :global(.table__header) {
+    border-bottom: 0;
+    background: transparent;
+  }
+
+  :global(.table__column) {
+    position: relative;
+    box-sizing: border-box;
+    height: @table-header-row-height;
+    min-height: @table-header-row-height;
+    max-height: @table-header-row-height;
+    padding-block: 0;
+    padding-inline: @header-cell-padding-inline;
+    border-bottom: 0;
+    background: var(--surface-secondary);
+    color: var(--muted);
+    font-family: @table-font-family;
+    font-size: @table-font-size-header;
+    font-weight: @table-font-weight-medium;
+    letter-spacing: normal;
+    line-height: @table-line-height-header;
+    text-transform: none;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  :global(th.table__column:first-child),
+  :global([role='row'] > [role='presentation']:first-of-type > .table__column) {
+    border-start-start-radius: @table-inner-radius;
+    border-end-start-radius: @table-inner-radius;
+  }
+
+  :global(th.table__column:last-child),
+  :global([role='row'] > [role='presentation']:last-of-type > .table__column) {
+    border-start-end-radius: @table-inner-radius;
+    border-end-end-radius: @table-inner-radius;
+  }
+
+  :global(.table__column[data-allows-sorting='true']) {
+    cursor: var(--cursor-interactive);
+  }
+
+  @media (hover: hover) {
+    :global(.table__column[data-allows-sorting='true']:hover),
+    :global(.table__column[data-allows-sorting='true'][data-hovered='true']) {
+      color: var(--foreground);
+    }
+  }
+
+  :global(.table__sortable-column-header) {
+    display: inline-flex;
+    align-items: center;
+    gap: @table-gap-tight;
+    min-width: 0;
+    color: inherit;
+  }
+
+  :global(.table__sortable-column-header[data-align='start']) {
+    justify-content: flex-start;
+  }
+
+  :global(.table__sortable-column-header[data-align='center']),
+  :global(.table__sortable-column-header:not([data-align])) {
+    justify-content: center;
+  }
+
+  :global(.table__sortable-column-header[data-align='end']) {
+    justify-content: flex-end;
+  }
+
+  :global(.table__sortable-column-indicator) {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    color: inherit;
+    transition: transform 100ms ease-out;
+  }
+}
+
 .tableShellTypography() {
   font-family: @table-font-family;
   font-size: @table-font-size-ui;

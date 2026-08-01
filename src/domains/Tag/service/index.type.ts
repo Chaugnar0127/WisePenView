@@ -17,8 +17,8 @@ export interface ITagService {
   getRawTagTree(groupId?: string, options?: GetTagTreeOptions): Promise<TagTreeNode[]>;
   /** 从原始标签索引中按 tagId 查找节点（需先调用 getRawTagTree） */
   getRawTagById(tagId: string, groupId?: string): TagTreeNode | undefined;
-  /** 获取标签树（带缓存），返回多个根节点 */
-  getTagTree(groupId?: string): Promise<TagTreeNode[]>;
+  /** 获取标签树（带自动过期缓存），返回多个根节点 */
+  getTagTree(groupId?: string, options?: GetTagTreeOptions): Promise<TagTreeNode[]>;
   /** 从已缓存的扁平索引中按 tagId 查找标签节点（需先调用 getTagTree） */
   getTagById(tagId: string, groupId?: string): TagTreeNode | undefined;
   /** 获取原始标签树中解析出的系统回收站 tagId。 */

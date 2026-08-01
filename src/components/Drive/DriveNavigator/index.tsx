@@ -142,6 +142,7 @@ function DriveNavigator({
   const singleScope = resolveDriveScope(scope, groupId, rootId);
   const finalRootId = singleScope.rootId;
   const finalGroupId = singleScope.groupId;
+  const finalScopeKey = buildScopeKey(singleScope.scope);
   const nodeMapRef = useRef<Map<string, DriveNode>>(new Map());
   const rootLabelRef = useRef<Map<string, string>>(new Map());
   const [treeData, setTreeData] = useState<DataNode[]>([]);
@@ -291,6 +292,7 @@ function DriveNavigator({
       refreshDeps: [
         scopeMode,
         excludedGroupIdKey,
+        finalScopeKey,
         finalRootId,
         finalGroupId,
         refreshTrigger,
@@ -298,14 +300,6 @@ function DriveNavigator({
         renderableTypeKey,
         selectableTypeKey,
         disabledNodeIdKey,
-        buildChildrenData,
-        groupService,
-        excludedGroupIdSet,
-        isNodeSelectable,
-        isNodeDisabled,
-        loadChildrenForNode,
-        loadRootNode,
-        t,
       ],
       onSuccess: (data) => {
         setTreeData(data);

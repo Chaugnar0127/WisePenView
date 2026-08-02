@@ -68,6 +68,7 @@ const enUSChat = {
       trigger: 'Select an Agent',
       currentDraft: 'Current draft',
       defaultAgent: 'Default Agent',
+      loadingAria: 'Loading agents',
     },
     skillMenu: {
       title: 'Skills',
@@ -79,6 +80,7 @@ const enUSChat = {
       toolsTitle: 'Tools',
       selectTools: 'Select tools',
       providedBy: ' · Provided by {{name}}',
+      loadingAria: 'Loading skills and tools',
     },
     otherSkillPicker: {
       title: 'Select other Skills',
@@ -120,6 +122,7 @@ const enUSChat = {
       title: "Hi, I'm W, your AI assistant",
       subtitle: 'What would you like to do today?',
     },
+    conversationLoading: 'Loading conversation...',
     scrollToBottom: 'Scroll to bottom',
     scrollToTop: 'Scroll to top',
     historyLoading: 'Loading earlier messages...',

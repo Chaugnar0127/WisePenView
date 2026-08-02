@@ -10,6 +10,7 @@ import {
   MAIN_MIN_WIDTH,
   MAIN_SCROLL_MIN_WIDTH,
   NOTE_EDITOR_MIN_WIDTH,
+  NOTE_WITH_SIDE_PANEL_MIN_WIDTH,
   resolveLayoutDensity,
   WORKSPACE_CHAT_PANEL_MAX_WIDTH,
 } from '@/constants/layoutScale';
@@ -19,7 +20,6 @@ import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
 import {
   clampSidebarWidth,
   SIDEBAR_COLLAPSED_WIDTH,
-  SIDEBAR_MAX_WIDTH,
   SIDEBAR_MIN_WIDTH,
 } from '@/layouts/_common/Sidebar/sidebarLayoutConfig';
 import {
@@ -27,9 +27,12 @@ import {
   SystemResizablePanel,
   SystemResizablePanelGroup,
 } from '@/layouts/_common/SystemResizable';
-import { useCompactChatCollapse } from '@/layouts/_common/useCompactChatCollapse';
 import { useCompactSidebarCollapse } from '@/layouts/_common/useCompactSidebarCollapse';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
+import {
+  SIDEBAR_COLLAPSE_DURATION_MS,
+  useSidebarCollapseMotion,
+} from '@/layouts/_common/useSidebarCollapseMotion';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 // Zen Mode 暂不上线，保留进入逻辑便于后续恢复。
 // import { useEnterZenMode } from '@/layouts/ZenMode/useEnterZenMode';
@@ -43,7 +46,7 @@ import {
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
 import clsx from 'clsx';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -60,17 +63,6 @@ import { useWorkspaceResourceBreadcrumb } from './useWorkspaceResourceBreadcrumb
 import styles from './WorkspaceLayout.module.less';
 
 const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
-
-const WORKSPACE_MAIN_WITH_CHAT_MIN_WIDTH = NOTE_EDITOR_MIN_WIDTH;
-
-const closeOpenResourceSidePanels = (): void => {
-  const { modeByResourceId, setMode } = useWorkspaceResourceSidePanelStore.getState();
-  for (const [resourceId, mode] of Object.entries(modeByResourceId)) {
-    if (mode !== 'closed') {
-      setMode(resourceId, 'closed');
-    }
-  }
-};
 
 function WorkspaceLayout() {
   const { t } = useTranslation('workspace');
@@ -105,8 +97,45 @@ function WorkspaceLayout() {
   const safeChatPanelCollapsed = !shouldRenderChatPanel || chatPanelCollapsed;
   const chatPanelOpen = !safeChatPanelCollapsed;
   const normalizedChatPanelWidth = clampWorkspaceChatPanelWidth(chatPanelWidth);
-  const sidebarPanelSize = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : leftSidebarWidth;
-  const rightDockPanelSize = chatPanelOpen ? normalizedChatPanelWidth : 0;
+  const {
+    panelSize: sidebarPanelSize,
+    minSize: sidebarMinSize,
+    maxSize: sidebarMaxSize,
+    showSidebarContent,
+  } = useSidebarCollapseMotion({
+    collapsed: sidebarCollapsed,
+    expandedWidth: leftSidebarWidth,
+    collapsedWidth: SIDEBAR_COLLAPSED_WIDTH,
+  });
+  const {
+    panelSize: rightDockPanelSize,
+    maxSize: rightDockMaxSize,
+    showSidebarContent: showChatPanelContent,
+    isAnimating: isChatPanelAnimating,
+  } = useSidebarCollapseMotion({
+    collapsed: !chatPanelOpen,
+    expandedWidth: normalizedChatPanelWidth,
+    collapsedWidth: 0,
+    maxSize: WORKSPACE_CHAT_PANEL_MAX_WIDTH,
+  });
+  /** 收起瞬间冻结内容宽度，避免小于最小宽时内部排版被压扁 */
+  const [chatOpenSnapshot, setChatOpenSnapshot] = useState(chatPanelOpen);
+  const [frozenChatSlideWidthPx, setFrozenChatSlideWidthPx] = useState(normalizedChatPanelWidth);
+  const isChatClosing = chatOpenSnapshot && !chatPanelOpen;
+  if (chatOpenSnapshot !== chatPanelOpen) {
+    setChatOpenSnapshot(chatPanelOpen);
+    if (!chatPanelOpen) {
+      setFrozenChatSlideWidthPx(normalizedChatPanelWidth);
+    }
+  }
+  const chatSlideWidthPx = chatPanelOpen
+    ? normalizedChatPanelWidth
+    : isChatClosing
+      ? normalizedChatPanelWidth
+      : frozenChatSlideWidthPx;
+  /** 展开动画期间不抬 min-width；收起动画期间保持约束 */
+  const applyChatOpenLayoutConstraints =
+    (chatPanelOpen && !isChatPanelAnimating) || (!chatPanelOpen && isChatPanelAnimating);
   const location = useLocation();
   const resourceRouteMatch = useMatch('/app/workspace/:resourceType/:resourceId');
   const resourceListRouteMatch = useMatch('/app/workspace/:resourceType');
@@ -137,30 +166,39 @@ function WorkspaceLayout() {
   })();
   const resourceBreadcrumb = useWorkspaceResourceBreadcrumb(routeContext.resourceId);
   const workspaceChatStateProvider = layoutConfig.chatStateProvider ?? routeChatStateProvider;
+  const resourceSidePanelOpen = useWorkspaceResourceSidePanelStore((state) => {
+    const resourceId = routeContext.resourceId;
+    if (!resourceId) return false;
+    return (state.modeByResourceId[resourceId] ?? 'closed') !== 'closed';
+  });
+  const workspaceMainMinWidth = applyChatOpenLayoutConstraints
+    ? resourceSidePanelOpen
+      ? NOTE_WITH_SIDE_PANEL_MIN_WIDTH
+      : NOTE_EDITOR_MIN_WIDTH
+    : MAIN_MIN_WIDTH;
 
   useResizablePanelSize({
     panelRef: leftSidebarPanelRef,
     size: sidebarPanelSize,
+    animate: true,
+    durationMs: SIDEBAR_COLLAPSE_DURATION_MS,
   });
 
   useResizablePanelSize({
     panelRef: rightDockPanelRef,
     size: rightDockPanelSize,
+    animate: true,
+    durationMs: SIDEBAR_COLLAPSE_DURATION_MS,
   });
 
   /**
    * @wisepen-manual-effect
-   * 执行时机：会话或聊天草稿决定面板是否存在时，同步聊天面板折叠 store。
-   * 不可替代原因：会话、草稿和折叠状态分属独立 Zustand store，且窄屏判断依赖浏览器宽度。
-   * cleanup：没有订阅或延迟任务，无需清理。
+   * 执行时机：会话或聊天草稿消失时收起面板；出现时可展示的 Chat 时展开。
+   * 不可替代原因：会话/草稿与折叠状态分属独立 store。
+   * cleanup：无。
    */
   useEffect(() => {
     if (!shouldRenderChatPanel) {
-      setChatPanelCollapsed(true);
-      return;
-    }
-    // 窄屏默认收起，由密度 hook / 用户按钮决定是否展开，避免一进来就遮盖主区
-    if (resolveLayoutDensity(window.innerWidth) === LAYOUT_DENSITY.COMPACT) {
       setChatPanelCollapsed(true);
       return;
     }
@@ -195,37 +233,19 @@ function WorkspaceLayout() {
     onAutoCollapse: persistLeftSidebarWidthFromPanel,
   });
 
-  const { markChatUserOverride } = useCompactChatCollapse({
-    density,
-    shouldRenderChatPanel,
-    chatPanelCollapsed,
-    setChatPanelCollapsed,
-  });
-
   /**
    * @wisepen-manual-effect
-   * 执行时机：资源页向工作区 Chat 发布上下文后，展开面板并处理窄屏冲突。
-   * 不可替代原因：资源上下文、聊天面板和资源侧栏是多个独立外部 store。
-   * cleanup：没有订阅或延迟任务；上下文由消费方显式清除。
+   * 执行时机：资源页向工作区 Chat 发布上下文后，展开面板。
+   * 不可替代原因：资源上下文与聊天面板分属独立 store。
+   * cleanup：无。
    */
   useEffect(() => {
     if (!workspaceChatContext) return;
-    markChatUserOverride();
-    if (density === LAYOUT_DENSITY.COMPACT) {
-      closeOpenResourceSidePanels();
-    }
     if (!hasSessionId) {
       setChatPanelDraftOpen(true);
     }
     setChatPanelCollapsed(false);
-  }, [
-    density,
-    hasSessionId,
-    markChatUserOverride,
-    setChatPanelCollapsed,
-    setChatPanelDraftOpen,
-    workspaceChatContext,
-  ]);
+  }, [hasSessionId, setChatPanelCollapsed, setChatPanelDraftOpen, workspaceChatContext]);
 
   const handleSidebarToggle = () => {
     markSidebarUserOverride();
@@ -239,11 +259,6 @@ function WorkspaceLayout() {
 
   const handleChatPanelToggle = () => {
     if (safeChatPanelCollapsed) {
-      markChatUserOverride();
-      if (density === LAYOUT_DENSITY.COMPACT) {
-        // 窄屏下唤出 Chat 时先关掉资源评论/批注栏，避免三栏叠压遮盖
-        closeOpenResourceSidePanels();
-      }
       if (!hasSessionId) {
         setChatPanelDraftOpen(true);
       }
@@ -258,10 +273,6 @@ function WorkspaceLayout() {
   };
 
   const handleNewChat = () => {
-    markChatUserOverride();
-    if (density === LAYOUT_DENSITY.COMPACT) {
-      closeOpenResourceSidePanels();
-    }
     clearCurrentSession();
     clearNewChatSessionStore();
     setChatPanelDraftOpen(true);
@@ -383,15 +394,16 @@ function WorkspaceLayout() {
         id="workspace-left-sidebar"
         panelRef={leftSidebarPanelRef}
         defaultSize={sidebarPanelSize}
-        minSize={sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MIN_WIDTH}
-        maxSize={sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MAX_WIDTH}
+        /* min=0 允许收起/展开插值；展开态下限由 clampSidebarWidth 在拖拽落定后保证 */
+        minSize={sidebarMinSize}
+        maxSize={sidebarMaxSize}
         groupResizeBehavior="preserve-pixel-size"
         className={styles.leftSider}
         aria-label={t('shell.appSidebar')}
         aria-hidden={sidebarCollapsed ? true : undefined}
         onResize={handleLeftSidebarResize}
       >
-        {sidebarCollapsed ? null : (
+        {showSidebarContent ? (
           <AppSidebar
             canGoBack={appNavigation.canGoBack}
             canGoForward={appNavigation.canGoForward}
@@ -399,7 +411,7 @@ function WorkspaceLayout() {
             onGoForward={appNavigation.goForward}
             onToggle={handleSidebarToggle}
           />
-        )}
+        ) : null}
       </SystemResizablePanel>
 
       <SystemResizableHandle
@@ -417,14 +429,17 @@ function WorkspaceLayout() {
           orientation="horizontal"
           className={clsx(
             styles.workspaceInnerGroup,
-            chatPanelOpen && styles.workspaceInnerGroupChatOpen
+            applyChatOpenLayoutConstraints &&
+              (resourceSidePanelOpen
+                ? styles.workspaceInnerGroupChatAndSideOpen
+                : styles.workspaceInnerGroupChatOpen)
           )}
           resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
           onLayoutChanged={handleWorkspaceContentLayoutChanged}
         >
           <SystemResizablePanel
             id="workspace-main"
-            minSize={chatPanelOpen ? WORKSPACE_MAIN_WITH_CHAT_MIN_WIDTH : MAIN_MIN_WIDTH}
+            minSize={workspaceMainMinWidth}
             className={styles.middleLayout}
           >
             <main className={`${styles.middleContent} ${styles.workspaceContent}`}>
@@ -441,33 +456,48 @@ function WorkspaceLayout() {
           </SystemResizablePanel>
 
           <SystemResizableHandle
-            className={clsx(styles.resizeHandle, !chatPanelOpen && styles.resizeHandleCollapsed)}
-            disabled={!chatPanelOpen}
+            className={clsx(
+              styles.resizeHandle,
+              !applyChatOpenLayoutConstraints && styles.resizeHandleCollapsed
+            )}
+            disabled={!applyChatOpenLayoutConstraints}
           />
 
           <SystemResizablePanel
             id="workspace-right-dock"
             panelRef={rightDockPanelRef}
             defaultSize={rightDockPanelSize}
-            minSize={chatPanelOpen ? CHAT_PANEL_MIN_WIDTH : 0}
-            maxSize={chatPanelOpen ? WORKSPACE_CHAT_PANEL_MAX_WIDTH : 0}
+            /* 动效期间 min=0 才能从 0 插值展开；静止展开后再锁 Chat 最小宽 */
+            minSize={chatPanelOpen && !isChatPanelAnimating ? CHAT_PANEL_MIN_WIDTH : 0}
+            maxSize={rightDockMaxSize}
             groupResizeBehavior="preserve-pixel-size"
             className={styles.rightSider}
             aria-label={t('shell.chatPanel')}
             aria-hidden={!chatPanelOpen ? true : undefined}
             onResize={handleRightDockResize}
           >
-            {chatPanelOpen ? (
-              <ChatPanel
-                showCollapseButton={false}
-                onNewChat={handleNewChat}
-                resourceChat={{
-                  provider: workspaceChatStateProvider,
-                  context: workspaceChatContext,
-                  clearContext: clearWorkspaceChatContext,
-                }}
-                agentDebug={layoutConfig.chatAgentDebug}
-              />
+            {showChatPanelContent ? (
+              <div className={styles.chatPanelSlideHost}>
+                <div
+                  className={clsx(styles.chatPanelSlideFrame, styles.chatPanelSlideFrameAnchored)}
+                  style={
+                    {
+                      '--chat-panel-slide-width': `${chatSlideWidthPx}px`,
+                    } as CSSProperties
+                  }
+                >
+                  <ChatPanel
+                    showCollapseButton={false}
+                    onNewChat={handleNewChat}
+                    resourceChat={{
+                      provider: workspaceChatStateProvider,
+                      context: workspaceChatContext,
+                      clearContext: clearWorkspaceChatContext,
+                    }}
+                    agentDebug={layoutConfig.chatAgentDebug}
+                  />
+                </div>
+              </div>
             ) : null}
           </SystemResizablePanel>
         </SystemResizablePanelGroup>

@@ -199,13 +199,14 @@
   .select__popover,
   .combo-box__popover,
   .autocomplete__popover {
-    --app-radius-popover-item: min(
-      18px,
-      max(0px, calc(var(--app-radius-popover) - var(--app-popover-item-inset)))
+    /* 内层选中项圆角随外壳与全局 --radius 伸缩，不做固定 px 上限 */
+    --app-radius-popover-item: max(
+      0px,
+      calc(var(--app-radius-popover) - var(--app-popover-item-inset))
     );
-    --app-radius-popover-control: min(
-      16px,
-      max(0px, calc(var(--app-radius-popover) - var(--app-popover-content-padding)))
+    --app-radius-popover-control: max(
+      0px,
+      calc(var(--app-radius-popover) - var(--app-popover-content-padding))
     );
     border: 1px solid var(--border-light, var(--border));
     border-radius: var(--app-radius-popover, min(32px, var(--radius-3xl)));

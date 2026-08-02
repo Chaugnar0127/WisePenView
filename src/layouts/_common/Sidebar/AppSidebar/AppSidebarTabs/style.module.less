@@ -7,6 +7,15 @@
 }
 
 .tabs {
+  --sidebar-motion-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --sidebar-motion-duration: 0.6s;
+  --sidebar-motion-fade: 0.48s;
+  --sidebar-tab-size: 32px;
+  --sidebar-tab-pad-x: 7px;
+  --sidebar-tab-pad-x-selected: 10px;
+  --sidebar-tab-label-gap: 6px;
+  --sidebar-tab-toolbar-nudge: 7px;
+
   display: flex;
   height: 100%;
   min-height: 0;
@@ -16,20 +25,24 @@
 
 .tabListContainer {
   flex: 0 0 auto;
-  padding: 4px 8px;
+  padding: var(--space-xs) var(--space-sm) var(--space-2xs)
+    calc(var(--sidebar-content-inset, var(--space-lg)) - var(--sidebar-tab-toolbar-nudge));
   overflow: visible;
 }
 
 .tabToolbar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 2px;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  width: 100%;
 }
 
 .tabList {
   display: flex;
   width: auto;
+  flex: 0 1 auto;
+  min-width: 0;
   align-items: center;
   gap: 2px;
   padding: 0;
@@ -37,38 +50,75 @@
   background: transparent;
 }
 
+.tabSearch {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
 .tab {
   position: relative;
   display: inline-flex;
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
-  min-height: 32px;
+  width: auto;
+  min-width: var(--sidebar-tab-size);
+  height: var(--sidebar-tab-size);
+  min-height: var(--sidebar-tab-size);
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 0 var(--sidebar-tab-pad-x);
   border: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   color: var(--muted);
   background: transparent;
   cursor: pointer;
+  overflow: hidden;
+  transform: translateZ(0);
   transition:
-    color 0.2s ease,
-    background-color 0.2s ease;
+    color var(--sidebar-motion-fade) var(--sidebar-motion-ease),
+    background-color var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+    padding var(--sidebar-motion-duration) var(--sidebar-motion-ease);
 
-  &:hover {
+  &:hover:not([data-selected='true']) {
     color: var(--foreground);
     background: var(--surface-tertiary);
   }
 
   &[data-selected='true'] {
-    color: var(--accent);
+    color: var(--foreground);
     background: var(--accent-soft);
+    font-weight: var(--font-weight-semibold);
+    padding-inline: var(--sidebar-tab-pad-x-selected);
+
+    &:hover {
+      background: var(--accent-soft-hover);
+    }
+
+    .tabLabel {
+      grid-template-columns: 1fr;
+      opacity: 1;
+      margin-inline-start: var(--sidebar-tab-label-gap);
+      transition-delay: 0s, 0.06s, 0s;
+    }
+
+    .tabLabelInner {
+      transform: translate3d(0, 0, 0);
+    }
   }
 
   &:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0.01ms;
+
+    .tabLabel,
+    .tabLabelInner {
+      transition-duration: 0.01ms;
+      transition-delay: 0s;
+    }
   }
 }
 
@@ -80,23 +130,96 @@
   justify-content: center;
 }
 
-.tabPanel {
+.tabContent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+}
+
+.tabContent :global(svg) {
+  flex-shrink: 0;
+}
+
+.tabLabel {
+  display: grid;
+  grid-template-columns: 0fr;
+  min-width: 0;
+  margin-inline-start: 0;
+  opacity: 0;
+  transition:
+    grid-template-columns var(--sidebar-motion-duration) var(--sidebar-motion-ease),
+    opacity var(--sidebar-motion-fade) var(--sidebar-motion-ease),
+    margin-inline-start var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+  transition-delay: 0.06s, 0s, 0.06s;
+}
+
+.tabLabelInner {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  transform: translate3d(-6px, 0, 0);
+  transition: transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+}
+
+.panelViewport {
   flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.panelTrack {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  min-height: 0;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  transition: transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0.01ms;
+  }
+}
+
+.panelTrackDrive {
+  transform: translate3d(-50%, 0, 0);
+}
+
+.tabPanel {
+  box-sizing: border-box;
+  flex: 0 0 50%;
+  width: 50%;
+  height: 100%;
+  min-width: 0;
   min-height: 0;
   margin: 0;
   padding: 0;
   outline: none;
 
-  &[data-inert='true'] {
-    display: none;
+  &[data-inert='true'],
+  &[hidden] {
+    display: flex !important;
+    flex-direction: column;
+    pointer-events: none;
+    user-select: none;
   }
 }
 
 .sessionPanel {
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  min-height: var(--layout-sidebar-session-list-min-height, 120px);
-  padding: 8px;
+  min-height: 0;
+  padding: var(--space-xs);
   .appSubtleScrollbar();
 }
 
@@ -127,10 +250,10 @@
 
 .sessionItem {
   width: 100%;
-  min-height: 40px;
+  min-height: var(--sidebar-tab-size, 32px);
   display: flex;
   align-items: center;
-  border-radius: var(--app-radius-interactive, var(--radius-2xl));
+  border-radius: var(--radius-md);
   padding: 0 calc(var(--sidebar-content-inset, var(--space-lg)) - 8px);
   color: var(--muted);
   cursor: pointer;

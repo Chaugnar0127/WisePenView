@@ -13,7 +13,7 @@ const zhCNShell = {
   },
   sidebar: {
     contentAria: '侧边栏内容',
-    sessions: '会话历史',
+    sessions: '对话',
     drive: '云盘',
   },
   commandPalette: {

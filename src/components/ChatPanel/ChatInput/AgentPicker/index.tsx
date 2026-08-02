@@ -8,7 +8,7 @@ import {
   resolveChatInputSelectedAgent,
 } from '@/domains/Chat';
 import { parseErrorMessage } from '@/utils/error';
-import { ListBox, ListBoxItem, toast } from '@heroui/react';
+import { ListBox, ListBoxItem, Skeleton, toast } from '@heroui/react';
 import { useLatest, useRequest } from 'ahooks';
 import { Bot, Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -20,6 +20,8 @@ interface AgentPickerProps {
   injectedAgents?: ChatAgentOption[];
   preferredAgent?: ChatAgentOption | null;
 }
+
+const AGENT_SKELETON_ROWS = [0, 1] as const;
 
 function mergeAgentOptions(
   agents: ChatAgentOption[],
@@ -33,6 +35,27 @@ function mergeAgentOptions(
   });
 }
 
+function AgentMenuSkeleton({ ariaLabel }: { ariaLabel: string }) {
+  return (
+    <div
+      className={`${styles.popoverPanel} ${styles.popoverPanelAgent} ${styles.popoverPanelAgentSkeleton}`}
+      aria-busy="true"
+      aria-label={ariaLabel}
+    >
+      <div className={styles.popoverSkeletonList}>
+        {AGENT_SKELETON_ROWS.map((row) => (
+          <div key={row} className={styles.popoverSkeletonRow}>
+            <Skeleton className={styles.popoverSkeletonIcon} />
+            <Skeleton
+              className={`${styles.popoverSkeletonLabel} ${row === 0 ? styles.popoverSkeletonLabelWide : ''}`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   const { t } = useTranslation('chat');
   const chatService = useChatService();
@@ -40,7 +63,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   const selectedAgent = useChatInputStore((state) => state.selectedAgent);
   const { setSelectedAgent } = store.getState();
   const [open, setOpen] = useState(false);
-  const { data: agents = [] } = useRequest(() => chatService.getChatInputAgents(), {
+  const { data: agents, loading } = useRequest(() => chatService.getChatInputAgents(), {
     onSuccess: (nextAgents) => {
       const currentAgent = store.getState().selectedAgent;
       const nextAgent = resolveChatInputSelectedAgent(
@@ -53,14 +76,16 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
     },
     onError: (error) => toast.danger(parseErrorMessage(error)),
   });
+  const showSkeleton = agents == null && loading;
   const displayAgents = buildChatInputAgentOptions(
-    mergeAgentOptions(agents, injectedAgents),
+    mergeAgentOptions(agents ?? [], injectedAgents),
     selectedAgent
   );
   const injectedAgentKey = JSON.stringify(injectedAgents ?? []);
   const preferredAgentKey = JSON.stringify(preferredAgent ?? null);
   const injectedAgentsLatest = useLatest(injectedAgents);
   const preferredAgentLatest = useLatest(preferredAgent);
+  const skeleton = <AgentMenuSkeleton ariaLabel={t('input.agentPicker.loadingAria')} />;
 
   const syncPreferredAgent = () => {
     const injectedAgentIds = new Set(
@@ -115,43 +140,47 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
         overlayTrigger={<AppPopover.Trigger />}
       />
       <AppPopover.Content placement="top" title={t('input.agentPicker.title')}>
-        <AppPopover.DeferredContent fallback={<div className={styles.deferredPopoverPanel} />}>
-          {() => (
-            <div className={styles.popoverPanel}>
-              <ListBox
-                aria-label={t('input.agentPicker.trigger')}
-                selectionMode="single"
-                selectedKeys={[selectedAgent.agentId]}
-                className={styles.listBox}
-              >
-                {displayAgents.map((agent) => (
-                  <ListBoxItem
-                    key={agent.agentId}
-                    id={agent.agentId}
-                    textValue={getAgentLabel(agent)}
-                    onPress={() => handleSelect(agent)}
-                  >
-                    <span className={styles.agentItem}>
-                      <span className={styles.agentMain}>
-                        <Bot size={14} />
-                        <span>{getAgentLabel(agent)}</span>
-                      </span>
-                      {agent.source === 'CURRENT_DRAFT' ? (
-                        <span className={styles.agentMeta}>
-                          {t('input.agentPicker.currentDraft')}
+        <AppPopover.DeferredContent fallback={skeleton}>
+          {() =>
+            showSkeleton ? (
+              skeleton
+            ) : (
+              <div className={`${styles.popoverPanel} ${styles.popoverPanelAgent}`}>
+                <ListBox
+                  aria-label={t('input.agentPicker.trigger')}
+                  selectionMode="single"
+                  selectedKeys={[selectedAgent.agentId]}
+                  className={styles.listBox}
+                >
+                  {displayAgents.map((agent) => (
+                    <ListBoxItem
+                      key={agent.agentId}
+                      id={agent.agentId}
+                      textValue={getAgentLabel(agent)}
+                      onPress={() => handleSelect(agent)}
+                    >
+                      <span className={styles.agentItem}>
+                        <span className={styles.agentMain}>
+                          <Bot size={14} />
+                          <span>{getAgentLabel(agent)}</span>
                         </span>
-                      ) : agent.agentType === 'GROUP' && agent.groupName ? (
-                        <span className={styles.agentMeta}>{agent.groupName}</span>
-                      ) : null}
-                      {selectedAgent.agentId === agent.agentId ? (
-                        <Check size={14} className={styles.checkIcon} />
-                      ) : null}
-                    </span>
-                  </ListBoxItem>
-                ))}
-              </ListBox>
-            </div>
-          )}
+                        {agent.source === 'CURRENT_DRAFT' ? (
+                          <span className={styles.agentMeta}>
+                            {t('input.agentPicker.currentDraft')}
+                          </span>
+                        ) : agent.agentType === 'GROUP' && agent.groupName ? (
+                          <span className={styles.agentMeta}>{agent.groupName}</span>
+                        ) : null}
+                        {selectedAgent.agentId === agent.agentId ? (
+                          <Check size={14} className={styles.checkIcon} />
+                        ) : null}
+                      </span>
+                    </ListBoxItem>
+                  ))}
+                </ListBox>
+              </div>
+            )
+          }
         </AppPopover.DeferredContent>
       </AppPopover.Content>
     </AppPopover>

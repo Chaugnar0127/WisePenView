@@ -460,13 +460,14 @@
     --app-popover-item-inset: calc(var(--app-popover-content-padding) + var(--space-2xs));
     --app-radius-sidebar-item: var(--radius-2xl);
     --app-radius-popover: min(32px, var(--radius-3xl));
-    --app-radius-popover-item: min(
-      18px,
-      max(0px, calc(var(--app-radius-popover) - var(--app-popover-item-inset)))
+    /* 内层选中项圆角随外壳与全局 --radius 伸缩，不做固定 px 上限 */
+    --app-radius-popover-item: max(
+      0px,
+      calc(var(--app-radius-popover) - var(--app-popover-item-inset))
     );
-    --app-radius-popover-control: min(
-      16px,
-      max(0px, calc(var(--app-radius-popover) - var(--app-popover-content-padding)))
+    --app-radius-popover-control: max(
+      0px,
+      calc(var(--app-radius-popover) - var(--app-popover-content-padding))
     );
     --app-radius-interactive: var(--app-radius-sidebar-item);
     --app-radius-scrollbar: var(--scrollbar-radius);

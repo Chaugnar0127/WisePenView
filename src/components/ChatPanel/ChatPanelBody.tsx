@@ -20,6 +20,7 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
     handleSelectSession,
     handleSend,
     loadMoreHistoryMessages,
+    loadingInitialHistory,
     loadingMoreHistory,
     messages,
     resourceChatContext,
@@ -39,6 +40,7 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
             messages={messages}
             sessionId={currentSessionId}
             canLoadMoreHistory={canLoadMoreHistory}
+            loadingInitialHistory={loadingInitialHistory}
             loadingMoreHistory={loadingMoreHistory}
             onLoadMoreHistory={loadMoreHistoryMessages}
             status={status}

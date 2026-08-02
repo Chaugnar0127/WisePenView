@@ -59,6 +59,11 @@
   width: max(100%, var(--layout-workspace-inner-chat-min-width, 1064px));
 }
 
+.workspaceInnerGroupChatAndSideOpen {
+  min-width: max(100%, var(--layout-workspace-inner-chat-side-min-width, 1368px));
+  width: max(100%, var(--layout-workspace-inner-chat-side-min-width, 1368px));
+}
+
 .middleContent {
   flex: 1;
   min-width: 0;
@@ -78,6 +83,31 @@
   background: var(--surface);
   position: relative;
   overflow: hidden;
+}
+
+/* 外层变宽/变窄腾布局，内层保持目标宽度贴右，裁切后看起来像平移进出 */
+.chatPanelSlideHost {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chatPanelSlideFrame {
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.chatPanelSlideFrameAnchored {
+  flex: 0 0 auto;
+  width: var(--chat-panel-slide-width);
+  min-width: var(--chat-panel-slide-width);
+  max-width: var(--chat-panel-slide-width);
 }
 
 .resizeHandle {

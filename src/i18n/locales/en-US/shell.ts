@@ -13,7 +13,7 @@ const enUSShell = {
   },
   sidebar: {
     contentAria: 'Sidebar content',
-    sessions: 'Chat history',
+    sessions: 'Chat',
     drive: 'Drive',
   },
   commandPalette: {

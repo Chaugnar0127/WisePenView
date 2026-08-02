@@ -40,11 +40,13 @@ export function useChatHistory({
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingInitial, setLoadingInitial] = useState(false);
 
   const clearConversation = () => {
     requestVersionRef.current += 1;
     loadingMoreRef.current = false;
     setLoadingMore(false);
+    setLoadingInitial(false);
     setPage(1);
     setTotalPage(1);
     setMessages([]);
@@ -55,6 +57,7 @@ export function useChatHistory({
     requestVersionRef.current = requestVersion;
     loadingMoreRef.current = false;
     setLoadingMore(false);
+    setLoadingInitial(true);
     setPage(1);
     setTotalPage(1);
     setMessages([]);
@@ -78,6 +81,13 @@ export function useChatHistory({
         return;
       }
       throw error;
+    } finally {
+      if (
+        requestVersion === requestVersionRef.current &&
+        targetSessionId === sessionIdRef.current
+      ) {
+        setLoadingInitial(false);
+      }
     }
   };
 
@@ -115,6 +125,7 @@ export function useChatHistory({
   return {
     canLoadMore: Boolean(sessionId) && page < totalPage,
     loadingMore,
+    loadingInitial,
     replaceHistory,
     prependHistory,
     clearConversation,

@@ -1,5 +1,5 @@
 import { useCourseRouteContext } from '@/views/app/course/context';
-import { BookOpen, ClipboardCheck, FolderOpen, Home, Settings2 } from 'lucide-react';
+import { BookOpen, ClipboardCheck, FolderOpen, Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import styles from './CourseLayout.module.less';
@@ -51,14 +51,6 @@ function CourseNavigationSidebar() {
           );
         })}
       </nav>
-      {course.capabilities.canEditCourse ? (
-        <div className={styles.sidebarFooter}>
-          <button type="button" className={styles.editButton} disabled>
-            <Settings2 size={17} aria-hidden />
-            {t('nav.edit')}
-          </button>
-        </div>
-      ) : null}
     </aside>
   );
 }

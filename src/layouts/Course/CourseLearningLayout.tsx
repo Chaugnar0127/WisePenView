@@ -1,17 +1,34 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import ChatPanel from '@/components/ChatPanel';
 import { useChatPanelStore } from '@/components/ChatPanel/_store/useChatPanelStore';
+import {
+  createResourceChatStateProvider,
+  type ResourceChatContext,
+} from '@/components/ChatPanel/ResourceChatProtocol';
 import { Spin } from '@/components/Feedback';
 import { Input } from '@/components/Input';
 import SegmentedTabs from '@/components/SegmentedTabs';
 import Tree, { type DataNode } from '@/components/Tree';
+import {
+  CHAT_PANEL_MIN_WIDTH,
+  clampWorkspaceChatPanelWidth,
+  WORKSPACE_CHAT_PANEL_MAX_WIDTH,
+} from '@/constants/layoutScale';
 import { useCourseService } from '@/domains';
 import type { CourseOutlineNode, CourseOutlineResourceNode } from '@/domains/Course';
+import {
+  SystemResizableHandle,
+  SystemResizablePanel,
+  SystemResizablePanelGroup,
+} from '@/layouts/_common/SystemResizable';
+import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import WorkspaceHeader from '@/layouts/Workspace/_common/WorkspaceHeader';
 import { parseErrorMessage } from '@/utils/error';
 import { useCourseRouteContext } from '@/views/app/course/context';
-import { Button, ProgressBar, toast } from '@heroui/react';
+import type { ResourceHostLayoutConfig } from '@/views/workspace/ResourceHostContext';
+import { Button } from '@heroui/react';
 import { useMount, useRequest } from 'ahooks';
+import clsx from 'clsx';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -26,11 +43,20 @@ import {
   Search,
   Video,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import type {
+  Layout,
+  LayoutChangedMeta,
+  PanelImperativeHandle,
+  PanelSize,
+} from 'react-resizable-panels';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import styles from './CourseLearningLayout.module.less';
 import CourseResourceHost from './CourseResourceHost';
+
+const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
+const COURSE_LEARNING_MAIN_MIN_WIDTH = 700;
 
 function findOutlineNode(
   nodes: CourseOutlineNode[],
@@ -126,47 +152,64 @@ function toTreeData(nodes: CourseOutlineNode[]): DataNode[] {
 
 function CourseLearningLayout() {
   const { t } = useTranslation('course');
-  const { course, refreshCourse } = useCourseRouteContext();
+  const { course } = useCourseRouteContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
   const { outlineNodeId = '' } = useParams<{ outlineNodeId: string }>();
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const [resourceLayoutConfig, setResourceLayoutConfig] = useState<ResourceHostLayoutConfig>({});
+  const [resourceChatContext, setResourceChatContext] = useState<ResourceChatContext>();
+  const rightDockPanelRef = useRef<PanelImperativeHandle | null>(null);
+  const pendingRightDockWidthRef = useRef<number | null>(null);
   const chatPanelCollapsed = useChatPanelStore((state) => state.chatPanelCollapsed);
+  const chatPanelWidth = useChatPanelStore((state) => state.chatPanelWidth);
   const setChatPanelCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
+  const setChatPanelWidth = useChatPanelStore((state) => state.setChatPanelWidth);
   const basePath = `/app/course/${course.courseId}`;
   const { data, loading, error, refresh } = useRequest(() =>
     courseService.getCourseOutline(course.courseId)
-  );
-  const { loading: updatingRead, run: updateRead } = useRequest(
-    (nodeId: string, read: boolean) =>
-      courseService.setResourceRead({
-        courseId: course.courseId,
-        outlineNodeId: nodeId,
-        read,
-      }),
-    {
-      manual: true,
-      onSuccess: () => {
-        refresh();
-        refreshCourse();
-      },
-      onError: (requestError: unknown) => toast.danger(parseErrorMessage(requestError)),
-    }
   );
 
   const outlineNodes = data?.nodes ?? [];
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
   const visibleNodes = filterOutline(outlineNodes, normalizedQuery);
-  const selectedNode = findOutlineNode(outlineNodes, outlineNodeId) ?? outlineNodes[0];
+  const selectedNode =
+    findOutlineNode(outlineNodes, outlineNodeId) ??
+    findResourceNodeByResourceId(outlineNodes, searchParams.get('resourceId') ?? '') ??
+    outlineNodes[0];
   const selectedResources = selectedNode
     ? selectedNode.nodeType === 'RESOURCE'
       ? [selectedNode]
       : collectResources(selectedNode.children)
     : [];
   const chatOpen = !chatPanelCollapsed;
-  const courseProgress = course.totalResourceCount
-    ? Math.round((course.readResourceCount / course.totalResourceCount) * 100)
-    : 0;
+  const normalizedChatPanelWidth = clampWorkspaceChatPanelWidth(chatPanelWidth);
+  const rightDockPanelSize = chatOpen ? normalizedChatPanelWidth : 0;
+  const registeredHeader =
+    resourceLayoutConfig.header === false ? undefined : resourceLayoutConfig.header;
+  const registeredResourceHeader =
+    selectedNode?.nodeType === 'RESOURCE' &&
+    registeredHeader?.resource?.resourceId === selectedNode.resourceId
+      ? registeredHeader
+      : undefined;
+  const fallbackChatStateProvider =
+    selectedNode?.nodeType === 'RESOURCE'
+      ? createResourceChatStateProvider({
+          resourceId: selectedNode.resourceId,
+          resourceType: selectedNode.resourceType,
+          viewer: selectedNode.viewer,
+        })
+      : undefined;
+  const chatStateProvider =
+    registeredResourceHeader?.resource && resourceLayoutConfig.chatStateProvider
+      ? resourceLayoutConfig.chatStateProvider
+      : fallbackChatStateProvider;
+
+  useResizablePanelSize({
+    panelRef: rightDockPanelRef,
+    size: rightDockPanelSize,
+  });
 
   useMount(() => {
     setChatPanelCollapsed(true);
@@ -193,200 +236,254 @@ function CourseLearningLayout() {
     navigate(`${basePath}/learning/${outlineResource.nodeId}`);
   };
 
+  const handleChatPanelToggle = () => {
+    setChatPanelCollapsed(!chatPanelCollapsed);
+  };
+
+  const handleRightDockResize = (panelSize: PanelSize) => {
+    if (!chatOpen) return;
+    pendingRightDockWidthRef.current = clampWorkspaceChatPanelWidth(panelSize.inPixels);
+  };
+
+  const handleLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const pendingWidth = pendingRightDockWidthRef.current;
+    pendingRightDockWidthRef.current = null;
+    if (!meta.isUserInteraction || !chatOpen || pendingWidth == null) return;
+    setChatPanelWidth(pendingWidth);
+  };
+
+  const handleClearResourceChatContext = (context?: ResourceChatContext) => {
+    setResourceChatContext((current) => (context && current !== context ? current : undefined));
+  };
+
+  const workspaceHeader = registeredResourceHeader?.resource ? (
+    <WorkspaceHeader
+      {...registeredResourceHeader}
+      resource={{
+        ...registeredResourceHeader.resource,
+        resourceId: undefined,
+        breadcrumbItems: [],
+        onBreadcrumbNavigate: () => {},
+        leadingActions: undefined,
+        actions: undefined,
+        moreMenu: undefined,
+        chatPanelCollapsed,
+        onToggleChatPanel: handleChatPanelToggle,
+      }}
+    />
+  ) : (
+    <WorkspaceHeader
+      inlineTitle={
+        <span className={styles.workspaceTitle}>
+          {selectedNode?.nodeType === 'RESOURCE' ? (
+            selectedNode.viewer === 'video' ? (
+              <Video size={18} aria-hidden />
+            ) : selectedNode.resourceType === 'note' ? (
+              <NotebookPen size={18} aria-hidden />
+            ) : (
+              <FileText size={18} aria-hidden />
+            )
+          ) : (
+            <Folder size={18} aria-hidden />
+          )}
+          <span>{selectedNode?.title ?? course.name}</span>
+        </span>
+      }
+      extra={
+        <AppIconButton
+          icon={
+            chatPanelCollapsed ? (
+              <PanelRightOpen size={18} aria-hidden />
+            ) : (
+              <PanelRightClose size={18} aria-hidden />
+            )
+          }
+          label={chatPanelCollapsed ? t('learning.openChat') : t('learning.closeChat')}
+          isActive={!chatPanelCollapsed}
+          onPress={handleChatPanelToggle}
+        />
+      }
+    />
+  );
+
   return (
-    <div className={styles.root} data-chat-open={chatOpen || undefined}>
-      <section className={styles.studyShell}>
-        <aside className={styles.outlineSidebar}>
-          <div className={styles.outlineHeader}>
-            <div className={styles.courseRow}>
-              <AppIconButton
-                icon={<ArrowLeft size={18} aria-hidden />}
-                label={t('nav.home')}
-                onPress={() => navigate(`${basePath}/home`)}
-              />
-              <strong>{course.name}</strong>
-              <AppIconButton
-                icon={<LayoutGrid size={18} aria-hidden />}
-                label={t('common.backToCourses')}
-                onPress={() => navigate('/app/course')}
-              />
-            </div>
-            <SegmentedTabs
-              block
-              size="sm"
-              variant="pill"
-              ariaLabel={t('outline.courseNavigation')}
-              selectedKey="learning"
-              onSelectionChange={handleCourseSectionChange}
-              items={[
-                { key: 'learning', label: t('home.learning') },
-                { key: 'assignments', label: t('nav.assignments') },
-                { key: 'materials', label: t('nav.materials') },
-                { key: 'info', label: t('nav.infoShort') },
-              ]}
-            />
-          </div>
-
-          <div className={styles.outlineTools}>
-            <Search size={17} aria-hidden />
-            <Input
-              aria-label={t('outline.searchPlaceholder')}
-              placeholder={t('outline.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-            />
-          </div>
-
-          <div className={styles.outlineTree}>
-            {loading ? <Spin tip={t('sidebar.loading')} /> : null}
-            {error ? (
-              <div className={styles.outlineState}>
-                <span>{parseErrorMessage(error)}</span>
-                <Button variant="secondary" size="sm" onPress={refresh}>
-                  {t('common.retry')}
-                </Button>
+    <SystemResizablePanelGroup
+      orientation="horizontal"
+      className={clsx(styles.root, chatOpen && styles.rootChatOpen)}
+      resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
+      onLayoutChanged={handleLayoutChanged}
+    >
+      <SystemResizablePanel
+        id="course-learning-main"
+        minSize={COURSE_LEARNING_MAIN_MIN_WIDTH}
+        className={styles.learningPanel}
+      >
+        <section className={styles.studyShell}>
+          <aside className={styles.outlineSidebar}>
+            <div className={styles.outlineHeader}>
+              <div className={styles.courseRow}>
+                <AppIconButton
+                  icon={<ArrowLeft size={18} aria-hidden />}
+                  label={t('nav.home')}
+                  onPress={() => navigate(`${basePath}/home`)}
+                />
+                <strong>{course.name}</strong>
+                <AppIconButton
+                  icon={<LayoutGrid size={18} aria-hidden />}
+                  label={t('common.backToCourses')}
+                  onPress={() => navigate('/app/course')}
+                />
               </div>
-            ) : null}
-            {!loading && !error && visibleNodes.length === 0 ? (
-              <div className={styles.outlineState}>{t('outline.empty')}</div>
-            ) : null}
-            {visibleNodes.length > 0 ? (
-              <Tree
-                blockNode
-                treeData={toTreeData(visibleNodes)}
-                selectedKeys={selectedNode ? [selectedNode.nodeId] : []}
-                defaultExpandAll={Boolean(normalizedQuery)}
-                defaultExpandedKeys={outlineNodes.slice(0, 2).map((node) => node.nodeId)}
-                onSelect={handleTreeSelect}
+              <SegmentedTabs
+                block
+                size="sm"
+                variant="pill"
+                ariaLabel={t('outline.courseNavigation')}
+                selectedKey="learning"
+                onSelectionChange={handleCourseSectionChange}
+                items={[
+                  { key: 'learning', label: t('home.learning') },
+                  { key: 'assignments', label: t('nav.assignments') },
+                  { key: 'materials', label: t('nav.materials') },
+                  { key: 'info', label: t('nav.infoShort') },
+                ]}
               />
-            ) : null}
-          </div>
-
-          <div className={styles.outlineProgress}>
-            <div>
-              <span>{t('home.courseProgress')}</span>
-              <span>{courseProgress}%</span>
             </div>
-            <ProgressBar aria-label={t('home.courseProgress')} value={courseProgress}>
-              <ProgressBar.Track>
-                <ProgressBar.Fill />
-              </ProgressBar.Track>
-            </ProgressBar>
-          </div>
-        </aside>
 
-        <div className={styles.studyWorkspace}>
-          <WorkspaceHeader
-            inlineTitle={
-              <span className={styles.workspaceTitle}>
-                {selectedNode?.nodeType === 'RESOURCE' ? (
+            <div className={styles.outlineTools}>
+              <Search size={17} aria-hidden />
+              <Input
+                aria-label={t('outline.searchPlaceholder')}
+                placeholder={t('outline.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+              />
+            </div>
+
+            <div className={styles.outlineTree}>
+              {loading ? <Spin tip={t('sidebar.loading')} /> : null}
+              {error ? (
+                <div className={styles.outlineState}>
+                  <span>{parseErrorMessage(error)}</span>
+                  <Button variant="secondary" size="sm" onPress={refresh}>
+                    {t('common.retry')}
+                  </Button>
+                </div>
+              ) : null}
+              {!loading && !error && visibleNodes.length === 0 ? (
+                <div className={styles.outlineState}>{t('outline.empty')}</div>
+              ) : null}
+              {visibleNodes.length > 0 ? (
+                <Tree
+                  blockNode
+                  treeData={toTreeData(visibleNodes)}
+                  selectedKeys={selectedNode ? [selectedNode.nodeId] : []}
+                  defaultExpandAll={Boolean(normalizedQuery)}
+                  defaultExpandedKeys={outlineNodes.slice(0, 2).map((node) => node.nodeId)}
+                  onSelect={handleTreeSelect}
+                />
+              ) : null}
+            </div>
+          </aside>
+
+          <div className={styles.studyWorkspace}>
+            {workspaceHeader}
+
+            <main className={styles.studyMain}>
+              {selectedNode ? (
+                selectedNode.nodeType === 'RESOURCE' ? (
                   selectedNode.viewer === 'video' ? (
-                    <Video size={18} aria-hidden />
-                  ) : selectedNode.resourceType === 'note' ? (
-                    <NotebookPen size={18} aria-hidden />
+                    <div className={styles.resourceViewer}>
+                      <Video size={44} aria-hidden />
+                      <h2>{selectedNode.title}</h2>
+                      <p>{t('outline.videoUnsupported')}</p>
+                    </div>
                   ) : (
-                    <FileText size={18} aria-hidden />
+                    <CourseResourceHost
+                      key={selectedNode.nodeId}
+                      courseId={course.courseId}
+                      groupId={course.courseId}
+                      target={{
+                        resourceId: selectedNode.resourceId,
+                        resourceType: selectedNode.resourceType,
+                        resourceName: selectedNode.title,
+                        viewer: selectedNode.viewer,
+                      }}
+                      layoutConfig={resourceLayoutConfig}
+                      onTargetChange={handleResourceTargetChange}
+                      onLayoutConfigChange={setResourceLayoutConfig}
+                      onSetChatContext={setResourceChatContext}
+                      onClearChatContext={handleClearResourceChatContext}
+                      onClose={() => navigate(`${basePath}/home`)}
+                    />
                   )
                 ) : (
-                  <Folder size={18} aria-hidden />
-                )}
-                <span>{selectedNode?.title ?? course.name}</span>
-              </span>
-            }
-            extra={
-              selectedNode?.nodeType === 'RESOURCE' ? (
-                <>
-                  <Button
-                    size="sm"
-                    variant={selectedNode.read ? 'secondary' : 'primary'}
-                    isDisabled={updatingRead}
-                    onPress={() => updateRead(selectedNode.nodeId, !selectedNode.read)}
-                  >
-                    {selectedNode.read ? t('outline.markUnread') : t('outline.markRead')}
-                  </Button>
-                  <AppIconButton
-                    icon={
-                      chatPanelCollapsed ? (
-                        <PanelRightOpen size={18} aria-hidden />
-                      ) : (
-                        <PanelRightClose size={18} aria-hidden />
-                      )
-                    }
-                    label={chatPanelCollapsed ? t('learning.openChat') : t('learning.closeChat')}
-                    onPress={() => setChatPanelCollapsed(!chatPanelCollapsed)}
-                  />
-                </>
-              ) : undefined
-            }
-          />
-
-          <main className={styles.studyMain}>
-            {selectedNode ? (
-              selectedNode.nodeType === 'RESOURCE' ? (
-                selectedNode.viewer === 'video' ? (
-                  <div className={styles.resourceViewer}>
-                    <Video size={44} aria-hidden />
-                    <h2>{selectedNode.title}</h2>
-                    <p>{t('outline.videoUnsupported')}</p>
+                  <div className={styles.sectionOverview}>
+                    <p>{t('outline.resourceCount', { count: selectedResources.length })}</p>
+                    <div className={styles.resourceList}>
+                      {selectedResources.map((resource) => (
+                        <button
+                          key={resource.nodeId}
+                          type="button"
+                          onClick={() => navigate(`${basePath}/learning/${resource.nodeId}`)}
+                        >
+                          {resource.viewer === 'video' ? (
+                            <Video size={18} aria-hidden />
+                          ) : resource.resourceType === 'note' ? (
+                            <NotebookPen size={18} aria-hidden />
+                          ) : (
+                            <FileText size={18} aria-hidden />
+                          )}
+                          <span>
+                            <strong>{resource.title}</strong>
+                            <small>
+                              {resource.read ? t('outline.read') : t('outline.unread')}
+                              {resource.durationLabel ? ` · ${resource.durationLabel}` : ''}
+                            </small>
+                          </span>
+                          <ChevronRight size={17} aria-hidden />
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                ) : (
-                  <CourseResourceHost
-                    key={selectedNode.nodeId}
-                    courseId={course.courseId}
-                    courseGroupId={course.courseGroupId}
-                    target={{
-                      resourceId: selectedNode.resourceId,
-                      resourceType: selectedNode.resourceType,
-                      resourceName: selectedNode.title,
-                      viewer: selectedNode.viewer,
-                    }}
-                    onTargetChange={handleResourceTargetChange}
-                    onClose={() => navigate(`${basePath}/home`)}
-                  />
                 )
               ) : (
-                <div className={styles.sectionOverview}>
-                  <p>{t('outline.resourceCount', { count: selectedResources.length })}</p>
-                  <div className={styles.resourceList}>
-                    {selectedResources.map((resource) => (
-                      <button
-                        key={resource.nodeId}
-                        type="button"
-                        onClick={() => navigate(`${basePath}/learning/${resource.nodeId}`)}
-                      >
-                        {resource.viewer === 'video' ? (
-                          <Video size={18} aria-hidden />
-                        ) : resource.resourceType === 'note' ? (
-                          <NotebookPen size={18} aria-hidden />
-                        ) : (
-                          <FileText size={18} aria-hidden />
-                        )}
-                        <span>
-                          <strong>{resource.title}</strong>
-                          <small>
-                            {resource.read ? t('outline.read') : t('outline.unread')}
-                            {resource.durationLabel ? ` · ${resource.durationLabel}` : ''}
-                          </small>
-                        </span>
-                        <ChevronRight size={17} aria-hidden />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )
-            ) : (
-              <div className={styles.emptyMain}>{t('outline.empty')}</div>
-            )}
-          </main>
-        </div>
-      </section>
+                <div className={styles.emptyMain}>{t('outline.empty')}</div>
+              )}
+            </main>
+          </div>
+        </section>
+      </SystemResizablePanel>
 
-      {chatOpen ? (
-        <aside className={styles.chatDock} aria-label={t('learning.chat')}>
-          <ChatPanel />
-        </aside>
-      ) : null}
-    </div>
+      <SystemResizableHandle
+        className={clsx(styles.resizeHandle, !chatOpen && styles.resizeHandleCollapsed)}
+        disabled={!chatOpen}
+      />
+
+      <SystemResizablePanel
+        id="course-learning-chat"
+        panelRef={rightDockPanelRef}
+        defaultSize={rightDockPanelSize}
+        minSize={chatOpen ? CHAT_PANEL_MIN_WIDTH : 0}
+        maxSize={chatOpen ? WORKSPACE_CHAT_PANEL_MAX_WIDTH : 0}
+        groupResizeBehavior="preserve-pixel-size"
+        className={styles.chatDock}
+        aria-label={t('learning.chat')}
+        aria-hidden={!chatOpen ? true : undefined}
+        onResize={handleRightDockResize}
+      >
+        {chatOpen ? (
+          <ChatPanel
+            showCollapseButton={false}
+            resourceChat={{
+              provider: chatStateProvider,
+              context: resourceChatContext,
+              clearContext: handleClearResourceChatContext,
+            }}
+          />
+        ) : null}
+      </SystemResizablePanel>
+    </SystemResizablePanelGroup>
   );
 }
 

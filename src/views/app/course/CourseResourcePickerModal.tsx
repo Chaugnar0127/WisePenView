@@ -1,0 +1,108 @@
+import DriveNavigator from '@/components/Drive/DriveNavigator';
+import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
+import AppModal from '@/components/Overlay/AppModal';
+import { useCourseService } from '@/domains';
+import type { CourseOutlineMountResource } from '@/domains/Course';
+import { parseErrorMessage } from '@/utils/error';
+import { Button, toast } from '@heroui/react';
+import { useRequest } from 'ahooks';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import styles from './CourseEditorPage.module.less';
+
+interface CourseResourcePickerModalProps {
+  isOpen: boolean;
+  courseId: string;
+  targetTagId: string;
+  targetName: string;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}
+
+function CourseResourcePickerModal({
+  isOpen,
+  courseId,
+  targetTagId,
+  targetName,
+  onOpenChange,
+  onSuccess,
+}: CourseResourcePickerModalProps) {
+  const { t } = useTranslation('course');
+  const courseService = useCourseService();
+  const [selectedResources, setSelectedResources] = useState<CourseOutlineMountResource[]>([]);
+
+  const close = () => {
+    setSelectedResources([]);
+    onOpenChange(false);
+  };
+
+  const { loading, run: mountResources } = useRequest(
+    () =>
+      courseService.mountCourseOutlineResources({
+        courseId,
+        targetNodeId: targetTagId,
+        resources: selectedResources,
+      }),
+    {
+      manual: true,
+      onSuccess: () => {
+        toast.success(t('editor.outline.mountSuccess', { count: selectedResources.length }));
+        onSuccess();
+        close();
+      },
+      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
+    }
+  );
+
+  const handleSelectionChange = (items: DriveSelectionItem[]) => {
+    setSelectedResources(
+      items
+        .filter((item) => item.kind === 'resource' || item.kind === 'link')
+        .filter((item) => Boolean(item.resourceId))
+        .map((item) => ({
+          resourceId: item.resourceId ?? '',
+          name: item.label,
+          resourceType: item.resourceType ?? '',
+        }))
+    );
+  };
+
+  return (
+    <AppModal
+      isOpen={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !loading) close();
+      }}
+      title={t('editor.outline.cloudPickerTitle')}
+      description={t('editor.outline.cloudPickerDescription', { name: targetName })}
+      size="md"
+      isDismissable={!loading}
+      actions={
+        <>
+          <Button variant="secondary" isDisabled={loading} onPress={close}>
+            {t('editor.actions.cancel')}
+          </Button>
+          <Button
+            variant="primary"
+            isDisabled={loading || selectedResources.length === 0}
+            onPress={mountResources}
+          >
+            {t('editor.outline.mountSelected', { count: selectedResources.length })}
+          </Button>
+        </>
+      }
+    >
+      <div className={styles.resourcePickerBody}>
+        <DriveNavigator
+          scope={{ type: 'personal' }}
+          selectableTypes={['resource', 'link']}
+          multiple
+          disabled={loading}
+          onChange={handleSelectionChange}
+        />
+      </div>
+    </AppModal>
+  );
+}
+
+export default CourseResourcePickerModal;

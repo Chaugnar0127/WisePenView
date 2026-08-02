@@ -79,7 +79,11 @@ function CourseHomePage() {
               </span>
               <h2>{t('home.pendingAssignments')}</h2>
             </div>
-            <Button variant="ghost" size="sm" onPress={() => navigate(`${basePath}/assignments`)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onPress={() => navigate(`${basePath}/assignments`)}
+            >
               {t('home.viewAll')}
             </Button>
           </div>
@@ -109,11 +113,20 @@ function CourseHomePage() {
         </section>
 
         <section className={styles.homeSection}>
-          <div className={styles.sectionHeading}>
-            <span className={styles.sectionIcon}>
-              <Bell size={18} aria-hidden />
-            </span>
-            <h2>{t('home.announcements')}</h2>
+          <div className={styles.sectionTitleRow}>
+            <div className={styles.sectionHeading}>
+              <span className={styles.sectionIcon}>
+                <Bell size={18} aria-hidden />
+              </span>
+              <h2>{t('home.announcements')}</h2>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onPress={() => navigate(`${basePath}/announcements`)}
+            >
+              {t('home.viewAll')}
+            </Button>
           </div>
           {data.announcements.length > 0 ? (
             <div className={styles.announcementList}>

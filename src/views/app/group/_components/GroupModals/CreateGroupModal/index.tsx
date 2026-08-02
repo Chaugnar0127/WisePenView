@@ -1,15 +1,14 @@
-import { Input, Select, TextArea, UploadZone } from '@/components/Input';
+import { Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
-import { useGroupService, useImageService, useUserService } from '@/domains';
+import { useGroupService, useImageService } from '@/domains';
 import type { CreateGroupRequest } from '@/domains/Group';
-import { ALLOWED_GROUP_TYPES_MAP, GROUP_TYPE } from '@/domains/Group';
-import { IDENTITY } from '@/domains/User';
+import { GROUP_TYPE } from '@/domains/Group';
 import { parseErrorMessage } from '@/utils/error';
 import {
   assertImageProxyUploadLimit,
   IMAGE_UPLOAD_MAX_SIZE_LABEL,
 } from '@/utils/image/uploadLimit';
-import { Button, Label, ListBox, TextField, toast } from '@heroui/react';
+import { Button, Label, TextField, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,14 +19,6 @@ import styles from './index.module.less';
 type CreateGroupFormValues = Omit<CreateGroupRequest, 'groupCoverUrl'> & {
   cover?: File | null;
 };
-
-const groupTypeOptionsBase = GROUP_TYPE.options;
-
-const GROUP_TYPE_LABEL_KEYS = {
-  NORMAL: 'type.normal',
-  ADVANCED: 'type.advanced',
-  PUBLIC: 'type.public',
-} as const;
 
 const DEFAULT_FORM_VALUES: CreateGroupFormValues = {
   groupName: '',
@@ -40,21 +31,7 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
   const { t } = useTranslation(['group', 'common']);
   const groupService = useGroupService();
   const imageService = useImageService();
-  const userService = useUserService();
   const [formValues, setFormValues] = useState<CreateGroupFormValues>(DEFAULT_FORM_VALUES);
-  const [identityType, setIdentityType] = useState<number | undefined>();
-
-  useRequest(() => userService.getUserInfo(), {
-    onSuccess: (u) => {
-      setIdentityType(u.identityType);
-    },
-  });
-
-  const isStudent = identityType === IDENTITY.STUDENT;
-  const allowedGroupTypes = ALLOWED_GROUP_TYPES_MAP[identityType ?? 3];
-  const groupTypeOptions = groupTypeOptionsBase.filter((opt) =>
-    allowedGroupTypes.includes(opt.value)
-  );
 
   const resetForm = () => {
     setFormValues(DEFAULT_FORM_VALUES);
@@ -98,7 +75,7 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
       }
       const groupId = await groupService.createGroup({
         groupName: values.groupName,
-        groupType: isStudent ? GROUP_TYPE.NORMAL : values.groupType,
+        groupType: GROUP_TYPE.NORMAL,
         groupDesc: values.groupDesc,
         groupCoverUrl,
       });
@@ -126,25 +103,16 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
       toast.warning(t('create.descriptionRequired'));
       return false;
     }
-    if (!isStudent && !formValues.groupType) {
-      toast.warning(t('create.typeRequired'));
-      return false;
-    }
     return true;
   };
 
   const handleConfirm = () => {
     if (!validateForm()) return;
-    const groupType = isStudent ? GROUP_TYPE.NORMAL : formValues.groupType;
-    if (groupType == null) {
-      toast.warning(t('create.typeRequired'));
-      return;
-    }
     runCreateGroup({
       ...formValues,
       groupName: formValues.groupName.trim(),
       groupDesc: formValues.groupDesc.trim(),
-      groupType,
+      groupType: GROUP_TYPE.NORMAL,
     });
   };
 
@@ -190,27 +158,6 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
         <Label>{t('fields.description')}</Label>
         <TextArea rows={4} placeholder={t('fields.descriptionPlaceholder')} />
       </TextField>
-      {!isStudent && (
-        <Select
-          aria-label={t('fields.type')}
-          name="groupType"
-          value={String(formValues.groupType)}
-          onChange={(value) => updateFormValue('groupType', Number(value))}
-          isRequired
-        >
-          <Label>{t('fields.type')}</Label>
-          <Select.Trigger />
-          <Select.Popover>
-            <ListBox>
-              {groupTypeOptions.map((opt) => (
-                <ListBox.Item key={String(opt.value)} id={String(opt.value)}>
-                  {t(GROUP_TYPE_LABEL_KEYS[opt.key])}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-      )}
       <div className={styles.coverField}>
         <span className={styles.fieldLabel}>{t('fields.cover')}</span>
         <UploadZone

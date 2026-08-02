@@ -18,6 +18,8 @@ export const mapGroupMemberFromApi = (raw: GroupMemberApiResponse): GroupMember 
   userId: normalizeId(raw.memberId),
   realname: raw.memberInfo.realName ?? '',
   nickname: raw.memberInfo.nickname,
+  campusNo: raw.memberInfo.campusNo ?? undefined,
+  email: raw.memberInfo.email ?? undefined,
   role: normalizeRoleFromApi(raw.role),
   joinTime: raw.joinTime,
   avatar: raw.memberInfo.avatar ?? '',

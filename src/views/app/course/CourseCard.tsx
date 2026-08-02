@@ -13,6 +13,15 @@ interface CourseCardProps {
 
 function CourseCard({ course, onClick }: CourseCardProps) {
   const { t } = useTranslation('course');
+  const summaryText =
+    course.pendingAssignmentCount && course.pendingAssignmentCount > 0
+      ? t('list.pendingAssignments', { count: course.pendingAssignmentCount })
+      : course.readResourceCount !== undefined && course.totalResourceCount !== undefined
+        ? t('list.progress', {
+            read: course.readResourceCount,
+            total: course.totalResourceCount,
+          })
+        : course.term;
 
   const handleCardClick = () => {
     onClick(course);
@@ -55,14 +64,7 @@ function CourseCard({ course, onClick }: CourseCardProps) {
         </Card.Header>
         <Card.Footer className={styles.footer}>
           <UserCapsule name={course.teacherName} />
-          <span className={styles.progress}>
-            {course.pendingAssignmentCount > 0
-              ? t('list.pendingAssignments', { count: course.pendingAssignmentCount })
-              : t('list.progress', {
-                  read: course.readResourceCount,
-                  total: course.totalResourceCount,
-                })}
-          </span>
+          <span className={styles.progress}>{summaryText}</span>
         </Card.Footer>
       </div>
     </Card>

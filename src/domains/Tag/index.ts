@@ -1,6 +1,7 @@
-export type { TagListByTagResponse, TagTreeNode } from './entity/tag';
+export type { TagListByTagResponse, TagMetaInfo, TagTreeNode } from './entity/tag';
 export {
   ACCESS_CONTROL_SCOPE,
+  TAG_META_SCHEMA,
   TAG_MOUNT_PERMISSION_PRESET_VALUES,
   TAG_PERMISSION_LIST_ACTIONS,
   TAG_PERMISSION_PRESET_VALUES,
@@ -37,6 +38,7 @@ export type {
 export type {
   GetResByTagRequest,
   ITagService,
+  ReorderSiblingTagsRequest,
   TagCreateRequest,
   TagDeleteRequest,
   TagMoveRequest,

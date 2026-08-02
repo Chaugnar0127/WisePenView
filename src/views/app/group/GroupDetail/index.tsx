@@ -3,18 +3,20 @@
  */
 import TableDrive from '@/components/Drive/TableDrive';
 import { Spin } from '@/components/Feedback';
-import UserCapsule from '@/components/UserCapsule';
 import { useGroupService } from '@/domains';
 import type { Group, GroupResConfig } from '@/domains/Group';
+import { GROUP_TYPE } from '@/domains/Group';
 import { WALLET_TARGET_TYPE } from '@/domains/Wallet';
 import { parseDriveInitialNodeId } from '@/utils/navigation/driveRoute';
 import ComputeWallet from '@/views/app/_common/Wallet/ComputeWallet';
-import { Tabs, toast } from '@heroui/react';
+import { Link, Tabs, toast } from '@heroui/react';
+import { linkVariants } from '@heroui/styles';
 import { useRequest } from 'ahooks';
+import { BookOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
 import { getGroupDisplayConfig } from '../_components/GroupDisplayConfig';
 import MemberList from '../_components/MemberList';
 import OwnerGroupTokenTransfer from '../_components/OwnerGroupTokenTransfer';
@@ -165,7 +167,10 @@ function GroupDetail() {
 
     items.push({
       key: 'description',
-      label: t('detail.tabs.description'),
+      label:
+        group.groupType === GROUP_TYPE.ADVANCED
+          ? t('detail.tabs.courseProfile')
+          : t('detail.tabs.description'),
       children: (
         <GroupDescriptionSettings
           key={gid}
@@ -208,8 +213,7 @@ function GroupDetail() {
     return <div className={layout.pageContainer}>{t('detail.notFound')}</div>;
   }
 
-  const { groupName, ownerInfo, createTime } = group;
-  const ownerName = ownerInfo?.nickname?.trim() || '-';
+  const { groupName } = group;
 
   return (
     <div
@@ -219,19 +223,21 @@ function GroupDetail() {
           : layout.pageContainer
       }
     >
-      <div className={layout.pageHeaderWithActions}>
+      <div className={`${layout.pageHeaderWithActions} ${page.detailHeader}`}>
         <div>
           <h1 className={layout.pageTitle}>{groupName}</h1>
-          <div className={layout.headerMeta}>
-            {ownerInfo && (
-              <div className={layout.headerMetaItem}>
-                <span>{t('detail.creator')}</span>
-                <UserCapsule name={ownerName} avatar={ownerInfo.avatar} />
-              </div>
-            )}
-            <span>{t('detail.createdAt', { date: createTime ?? t('detail.noDate') })}</span>
-          </div>
         </div>
+        {group.groupType === GROUP_TYPE.ADVANCED ? (
+          <RouterLink
+            className={`${linkVariants().base()} ${page.contextLink}`}
+            to={`/app/course/${group.groupId}/home`}
+          >
+            <Link.Icon className={`${linkVariants().icon()} ${page.contextLinkIcon}`}>
+              <BookOpen aria-hidden />
+            </Link.Icon>
+            {t('detail.goToCourse')}
+          </RouterLink>
+        ) : null}
       </div>
 
       <Tabs

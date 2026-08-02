@@ -1,11 +1,3 @@
-export const COURSE_STATUS = {
-  DRAFT: 'DRAFT',
-  PUBLISHED: 'PUBLISHED',
-  ARCHIVED: 'ARCHIVED',
-} as const;
-
-export type CourseStatus = (typeof COURSE_STATUS)[keyof typeof COURSE_STATUS];
-
 export const COURSE_ROLE = {
   STUDENT: 'STUDENT',
   ASSISTANT: 'ASSISTANT',

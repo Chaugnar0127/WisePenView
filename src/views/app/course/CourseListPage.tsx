@@ -1,7 +1,8 @@
 import { Input, TextArea } from '@/components/Input';
 import { AppFormDialog, AppModal } from '@/components/Overlay';
-import { useCourseService } from '@/domains';
+import { useCourseService, useUserService } from '@/domains';
 import type { CourseSummary } from '@/domains/Course';
+import { IDENTITY } from '@/domains/User';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, Label, TextField, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -12,26 +13,30 @@ import { useNavigate } from 'react-router-dom';
 import CourseCard from './CourseCard';
 import styles from './CourseListPage.module.less';
 
-interface CourseDraftForm {
+interface CourseCreateForm {
   name: string;
   description: string;
   term: string;
 }
 
-const EMPTY_DRAFT: CourseDraftForm = { name: '', description: '', term: '' };
+const EMPTY_COURSE: CourseCreateForm = { name: '', description: '', term: '' };
 
 function CourseListPage() {
-  const { t } = useTranslation(['course', 'common']);
+  const { t } = useTranslation(['course', 'group', 'common']);
   const courseService = useCourseService();
+  const userService = useUserService();
   const navigate = useNavigate();
   const [joinOpen, setJoinOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState('');
-  const [draft, setDraft] = useState<CourseDraftForm>(EMPTY_DRAFT);
+  const [courseForm, setCourseForm] = useState<CourseCreateForm>(EMPTY_COURSE);
 
   const { data, loading, error, refresh } = useRequest(() =>
     courseService.listMyCourses({ page: 1, size: 50 })
   );
+  const { data: currentUser } = useRequest(() => userService.getUserInfo());
+  const canCreateCourse =
+    currentUser !== undefined && currentUser.identityType !== IDENTITY.STUDENT;
   const { loading: joining, run: joinCourse } = useRequest(
     () => courseService.joinCourse({ inviteCode: inviteCode.trim() }),
     {
@@ -47,16 +52,16 @@ function CourseListPage() {
   );
   const { loading: creating, run: createCourse } = useRequest(
     () =>
-      courseService.createCourseDraft({
-        name: draft.name.trim(),
-        description: draft.description.trim(),
-        term: draft.term.trim(),
+      courseService.createCourse({
+        name: courseForm.name.trim(),
+        description: courseForm.description.trim(),
+        term: courseForm.term.trim(),
       }),
     {
       manual: true,
       onSuccess: (courseId) => {
         toast.success(t('create.success'));
-        setDraft(EMPTY_DRAFT);
+        setCourseForm(EMPTY_COURSE);
         setCreateOpen(false);
         navigate(`/app/course/${courseId}/home`);
       },
@@ -73,7 +78,7 @@ function CourseListPage() {
   };
 
   const handleCreate = () => {
-    if (!draft.name.trim() || !draft.description.trim() || !draft.term.trim()) {
+    if (!courseForm.name.trim() || !courseForm.description.trim() || !courseForm.term.trim()) {
       toast.warning(t('create.required'));
       return;
     }
@@ -96,10 +101,12 @@ function CourseListPage() {
             <LogIn size={17} aria-hidden />
             {t('list.join')}
           </Button>
-          <Button variant="primary" onPress={() => setCreateOpen(true)}>
-            <CirclePlus size={17} aria-hidden />
-            {t('list.create')}
-          </Button>
+          {canCreateCourse ? (
+            <Button variant="primary" onPress={() => setCreateOpen(true)}>
+              <CirclePlus size={17} aria-hidden />
+              {t('list.create')}
+            </Button>
+          ) : null}
         </div>
       </header>
 
@@ -166,8 +173,8 @@ function CourseListPage() {
       >
         <div className={styles.createForm}>
           <TextField
-            value={draft.name}
-            onChange={(name) => setDraft((current) => ({ ...current, name }))}
+            value={courseForm.name}
+            onChange={(name) => setCourseForm((current) => ({ ...current, name }))}
             aria-label={t('create.name')}
             isRequired
           >
@@ -175,8 +182,8 @@ function CourseListPage() {
             <Input placeholder={t('create.namePlaceholder')} />
           </TextField>
           <TextField
-            value={draft.description}
-            onChange={(description) => setDraft((current) => ({ ...current, description }))}
+            value={courseForm.description}
+            onChange={(description) => setCourseForm((current) => ({ ...current, description }))}
             aria-label={t('create.intro')}
             isRequired
           >
@@ -184,8 +191,8 @@ function CourseListPage() {
             <TextArea rows={4} placeholder={t('create.introPlaceholder')} />
           </TextField>
           <TextField
-            value={draft.term}
-            onChange={(term) => setDraft((current) => ({ ...current, term }))}
+            value={courseForm.term}
+            onChange={(term) => setCourseForm((current) => ({ ...current, term }))}
             aria-label={t('create.term')}
             isRequired
           >

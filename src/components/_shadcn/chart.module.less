@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+
+  :global(.recharts-surface),
+  :global(.recharts-sector) {
+    outline: none;
+  }
+}
+
+.tooltip {
+  display: grid;
+  min-width: 128px;
+  align-items: center;
+  padding: var(--space-xs) var(--space-sm);
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  gap: var(--space-xs);
+  color: var(--foreground);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.tooltipIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.tooltipLabel {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tooltip strong {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-medium);
+}

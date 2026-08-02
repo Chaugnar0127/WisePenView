@@ -36,7 +36,6 @@ import type { ServicesContextValue } from './registry.types';
 const adminService = createAdminServices();
 const authService = createAuthServices();
 const documentService = createDocumentServices();
-const courseService = createCourseServices();
 const groupService = createGroupServices();
 const imageService = createImageServices();
 const inlineCommentService = createInlineCommentServices();
@@ -69,6 +68,12 @@ const chatService = createChatServices({
 const driveService = createDriveServices({
   tagService: tagService,
   resourceService: resourceService,
+});
+const courseService = createCourseServices({
+  groupService: groupService,
+  interactService: interactService,
+  resourceService: resourceService,
+  tagService: tagService,
 });
 
 const servicesValue: ServicesContextValue = {

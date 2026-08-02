@@ -1,8 +1,8 @@
 import { Empty } from '@/components/Feedback';
 import { useGroupService } from '@/domains';
-import type { FetchGroupListRequest, Group } from '@/domains/Group';
-import { GROUP_ROLE_FILTER_MAP } from '@/domains/Group';
-import { Button, Card, Pagination, Skeleton, Tabs, toast } from '@heroui/react';
+import type { Group } from '@/domains/Group';
+import { GROUP_ROLE_FILTER_MAP, GROUP_TYPE } from '@/domains/Group';
+import { Button, Card, ListBox, Pagination, Select, Skeleton, Tabs, toast } from '@heroui/react';
 import { usePagination } from 'ahooks';
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -21,6 +21,7 @@ const GROUP_CARD_SKELETON_KEYS = Array.from(
 );
 
 type PaginationPageItem = number | 'ellipsis';
+type GroupSection = 'groups' | 'courseGroups';
 
 function buildPaginationItems(currentPage: number, totalPages: number): PaginationPageItem[] {
   const pages = new Set<number>([1, totalPages]);
@@ -66,11 +67,15 @@ function MyGroup() {
   const { t } = useTranslation('group');
   const groupService = useGroupService();
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState<GroupSection>('groups');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [joinGroupModalOpen, setJoinGroupModalOpen] = useState(false);
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
 
-  const groupRoleFilter = GROUP_ROLE_FILTER_MAP[activeTab] ?? GROUP_ROLE_FILTER_MAP.all;
+  const groupRoleFilter =
+    activeSection === 'courseGroups'
+      ? GROUP_ROLE_FILTER_MAP.all
+      : (GROUP_ROLE_FILTER_MAP[activeTab] ?? GROUP_ROLE_FILTER_MAP.all);
 
   const {
     data: groupsData,
@@ -79,18 +84,20 @@ function MyGroup() {
     pagination: { current: pageNum, pageSize: size, onChange: onPageChange },
   } = usePagination(
     async ({ current, pageSize }) => {
-      const params: FetchGroupListRequest = {
-        groupRoleFilter: groupRoleFilter,
-        page: current,
-        size: pageSize,
+      const allGroups = await groupService.fetchAllMyGroups(groupRoleFilter);
+      const expectedGroupType =
+        activeSection === 'courseGroups' ? GROUP_TYPE.ADVANCED : GROUP_TYPE.NORMAL;
+      const matchingGroups = allGroups.filter((group) => group.groupType === expectedGroupType);
+      const start = Math.max(0, (current - 1) * pageSize);
+      return {
+        list: matchingGroups.slice(start, start + pageSize),
+        total: matchingGroups.length,
       };
-      const { groups, total } = await groupService.fetchGroupList(params);
-      return { list: groups, total };
     },
     {
       defaultCurrent: 1,
       defaultPageSize: PAGE_SIZE,
-      refreshDeps: [groupRoleFilter],
+      refreshDeps: [groupRoleFilter, activeSection],
       onError: () => {
         toast.danger(t('list.loadFailed'));
       },
@@ -102,8 +109,9 @@ function MyGroup() {
   const pages = buildPaginationItems(pageNum, totalPages);
   const start = total === 0 ? 0 : (pageNum - 1) * size + 1;
   const end = Math.min(pageNum * size, total);
-  const handleTabChange = (key: string) => {
-    setActiveTab(key);
+  const handleSectionChange = (key: GroupSection) => {
+    setActiveSection(key);
+    onPageChange(1, size);
   };
 
   const handleModalSuccess = () => {
@@ -125,39 +133,79 @@ function MyGroup() {
           <h1 className={layout.pageTitle}>{t('list.title')}</h1>
           <span className={layout.pageSubtitle}>{t('list.subtitle')}</span>
         </div>
-        <div className={layout.actionsRow}>
-          <Button variant="secondary" onPress={() => setCreateGroupModalOpen(true)}>
-            <Plus size={16} aria-hidden="true" />
-            {t('list.create')}
-          </Button>
-          <Button variant="primary" onPress={() => setJoinGroupModalOpen(true)}>
-            <UserPlus size={16} aria-hidden="true" />
-            {t('list.join')}
-          </Button>
-        </div>
+        {activeSection === 'groups' ? (
+          <div className={layout.actionsRow}>
+            <Button variant="secondary" onPress={() => setCreateGroupModalOpen(true)}>
+              <Plus size={16} aria-hidden="true" />
+              {t('list.create')}
+            </Button>
+            <Button variant="primary" onPress={() => setJoinGroupModalOpen(true)}>
+              <UserPlus size={16} aria-hidden="true" />
+              {t('list.join')}
+            </Button>
+          </div>
+        ) : null}
       </div>
 
-      <Tabs
-        variant="secondary"
-        selectedKey={activeTab}
-        onSelectionChange={(key) => handleTabChange(String(key))}
-        className={layout.detailTabs}
-      >
-        <Tabs.ListContainer>
-          <Tabs.List className={page.filterTabsList} aria-label={t('list.filterAria')}>
-            {[
-              { key: 'all', label: t('list.all') },
-              { key: 'joined', label: t('list.joined') },
-              { key: 'managed', label: t('list.managed') },
-            ].map((item) => (
-              <Tabs.Tab key={item.key} id={item.key} className={page.filterTab}>
-                {item.label}
-                <Tabs.Indicator />
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
-        </Tabs.ListContainer>
-      </Tabs>
+      <div className={page.listControls}>
+        <Tabs
+          variant="secondary"
+          selectedKey={activeSection}
+          onSelectionChange={(key) => {
+            const nextSection = String(key);
+            if (nextSection === 'groups' || nextSection === 'courseGroups') {
+              handleSectionChange(nextSection);
+            }
+          }}
+        >
+          <Tabs.ListContainer>
+            <Tabs.List className={page.filterTabsList} aria-label={t('list.navigationAria')}>
+              {[
+                { key: 'groups', label: t('list.myGroups') },
+                { key: 'courseGroups', label: t('list.myCourseGroups') },
+              ].map((item) => (
+                <Tabs.Tab key={item.key} id={item.key} className={page.filterTab}>
+                  {item.label}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs.ListContainer>
+        </Tabs>
+        {activeSection === 'groups' ? (
+          <Select
+            aria-label={t('list.filterAria')}
+            value={activeTab}
+            onChange={(value) => {
+              if (typeof value !== 'string') {
+                return;
+              }
+              setActiveTab(value);
+              onPageChange(1, size);
+            }}
+            className={page.roleFilter}
+          >
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {[
+                  { key: 'all', label: t('list.all') },
+                  { key: 'joined', label: t('list.joined') },
+                  { key: 'managed', label: t('list.managed') },
+                ].map((item) => (
+                  <ListBox.Item key={item.key} id={item.key} textValue={item.label}>
+                    {item.label}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+        ) : null}
+      </div>
 
       {loading ? (
         <div

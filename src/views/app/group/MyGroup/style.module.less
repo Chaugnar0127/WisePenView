@@ -12,6 +12,19 @@
   width: auto;
 }
 
+.listControls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.roleFilter {
+  width: 148px;
+  flex: 0 0 auto;
+}
+
 .groupGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -96,6 +109,15 @@
 }
 
 @media (max-width: 520px) {
+  .listControls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .roleFilter {
+    width: 100%;
+  }
+
   .groupGrid {
     grid-template-columns: 1fr;
   }

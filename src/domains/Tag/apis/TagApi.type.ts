@@ -19,6 +19,7 @@ export interface AddTagApiRequest {
   tagDesc?: string;
   tagIcon?: string;
   tagColor?: string;
+  tagMetaInfo?: string;
   tagCreator?: string;
   isPath?: boolean;
   visibilityMode?: string;
@@ -54,6 +55,7 @@ export interface TagTreeApiResponse {
   tagDesc?: string;
   tagIcon?: string;
   tagColor?: string;
+  tagMetaInfo?: string;
   tagCreator?: string;
   isPath?: boolean;
   visibilityMode?: string;

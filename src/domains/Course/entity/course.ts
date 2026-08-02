@@ -1,19 +1,41 @@
-import type { CourseAssignmentStatus, CourseRole, CourseStatus } from '@/domains/Course/enum';
-
-export interface CourseCapabilities {
-  canEditCourse: boolean;
-  canEditOutline: boolean;
-  canManageMaterials: boolean;
-  canManageMembers: boolean;
-  canPublishAnnouncement: boolean;
-  canPublishCourse: boolean;
-}
+import type { CourseAssignmentStatus, CourseRole } from '@/domains/Course/enum';
 
 export interface CourseTeacher {
   userId: string;
   name: string;
   avatar?: string;
   department?: string;
+}
+
+export interface CourseAssessmentItem {
+  label: string;
+  weight: number;
+}
+
+export type CourseWeekPattern = 'EVERY' | 'ODD' | 'EVEN';
+
+export type CoursePeriod = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
+
+export interface CourseMeeting {
+  meetingId: string;
+  weekPattern: CourseWeekPattern;
+  weekday: string;
+  startPeriod: CoursePeriod;
+  endPeriod: CoursePeriod;
+  location: string;
+}
+
+export type CourseFinalAssessmentType = 'EXAM' | 'PAPER' | 'OTHER';
+
+export interface CourseFinalAssessment {
+  type: CourseFinalAssessmentType;
+  customName?: string;
+  examForm?: string;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  location?: string;
+  deadline?: string;
 }
 
 export interface CourseSummary {
@@ -23,18 +45,26 @@ export interface CourseSummary {
   coverUrl?: string;
   term: string;
   category?: string;
-  status: CourseStatus;
   myRole: CourseRole;
-  capabilities: CourseCapabilities;
-  readResourceCount: number;
-  totalResourceCount: number;
-  pendingAssignmentCount: number;
+  /** 聚合查询接入前，真实 Group 列表可能不提供课程进度。 */
+  readResourceCount?: number;
+  totalResourceCount?: number;
+  /** WisePen Form 接入前，真实 Group 列表可能不提供待办数量。 */
+  pendingAssignmentCount?: number;
   teacherName: string;
 }
 
 export interface CourseDetail extends CourseSummary {
-  courseGroupId: string;
   teacher: CourseTeacher;
+  startAt?: string;
+  endAt?: string;
+  meetingSchedule?: string;
+  location?: string;
+  learningObjectives: string[];
+  assessmentItems: CourseAssessmentItem[];
+  meetings: CourseMeeting[];
+  finalAssessment?: CourseFinalAssessment;
+  outlineRootTagId?: string;
   teachingWeek?: number;
   memberCount: number;
 }
@@ -51,6 +81,7 @@ export interface CourseAnnouncement {
   content: string;
   publisher: CourseTeacher;
   publishTime: string;
+  pinned?: boolean;
 }
 
 export interface CourseAssignmentPreview {
@@ -99,6 +130,16 @@ export type CourseOutlineNode = CourseOutlineContainerNode | CourseOutlineResour
 export interface CourseOutline {
   courseId: string;
   nodes: CourseOutlineNode[];
+}
+
+export interface CourseOutlineEditorNode {
+  nodeId: string;
+  name: string;
+  entryType: 'folder' | 'resource';
+  resourceId?: string;
+  resourceType?: string;
+  parentId?: string;
+  children?: CourseOutlineEditorNode[];
 }
 
 export interface CourseMember {

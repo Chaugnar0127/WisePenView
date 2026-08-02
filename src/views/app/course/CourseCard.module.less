@@ -5,12 +5,13 @@
   gap: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--accent);
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  border: 1px solid var(--border-secondary, var(--border));
+  box-shadow: none;
+  transition: border-color 150ms ease;
 
   &:hover {
-    border-color: var(--accent-secondary);
+    border-color: var(--accent);
   }
 
   &:focus-visible {
@@ -47,7 +48,7 @@
 .title {
   overflow: hidden;
   font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;

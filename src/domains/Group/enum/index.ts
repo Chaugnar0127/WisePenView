@@ -32,10 +32,3 @@ export const GROUP_FILE_ORG_LOGIC = createEnum([
 export const DEFAULT_MEMBER_ACTIONS: TagResourceAction[] = [
   ...TAG_PERMISSION_PRESET_VALUES.shared.grantedActions,
 ];
-
-/** 身份类型 -> 可创建的小组类型列表 */
-export const ALLOWED_GROUP_TYPES_MAP: Record<number, number[]> = {
-  1: [GROUP_TYPE.NORMAL],
-  2: [GROUP_TYPE.NORMAL, GROUP_TYPE.ADVANCED],
-  3: [GROUP_TYPE.NORMAL, GROUP_TYPE.ADVANCED, GROUP_TYPE.PUBLIC],
-};

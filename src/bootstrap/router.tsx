@@ -12,7 +12,7 @@ import HomeLayout from '@/layouts/Home/HomeLayout';
 import WorkspaceLayout from '@/layouts/Workspace/WorkspaceLayout';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
 import {
-  CourseDiscussionPage,
+  CourseAnnouncementsPage,
   CourseInfoPage,
   CourseMembersPage,
 } from '@/views/app/course/CourseContextPages';
@@ -52,6 +52,7 @@ const CourseHomePage = lazy(() => import('@/views/app/course/CourseHomePage'));
 const CourseAssignmentsPage = lazy(() => import('@/views/app/course/CourseAssignmentsPage'));
 const CourseAssignmentPage = lazy(() => import('@/views/app/course/CourseAssignmentPage'));
 const CourseMaterialsPage = lazy(() => import('@/views/app/course/CourseMaterialsPage'));
+const CourseEditorPage = lazy(() => import('@/views/app/course/CourseEditorPage'));
 
 const router = createBrowserRouter([
   // ==============================
@@ -222,8 +223,8 @@ const router = createBrowserRouter([
                         element: <CourseMembersPage />,
                       },
                       {
-                        path: 'discussion',
-                        element: <CourseDiscussionPage />,
+                        path: 'announcements',
+                        element: <CourseAnnouncementsPage />,
                       },
                       {
                         path: 'assignments',
@@ -242,6 +243,10 @@ const router = createBrowserRouter([
                   {
                     path: 'learning/:outlineNodeId?',
                     element: <CourseLearningLayout />,
+                  },
+                  {
+                    path: 'edit',
+                    element: <CourseEditorPage />,
                   },
                 ],
               },

@@ -43,6 +43,21 @@ const mapGroupTypeFromApi = (value: unknown): number => normalizeFiniteNumber(va
 
 const mapGroupTypeToApi = (value: number): string => String(value);
 
+const parseGroupMetaInfo = (value: unknown): Record<string, unknown> => {
+  if (typeof value !== 'string' || !value.trim()) return {};
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
+  } catch {
+    return {};
+  }
+};
+
+const serializeGroupMetaInfo = (value?: Record<string, unknown>): string | undefined =>
+  value === undefined ? undefined : JSON.stringify(value);
+
 const normalizeRoleCodeFromApi = (value: unknown): number | null =>
   normalizeFiniteNumber(value) ?? null;
 
@@ -55,6 +70,7 @@ const mapGroupFromApi = (raw: GroupApiResponse): Group => {
     groupName: raw.groupName ?? '',
     groupDesc: raw.groupDesc ?? '',
     groupCoverUrl: raw.groupCoverUrl ?? '',
+    groupMetaInfo: parseGroupMetaInfo(raw.groupMetaInfo),
     groupType: mapGroupTypeFromApi(raw.groupType),
     ownerId: raw.ownerId == null ? undefined : normalizeId(raw.ownerId),
     ownerInfo:
@@ -110,6 +126,7 @@ const mapFetchGroupBaseInfoFromApi = (
   groupName: data.groupName ?? '',
   groupDesc: data.groupDesc ?? '',
   groupCoverUrl: data.groupCoverUrl ?? '',
+  groupMetaInfo: parseGroupMetaInfo(data.groupMetaInfo),
   groupType: mapGroupTypeFromApi(data.groupType),
 });
 
@@ -141,11 +158,13 @@ const mapCreateGroupFromApi = (data: string | number): string => normalizeId(dat
 const mapCreateGroupRequest = (params: CreateGroupRequest): AddGroupApiRequest => ({
   ...params,
   groupType: mapGroupTypeToApi(params.groupType),
+  groupMetaInfo: serializeGroupMetaInfo(params.groupMetaInfo),
 });
 
 const mapEditGroupRequest = (params: EditGroupRequest): ChangeGroupApiRequest => ({
   ...params,
   groupType: mapGroupTypeToApi(params.groupType),
+  groupMetaInfo: serializeGroupMetaInfo(params.groupMetaInfo),
 });
 
 const mapUpdateMemberRoleRequest = (params: UpdateMemberRoleRequest): ChangeRoleApiRequest => ({

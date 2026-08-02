@@ -1,10 +1,15 @@
+export { createDefaultCourseAssessmentItems } from './defaults';
 export type * from './entity/course';
 export {
   COURSE_ASSIGNMENT_STATUS,
   COURSE_ROLE,
-  COURSE_STATUS,
   type CourseAssignmentStatus,
   type CourseRole,
-  type CourseStatus,
 } from './enum';
+export {
+  FUDAN_COURSE_PERIODS,
+  formatCoursePeriodRange,
+  getCoursePeriodTimeRange,
+  isCoursePeriod,
+} from './schedule';
 export type * from './service/index.type';

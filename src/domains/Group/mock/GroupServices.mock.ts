@@ -1,4 +1,6 @@
 import type {
+  CreateGroupRequest,
+  EditGroupRequest,
   GetGroupWalletInfoRequest,
   Group,
   GroupBaseInfo,
@@ -8,12 +10,12 @@ import type {
   IGroupService,
 } from '@/domains/Group';
 import { DEFAULT_MEMBER_ACTIONS, GROUP_FILE_ORG_LOGIC } from '@/domains/Group';
+import { findMockGroup, getMockGroups, upsertMockGroup } from './groupStore.mock';
 import mockdata from './mockdata.json';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const groups = mockdata.groups as Group[];
-const groupDetail = mockdata.groupDetail as Group;
+const groups = getMockGroups();
 const members = mockdata.members as GroupMember[];
 const myRole = mockdata.myRole as 'OWNER' | 'ADMIN' | 'MEMBER';
 
@@ -22,6 +24,7 @@ const pickGroupBaseInfo = (group: Group): GroupBaseInfo => ({
   groupName: group.groupName,
   groupDesc: group.groupDesc,
   groupCoverUrl: group.groupCoverUrl,
+  groupMetaInfo: group.groupMetaInfo,
   groupType: group.groupType,
 });
 
@@ -37,15 +40,31 @@ const fetchAllMyGroups = async (): Promise<Group[]> => {
 
 const fetchGroupBaseInfo = async (groupId: string): Promise<GroupBaseInfo> => {
   await delay(100);
-  const group = groups.find((item) => item.groupId === groupId) ?? groupDetail;
-  return pickGroupBaseInfo(
-    group.groupId === groupId ? group : { ...group, groupId, groupName: '' }
-  );
+  const group = findMockGroup(groupId);
+  if (group) return pickGroupBaseInfo(structuredClone(group));
+  return {
+    groupId,
+    groupName: '',
+    groupDesc: '',
+    groupCoverUrl: '',
+    groupMetaInfo: {},
+    groupType: 0,
+  };
 };
 
-const fetchGroupInfo = async (_groupId: string): Promise<Group> => {
+const fetchGroupInfo = async (groupId: string): Promise<Group> => {
   await delay(200);
-  return groupDetail;
+  const group = findMockGroup(groupId);
+  if (group) return structuredClone(group);
+  return {
+    groupId,
+    groupName: '',
+    groupDesc: '',
+    groupCoverUrl: '',
+    groupMetaInfo: {},
+    groupType: 0,
+    memberCount: 0,
+  };
 };
 
 const getGroupWalletInfo = async (_params: GetGroupWalletInfoRequest): Promise<number> => {
@@ -66,17 +85,43 @@ const updateGroupResConfig = async (): Promise<void> => {
   await delay(200);
 };
 
-const createGroup = async (): Promise<string> => {
+const createGroup = async (params: CreateGroupRequest): Promise<string> => {
   await delay(200);
-  return 'mock-new-group-id';
+  const groupId = `mock-group-${Date.now()}`;
+  upsertMockGroup({
+    groupId,
+    groupName: params.groupName,
+    groupDesc: params.groupDesc,
+    groupCoverUrl: params.groupCoverUrl ?? '',
+    groupMetaInfo: params.groupMetaInfo ?? {},
+    groupType: params.groupType,
+    ownerId: 'current-user',
+    ownerInfo: { nickname: 'only317', realName: 'only317', identityType: 2 },
+    memberCount: 1,
+    createTime: new Date().toISOString(),
+    inviteCode: 'MOCK01',
+  });
+  return groupId;
 };
 
-const editGroup = async (): Promise<void> => {
+const editGroup = async (params: EditGroupRequest): Promise<void> => {
   await delay(200);
+  const current = findMockGroup(params.groupId);
+  if (!current) return;
+  upsertMockGroup({
+    ...current,
+    groupName: params.groupName,
+    groupDesc: params.groupDesc,
+    groupCoverUrl: params.groupCoverUrl,
+    groupMetaInfo: params.groupMetaInfo ?? current.groupMetaInfo,
+    groupType: params.groupType,
+  });
 };
 
-const deleteGroup = async (): Promise<void> => {
+const deleteGroup: IGroupService['deleteGroup'] = async ({ groupId }): Promise<void> => {
   await delay(200);
+  const index = groups.findIndex((group) => group.groupId === groupId);
+  if (index >= 0) groups.splice(index, 1);
 };
 
 const fetchGroupMembers = async (

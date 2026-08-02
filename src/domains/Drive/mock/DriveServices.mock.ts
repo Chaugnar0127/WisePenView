@@ -26,7 +26,7 @@ const ROOT_ID = 'drive-root';
 const GROUP_ROOT_PREFIX = 'drive-root:group:';
 const SHARED_FOLDER_NODE_ID = 'folder-shared';
 const TRASH_FOLDER_NODE_ID = 'trash-root';
-const COURSE_GROUP_FIXTURE_ID = 'course-group-data-structures';
+const COURSE_GROUP_FIXTURE_ID = 'course-data-structures';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

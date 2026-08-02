@@ -18,6 +18,7 @@ export interface GroupApiResponse {
   groupName?: string | null;
   groupDesc?: string | null;
   groupCoverUrl?: string | null;
+  groupMetaInfo?: string | null;
   groupType?: GroupTypeApiValue;
   ownerId?: string | number | null;
   ownerInfo?:
@@ -43,6 +44,7 @@ export type AddGroupApiRequest = {
   groupType: string;
   groupDesc: string;
   groupCoverUrl?: string;
+  groupMetaInfo?: string;
 };
 export type AddGroupApiResponse = string | number;
 export type ChangeGroupApiRequest = {
@@ -50,6 +52,7 @@ export type ChangeGroupApiRequest = {
   groupName: string;
   groupDesc: string;
   groupCoverUrl: string;
+  groupMetaInfo?: string;
   groupType: string;
 };
 export interface RemoveGroupApiRequest {
@@ -81,6 +84,9 @@ export interface GroupMemberBaseInfoApiResponse {
   realName: string | null;
   avatar: string | null;
   identityType: UserIdentityTypeApiValue;
+  campusNo: string | null;
+  email: string | null;
+  mobile: string | null;
 }
 
 export interface GroupMemberApiResponse {

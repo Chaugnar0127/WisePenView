@@ -1,4 +1,5 @@
 import TableDrive from '@/components/Drive/TableDrive';
+import { COURSE_ROLE } from '@/domains/Course';
 import { useTranslation } from 'react-i18next';
 import { useCourseRouteContext } from './context';
 import styles from './CourseMaterialsPage.module.less';
@@ -6,7 +7,8 @@ import styles from './CourseMaterialsPage.module.less';
 function CourseMaterialsPage() {
   const { t } = useTranslation('course');
   const { course } = useCourseRouteContext();
-  const canManage = course.capabilities.canManageMaterials;
+  const canManage =
+    course.myRole === COURSE_ROLE.TEACHER || course.myRole === COURSE_ROLE.ASSISTANT;
 
   return (
     <div className={styles.page}>
@@ -16,7 +18,7 @@ function CourseMaterialsPage() {
       </header>
       <div className={styles.driveArea}>
         <TableDrive
-          scope={{ type: 'group', groupId: course.courseGroupId }}
+          scope={{ type: 'group', groupId: course.courseId }}
           actions={{
             toolbar: {
               canCreateFolder: canManage,

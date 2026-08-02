@@ -1,11 +1,15 @@
 import SegmentedTabs from '@/components/SegmentedTabs';
+import { COURSE_ROLE } from '@/domains/Course';
 import { useCourseRouteContext } from '@/views/app/course/context';
+import { Button, Link } from '@heroui/react';
+import { linkVariants } from '@heroui/styles';
+import { SlidersHorizontal, UsersRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import styles from './CourseLayout.module.less';
 import CourseNavigationSidebar from './CourseNavigationSidebar';
 
-const CONTEXT_PAGE_KEYS = ['home', 'info', 'members', 'discussion'] as const;
+const CONTEXT_PAGE_KEYS = ['home', 'info', 'members', 'announcements'] as const;
 type ContextPageKey = (typeof CONTEXT_PAGE_KEYS)[number];
 
 function resolveContextPage(pathname: string): ContextPageKey {
@@ -36,7 +40,26 @@ function CourseLayout() {
               <div className={styles.courseKicker}>
                 {course.term} · {course.category}
               </div>
-              <h1>{course.name}</h1>
+              <div className={styles.courseTitleRow}>
+                <h1>{course.name}</h1>
+                <div className={styles.courseActions}>
+                  {course.myRole === COURSE_ROLE.TEACHER ? (
+                    <Button variant="primary" onPress={() => navigate(`${basePath}/edit`)}>
+                      <SlidersHorizontal size={17} aria-hidden />
+                      {t('nav.edit')}
+                    </Button>
+                  ) : null}
+                  <RouterLink
+                    className={`${linkVariants().base()} ${styles.contextLink}`}
+                    to={`/app/my-group/${course.courseId}`}
+                  >
+                    <Link.Icon className={`${linkVariants().icon()} ${styles.contextLinkIcon}`}>
+                      <UsersRound aria-hidden />
+                    </Link.Icon>
+                    {t('nav.goToCourseGroup')}
+                  </RouterLink>
+                </div>
+              </div>
               <p>{course.description}</p>
               <div className={styles.courseMeta}>
                 <span>{course.teacher.name}</span>
@@ -55,7 +78,7 @@ function CourseLayout() {
                 { key: 'home', label: t('nav.home') },
                 { key: 'info', label: t('nav.info') },
                 { key: 'members', label: t('nav.members') },
-                { key: 'discussion', label: t('nav.discussion') },
+                { key: 'announcements', label: t('nav.announcements') },
               ]}
               className={styles.contextTabs}
             />

@@ -8,33 +8,36 @@ import {
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
 import ResourceRenderer from '@/views/workspace/ResourceRenderer';
+import WorkspaceResourceSidePanel from '@/views/workspace/_components/WorkspaceResourceSidePanel';
 import clsx from 'clsx';
-import { useCallback, useState } from 'react';
 import styles from './CourseResourceHost.module.less';
 
 interface CourseResourceHostProps {
   courseId: string;
-  courseGroupId: string;
+  groupId: string;
   target: ResourceTarget;
+  layoutConfig: ResourceHostLayoutConfig;
   onTargetChange: (target: ResourceTarget) => void;
+  onLayoutConfigChange: (config: ResourceHostLayoutConfig) => void;
+  onSetChatContext: (context: ResourceChatContext) => void;
+  onClearChatContext: (context?: ResourceChatContext) => void;
   onClose: () => void;
 }
 
-const ignoreChatContext = (_context?: ResourceChatContext): void => {};
-
 function CourseResourceHost({
   courseId,
-  courseGroupId,
+  groupId,
   target,
+  layoutConfig,
   onTargetChange,
+  onLayoutConfigChange,
+  onSetChatContext,
+  onClearChatContext,
   onClose,
 }: CourseResourceHostProps) {
-  const [layoutConfig, setLayoutConfig] = useState<ResourceHostLayoutConfig>({});
-
-  /** Viewer 的 layout effect 依赖稳定的 reset 引用，否则 Host 更新后会反复注销并重新注册布局。 */
-  const resetLayoutConfig = useCallback(() => {
-    setLayoutConfig({});
-  }, []);
+  const resetLayoutConfig = () => {
+    onLayoutConfigChange({});
+  };
 
   const openResource: OpenResourceFn = (nextTarget) => {
     onTargetChange({
@@ -46,24 +49,30 @@ function CourseResourceHost({
   };
 
   const resourceHostContext: ResourceHostContextValue = {
-    hostId: `course:${courseId}`,
+    hostId: `course:${courseId}:${target.resourceId ?? 'empty'}`,
     layoutConfig,
     routeContext: target,
-    getNavigationScope: () => buildDriveNodeScope(courseGroupId),
+    getNavigationScope: () => buildDriveNodeScope(groupId),
     openResource,
-    setLayoutConfig,
+    setLayoutConfig: onLayoutConfigChange,
     resetLayoutConfig,
-    setChatContext: ignoreChatContext,
-    clearChatContext: ignoreChatContext,
+    setChatContext: onSetChatContext,
+    clearChatContext: onClearChatContext,
   };
+  const sidePanelConfig =
+    layoutConfig.sidePanel?.resource.resourceId === target.resourceId
+      ? layoutConfig.sidePanel
+      : undefined;
 
   return (
     <ResourceHostContext value={resourceHostContext}>
-      <div className={clsx(styles.root, layoutConfig.className)}>
-        <div className={clsx(styles.body, layoutConfig.bodyClassName)}>
-          <ResourceRenderer target={target} onTargetChange={onTargetChange} onClose={onClose} />
+      <WorkspaceResourceSidePanel resourceId={target.resourceId ?? ''} config={sidePanelConfig}>
+        <div className={clsx(styles.root, layoutConfig.className)}>
+          <div className={clsx(styles.body, layoutConfig.bodyClassName)}>
+            <ResourceRenderer target={target} onTargetChange={onTargetChange} onClose={onClose} />
+          </div>
         </div>
-      </div>
+      </WorkspaceResourceSidePanel>
     </ResourceHostContext>
   );
 }

@@ -1,8 +1,9 @@
 import { Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
-import type { EditGroupRequest, Group } from '@/domains/Group';
+import { GROUP_TYPE, type EditGroupRequest, type Group } from '@/domains/Group';
 import { parseErrorMessage } from '@/utils/error';
+import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { PLACEHOLDER_IMAGE } from '@/utils/image/placeholder';
 import { assertImageProxyUploadLimit } from '@/utils/image/uploadLimit';
 import { Button, Label, TextField, toast, Tooltip } from '@heroui/react';
@@ -61,6 +62,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
         groupName: nextDraft.groupName,
         groupDesc: nextDraft.groupDesc,
         groupCoverUrl,
+        groupMetaInfo: group.groupMetaInfo,
         groupType: group.groupType,
       };
       await groupService.editGroup(params);
@@ -77,7 +79,9 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
         coverPreviewRequestRef.current += 1;
         setSavedDraft(nextSavedDraft);
         setDraft(nextSavedDraft);
-        toast.success(t('profile.saved'));
+        toast.success(
+          group.groupType === GROUP_TYPE.ADVANCED ? t('profile.course.saved') : t('profile.saved')
+        );
         onSuccess();
       },
       onError: (error: unknown) => {
@@ -126,7 +130,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
 
   const handleConfirmCover = () => {
     if (!modalCoverFile) {
-      toast.warning(t('profile.selectCover'));
+      toast.warning(selectCover);
       return;
     }
 
@@ -146,7 +150,11 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
   const handleSave = () => {
     const groupName = draft.groupName.trim();
     if (!groupName) {
-      toast.warning(t('create.nameRequired'));
+      toast.warning(
+        group.groupType === GROUP_TYPE.ADVANCED
+          ? t('profile.course.nameRequired')
+          : t('create.nameRequired')
+      );
       return;
     }
     runSave({ ...draft, groupName, groupDesc: draft.groupDesc.trim() });
@@ -159,11 +167,43 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
   };
 
   const coverUrl = draft.coverPreview ?? group.groupCoverUrl ?? PLACEHOLDER_IMAGE;
+  const ownerName = group.ownerInfo?.realName?.trim() || group.ownerInfo?.nickname?.trim() || '-';
+  const createDate = formatTimestampToDate(group.createTime) || t('detail.noDate');
+  const isCourseGroup = group.groupType === GROUP_TYPE.ADVANCED;
+  const profileTitle = isCourseGroup ? t('profile.course.title') : t('profile.title');
+  const nameLabel = isCourseGroup ? t('profile.course.name') : t('fields.name');
+  const descriptionLabel = isCourseGroup
+    ? t('profile.course.description')
+    : t('fields.description');
+  const coverLabel = isCourseGroup ? t('profile.course.cover') : t('profile.cover');
+  const namePlaceholder = isCourseGroup
+    ? t('profile.course.namePlaceholder')
+    : t('fields.namePlaceholder');
+  const descriptionPlaceholder = isCourseGroup
+    ? t('profile.course.descriptionPlaceholder')
+    : t('fields.descriptionPlaceholder');
+  const changeCover = isCourseGroup ? t('profile.course.changeCover') : t('profile.changeCover');
+  const changeCoverShort = isCourseGroup
+    ? t('profile.course.changeCoverShort')
+    : t('profile.changeCoverShort');
+  const selectCover = isCourseGroup ? t('profile.course.selectCover') : t('profile.selectCover');
+  const noDescription = isCourseGroup
+    ? t('profile.course.noDescription')
+    : t('profile.noDescription');
 
   return (
     <>
+      <GroupSettingsSection title={t('profile.creationInfo')} compact>
+        <div className={styles.profileMeta}>
+          <span>
+            {t('detail.creator')}
+            {ownerName}
+          </span>
+          <span>{t('detail.createdAt', { date: createDate })}</span>
+        </div>
+      </GroupSettingsSection>
       <GroupSettingsSection
-        title={t('profile.title')}
+        title={profileTitle}
         actions={
           canEdit ? (
             <>
@@ -187,53 +227,61 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
             {canEdit ? (
               <>
                 <TextField
-                  aria-label={t('fields.name')}
+                  aria-label={nameLabel}
                   value={draft.groupName}
                   onChange={(value) => updateDraft('groupName', value)}
                   isRequired
                 >
-                  <Label>{t('fields.name')}</Label>
-                  <Input placeholder={t('fields.namePlaceholder')} />
+                  <Label>{nameLabel}</Label>
+                  <Input placeholder={namePlaceholder} />
                 </TextField>
                 <TextField
-                  aria-label={t('fields.description')}
+                  aria-label={descriptionLabel}
                   value={draft.groupDesc}
                   onChange={(value) => updateDraft('groupDesc', value)}
                 >
-                  <Label>{t('fields.description')}</Label>
-                  <TextArea rows={5} placeholder={t('fields.descriptionPlaceholder')} />
+                  <Label>{descriptionLabel}</Label>
+                  <TextArea rows={5} placeholder={descriptionPlaceholder} />
                 </TextField>
               </>
             ) : (
               <dl className={styles.readonlyFields}>
                 <div>
-                  <dt>{t('fields.name')}</dt>
+                  <dt>{nameLabel}</dt>
                   <dd>{group.groupName || '-'}</dd>
                 </div>
                 <div>
-                  <dt>{t('fields.description')}</dt>
-                  <dd>{group.groupDesc || t('profile.noDescription')}</dd>
+                  <dt>{descriptionLabel}</dt>
+                  <dd>{group.groupDesc || noDescription}</dd>
                 </div>
               </dl>
             )}
           </div>
 
           <div className={styles.coverField}>
-            <span className={styles.coverLabel}>{t('profile.cover')}</span>
+            <span className={styles.coverLabel}>{coverLabel}</span>
             {canEdit ? (
               <Tooltip>
                 <Tooltip.Trigger>
                   <button
                     className={styles.coverButton}
                     type="button"
-                    aria-label={t('profile.changeCover')}
+                    aria-label={changeCover}
                     disabled={saving}
                     onClick={handleCoverModalOpen}
                   >
                     <img
                       className={styles.coverImage}
                       src={coverUrl}
-                      alt={t('profile.coverAlt', { name: draft.groupName || group.groupName })}
+                      alt={
+                        isCourseGroup
+                          ? t('profile.course.coverAlt', {
+                              name: draft.groupName || group.groupName,
+                            })
+                          : t('profile.coverAlt', {
+                              name: draft.groupName || group.groupName,
+                            })
+                      }
                       onError={handleCoverImageError}
                     />
                     <span className={styles.coverEditAffordance}>
@@ -241,14 +289,18 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
                     </span>
                   </button>
                 </Tooltip.Trigger>
-                <Tooltip.Content>{t('profile.changeCoverShort')}</Tooltip.Content>
+                <Tooltip.Content>{changeCoverShort}</Tooltip.Content>
               </Tooltip>
             ) : (
               <div className={styles.coverReadonly}>
                 <img
                   className={styles.coverImage}
                   src={coverUrl}
-                  alt={t('profile.coverAlt', { name: group.groupName })}
+                  alt={
+                    isCourseGroup
+                      ? t('profile.course.coverAlt', { name: group.groupName })
+                      : t('profile.coverAlt', { name: group.groupName })
+                  }
                   onError={handleCoverImageError}
                 />
               </div>
@@ -260,7 +312,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
       <AppModal
         isOpen={coverModalOpen}
         onOpenChange={handleCoverModalOpenChange}
-        title={t('profile.changeCover')}
+        title={changeCover}
         isDismissable={!saving}
         actions={
           <>

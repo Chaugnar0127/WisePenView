@@ -8,7 +8,6 @@ export type {
   GroupResConfig,
 } from './entity/group';
 export {
-  ALLOWED_GROUP_TYPES_MAP,
   DEFAULT_MEMBER_ACTIONS,
   GROUP_FILE_ORG_LOGIC,
   GROUP_ROLE_FILTER_MAP,
@@ -22,6 +21,7 @@ export type {
   FetchGroupListRequest,
   FetchGroupListResponse,
   GetGroupWalletInfoRequest,
+  GroupRoleFilter,
   IGroupService,
   JoinGroupRequest,
   KickMembersRequest,

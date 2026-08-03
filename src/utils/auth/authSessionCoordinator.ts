@@ -1,7 +1,11 @@
+import {
+  buildLoginPathForCurrentLocation,
+  buildRegisterPathForCurrentLocation,
+} from '@/bootstrap/authContinuation';
 import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
 import { resetSessionStores } from '@/store/lifecycle';
 
-type AuthSessionEventType = 'login' | 'logout';
+type AuthSessionEventType = 'login' | 'logout' | 'unauthorized';
 
 interface AuthSessionEventPayload {
   type: AuthSessionEventType;
@@ -24,7 +28,7 @@ const parseAuthSessionEvent = (value: string): AuthSessionEventPayload | undefin
 
   const { type, sourceTabId, eventId } = payload;
   if (
-    (type !== 'login' && type !== 'logout') ||
+    (type !== 'login' && type !== 'logout' && type !== 'unauthorized') ||
     typeof sourceTabId !== 'string' ||
     typeof eventId !== 'string'
   ) {
@@ -41,7 +45,13 @@ const resetSessionState = (): void => {
 
 const redirectToLogin = (): void => {
   if (window.location.pathname !== '/login') {
-    window.location.replace('/login');
+    window.location.replace(buildLoginPathForCurrentLocation());
+  }
+};
+
+const redirectToRegister = (): void => {
+  if (window.location.pathname !== '/register') {
+    window.location.replace(buildRegisterPathForCurrentLocation());
   }
 };
 
@@ -55,6 +65,10 @@ const applySessionEvent = (type: AuthSessionEventType): void => {
   if (!sessionEnded) {
     sessionEnded = true;
     resetSessionState();
+  }
+  if (type === 'unauthorized') {
+    redirectToRegister();
+    return;
   }
   redirectToLogin();
 };
@@ -74,7 +88,11 @@ const broadcastSessionEvent = (type: AuthSessionEventType): void => {
 };
 
 const coordinateSessionEvent = (type: AuthSessionEventType): void => {
-  if (type === 'logout' && sessionEnded) {
+  if ((type === 'logout' || type === 'unauthorized') && sessionEnded) {
+    if (type === 'unauthorized') {
+      redirectToRegister();
+      return;
+    }
     redirectToLogin();
     return;
   }
@@ -93,7 +111,7 @@ export const authSessionCoordinator = {
   },
 
   unauthorized(): void {
-    coordinateSessionEvent('logout');
+    coordinateSessionEvent('unauthorized');
   },
 
   subscribe(): () => void {

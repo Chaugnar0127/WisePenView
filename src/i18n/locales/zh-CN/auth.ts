@@ -45,6 +45,16 @@ const zhCNAuth = {
     registerFailed: '注册失败',
     agreementRequired: '请接受用户协议',
   },
+  onboarding: {
+    title: '完成账号认证',
+    pendingTitle: '建议先绑定邮箱或 UIS',
+    verifiedTitle: '账号已完成认证',
+    description:
+      '认证后可以加入课程小组、接收重要通知。你也可以先跳过，后续功能如有要求会再次提示。',
+    confirm: '确认',
+    skip: '稍后再说',
+    continue: '继续',
+  },
   resetPassword: {
     title: '找回密码',
     alertPrefix: '找回密码：',

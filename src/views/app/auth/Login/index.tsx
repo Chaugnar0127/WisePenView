@@ -1,3 +1,4 @@
+import { appendRedirectParam, getAuthRedirectPath } from '@/bootstrap/authContinuation';
 import { FormField, Input, PasswordInput } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { LoginRequest } from '@/domains/Auth';
@@ -8,7 +9,7 @@ import { useRequest } from 'ahooks';
 import { User } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import auth from '../Auth.module.less';
 import { hasFieldErrors, runFieldValidation, type FieldErrors } from '../formValidation';
 
@@ -26,13 +27,15 @@ function Login() {
   const [formValues, setFormValues] = useState<LoginRequest>(DEFAULT_LOGIN_VALUES);
   const [formErrors, setFormErrors] = useState<FieldErrors<LoginField>>({});
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectPath = getAuthRedirectPath(location.search);
 
   const { loading, run: submitLogin } = useRequest(
     (values: LoginRequest) => authService.login(values),
     {
       manual: true,
       onSuccess: () => {
-        navigate('/app/chat', { replace: true });
+        navigate(redirectPath, { replace: true });
       },
       onError: (err: unknown) => {
         toast.danger(parseErrorMessage(err));
@@ -113,7 +116,7 @@ function Login() {
             {t('login.submit')}
           </Button>
           <div className={auth.rightLinks}>
-            <Link to="/register">{t('login.register')}</Link>
+            <Link to={appendRedirectParam('/register', redirectPath)}>{t('login.register')}</Link>
             <Link to="/reset-pwd">{t('login.forgotPassword')}</Link>
           </div>
         </div>

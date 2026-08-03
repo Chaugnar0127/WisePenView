@@ -32,6 +32,7 @@ const Usage = lazy(() => import('@/views/app/profile/Usage'));
 const Appearance = lazy(() => import('@/views/app/profile/Appearance'));
 const Login = lazy(() => import('@/views/app/auth/Login'));
 const Register = lazy(() => import('@/views/app/auth/Register'));
+const AuthBindingOnboarding = lazy(() => import('@/views/app/auth/AuthBindingOnboarding'));
 const ResetPassword = lazy(() => import('@/views/app/auth/ResetPassword'));
 const NewPassword = lazy(() => import('@/views/app/auth/NewPassword'));
 const VerifyEmail = lazy(() => import('@/views/app/auth/VerifyEmail'));
@@ -85,6 +86,17 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Register />,
+      },
+    ],
+  },
+  {
+    path: '/auth/onboarding/bind',
+    element: <AuthLayout />,
+    errorElement: <AppError />,
+    children: [
+      {
+        index: true,
+        element: <AuthBindingOnboarding />,
       },
     ],
   },

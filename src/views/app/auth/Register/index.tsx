@@ -1,3 +1,8 @@
+import {
+  appendRedirectParam,
+  buildRegisterOnboardingPath,
+  getAuthRedirectPath,
+} from '@/bootstrap/authContinuation';
 import { Checkbox, FormField, Input, PasswordInput } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { RegisterRequest } from '@/domains/Auth';
@@ -8,7 +13,7 @@ import { useRequest } from 'ahooks';
 import { User } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import auth from '../Auth.module.less';
 import { hasFieldErrors, runFieldValidation, type FieldErrors } from '../formValidation';
 
@@ -33,6 +38,8 @@ function Register() {
   const [formValues, setFormValues] = useState<RegisterFormValues>(DEFAULT_REGISTER_VALUES);
   const [formErrors, setFormErrors] = useState<FieldErrors<RegisterField>>({});
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectPath = getAuthRedirectPath(location.search);
 
   const { run: submitLogin } = useRequest(
     (values: RegisterRequest) =>
@@ -43,7 +50,7 @@ function Register() {
     {
       manual: true,
       onSuccess: () => {
-        navigate('/app/chat', { replace: true });
+        navigate(buildRegisterOnboardingPath(redirectPath), { replace: true });
       },
       onError: (err: unknown) => {
         toast.danger(parseErrorMessage(err));
@@ -192,7 +199,7 @@ function Register() {
           <div className={auth.centerLinks}>
             <span>
               {t('register.hasAccount')}
-              <Link to="/login">{t('register.toLogin')}</Link>
+              <Link to={appendRedirectParam('/login', redirectPath)}>{t('register.toLogin')}</Link>
             </span>
           </div>
         </div>

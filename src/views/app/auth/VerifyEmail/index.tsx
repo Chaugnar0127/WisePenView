@@ -1,3 +1,7 @@
+import {
+  consumeActiveAuthContinuation,
+  readOptionalRedirectParam,
+} from '@/bootstrap/authContinuation';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
 import type { ConfirmEmailVerifyRequest } from '@/domains/User';
@@ -45,7 +49,12 @@ function VerifyEmail() {
 
   const goToAccount = () => {
     setSuccessModalOpen(false);
-    navigate('/app/profile/account', { replace: true, state: { fromVerify: true } });
+    const queryRedirectPath = readOptionalRedirectParam(window.location.search);
+    const continuation = consumeActiveAuthContinuation();
+    navigate(queryRedirectPath ?? continuation?.redirectPath ?? '/app/profile/account', {
+      replace: true,
+      state: { fromVerify: true },
+    });
   };
 
   return (

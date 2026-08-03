@@ -180,8 +180,11 @@ const enUSGroup = {
     invite: {
       title: 'Invite users',
       copied: 'Invitation code copied to clipboard',
-      copyFailed: 'Copy failed. Copy the code manually.',
+      linkCopied: 'Invitation link copied to clipboard',
+      copyFailed: 'Copy failed. Copy it manually.',
       copiedAction: 'Copied',
+      copyCode: 'Copy code',
+      copyLink: 'Copy link',
       noCode: 'No invitation code',
       hint: 'Share this invitation code with others so they can join the group.',
     },

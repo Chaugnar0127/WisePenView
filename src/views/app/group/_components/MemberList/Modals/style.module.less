@@ -33,7 +33,13 @@
   font-size: 20px;
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.06em;
-  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    SF Mono,
+    Menlo,
+    Consolas,
+    monospace;
 }
 
 .inviteHint {
@@ -41,6 +47,38 @@
   color: rgb(113 113 122);
   font-size: 14px;
   margin-bottom: 16px;
+}
+
+.inviteLink {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--surface-tertiary);
+  color: var(--muted);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    SF Mono,
+    Menlo,
+    Consolas,
+    monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.inviteFooter {
+  align-items: stretch;
+}
+
+.inviteActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+
+  :global(button) {
+    width: 100%;
+  }
 }
 
 .quotaInfo {

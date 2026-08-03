@@ -175,7 +175,6 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
                 key="session-load-more"
                 id="session-load-more"
                 textValue={hasMoreSessions ? t('session.loadMore') : t('session.noMore')}
-                isDisabled
                 className={styles.sessionItem}
               >
                 <Button

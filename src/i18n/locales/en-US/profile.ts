@@ -110,14 +110,13 @@ const enUSProfile = {
     emailTab: 'Email',
     sendEmail: 'Send verification email',
     startUis: 'Start UIS verification',
-    emailDescription: 'Enter your full email address and we will send you a verification link.',
+    description:
+      'Choose email or Fudan UIS to verify your account. Email verification sends a link to your inbox, while UIS verification continues through the follow-up prompts.',
     emailLabel: 'Email',
     emailPlaceholder: 'Enter your full email address',
     emailRequired: 'Enter your email address',
     emailInvalid: 'Enter a valid email address',
     emailSent: 'Verification email sent. Check your inbox.',
-    uisDescription:
-      'Use your Fudan University Identity System (UIS) account and password, then follow the prompts to complete verification.',
     uisAccountLabel: 'UIS account',
     uisAccountPlaceholder: 'Campus ID or UIS account',
     uisAccountRequired: 'Enter your UIS account',

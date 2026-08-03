@@ -1,6 +1,7 @@
 import { useImageService } from '@/domains';
 import { assertImageProxyUploadLimit } from '@/domains/Image';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import type { Dictionary } from '@blocknote/core';
 import { en, zh } from '@blocknote/core/locales';
 import type { useCreateBlockNote } from '@blocknote/react';
 import { toast } from '@heroui/react';
@@ -31,6 +32,20 @@ const STRUCTURED_CLIPBOARD_TYPES = new Set([
   'Files',
   'vscode-editor-data',
 ]);
+
+function buildNoteDictionary(language: string | undefined): Dictionary {
+  const dictionary = language === 'en-US' ? en : zh;
+  const slashCommandPlaceholder = dictionary.placeholders.default;
+
+  return {
+    ...dictionary,
+    placeholders: {
+      ...dictionary.placeholders,
+      default: undefined,
+      emptyDocument: slashCommandPlaceholder,
+    },
+  };
+}
 
 function isDarkHexColor(color: string): boolean {
   const hex = color.startsWith('#') ? color.slice(1, 7) : color.slice(0, 6);
@@ -148,7 +163,7 @@ export function useNoteEditorDefinition({
   return {
     editorOptions: {
       schema: blockNoteSchema,
-      dictionary: i18n.resolvedLanguage === 'en-US' ? en : zh,
+      dictionary: buildNoteDictionary(i18n.resolvedLanguage),
       trailingBlock: true,
       disableExtensions: ['history', 'yUndo'],
       uploadFile,

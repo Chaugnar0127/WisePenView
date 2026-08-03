@@ -143,12 +143,15 @@ export function useSlashMenuNavigation({
   });
 
   const moveKeyboardSelection = useMemoizedFn((offset: number) => {
+    const itemCount = items.length;
+    if (itemCount === 0) return;
+
     const activeIndex = keyboardIndexRef.current ?? hoveredIndexRef.current;
     if (activeIndex === undefined) {
-      activateKeyboardItem(offset > 0 ? 0 : items.length - 1);
+      activateKeyboardItem(offset > 0 ? 0 : itemCount - 1);
       return;
     }
-    activateKeyboardItem((activeIndex + offset + items.length) % items.length);
+    activateKeyboardItem((activeIndex + offset + itemCount) % itemCount);
   });
 
   const handleItemMouseMove = (index: number, event: MouseEvent) => {
@@ -197,13 +200,19 @@ export function useSlashMenuNavigation({
       if (event.key !== 'Enter' || event.isComposing) return;
       stopMenuKeyboardEvent(event);
       const selectedIndex = keyboardIndexRef.current ?? hoveredIndexRef.current ?? 0;
-      onItemClick?.(items[selectedIndex]);
+      const selectedItem = items[selectedIndex];
+      if (selectedItem) {
+        onItemClick?.(selectedItem);
+      }
     };
 
     const animationFrame = requestAnimationFrame(() => {
       syncAvailableHeight(viewport);
       if (items.length > 0) {
-        activateKeyboardItem(0);
+        const activeIndex = keyboardIndexRef.current ?? hoveredIndexRef.current;
+        activateKeyboardItem(
+          activeIndex === undefined ? 0 : Math.min(activeIndex, items.length - 1)
+        );
       }
       updateScrollEdges();
     });

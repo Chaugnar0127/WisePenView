@@ -13,6 +13,11 @@ const zhCNMessage = {
     notFoundTitle: '通知不存在',
     notFoundDescription: '这条通知可能已被删除，或不在当前列表中。',
     loadFailed: '通知加载失败',
+    listTitle: '通知详情',
+    sentAt: '发送时间',
+    showMessage: '查看详情',
+    hideMessage: '收起详情',
+    markAllAsRead: '全部标为已读',
     readStatus: {
       read: '已读',
       unread: '未读',

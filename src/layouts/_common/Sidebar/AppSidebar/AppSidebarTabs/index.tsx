@@ -10,18 +10,16 @@ import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/Sid
 import CommandPaletteTrigger from '@/layouts/AppNavigation/CommandPaletteTrigger';
 import { Tabs, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
-import { Bell, BookOpen, FolderOpen, MessageSquare, type LucideIcon } from 'lucide-react';
+import { BookOpen, FolderOpen, MessageSquare, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import NotificationList from '../NotificationList';
 import SessionListGroup from '../SessionListGroup';
 import styles from './style.module.less';
 
 const SIDEBAR_TAB = {
   SESSIONS: 'session-history',
   DRIVE: 'drive',
-  NOTIFICATIONS: 'notifications',
   COURSES: 'courses',
 } as const;
 
@@ -55,11 +53,9 @@ function SidebarViewTab({ id, label, icon: Icon, selected }: SidebarViewTabProps
 const resolveSidebarTab = (activeNavKey: AppHeaderNavKey | undefined): SidebarTabKey =>
   activeNavKey === APP_HEADER_NAV_KEY.CHAT
     ? SIDEBAR_TAB.SESSIONS
-    : activeNavKey === APP_HEADER_NAV_KEY.NOTIFICATIONS
-      ? SIDEBAR_TAB.NOTIFICATIONS
-      : activeNavKey === APP_HEADER_NAV_KEY.COURSE
-        ? SIDEBAR_TAB.COURSES
-        : SIDEBAR_TAB.DRIVE;
+    : activeNavKey === APP_HEADER_NAV_KEY.COURSE
+      ? SIDEBAR_TAB.COURSES
+      : SIDEBAR_TAB.DRIVE;
 
 function AppSidebarTabs() {
   const { t } = useTranslation('shell');
@@ -93,7 +89,6 @@ function AppSidebarTabs() {
           if (
             nextTab === SIDEBAR_TAB.SESSIONS ||
             nextTab === SIDEBAR_TAB.DRIVE ||
-            nextTab === SIDEBAR_TAB.NOTIFICATIONS ||
             nextTab === SIDEBAR_TAB.COURSES
           ) {
             setTabState({ observedNavKey: activeNavKey, selectedTab: nextTab });
@@ -121,12 +116,6 @@ function AppSidebarTabs() {
                 icon={BookOpen}
                 selected={selectedTab === SIDEBAR_TAB.COURSES}
               />
-              <SidebarViewTab
-                id={SIDEBAR_TAB.NOTIFICATIONS}
-                label={t('sidebar.notifications')}
-                icon={Bell}
-                selected={selectedTab === SIDEBAR_TAB.NOTIFICATIONS}
-              />
             </Tabs.List>
             <span className={styles.tabSearch}>
               <CommandPaletteTrigger />
@@ -139,7 +128,6 @@ function AppSidebarTabs() {
             className={clsx(
               styles.panelTrack,
               selectedTab === SIDEBAR_TAB.DRIVE && styles.panelTrackDrive,
-              selectedTab === SIDEBAR_TAB.NOTIFICATIONS && styles.panelTrackNotifications,
               selectedTab === SIDEBAR_TAB.COURSES && styles.panelTrackCourses
             )}
           >
@@ -163,13 +151,6 @@ function AppSidebarTabs() {
               shouldForceMount
             >
               <SidebarCourse />
-            </Tabs.Panel>
-            <Tabs.Panel
-              id={SIDEBAR_TAB.NOTIFICATIONS}
-              className={clsx(styles.tabPanel, styles.notificationPanel)}
-              shouldForceMount
-            >
-              <NotificationList />
             </Tabs.Panel>
           </div>
         </div>

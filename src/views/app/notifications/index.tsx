@@ -1,12 +1,13 @@
 import { EmptyState, LoadingState, ResultState } from '@/components/Feedback';
-import Markdown from '@/components/Markdown';
 import { useMessageService } from '@/domains';
 import type { UserMessage } from '@/domains/Message';
 import { parseErrorMessage } from '@/utils/error';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
+import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { ExternalLink, RotateCw } from 'lucide-react';
+import clsx from 'clsx';
+import { CheckCheck, ExternalLink, RotateCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
@@ -39,26 +40,48 @@ function NotificationsPage() {
     (message) => message.messageId === selectedMessageId
   );
 
-  useRequest(
-    async () => {
-      if (!selectedMessageId) return;
-      await messageService.readMessage({ messageId: selectedMessageId });
-    },
-    {
-      ready: Boolean(selectedMessageId),
-      refreshDeps: [selectedMessageId],
-      onSuccess: () => messagesRequest.refresh(),
-      onError: (error: unknown) => toast.warning(parseErrorMessage(error)),
-    }
+  const { runAsync: readMessage } = useRequest(
+    (messageId: string) => messageService.readMessage({ messageId }),
+    { manual: true }
   );
 
-  const handleOpenJumpUrl = () => {
-    if (!selectedMessage?.jumpUrl) return;
-    if (/^https?:\/\//i.test(selectedMessage.jumpUrl)) {
-      window.open(selectedMessage.jumpUrl, '_blank', 'noopener,noreferrer');
+  const handleSelectMessage = async (message: UserMessage) => {
+    navigate(`/app/notifications/${encodeURIComponent(message.messageId)}`);
+    if (message.read) return;
+    try {
+      await readMessage(message.messageId);
+      messagesRequest.refresh();
+    } catch (error: unknown) {
+      toast.warning(parseErrorMessage(error));
+    }
+  };
+
+  const handleToggleMessage = async (message: UserMessage) => {
+    if (message.messageId === selectedMessageId) {
+      navigate('/app/notifications');
       return;
     }
-    navigate(selectedMessage.jumpUrl);
+    await handleSelectMessage(message);
+  };
+
+  const handleMarkAllAsRead = async () => {
+    const unreadMessages = messagesRequest.data?.messages.filter((message) => !message.read) ?? [];
+    if (unreadMessages.length === 0) return;
+    try {
+      await Promise.all(unreadMessages.map((message) => readMessage(message.messageId)));
+      messagesRequest.refresh();
+    } catch (error: unknown) {
+      toast.warning(parseErrorMessage(error));
+    }
+  };
+
+  const handleOpenJumpUrl = (message: UserMessage) => {
+    if (!message.jumpUrl) return;
+    if (/^https?:\/\//i.test(message.jumpUrl)) {
+      window.open(message.jumpUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    navigate(message.jumpUrl);
   };
 
   if (messagesRequest.loading) {
@@ -87,56 +110,136 @@ function NotificationsPage() {
     );
   }
 
-  if (!selectedMessageId) {
-    const hasMessages = (messagesRequest.data?.messages.length ?? 0) > 0;
+  const messages = messagesRequest.data?.messages ?? [];
+  const hasUnreadMessages = messages.some((message) => !message.read);
+
+  if (messages.length === 0) {
     return (
       <div className={styles.pageContainer}>
         <EmptyState
-          title={hasMessages ? t('page.selectTitle') : t('page.emptyTitle')}
-          description={hasMessages ? t('page.selectDescription') : t('page.emptyDescription')}
+          title={t('page.emptyTitle')}
+          description={t('page.emptyDescription')}
           className={styles.emptyState}
         />
       </div>
     );
   }
 
-  if (!selectedMessage) {
+  if (selectedMessageId && !selectedMessage) {
     return (
       <div className={styles.pageContainer}>
-        <ResultState
-          status="404"
-          title={t('page.notFoundTitle')}
-          subTitle={t('page.notFoundDescription')}
-        />
+        <div className={styles.notificationCenter}>
+          <ResultState
+            status="404"
+            title={t('page.notFoundTitle')}
+            subTitle={t('page.notFoundDescription')}
+          />
+        </div>
       </div>
     );
   }
 
-  const messageTitle = selectedMessage.title || t('page.untitled');
-
   return (
     <div className={styles.pageContainer}>
-      <article className={styles.messagePanel}>
-        <h1 className={styles.messageTitle}>{messageTitle}</h1>
-        <div className={styles.messageMeta}>
-          <span>{resolveMessageTypeLabel(selectedMessage, t)}</span>
-          <span>{formatTimestampToDateTime(selectedMessage.createTime)}</span>
-          <span>
-            {selectedMessage.read ? t('page.readStatus.read') : t('page.readStatus.unread')}
-          </span>
-        </div>
-        <div className={styles.messageContent}>
-          <Markdown content={selectedMessage.content} linkMode="safe" />
-        </div>
-        {selectedMessage.jumpUrl ? (
-          <div className={styles.messageActions}>
-            <Button variant="primary" onPress={handleOpenJumpUrl}>
-              <ExternalLink size={16} />
-              {t('page.jumpLink')}
-            </Button>
+      <section className={styles.notificationCenter} aria-labelledby="notifications-title">
+        <div className={styles.pageHeader}>
+          <div>
+            <h1 id="notifications-title" className={styles.pageTitle}>
+              {t('page.title')}
+            </h1>
+            <p className={styles.pageSubtitle}>{t('page.subtitle')}</p>
           </div>
-        ) : null}
-      </article>
+          <Button
+            size="sm"
+            variant="primary"
+            isDisabled={!hasUnreadMessages}
+            onPress={handleMarkAllAsRead}
+          >
+            <CheckCheck size={16} />
+            {t('page.markAllAsRead')}
+          </Button>
+        </div>
+
+        <div className={styles.listHeader}>
+          <span>{t('page.listTitle')}</span>
+          <span>{t('page.sentAt')}</span>
+        </div>
+
+        <div className={styles.messageList}>
+          {messages.map((message) => {
+            const isSelected = message.messageId === selectedMessageId;
+            const title = message.title || t('page.untitled');
+            const preview = extractMarkdownPlainText(message.content);
+            const content = extractMarkdownPlainText(message.content, { preserveLineBreaks: true });
+
+            return (
+              <article
+                key={message.messageId}
+                className={clsx(styles.messageItem, isSelected && styles.messageItemSelected)}
+              >
+                <div className={styles.messageSummary}>
+                  <button
+                    type="button"
+                    className={styles.messageOpenButton}
+                    aria-expanded={isSelected}
+                    onClick={() => void handleSelectMessage(message)}
+                  >
+                    <span className={styles.messageInfo}>
+                      <span className={styles.messageStatusLine}>
+                        <span
+                          className={clsx(styles.statusDot, message.read && styles.statusDotRead)}
+                          aria-hidden="true"
+                        />
+                        <span>{resolveMessageTypeLabel(message, t)}</span>
+                        {message.read ? <span>{t('page.readStatus.read')}</span> : null}
+                      </span>
+                      <strong className={styles.messageTitle}>{title}</strong>
+                      {!isSelected ? (
+                        <span className={styles.messagePreview}>{preview}</span>
+                      ) : null}
+                    </span>
+                  </button>
+                  <span className={styles.messageSide}>
+                    <time
+                      className={styles.sentAt}
+                      dateTime={
+                        message.createTime ? new Date(message.createTime).toISOString() : undefined
+                      }
+                    >
+                      {formatTimestampToDateTime(message.createTime)}
+                    </time>
+                    <button
+                      type="button"
+                      className={styles.toggleDetail}
+                      onClick={() => void handleToggleMessage(message)}
+                    >
+                      {isSelected ? t('page.hideMessage') : t('page.showMessage')}
+                    </button>
+                  </span>
+                </div>
+
+                {isSelected ? (
+                  <div className={styles.messageBody}>
+                    <p className={styles.messageContent}>{content}</p>
+                    {message.jumpUrl ? (
+                      <div className={styles.messageActions}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onPress={() => handleOpenJumpUrl(message)}
+                        >
+                          <ExternalLink size={16} />
+                          {t('page.jumpLink')}
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

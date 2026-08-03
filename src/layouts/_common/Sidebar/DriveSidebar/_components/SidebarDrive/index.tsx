@@ -156,7 +156,8 @@ function SidebarDrive() {
 
   function buildChildrenData(
     nodes: DriveNode[],
-    targetNodeMap: Map<string, DriveNode>
+    targetNodeMap: Map<string, DriveNode>,
+    controls: { handleCollapseAll: () => void }
   ): DataNode[] {
     return buildDriveTreeData(
       nodes,
@@ -171,6 +172,7 @@ function SidebarDrive() {
             rootDisplayName={node.type === 'root' ? rootDisplayName : undefined}
             scopeSwitcher={node.type === 'root' ? <SidebarDriveScopeSwitcher /> : undefined}
             onCreateNode={handleCreateNode}
+            onCollapseAll={node.type === 'root' ? controls.handleCollapseAll : undefined}
             onRenameNode={setRenameTarget}
             onDeleteNode={setDeleteTarget}
           />

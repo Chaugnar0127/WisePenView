@@ -31,6 +31,7 @@ const zhCNDrive = {
   },
   sidebar: {
     createIn: '在「{{name}}」中新建',
+    collapseAll: '折叠全部',
     renameNode: '重命名 {{name}}',
     deleteNode: '删除 {{name}}',
     switchScope: '切换云盘范围',

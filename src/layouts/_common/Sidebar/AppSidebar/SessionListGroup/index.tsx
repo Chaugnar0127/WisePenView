@@ -9,6 +9,7 @@ import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useSidebarSessionHistoryStore } from '../_store/useSidebarSessionHistoryStore';
 import styles from '../AppSidebarTabs/style.module.less';
 import SessionMenuItem from '../SessionMenuItem';
 import type { SessionListGroupProps } from './index.type';
@@ -17,13 +18,15 @@ const SESSION_PAGE_SIZE = 20;
 
 const useSessionListGroup = () => {
   const chatService = useChatService();
-  const [sessionItems, setSessionItems] = useState<ChatSession[]>([]);
-  const [sessionPage, setSessionPage] = useState(1);
-  const [sessionTotalPage, setSessionTotalPage] = useState(1);
   const [loadingMoreSessions, setLoadingMoreSessions] = useState(false);
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const setCurrentSession = useCurrentChatSessionStore((state) => state.setCurrentSession);
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
+  const sessionItems = useSidebarSessionHistoryStore((state) => state.sessionItems);
+  const sessionPage = useSidebarSessionHistoryStore((state) => state.sessionPage);
+  const sessionTotalPage = useSidebarSessionHistoryStore((state) => state.sessionTotalPage);
+  const setSessionPageResult = useSidebarSessionHistoryStore((state) => state.setSessionPageResult);
+  const removeSession = useSidebarSessionHistoryStore((state) => state.removeSession);
   const navigate = useNavigate();
 
   const { runAsync: runListSessions, loading: sessionListLoading } = useRequest(
@@ -43,8 +46,6 @@ const useSessionListGroup = () => {
     }
     try {
       const payload = await runListSessions(page);
-      setSessionPage(payload.page);
-      setSessionTotalPage(payload.totalPage);
       // 始终以 store 最新 sessionId 为准，避免闭包里读到旧值后回写错误会话。
       const latestSessionId = useCurrentChatSessionStore.getState().currentSessionId;
       if (latestSessionId) {
@@ -53,14 +54,7 @@ const useSessionListGroup = () => {
           setCurrentSession({ id: currentSession.id, title: currentSession.title });
         }
       }
-      setSessionItems((prev) => {
-        if (!append) {
-          return payload.list;
-        }
-        const existingIds = new Set(prev.map((item) => item.id));
-        const extra = payload.list.filter((item) => !existingIds.has(item.id));
-        return [...prev, ...extra];
-      });
+      setSessionPageResult(payload, append);
     } catch (err) {
       toast.danger(parseErrorMessage(err));
     } finally {
@@ -80,6 +74,7 @@ const useSessionListGroup = () => {
     if (currentSessionId === sessionId) {
       clearCurrentSession();
     }
+    removeSession(sessionId);
     useNewChatSessionStore.getState().clearNewChatSessionById(sessionId);
   };
 

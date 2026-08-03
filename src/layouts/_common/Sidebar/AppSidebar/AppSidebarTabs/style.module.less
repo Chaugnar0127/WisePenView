@@ -8,8 +8,11 @@
 
 .tabs {
   --sidebar-motion-ease: cubic-bezier(0.32, 0.72, 0, 1);
-  --sidebar-motion-duration: 0.6s;
-  --sidebar-motion-fade: 0.48s;
+  --sidebar-motion-duration: 0.36s;
+  --sidebar-motion-fade: 0.24s;
+  --sidebar-tab-label-fade-duration: 0.16s;
+  --sidebar-tab-label-reveal-delay: 0.16s;
+  --sidebar-tab-label-collapse-delay: 0.08s;
   --sidebar-tab-size: 32px;
   --sidebar-tab-pad-x: 7px;
   --sidebar-tab-pad-x-selected: 10px;
@@ -98,17 +101,16 @@
       grid-template-columns: 1fr;
       opacity: 1;
       margin-inline-start: var(--sidebar-tab-label-gap);
-      transition-delay: 0s, 0.06s, 0s;
-    }
-
-    .tabLabelInner {
-      transform: translate3d(0, 0, 0);
+      transition-delay: 0s, var(--sidebar-tab-label-reveal-delay), 0s;
     }
   }
 
   &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline: none;
+  }
+
+  &[data-focus-visible] {
+    box-shadow: inset 0 0 0 2px var(--accent);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -150,9 +152,10 @@
   opacity: 0;
   transition:
     grid-template-columns var(--sidebar-motion-duration) var(--sidebar-motion-ease),
-    opacity var(--sidebar-motion-fade) var(--sidebar-motion-ease),
+    opacity var(--sidebar-tab-label-fade-duration) var(--sidebar-motion-ease),
     margin-inline-start var(--sidebar-motion-duration) var(--sidebar-motion-ease);
-  transition-delay: 0.06s, 0s, 0.06s;
+  transition-delay: var(--sidebar-tab-label-collapse-delay), 0s,
+    var(--sidebar-tab-label-collapse-delay);
 }
 
 .tabLabelInner {
@@ -163,8 +166,6 @@
   font-weight: var(--font-weight-medium);
   line-height: 1;
   white-space: nowrap;
-  transform: translate3d(-6px, 0, 0);
-  transition: transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
 }
 
 .panelViewport {
@@ -181,12 +182,6 @@
   height: 100%;
   min-height: 0;
   transform: translate3d(0, 0, 0);
-  will-change: transform;
-  transition: transform var(--sidebar-motion-duration) var(--sidebar-motion-ease);
-
-  @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
-  }
 }
 
 .panelTrackDrive {
@@ -216,8 +211,9 @@
 .sessionPanel {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
   min-height: 0;
   padding: var(--space-xs);
   .appSubtleScrollbar();
@@ -254,7 +250,7 @@
   display: flex;
   align-items: center;
   border-radius: var(--radius-md);
-  padding: 0 calc(var(--sidebar-content-inset, var(--space-lg)) - 8px);
+  padding: 0 var(--space-xs) 0 calc(var(--sidebar-content-inset, var(--space-lg)) - 8px);
   color: var(--muted);
   cursor: pointer;
   outline: none;
@@ -273,6 +269,13 @@
     color: var(--accent);
     background: var(--accent-soft);
     font-weight: var(--font-weight-semibold);
+
+    &:hover,
+    &[data-hovered],
+    &[data-focused] {
+      color: var(--accent);
+      background: var(--accent-soft-hover);
+    }
   }
 
   &[data-disabled] {
@@ -284,9 +287,13 @@
 
 .sessionItemWithActions {
   &:hover,
-  &[data-hovered] {
+  &[data-hovered],
+  &[data-focused],
+  &:focus-within {
     :global(.sessionActionsVisibleOnItem) {
       opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
     }
   }
 }

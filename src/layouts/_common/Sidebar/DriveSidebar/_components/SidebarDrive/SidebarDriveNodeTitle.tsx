@@ -1,5 +1,13 @@
 import { AppPopover } from '@/components/Overlay';
-import { CloudUpload, FileInput, FolderPlus, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+  CloudUpload,
+  FileInput,
+  FolderPlus,
+  Pencil,
+  Plus,
+  SquareMinus,
+  Trash2,
+} from 'lucide-react';
 import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -21,6 +29,7 @@ interface SidebarDriveNodeTitleProps {
   rootDisplayName?: string;
   scopeSwitcher?: ReactNode;
   onCreateNode: (node: RootNode | FolderNode, action: SidebarDriveCreateAction) => void;
+  onCollapseAll?: () => void;
   onRenameNode: (node: DriveActionTarget) => void;
   onDeleteNode: (node: DriveActionTarget) => void;
 }
@@ -52,6 +61,7 @@ function SidebarDriveNodeTitle({
   rootDisplayName,
   scopeSwitcher,
   onCreateNode,
+  onCollapseAll,
   onRenameNode,
   onDeleteNode,
 }: SidebarDriveNodeTitleProps) {
@@ -223,12 +233,23 @@ function SidebarDriveNodeTitle({
               icon={<Trash2 size={14} aria-hidden="true" />}
               label={t('drive:sidebar.deleteNode', { name: label })}
               size="sm"
-              className={styles.nodeActionBtn}
+              variant="danger"
+              className={clsx(styles.nodeActionBtn, styles.nodeActionBtnDanger)}
               tooltip={{ content: t('common:actions.delete') }}
               onClick={() => onDeleteNode(node)}
             />
           ) : null}
           {node.type === 'root' ? scopeSwitcher : null}
+          {node.type === 'root' && onCollapseAll ? (
+            <AppIconButton
+              icon={<SquareMinus size={14} aria-hidden="true" />}
+              label={t('drive:sidebar.collapseAll')}
+              size="sm"
+              className={styles.nodeActionBtn}
+              tooltip={{ content: t('drive:sidebar.collapseAll') }}
+              onClick={onCollapseAll}
+            />
+          ) : null}
         </span>
       ) : null}
     </span>

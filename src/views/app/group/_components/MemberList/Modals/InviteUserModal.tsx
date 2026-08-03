@@ -1,18 +1,33 @@
+import { appendRedirectParam } from '@/bootstrap/authContinuation';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { copyText } from '@/utils/browser/copyText';
-import { toast } from '@heroui/react';
-import { Copy } from 'lucide-react';
+import { Button, toast } from '@heroui/react';
+import { Copy, Link as LinkIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { InviteUserModalProps } from './index.type';
 import styles from './style.module.less';
 
+const buildInviteRedirectPath = (inviteCode: string): string =>
+  `/app/my-group?inviteCode=${encodeURIComponent(inviteCode)}`;
+
+const buildInviteRegisterPath = (inviteCode: string): string =>
+  appendRedirectParam('/register', buildInviteRedirectPath(inviteCode));
+
+const buildInviteUrl = (inviteCode?: string): string => {
+  if (!inviteCode) return '';
+  const path = buildInviteRegisterPath(inviteCode);
+  if (typeof window === 'undefined') return path;
+  return `${window.location.origin}${path}`;
+};
+
 function InviteUserModal({ isOpen, onOpenChange, inviteCode }: InviteUserModalProps) {
   const { t } = useTranslation(['group', 'common']);
-  const [copied, setCopied] = useState(false);
+  const [copiedTarget, setCopiedTarget] = useState<'code' | 'link' | null>(null);
+  const inviteUrl = buildInviteUrl(inviteCode);
 
   const handleClose = () => {
-    setCopied(false);
+    setCopiedTarget(null);
     onOpenChange(false);
   };
 
@@ -24,11 +39,22 @@ function InviteUserModal({ isOpen, onOpenChange, inviteCode }: InviteUserModalPr
     onOpenChange(true);
   };
 
-  const handleCopy = async () => {
+  const handleCopyCode = async () => {
     const copied = await copyText(inviteCode ?? '');
     if (copied) {
-      setCopied(true);
+      setCopiedTarget('code');
       toast.success(t('member.invite.copied'));
+      return;
+    }
+
+    toast.danger(t('member.invite.copyFailed'));
+  };
+
+  const handleCopyLink = async () => {
+    const copied = await copyText(inviteUrl);
+    if (copied) {
+      setCopiedTarget('link');
+      toast.success(t('member.invite.linkCopied'));
       return;
     }
 
@@ -40,22 +66,33 @@ function InviteUserModal({ isOpen, onOpenChange, inviteCode }: InviteUserModalPr
       isOpen={isOpen}
       onOpenChange={handleOpenChange}
       title={t('member.invite.title')}
-      secondaryAction={{
-        label: t('actions.close', { ns: 'common' }),
-        onPress: handleClose,
-      }}
-      primaryAction={{
-        label: copied ? t('member.invite.copiedAction') : t('actions.copy', { ns: 'common' }),
-        icon: <Copy size={16} aria-hidden="true" />,
-        onPress: handleCopy,
-        isDisabled: !inviteCode,
-      }}
+      footerClassName={styles.inviteFooter}
+      actions={
+        <div className={styles.inviteActions}>
+          <Button variant="primary" isDisabled={!inviteCode} onPress={handleCopyLink}>
+            <LinkIcon size={16} aria-hidden="true" />
+            {copiedTarget === 'link'
+              ? t('member.invite.copiedAction')
+              : t('member.invite.copyLink')}
+          </Button>
+          <Button variant="secondary" isDisabled={!inviteCode} onPress={handleCopyCode}>
+            <Copy size={16} aria-hidden="true" />
+            {copiedTarget === 'code'
+              ? t('member.invite.copiedAction')
+              : t('member.invite.copyCode')}
+          </Button>
+          <Button variant="secondary" onPress={handleClose}>
+            {t('actions.close', { ns: 'common' })}
+          </Button>
+        </div>
+      }
     >
       <div className={styles.inviteContainer}>
         <div className={styles.inviteCodeWrap}>
           <div className={styles.inviteCode}>{inviteCode ?? t('member.invite.noCode')}</div>
         </div>
         <div className={styles.inviteHint}>{t('member.invite.hint')}</div>
+        {inviteUrl ? <div className={styles.inviteLink}>{inviteUrl}</div> : null}
       </div>
     </AppDisplayDialog>
   );

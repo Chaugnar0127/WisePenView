@@ -1,0 +1,138 @@
+const AUTH_CONTINUATION_ACTIVE_KEY = 'wisepen:auth-continuation:active';
+const AUTH_CONTINUATION_PREFIX = 'wisepen:auth-continuation:';
+const AUTH_CONTINUATION_TTL_MS = 30 * 60_000;
+
+export const DEFAULT_AUTH_REDIRECT_PATH = '/app/chat';
+export const AUTH_ONBOARDING_BIND_PATH = '/auth/onboarding/bind';
+
+export type AuthContinuationKind = 'auth' | 'registerOnboarding' | 'verifyEmail' | 'uisVerify';
+
+export interface AuthContinuation {
+  id: string;
+  kind: AuthContinuationKind;
+  redirectPath: string;
+  createdAt: number;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const parseStoredContinuation = (raw: string | null): AuthContinuation | null => {
+  if (!raw) return null;
+
+  try {
+    const value: unknown = JSON.parse(raw);
+    if (!isRecord(value)) return null;
+    const { id, kind, redirectPath, createdAt } = value;
+    if (
+      typeof id !== 'string' ||
+      (kind !== 'auth' &&
+        kind !== 'registerOnboarding' &&
+        kind !== 'verifyEmail' &&
+        kind !== 'uisVerify') ||
+      typeof redirectPath !== 'string' ||
+      typeof createdAt !== 'number'
+    ) {
+      return null;
+    }
+    if (Date.now() - createdAt > AUTH_CONTINUATION_TTL_MS) return null;
+    return { id, kind, redirectPath: sanitizeRedirectPath(redirectPath), createdAt };
+  } catch {
+    return null;
+  }
+};
+
+const createContinuationId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+const toPathWithSearch = (location: Location): string =>
+  `${location.pathname}${location.search}${location.hash}`;
+
+export const sanitizeOptionalRedirectPath = (raw: string | null | undefined): string | null => {
+  if (!raw) return null;
+  const value = raw.trim();
+  if (!value.startsWith('/') || value.startsWith('//')) return null;
+  if (value.startsWith('/login') || value.startsWith('/register')) return null;
+  return value;
+};
+
+export const sanitizeRedirectPath = (raw: string | null | undefined): string =>
+  sanitizeOptionalRedirectPath(raw) ?? DEFAULT_AUTH_REDIRECT_PATH;
+
+export const readOptionalRedirectParam = (search: string): string | null => {
+  const params = new URLSearchParams(search);
+  return sanitizeOptionalRedirectPath(params.get('redirect'));
+};
+
+export const readRedirectParam = (search: string): string => {
+  return readOptionalRedirectParam(search) ?? DEFAULT_AUTH_REDIRECT_PATH;
+};
+
+export const appendRedirectParam = (path: string, redirectPath: string): string => {
+  const [pathname, search = ''] = path.split('?');
+  const params = new URLSearchParams(search);
+  params.set('redirect', sanitizeRedirectPath(redirectPath));
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+};
+
+export const saveAuthContinuation = (
+  kind: AuthContinuationKind,
+  redirectPath: string
+): AuthContinuation | null => {
+  try {
+    const continuation: AuthContinuation = {
+      id: createContinuationId(),
+      kind,
+      redirectPath: sanitizeRedirectPath(redirectPath),
+      createdAt: Date.now(),
+    };
+    sessionStorage.setItem(
+      `${AUTH_CONTINUATION_PREFIX}${continuation.id}`,
+      JSON.stringify(continuation)
+    );
+    sessionStorage.setItem(AUTH_CONTINUATION_ACTIVE_KEY, continuation.id);
+    return continuation;
+  } catch {
+    return null;
+  }
+};
+
+export const consumeActiveAuthContinuation = (): AuthContinuation | null => {
+  try {
+    const activeId = sessionStorage.getItem(AUTH_CONTINUATION_ACTIVE_KEY);
+    if (!activeId) return null;
+    const continuation = parseStoredContinuation(
+      sessionStorage.getItem(`${AUTH_CONTINUATION_PREFIX}${activeId}`)
+    );
+    sessionStorage.removeItem(`${AUTH_CONTINUATION_PREFIX}${activeId}`);
+    sessionStorage.removeItem(AUTH_CONTINUATION_ACTIVE_KEY);
+    return continuation;
+  } catch {
+    return null;
+  }
+};
+
+export const getAuthRedirectPath = (search: string): string => {
+  return readRedirectParam(search);
+};
+
+export const getCurrentRedirectPath = (): string =>
+  sanitizeRedirectPath(toPathWithSearch(window.location));
+
+export const buildLoginPathForCurrentLocation = (): string => {
+  const redirectPath = getCurrentRedirectPath();
+  saveAuthContinuation('auth', redirectPath);
+  return appendRedirectParam('/login', redirectPath);
+};
+
+export const buildRegisterPathForCurrentLocation = (): string => {
+  const redirectPath = getCurrentRedirectPath();
+  saveAuthContinuation('auth', redirectPath);
+  return appendRedirectParam('/register', redirectPath);
+};
+
+export const buildRegisterOnboardingPath = (redirectPath: string): string => {
+  const safeRedirectPath = sanitizeRedirectPath(redirectPath);
+  saveAuthContinuation('registerOnboarding', safeRedirectPath);
+  return appendRedirectParam(AUTH_ONBOARDING_BIND_PATH, safeRedirectPath);
+};

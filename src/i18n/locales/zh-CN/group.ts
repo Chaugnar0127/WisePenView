@@ -179,8 +179,11 @@ const zhCNGroup = {
     invite: {
       title: '邀请用户',
       copied: '邀请码已复制到剪贴板',
+      linkCopied: '邀请链接已复制到剪贴板',
       copyFailed: '复制失败，请手动复制',
       copiedAction: '已复制',
+      copyCode: '复制邀请码',
+      copyLink: '复制邀请链接',
       noCode: '暂无邀请码',
       hint: '分享此邀请码给其他用户，他们可以使用此码加入小组',
     },

@@ -7,7 +7,7 @@ import { usePagination } from 'ahooks';
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import GroupCard from '../_components/GroupCard';
 import { CreateGroupModal, JoinGroupModal } from '../_components/GroupModals';
 import layout from '../style.module.less';
@@ -67,9 +67,11 @@ function MyGroup() {
   const { t } = useTranslation('group');
   const groupService = useGroupService();
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialInviteCode = new URLSearchParams(location.search).get('inviteCode') ?? undefined;
   const [activeSection, setActiveSection] = useState<GroupSection>('groups');
   const [activeTab, setActiveTab] = useState<string>('all');
-  const [joinGroupModalOpen, setJoinGroupModalOpen] = useState(false);
+  const [joinGroupModalOpen, setJoinGroupModalOpen] = useState(() => Boolean(initialInviteCode));
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
 
   const groupRoleFilter =
@@ -117,6 +119,9 @@ function MyGroup() {
   const handleModalSuccess = () => {
     setJoinGroupModalOpen(false);
     setCreateGroupModalOpen(false);
+    if (initialInviteCode) {
+      navigate('/app/my-group', { replace: true });
+    }
     void refreshGroups();
   };
 
@@ -286,6 +291,7 @@ function MyGroup() {
         isOpen={joinGroupModalOpen}
         onOpenChange={setJoinGroupModalOpen}
         onSuccess={handleModalSuccess}
+        initialInviteCode={initialInviteCode}
       />
       <CreateGroupModal
         isOpen={createGroupModalOpen}

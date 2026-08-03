@@ -6,11 +6,11 @@
     "avatar": "",
     "identityType": "1",
     "username": "mockuser",
-    "campusNo": "20300000000",
-    "email": "mock@example.com",
+    "campusNo": "PENDING",
+    "email": null,
     "mobile": "13800138000",
     "verificationMode": null,
-    "status": "NORMAL"
+    "status": "UNIDENTIFIED"
   },
   "userProfile": {
     "sex": "MALE",

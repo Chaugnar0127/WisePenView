@@ -24,14 +24,19 @@ const normalizeInviteCode = (raw = ''): string =>
     .slice(0, INVITE_CODE_LENGTH)
     .toUpperCase();
 
-function JoinGroupModal({ isOpen, onOpenChange, onSuccess }: JoinGroupModalProps) {
+function JoinGroupModal({
+  isOpen,
+  onOpenChange,
+  onSuccess,
+  initialInviteCode,
+}: JoinGroupModalProps) {
   const { t } = useTranslation('group');
   const groupService = useGroupService();
-  const [inviteCode, setInviteCode] = useState('');
+  const [inviteCode, setInviteCode] = useState(() => normalizeInviteCode(initialInviteCode));
   const [inviteCodeError, setInviteCodeError] = useState('');
   const isSubmitDisabled = normalizeInviteCode(inviteCode).length !== INVITE_CODE_LENGTH;
   const resetForm = () => {
-    setInviteCode('');
+    setInviteCode(normalizeInviteCode(initialInviteCode));
     setInviteCodeError('');
   };
 

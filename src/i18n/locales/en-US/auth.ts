@@ -45,6 +45,16 @@ const enUSAuth = {
     registerFailed: 'Registration failed',
     agreementRequired: 'Please accept the user agreement',
   },
+  onboarding: {
+    title: 'Verify your account',
+    pendingTitle: 'Bind email or UIS first',
+    verifiedTitle: 'Account verified',
+    description:
+      'Verification helps you join course groups and receive important notices. You can skip for now; features that require it will prompt again later.',
+    confirm: 'Confirm',
+    skip: 'Maybe later',
+    continue: 'Continue',
+  },
   resetPassword: {
     title: 'Reset Password',
     alertPrefix: 'Password reset: ',

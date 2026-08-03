@@ -15,7 +15,7 @@
       },
       "memberCount": 18,
       "createTime": "2024-01-01T00:00:00.000Z",
-      "inviteCode": "ABC123",
+      "inviteCode": "ABC12345",
       "tokenUsed": 100,
       "tokenBalance": 900
     },
@@ -34,7 +34,7 @@
       },
       "memberCount": 12,
       "createTime": "2024-02-15T00:00:00.000Z",
-      "inviteCode": "DEF456",
+      "inviteCode": "DEF45678",
       "tokenUsed": 500,
       "tokenBalance": 1500
     }
@@ -54,7 +54,7 @@
     },
     "memberCount": 18,
     "createTime": "2024-01-01T00:00:00.000Z",
-    "inviteCode": "ABC123",
+    "inviteCode": "ABC12345",
     "tokenUsed": 100,
     "tokenBalance": 900
   },

@@ -31,6 +31,7 @@
 .desktopRoot .bar {
   height: 50px;
   padding-block: var(--space-xs);
+  -webkit-app-region: drag;
 
   .toolbar {
     height: 100%;
@@ -44,11 +45,10 @@
 
 .macDesktopRoot .bar {
   padding-left: 92px;
-  -webkit-app-region: drag;
+}
 
-  .toolbar {
-    -webkit-app-region: no-drag;
-  }
+.desktopRoot .bar :is(button, a, input, textarea, select, [role='button'], [tabindex]) {
+  -webkit-app-region: no-drag;
 }
 
 /* 全屏时展开控件与展开侧栏中的收起控件共用左侧基线。 */

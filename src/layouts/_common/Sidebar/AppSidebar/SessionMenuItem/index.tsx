@@ -79,7 +79,7 @@ function SessionMenuItem({ session, onUpdated, onDeleted }: SessionMenuItemProps
 
       <div className={`${styles.sessionActions} sessionActionsVisibleOnItem`}>
         <AppIconButton
-          icon={<Pencil size={16} aria-hidden="true" />}
+          icon={<Pencil size={14} aria-hidden="true" />}
           label={t('chat:session.renameAction', {
             name: session.title || t('chat:session.untitled'),
           })}
@@ -98,7 +98,7 @@ function SessionMenuItem({ session, onUpdated, onDeleted }: SessionMenuItemProps
           }}
         />
         <AppIconButton
-          icon={<Trash2 size={16} aria-hidden="true" />}
+          icon={<Trash2 size={14} aria-hidden="true" />}
           label={t('chat:session.deleteAction', {
             name: session.title || t('chat:session.untitled'),
           })}

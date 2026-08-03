@@ -31,6 +31,7 @@ const enUSDrive = {
   },
   sidebar: {
     createIn: 'Create in "{{name}}"',
+    collapseAll: 'Collapse all',
     renameNode: 'Rename {{name}}',
     deleteNode: 'Delete {{name}}',
     switchScope: 'Switch Drive scope',

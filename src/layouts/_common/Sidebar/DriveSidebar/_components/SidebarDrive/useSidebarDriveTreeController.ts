@@ -18,10 +18,18 @@ interface SidebarTreeLoadResult {
   selectedKeys: React.Key[];
 }
 
+interface SidebarDriveTreeControls {
+  handleCollapseAll: () => void;
+}
+
 interface UseSidebarDriveTreeControllerOptions {
   scope: DriveNodeScope;
   rootDisplayName?: string;
-  buildTreeData: (nodes: DriveNode[], nodeMap: Map<string, DriveNode>) => DataNode[];
+  buildTreeData: (
+    nodes: DriveNode[],
+    nodeMap: Map<string, DriveNode>,
+    controls: SidebarDriveTreeControls
+  ) => DataNode[];
   onOpenResource: (node: Extract<DriveNode, { type: 'resource' | 'link' }>) => void;
 }
 
@@ -46,6 +54,11 @@ export function useSidebarDriveTreeController({
   const [treeData, setTreeData] = useState<DataNode[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
+  const handleCollapseAll = () => {
+    setExpandedKeys([]);
+    useSidebarDriveExpansionStore.getState().setExpandedNodeIds(expansionScopeKey, []);
+  };
+  const treeControls = { handleCollapseAll };
 
   const { loading: treeLoading, refresh: refreshTree } = useRequest(
     async (): Promise<SidebarTreeLoadResult> => {
@@ -55,7 +68,7 @@ export function useSidebarDriveTreeController({
       );
       const rootNode = await driveService.getRootNode({ rootId: scope.rootId, groupId });
       const rootChildren = await driveService.listNodeChildren({ nodeId: rootNode.id, groupId });
-      const baseRoot = buildTreeData([rootNode], nextNodeMap)[0];
+      const baseRoot = buildTreeData([rootNode], nextNodeMap, treeControls)[0];
       if (!baseRoot)
         return { treeData: [], nodeMap: nextNodeMap, expandedKeys: [], selectedKeys: [] };
 
@@ -98,7 +111,7 @@ export function useSidebarDriveTreeController({
       await loadExpandedChildren(rootChildren);
 
       const buildExpandedTree = (nodes: DriveNode[]): DataNode[] =>
-        buildTreeData(nodes, nextNodeMap).map((treeNode) => {
+        buildTreeData(nodes, nextNodeMap, treeControls).map((treeNode) => {
           const children = childrenByParent.get(String(treeNode.key));
           return children ? { ...treeNode, children: buildExpandedTree(children) } : treeNode;
         });
@@ -120,14 +133,12 @@ export function useSidebarDriveTreeController({
         locatedNode.resourceId === selectedResourceLocation.resourceId
           ? locatedNode.id
           : undefined;
+      const expandedTreeChildren = buildExpandedTree(rootChildren);
       const availableExpandedNodeIds = [...expandedNodeIds].filter(
         (nodeId) => nextNodeMap.get(nodeId)?.type === 'folder'
       );
       return {
-        treeData: [
-          { ...baseRoot, children: undefined, isLeaf: true },
-          ...buildExpandedTree(rootChildren),
-        ],
+        treeData: [{ ...baseRoot, children: undefined, isLeaf: true }, ...expandedTreeChildren],
         nodeMap: nextNodeMap,
         expandedKeys: availableExpandedNodeIds,
         selectedKeys: selectedNodeId ? [selectedNodeId] : [],
@@ -143,10 +154,6 @@ export function useSidebarDriveTreeController({
         resourceLocation?.parentNodeId,
         resourceLocation?.nodeId,
       ],
-      onBefore: () => {
-        setSelectedKeys([]);
-        setExpandedKeys([]);
-      },
       onSuccess: (result) => {
         setNodeMap(result.nodeMap);
         setTreeData(result.treeData);
@@ -175,7 +182,7 @@ export function useSidebarDriveTreeController({
         refresh: true,
       });
       const childNodeMap = new Map<string, DriveNode>();
-      const childData = buildTreeData(children, childNodeMap);
+      const childData = buildTreeData(children, childNodeMap, treeControls);
       setNodeMap((currentNodeMap) => {
         const nextNodeMap = new Map(currentNodeMap);
         childNodeMap.forEach((childNode, childNodeId) => nextNodeMap.set(childNodeId, childNode));
@@ -202,9 +209,9 @@ export function useSidebarDriveTreeController({
       void handleLoadData(info.node);
     }
   };
-
   return {
     expandedKeys,
+    handleCollapseAll,
     handleExpand,
     handleLoadData,
     handleSelect,

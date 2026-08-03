@@ -3,7 +3,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-xs, 8px);
 }
 
 .sessionMenuLabelText {
@@ -16,10 +16,14 @@
 .sessionActions {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   flex: 0 0 auto;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  pointer-events: none;
+  transform: translateX(2px);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
 }
 
 .sessionActionBtn {
@@ -27,16 +31,20 @@
   align-items: center;
   justify-content: center;
   width: 22px;
+  min-width: 22px;
   height: 22px;
   border: none;
-  border-radius: var(--app-radius-interactive, var(--radius-md));
   padding: 0;
   background: transparent;
-  color: var(--text-tertiary);
+  color: var(--muted);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    color 0.14s ease,
+    background-color 0.14s ease;
 }
 
 .sessionMenuLabel:hover .sessionActions {
   opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
 }

@@ -1,15 +1,15 @@
 @import '@/styles/scrollbar.module.less';
 
 .sidebar {
-  --sidebar-drive-edge-inset: var(--space-2xs, 4px);
-
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   background: transparent;
-  overflow: auto;
-  padding: 8px var(--sidebar-drive-edge-inset);
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  padding: var(--space-xs, 8px);
   .appSubtleScrollbar();
 }
 
@@ -34,6 +34,7 @@
   font-size: var(--font-size-base, 14px);
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-base, 22px);
+  width: 100%;
   gap: var(--space-2xs, 4px);
 
   :global(.wisepen-tree__item) {
@@ -41,19 +42,19 @@
     width: 100%;
     padding: 0;
     padding-left: calc(
-      var(--sidebar-content-inset, var(--space-lg)) - var(--sidebar-drive-edge-inset)
+      var(--sidebar-content-inset, var(--space-lg)) - var(--space-xs, 8px)
     );
     color: var(--muted);
     border-radius: var(--radius-md, 6px);
     box-sizing: border-box;
     transition:
-      color 0.16s ease,
-      background-color 0.16s ease;
+      background 0.2s ease,
+      color 0.2s ease;
 
     &:hover,
     &:focus-within {
       color: var(--foreground);
-      background: var(--surface-tertiary);
+      background: var(--accent-soft);
     }
   }
 
@@ -61,7 +62,7 @@
     min-height: 32px;
     flex: 1;
     min-width: 0;
-    padding: 0;
+    padding: 0 var(--space-xs, 8px) 0 0;
     color: inherit;
     background: transparent !important;
     border-radius: 0;
@@ -73,16 +74,21 @@
   }
 
   :global(.wisepen-tree__item[aria-selected='true']) {
-    color: var(--foreground);
-    background: var(--surface-tertiary);
+    color: var(--accent);
+    background: var(--accent-soft);
     font-weight: var(--font-weight-semibold);
+
+    &:hover,
+    &:focus-within {
+      color: var(--accent);
+      background: var(--accent-soft-hover);
+    }
   }
 
   :global(.wisepen-tree__item[aria-selected='true']) :global(.wisepen-tree__content) {
     flex: 1;
     background: transparent !important;
     border-radius: 0;
-    padding-right: 0;
   }
 
   :global(.wisepen-tree__switcher),
@@ -178,8 +184,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
   padding: 0;
   color: var(--muted);
   background: transparent;
@@ -188,6 +195,20 @@
   transition:
     color 0.14s ease,
     background-color 0.14s ease;
+
+  &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
+    color: var(--foreground);
+    background: var(--surface-tertiary);
+  }
+}
+
+.nodeActionBtnDanger {
+  color: var(--danger);
+
+  &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
+    color: var(--danger);
+    background: var(--danger-soft);
+  }
 }
 
 .createMenuPanel {

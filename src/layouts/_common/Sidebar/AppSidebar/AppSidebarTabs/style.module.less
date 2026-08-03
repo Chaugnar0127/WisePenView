@@ -106,8 +106,11 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline: none;
+  }
+
+  &[data-focus-visible] {
+    box-shadow: inset 0 0 0 2px var(--accent);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -208,8 +211,9 @@
 .sessionPanel {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
   min-height: 0;
   padding: var(--space-xs);
   .appSubtleScrollbar();
@@ -246,7 +250,7 @@
   display: flex;
   align-items: center;
   border-radius: var(--radius-md);
-  padding: 0 calc(var(--sidebar-content-inset, var(--space-lg)) - 8px);
+  padding: 0 var(--space-xs) 0 calc(var(--sidebar-content-inset, var(--space-lg)) - 8px);
   color: var(--muted);
   cursor: pointer;
   outline: none;
@@ -265,6 +269,13 @@
     color: var(--accent);
     background: var(--accent-soft);
     font-weight: var(--font-weight-semibold);
+
+    &:hover,
+    &[data-hovered],
+    &[data-focused] {
+      color: var(--accent);
+      background: var(--accent-soft-hover);
+    }
   }
 
   &[data-disabled] {
@@ -276,9 +287,13 @@
 
 .sessionItemWithActions {
   &:hover,
-  &[data-hovered] {
+  &[data-hovered],
+  &[data-focused],
+  &:focus-within {
     :global(.sessionActionsVisibleOnItem) {
       opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
     }
   }
 }

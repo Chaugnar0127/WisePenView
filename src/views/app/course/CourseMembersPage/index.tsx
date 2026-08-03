@@ -1,19 +1,56 @@
+import { getGroupDisplayConfig } from '@/components/Group/GroupDisplayConfig';
+import MemberList from '@/components/Group/MemberList';
 import { DataTable, type DataTableColumn } from '@/components/Table';
-import { useCourseService } from '@/domains';
+import { useCourseService, useGroupService } from '@/domains';
 import type { CourseMember } from '@/domains/Course';
+import { COURSE_ROLE } from '@/domains/Course';
+import { GROUP_TYPE } from '@/domains/Group';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { Chip } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
-import sharedStyles from '../../_styles/contextTab.module.less';
+import sharedStyles from '../_styles/contextPage.module.less';
 import styles from './style.module.less';
 
-function CourseMembersTab() {
+interface CourseMembersViewProps {
+  courseId: string;
+}
+
+const TEACHER_MEMBER_MANAGEMENT_CONFIG = getGroupDisplayConfig(GROUP_TYPE.ADVANCED, 'OWNER');
+
+function TeacherCourseMembersView({ courseId }: CourseMembersViewProps) {
   const { t } = useTranslation('course');
-  const { course } = useCourseContext();
+  const groupService = useGroupService();
+  const { data: group } = useRequest(() => groupService.fetchGroupInfo(courseId), {
+    refreshDeps: [courseId],
+  });
+
+  return (
+    <div className={`${sharedStyles.page} ${styles.page}`}>
+      <header className={sharedStyles.pageHeader}>
+        <h2>{t('members.title')}</h2>
+      </header>
+      <div className={styles.memberManagement}>
+        <MemberList
+          groupDisplayConfig={TEACHER_MEMBER_MANAGEMENT_CONFIG}
+          groupId={courseId}
+          inviteCode={group?.inviteCode}
+          pagination={{
+            defaultPageSize: 10,
+            pageSizeOptions: [5, 10, 20, 50],
+            showSizeChanger: true,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StudentCourseMembersView({ courseId }: CourseMembersViewProps) {
+  const { t } = useTranslation('course');
   const courseService = useCourseService();
   const { data, loading } = useRequest(() =>
-    courseService.listCourseMembers({ courseId: course.courseId, page: 1, size: 100 })
+    courseService.listCourseMembers({ courseId, page: 1, size: 100 })
   );
 
   const columns: DataTableColumn<CourseMember>[] = [
@@ -78,4 +115,13 @@ function CourseMembersTab() {
   );
 }
 
-export default CourseMembersTab;
+function CourseMembersPage() {
+  const { course } = useCourseContext();
+  return course.myRole === COURSE_ROLE.TEACHER ? (
+    <TeacherCourseMembersView courseId={course.courseId} />
+  ) : (
+    <StudentCourseMembersView courseId={course.courseId} />
+  );
+}
+
+export default CourseMembersPage;

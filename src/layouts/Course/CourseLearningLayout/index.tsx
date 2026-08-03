@@ -4,6 +4,7 @@ import {
   createResourceChatStateProvider,
   type ResourceChatContext,
 } from '@/components/ChatPanel/ResourceChatProtocol';
+import { COURSE_ROLE } from '@/domains/Course';
 import {
   SystemResizableHandle,
   SystemResizablePanel,
@@ -12,11 +13,12 @@ import {
 import WorkspaceHeader from '@/layouts/Workspace/_common/WorkspaceHeader';
 import type { ResourceHostLayoutConfig } from '@/views/workspace/ResourceHostContext';
 import clsx from 'clsx';
-import { ChevronRight, PanelRightClose, PanelRightOpen, Video } from 'lucide-react';
+import { PanelRightClose, PanelRightOpen, Video } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCourseContext } from '../CourseContext';
 import CourseResourceHost from '../CourseResourceHost';
+import CourseOutlineOverview from './_components/CourseOutlineOverview';
 import CourseOutlineSidebar from './_components/CourseOutlineSidebar';
 import CourseResourceIcon from './_components/CourseResourceIcon';
 import { useCourseChatDockController } from './controllers/useCourseChatDockController';
@@ -63,12 +65,8 @@ function CourseLearningLayout() {
       {...registeredResourceHeader}
       resource={{
         ...registeredResourceHeader.resource,
-        resourceId: undefined,
         breadcrumbItems: [],
         onBreadcrumbNavigate: () => {},
-        leadingActions: undefined,
-        actions: undefined,
-        moreMenu: undefined,
         chatPanelCollapsed: chatDock.collapsed,
         onToggleChatPanel: chatDock.toggle,
       }}
@@ -112,8 +110,11 @@ function CourseLearningLayout() {
       >
         <section className={styles.studyShell}>
           <CourseOutlineSidebar
+            courseId={course.courseId}
             courseName={course.name}
+            editable={course.myRole === COURSE_ROLE.TEACHER}
             nodes={navigation.visibleNodes}
+            allNodes={navigation.outlineNodes}
             selectedNodeId={selectedNode?.nodeId}
             searchQuery={navigation.searchQuery}
             expandSearchResults={Boolean(navigation.normalizedQuery)}
@@ -121,9 +122,8 @@ function CourseLearningLayout() {
             error={navigation.error}
             onSearchQueryChange={navigation.setSearchQuery}
             onSelectNode={navigation.openOutlineNode}
-            onSelectCourseSection={navigation.openCourseSection}
             onOpenCourseHome={navigation.openCourseHome}
-            onOpenCourseList={navigation.openCourseList}
+            onRefresh={navigation.refresh}
             onRetry={navigation.refresh}
           />
 
@@ -160,30 +160,15 @@ function CourseLearningLayout() {
                     />
                   )
                 ) : (
-                  <div className={styles.sectionOverview}>
-                    <p>
-                      {t('outline.resourceCount', { count: navigation.selectedResources.length })}
-                    </p>
-                    <div className={styles.resourceList}>
-                      {navigation.selectedResources.map((resource) => (
-                        <button
-                          key={resource.nodeId}
-                          type="button"
-                          onClick={() => navigation.openOutlineNode(resource.nodeId)}
-                        >
-                          <CourseResourceIcon node={resource} size={18} />
-                          <span>
-                            <strong>{resource.title}</strong>
-                            <small>
-                              {resource.read ? t('outline.read') : t('outline.unread')}
-                              {resource.durationLabel ? ` · ${resource.durationLabel}` : ''}
-                            </small>
-                          </span>
-                          <ChevronRight size={17} aria-hidden />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <CourseOutlineOverview
+                    key={selectedNode.nodeId}
+                    courseId={course.courseId}
+                    node={selectedNode}
+                    resources={navigation.selectedResources}
+                    editable={course.myRole === COURSE_ROLE.TEACHER}
+                    onOpenResource={(nodeId) => navigation.openOutlineNode(nodeId)}
+                    onSaved={navigation.refresh}
+                  />
                 )
               ) : (
                 <div className={styles.emptyMain}>{t('outline.empty')}</div>

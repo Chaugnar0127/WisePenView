@@ -3,6 +3,8 @@
  */
 import TableDrive from '@/components/Drive/TableDrive';
 import { Spin } from '@/components/Feedback';
+import { getGroupDisplayConfig } from '@/components/Group/GroupDisplayConfig';
+import MemberList from '@/components/Group/MemberList';
 import { useGroupService } from '@/domains';
 import type { Group, GroupResConfig } from '@/domains/Group';
 import { GROUP_TYPE } from '@/domains/Group';
@@ -17,8 +19,6 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
-import { getGroupDisplayConfig } from '../_components/GroupDisplayConfig';
-import MemberList from '../_components/MemberList';
 import OwnerGroupTokenTransfer from '../_components/OwnerGroupTokenTransfer';
 import layout from '../style.module.less';
 import GroupDescriptionSettings from './_components/GroupDescriptionSettings';

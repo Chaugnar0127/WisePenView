@@ -1,12 +1,8 @@
-.modalForm {
-  display: contents;
-}
-
 .field {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 8px;
-  min-width: 0;
 }
 
 .fieldLabel {
@@ -47,6 +43,19 @@
   flex: 0 0 6px;
 }
 
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.fieldError {
+  margin: 0;
+  color: var(--error);
+  font-size: var(--font-size-sm, 14px);
+  line-height: 1.4;
+}
+
 @media (max-width: 520px) {
   .codeInput {
     gap: 4px;
@@ -66,17 +75,4 @@
     width: 4px;
     flex-basis: 4px;
   }
-}
-
-.hint {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.fieldError {
-  margin: 0;
-  color: var(--error);
-  font-size: var(--font-size-sm, 14px);
-  line-height: 1.4;
 }

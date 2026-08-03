@@ -114,6 +114,7 @@ interface CourseOutlineNodeBase {
 
 export interface CourseOutlineContainerNode extends CourseOutlineNodeBase {
   nodeType: 'CHAPTER' | 'SECTION';
+  description?: string;
   children: CourseOutlineNode[];
 }
 

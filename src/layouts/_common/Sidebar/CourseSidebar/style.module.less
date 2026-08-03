@@ -1,14 +1,14 @@
 @import '@/styles/scrollbar.module.less';
 
 .root {
-  --sidebar-course-edge-inset: var(--space-2xs, 4px);
-
   flex: 1;
   display: flex;
   min-height: 0;
   flex-direction: column;
-  padding: 8px var(--sidebar-course-edge-inset);
-  overflow: auto;
+  padding: var(--space-xs, 8px);
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
   background: transparent;
   .appSubtleScrollbar();
 }
@@ -21,11 +21,11 @@
   gap: var(--space-2xs, 4px);
 
   :global(.wisepen-tree__item) {
-    min-height: 40px;
+    min-height: 32px;
     width: 100%;
     padding: 0;
     padding-left: calc(
-      var(--sidebar-content-inset, var(--space-lg)) - var(--sidebar-course-edge-inset)
+      var(--sidebar-content-inset, var(--space-lg)) - var(--space-xs, 8px)
     );
     border-radius: var(--radius-md, 6px);
     color: var(--muted);
@@ -37,15 +37,15 @@
     &:hover,
     &:focus-within {
       color: var(--foreground);
-      background: var(--surface-tertiary);
+      background: var(--accent-soft);
     }
   }
 
   :global(.wisepen-tree__content) {
-    min-height: 40px;
+    min-height: 32px;
     flex: 1;
     min-width: 0;
-    padding: 0;
+    padding: 0 var(--space-xs, 8px) 0 0;
     color: inherit;
     background: transparent !important;
     border-radius: 0;
@@ -57,16 +57,21 @@
   }
 
   :global(.wisepen-tree__item[aria-selected='true']) {
-    color: var(--foreground);
-    background: var(--surface-tertiary);
+    color: var(--accent);
+    background: var(--accent-soft);
     font-weight: var(--font-weight-semibold);
+
+    &:hover,
+    &:focus-within {
+      color: var(--accent);
+      background: var(--accent-soft-hover);
+    }
   }
 
   :global(.wisepen-tree__item[aria-selected='true']) :global(.wisepen-tree__content) {
     flex: 1;
     background: transparent !important;
     border-radius: 0;
-    padding-right: 0;
   }
 
   :global(.wisepen-tree__switcher),
@@ -104,14 +109,6 @@
   gap: var(--space-2xs, 4px);
 }
 
-.nodeMainRoot {
-  color: var(--foreground);
-}
-
-.nodeMainRoot .nodeIcon {
-  color: var(--accent);
-}
-
 .nodeIcon {
   display: inline-flex;
   flex: 0 0 16px;
@@ -119,6 +116,7 @@
   height: 16px;
   align-items: center;
   justify-content: center;
+  color: var(--warning);
   line-height: 0;
 }
 

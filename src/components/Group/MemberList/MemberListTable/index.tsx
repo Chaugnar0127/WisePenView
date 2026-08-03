@@ -234,6 +234,18 @@ function buildReadonlyColumns(
 
   columns.push(
     {
+      id: 'email',
+      label: t('member.table.columns.email'),
+      width: 'lg',
+      align: 'start',
+      allowsSorting: true,
+      getSortValue: (member) => member.email?.trim() ?? '',
+      renderCell: (member) => {
+        const email = member.email?.trim();
+        return <DataTable.TextCell title={email}>{email || EMPTY_TEXT}</DataTable.TextCell>;
+      },
+    },
+    {
       id: 'role',
       label: t('member.table.columns.role'),
       width: 'sm',
@@ -280,7 +292,7 @@ function buildEditableColumns(
     if (column.id === 'member') {
       return {
         ...column,
-        width: 'fill',
+        width: 'lg',
         renderCell: column.renderCell,
       };
     }

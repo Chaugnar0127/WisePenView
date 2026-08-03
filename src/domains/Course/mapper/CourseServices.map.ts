@@ -19,6 +19,7 @@ import {
   type CourseRole,
 } from '@/domains/Course/enum';
 import type { Group, GroupMember } from '@/domains/Group';
+import { TAG_META_SCHEMA, type TagMetaInfo } from '@/domains/Tag';
 
 const COURSE_META_SCHEMA = 'wisepen.course.v1';
 const COURSE_META_KEYS = new Set([
@@ -61,6 +62,37 @@ interface SerializeCourseMetaRequest {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const getCourseOutlineResourceOrder = (tagMetaInfo?: TagMetaInfo): string[] =>
+  Array.isArray(tagMetaInfo?.resourceOrder)
+    ? tagMetaInfo.resourceOrder.filter((value): value is string => typeof value === 'string')
+    : [];
+
+const mapCourseOutlineResourceOrderMeta = (
+  tagMetaInfo: TagMetaInfo | undefined,
+  orderedResourceIds: string[]
+): TagMetaInfo => ({
+  ...tagMetaInfo,
+  schema: tagMetaInfo?.schema ?? TAG_META_SCHEMA,
+  resourceOrder: orderedResourceIds,
+});
+
+const sortCourseOutlineResources = <T extends { resourceId: string }>(
+  resources: T[],
+  tagMetaInfo?: TagMetaInfo
+): T[] => {
+  const resourceOrder = getCourseOutlineResourceOrder(tagMetaInfo);
+  if (resourceOrder.length === 0) return resources;
+  const orderIndex = new Map(resourceOrder.map((resourceId, index) => [resourceId, index]));
+  return [...resources].sort((left, right) => {
+    const leftIndex = orderIndex.get(left.resourceId);
+    const rightIndex = orderIndex.get(right.resourceId);
+    if (leftIndex === undefined && rightIndex === undefined) return 0;
+    if (leftIndex === undefined) return 1;
+    if (rightIndex === undefined) return -1;
+    return leftIndex - rightIndex;
+  });
+};
 
 const parseOptionalString = (value: unknown): string | undefined =>
   typeof value === 'string' ? value : undefined;
@@ -214,6 +246,9 @@ const mapGroupToCourseDetail = (group: Group, role: 'OWNER' | 'ADMIN' | 'MEMBER'
 export const CourseServicesMap = {
   parseCourseMeta,
   serializeCourseMeta,
+  getCourseOutlineResourceOrder,
+  mapCourseOutlineResourceOrderMeta,
+  sortCourseOutlineResources,
   mapGroupToCourseSummary,
   mapGroupToCourseDetail,
   mapGroupMemberToCourseMember,

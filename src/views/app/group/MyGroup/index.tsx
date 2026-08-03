@@ -1,13 +1,19 @@
+import CourseCard from '@/components/Course/CourseCard';
+import CreateCourseModal from '@/components/Course/CreateCourseModal';
+import JoinCourseModal from '@/components/Course/JoinCourseModal';
 import { Empty } from '@/components/Feedback';
-import { useGroupService } from '@/domains';
+import Select from '@/components/Input/Select';
+import { useCourseService, useGroupService, useUserService } from '@/domains';
+import type { CourseSummary } from '@/domains/Course';
 import type { Group } from '@/domains/Group';
 import { GROUP_ROLE_FILTER_MAP, GROUP_TYPE } from '@/domains/Group';
-import { Button, Card, ListBox, Pagination, Select, Skeleton, Tabs, toast } from '@heroui/react';
-import { usePagination } from 'ahooks';
+import { IDENTITY } from '@/domains/User';
+import { Button, Card, ListBox, Pagination, Skeleton, Tabs, toast } from '@heroui/react';
+import { usePagination, useRequest } from 'ahooks';
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import GroupCard from '../_components/GroupCard';
 import { CreateGroupModal, JoinGroupModal } from '../_components/GroupModals';
 import layout from '../style.module.less';
@@ -22,6 +28,7 @@ const GROUP_CARD_SKELETON_KEYS = Array.from(
 
 type PaginationPageItem = number | 'ellipsis';
 type GroupSection = 'groups' | 'courseGroups';
+type GroupListItem = { kind: 'group'; group: Group } | { kind: 'course'; course: CourseSummary };
 
 function buildPaginationItems(currentPage: number, totalPages: number): PaginationPageItem[] {
   const pages = new Set<number>([1, totalPages]);
@@ -64,15 +71,25 @@ function GroupCardSkeleton() {
 }
 
 function MyGroup() {
-  const { t } = useTranslation('group');
+  const { t } = useTranslation(['group', 'course']);
   const groupService = useGroupService();
+  const courseService = useCourseService();
+  const userService = useUserService();
   const navigate = useNavigate();
-  const location = useLocation();
-  const initialInviteCode = new URLSearchParams(location.search).get('inviteCode') ?? undefined;
-  const [activeSection, setActiveSection] = useState<GroupSection>('groups');
+  const [searchParams] = useSearchParams();
+  const initialInviteCode = searchParams.get('inviteCode') ?? undefined;
+  const [activeSection, setActiveSection] = useState<GroupSection>(() =>
+    searchParams.get('section') === 'courseGroups' ? 'courseGroups' : 'groups'
+  );
   const [activeTab, setActiveTab] = useState<string>('all');
   const [joinGroupModalOpen, setJoinGroupModalOpen] = useState(() => Boolean(initialInviteCode));
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
+  const [joinCourseModalOpen, setJoinCourseModalOpen] = useState(false);
+  const [createCourseModalOpen, setCreateCourseModalOpen] = useState(false);
+  const userRequest = useRequest(() => userService.getUserInfo());
+  const identityType = userRequest.data?.identityType;
+  const canCreateCourse = identityType === IDENTITY.TEACHER || identityType === IDENTITY.ADMIN;
+  const canJoinCourse = identityType === IDENTITY.STUDENT || identityType === IDENTITY.ADMIN;
 
   const groupRoleFilter =
     activeSection === 'courseGroups'
@@ -86,13 +103,21 @@ function MyGroup() {
     pagination: { current: pageNum, pageSize: size, onChange: onPageChange },
   } = usePagination(
     async ({ current, pageSize }) => {
+      if (activeSection === 'courseGroups') {
+        const coursePage = await courseService.listMyCourses({ page: current, size: pageSize });
+        return {
+          list: coursePage.list.map((course): GroupListItem => ({ kind: 'course', course })),
+          total: coursePage.total,
+        };
+      }
+
       const allGroups = await groupService.fetchAllMyGroups(groupRoleFilter);
-      const expectedGroupType =
-        activeSection === 'courseGroups' ? GROUP_TYPE.ADVANCED : GROUP_TYPE.NORMAL;
-      const matchingGroups = allGroups.filter((group) => group.groupType === expectedGroupType);
+      const matchingGroups = allGroups.filter((group) => group.groupType === GROUP_TYPE.NORMAL);
       const start = Math.max(0, (current - 1) * pageSize);
       return {
-        list: matchingGroups.slice(start, start + pageSize),
+        list: matchingGroups
+          .slice(start, start + pageSize)
+          .map((group): GroupListItem => ({ kind: 'group', group })),
         total: matchingGroups.length,
       };
     },
@@ -105,7 +130,7 @@ function MyGroup() {
       },
     }
   );
-  const groups: Group[] = groupsData?.list ?? [];
+  const listItems: GroupListItem[] = groupsData?.list ?? [];
   const total = groupsData?.total ?? 0;
   const totalPages = Math.max(Math.ceil(total / size), 1);
   const pages = buildPaginationItems(pageNum, totalPages);
@@ -131,6 +156,10 @@ function MyGroup() {
     }
   };
 
+  const handleCourseClick = (course: CourseSummary) => {
+    navigate(`/app/course/${course.courseId}/home`);
+  };
+
   return (
     <div className={layout.pageContainer}>
       <div className={layout.pageHeaderWithActions}>
@@ -148,6 +177,24 @@ function MyGroup() {
               <UserPlus size={16} aria-hidden="true" />
               {t('list.join')}
             </Button>
+          </div>
+        ) : canCreateCourse || canJoinCourse ? (
+          <div className={layout.actionsRow}>
+            {canCreateCourse ? (
+              <Button
+                variant={canJoinCourse ? 'secondary' : 'primary'}
+                onPress={() => setCreateCourseModalOpen(true)}
+              >
+                <Plus size={16} aria-hidden="true" />
+                {t('list.create', { ns: 'course' })}
+              </Button>
+            ) : null}
+            {canJoinCourse ? (
+              <Button variant="primary" onPress={() => setJoinCourseModalOpen(true)}>
+                <UserPlus size={16} aria-hidden="true" />
+                {t('list.join', { ns: 'course' })}
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -227,17 +274,23 @@ function MyGroup() {
         </div>
       ) : (
         <>
-          {groups.length === 0 ? (
+          {listItems.length === 0 ? (
             <div className={page.emptyState}>
               <Empty description={t('list.empty')} />
             </div>
           ) : (
             <div className={page.groupGrid}>
-              {groups.map((group) => (
-                <div key={group.groupId} className={page.groupGridItem}>
-                  <GroupCard group={group} onClick={handleGroupClick} />
-                </div>
-              ))}
+              {listItems.map((item) =>
+                item.kind === 'course' ? (
+                  <div key={item.course.courseId} className={page.groupGridItem}>
+                    <CourseCard course={item.course} onClick={handleCourseClick} />
+                  </div>
+                ) : (
+                  <div key={item.group.groupId} className={page.groupGridItem}>
+                    <GroupCard group={item.group} onClick={handleGroupClick} />
+                  </div>
+                )
+              )}
             </div>
           )}
 
@@ -297,6 +350,16 @@ function MyGroup() {
         isOpen={createGroupModalOpen}
         onOpenChange={setCreateGroupModalOpen}
         onSuccess={handleModalSuccess}
+      />
+      <JoinCourseModal
+        isOpen={joinCourseModalOpen}
+        onOpenChange={setJoinCourseModalOpen}
+        onJoined={refreshGroups}
+      />
+      <CreateCourseModal
+        isOpen={createCourseModalOpen}
+        onOpenChange={setCreateCourseModalOpen}
+        onCreated={(courseId) => navigate(`/app/course/${courseId}/home`)}
       />
     </div>
   );

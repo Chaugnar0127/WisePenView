@@ -220,3 +220,26 @@ export const takeCourseMockOutlineResource = (
   const [resource] = parent.children.splice(index, 1);
   return resource?.nodeType === 'RESOURCE' ? resource : undefined;
 };
+
+export const reorderCourseMockOutlineResources = (
+  container: Extract<CourseOutlineNode, { nodeType: 'CHAPTER' | 'SECTION' }>,
+  orderedResourceIds: string[]
+): boolean => {
+  const resources = container.children.filter(
+    (node): node is Extract<CourseOutlineNode, { nodeType: 'RESOURCE' }> =>
+      node.nodeType === 'RESOURCE'
+  );
+  const resourceMap = new Map(resources.map((resource) => [resource.resourceId, resource]));
+  if (
+    orderedResourceIds.length !== resourceMap.size ||
+    orderedResourceIds.some((resourceId) => !resourceMap.has(resourceId))
+  ) {
+    return false;
+  }
+  const containers = container.children.filter((node) => node.nodeType !== 'RESOURCE');
+  container.children = [
+    ...containers,
+    ...orderedResourceIds.map((resourceId) => resourceMap.get(resourceId)!),
+  ];
+  return true;
+};

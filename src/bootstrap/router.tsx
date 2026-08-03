@@ -51,6 +51,8 @@ const CourseAssignmentDetailPage = lazy(
   () => import('@/views/app/course/CourseAssignmentDetailPage')
 );
 const CourseMaterialsPage = lazy(() => import('@/views/app/course/CourseMaterialsPage'));
+const CourseMembersPage = lazy(() => import('@/views/app/course/CourseMembersPage'));
+const CourseAnnouncementsPage = lazy(() => import('@/views/app/course/CourseAnnouncementsPage'));
 const CourseEditorPage = lazy(() => import('@/views/app/course/CourseEditorPage'));
 
 const router = createBrowserRouter([
@@ -243,6 +245,14 @@ const router = createBrowserRouter([
                       {
                         path: 'materials',
                         element: <CourseMaterialsPage />,
+                      },
+                      {
+                        path: 'announcements',
+                        element: <CourseAnnouncementsPage />,
+                      },
+                      {
+                        path: 'members',
+                        element: <CourseMembersPage />,
                       },
                     ],
                   },

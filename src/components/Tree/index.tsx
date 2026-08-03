@@ -34,13 +34,13 @@ interface TreeExpandInfo {
 
 export type TreeDropPosition = 'before' | 'inside' | 'after';
 
-interface TreeAllowDropInfo {
+export interface TreeAllowDropInfo {
   dragNode: DataNode;
   dropNode: DataNode;
   dropPosition: TreeDropPosition;
 }
 
-type TreeDropInfo = TreeAllowDropInfo;
+export type TreeDropInfo = TreeAllowDropInfo;
 
 export interface TreeProps {
   treeData?: DataNode[];

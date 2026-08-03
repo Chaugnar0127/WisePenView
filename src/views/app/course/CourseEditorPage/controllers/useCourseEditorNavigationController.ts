@@ -1,3 +1,4 @@
+import { useUnmount } from 'ahooks';
 import { useRef, useState, type UIEvent } from 'react';
 import { COURSE_EDITOR_SECTION_IDS, type CourseEditorSectionId } from '../model';
 
@@ -11,6 +12,13 @@ export function useCourseEditorNavigationController() {
   const setEditorScrollElement = (element: HTMLElement | null) => {
     editorScrollRef.current = element;
   };
+
+  useUnmount(() => {
+    if (programmaticScrollReleaseTimerRef.current) {
+      clearTimeout(programmaticScrollReleaseTimerRef.current);
+      programmaticScrollReleaseTimerRef.current = null;
+    }
+  });
 
   const navigateToSection = (sectionId: CourseEditorSectionId) => {
     setActiveSection(sectionId);

@@ -65,6 +65,14 @@
   font-size: var(--font-size-lg);
 }
 
+.section .body {
+  width: min(100%, 640px);
+  margin: 0 auto;
+  grid-template-columns: 184px minmax(220px, 260px);
+  column-gap: calc(var(--space-xl) + var(--space-sm));
+  justify-content: center;
+}
+
 .header p {
   margin-top: 2px;
   color: var(--muted);
@@ -136,7 +144,8 @@
 }
 
 @media (max-width: 720px) {
-  .body {
+  .body,
+  .section .body {
     grid-template-columns: 1fr;
     justify-items: center;
   }

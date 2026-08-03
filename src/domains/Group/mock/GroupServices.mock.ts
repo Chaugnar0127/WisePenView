@@ -16,7 +16,10 @@ import mockdata from './mockdata.json';
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const groups = getMockGroups();
-const members = mockdata.members as GroupMember[];
+const members = (mockdata.members as GroupMember[]).map((member) => ({
+  ...member,
+  email: member.email ?? `member-${member.userId}@example.invalid`,
+}));
 const myRole = mockdata.myRole as 'OWNER' | 'ADMIN' | 'MEMBER';
 
 const pickGroupBaseInfo = (group: Group): GroupBaseInfo => ({

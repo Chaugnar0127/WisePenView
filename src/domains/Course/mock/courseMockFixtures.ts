@@ -139,11 +139,54 @@ export const COURSE_MOCK_DETAILS: CourseDetail[] = [
 ];
 
 export const COURSE_MOCK_OUTLINES: Record<string, CourseOutlineNode[]> = {
+  'course-computer-networks': [
+    {
+      nodeId: 'network-chapter-1',
+      nodeType: 'CHAPTER',
+      title: '第一章 计算机网络概述',
+      description: '了解计算机网络的基本组成、分层思想以及本课程的学习要求。',
+      children: [
+        {
+          nodeId: 'network-introduction',
+          nodeType: 'RESOURCE',
+          title: '课程导学与学习要求',
+          resourceId: 'mock-note-1',
+          resourceType: 'note',
+          durationLabel: '10 分钟',
+          read: true,
+        },
+      ],
+    },
+    {
+      nodeId: 'network-chapter-2',
+      nodeType: 'CHAPTER',
+      title: '第二章 应用层',
+      children: [
+        {
+          nodeId: 'network-http',
+          nodeType: 'SECTION',
+          title: '2.1 HTTP 与 Web',
+          children: [
+            {
+              nodeId: 'network-http-reading',
+              nodeType: 'RESOURCE',
+              title: 'HTTP 协议补充阅读',
+              resourceId: 'mock-course-syllabus',
+              resourceType: 'file',
+              viewer: 'pdf-preview',
+              read: false,
+            },
+          ],
+        },
+      ],
+    },
+  ],
   [PRIMARY_COURSE_ID]: [
     {
       nodeId: 'chapter-1',
       nodeType: 'CHAPTER',
       title: '第一章 课程概览',
+      description: '从课程导学开始，了解本学期的学习安排、考核方式与资源使用方法。',
       children: [
         {
           nodeId: 'intro',
@@ -174,6 +217,7 @@ export const COURSE_MOCK_OUTLINES: Record<string, CourseOutlineNode[]> = {
           nodeId: 'section-21',
           nodeType: 'SECTION',
           title: '2.1 线性表',
+          description: '学习线性表的逻辑结构，并比较顺序存储与链式存储的实现特点。',
           children: [
             {
               nodeId: 'video-list',
@@ -342,6 +386,28 @@ export const COURSE_MOCK_MEMBERS: Record<string, CourseMember[]> = {
       name: '当前学生',
       email: 'student@example.invalid',
       studentNumber: '2026000002',
+      role: COURSE_ROLE.STUDENT,
+    },
+  ],
+  'course-computer-networks': [
+    {
+      userId: 'mock-teacher-network',
+      name: '示例教师甲',
+      email: 'network-teacher@example.invalid',
+      role: COURSE_ROLE.TEACHER,
+    },
+    {
+      userId: 'mock-student-network-current',
+      name: '当前学生',
+      email: 'network-student@example.invalid',
+      studentNumber: '2026000011',
+      role: COURSE_ROLE.STUDENT,
+    },
+    {
+      userId: 'mock-student-network-peer',
+      name: '示例同学',
+      email: 'network-peer@example.invalid',
+      studentNumber: '2026000012',
       role: COURSE_ROLE.STUDENT,
     },
   ],

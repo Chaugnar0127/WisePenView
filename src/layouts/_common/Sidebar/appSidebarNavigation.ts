@@ -1,11 +1,10 @@
-import { Bell, BookOpen, FileText, MessageSquarePlus, Users, type LucideIcon } from 'lucide-react';
+import { Bell, FileText, MessageSquarePlus, Users, type LucideIcon } from 'lucide-react';
 
 export const APP_HEADER_NAV_KEY = {
   CHAT: '/app/chat',
   DRIVE: '/app/drive/personal',
   NOTIFICATIONS: '/app/notifications',
   GROUP: '/app/my-group',
-  COURSE: '/app/course',
 } as const;
 
 export type AppHeaderNavKey = (typeof APP_HEADER_NAV_KEY)[keyof typeof APP_HEADER_NAV_KEY];
@@ -41,12 +40,6 @@ export const APP_HEADER_NAV_ITEMS: readonly AppHeaderNavItem[] = [
     labelKey: 'navigation.groups',
     icon: Users,
     routePrefixes: ['/app/my-group'],
-  },
-  {
-    key: APP_HEADER_NAV_KEY.COURSE,
-    labelKey: 'navigation.courses',
-    icon: BookOpen,
-    routePrefixes: ['/app/course'],
   },
 ];
 

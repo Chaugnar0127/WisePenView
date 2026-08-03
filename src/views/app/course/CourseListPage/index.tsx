@@ -1,3 +1,6 @@
+import CourseCard from '@/components/Course/CourseCard';
+import CreateCourseModal from '@/components/Course/CreateCourseModal';
+import JoinCourseModal from '@/components/Course/JoinCourseModal';
 import { useCourseService, useUserService } from '@/domains';
 import type { CourseSummary } from '@/domains/Course';
 import { IDENTITY } from '@/domains/User';
@@ -8,9 +11,6 @@ import { CirclePlus, LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import CourseCard from '../_components/CourseCard';
-import CreateCourseModal from './_components/CreateCourseModal';
-import JoinCourseModal from './_components/JoinCourseModal';
 import styles from './style.module.less';
 
 function CourseListPage() {

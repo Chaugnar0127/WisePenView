@@ -2,9 +2,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
   box-sizing: border-box;
-  width: min(100%, 1120px);
+  width: min(100%, var(--course-context-max-width));
   margin: 0 auto;
-  padding: var(--space-xl);
+  padding: var(--space-xl) var(--course-context-gutter);
   gap: calc(var(--space-xl) * 1.5);
 }
 
@@ -19,6 +19,10 @@
 
 .infoSection + .infoSection {
   padding-top: var(--space-xl);
+}
+
+.infoSection:last-child {
+  border-bottom: 0;
 }
 
 .infoSectionHeader {
@@ -48,7 +52,7 @@
 }
 
 .goalList {
-  margin: 0;
+  margin: 0 0 0 calc(19px + var(--space-md));
   padding: 0;
   border-top: 1px solid var(--border-light);
   list-style: none;
@@ -147,7 +151,7 @@
 }
 
 @media (max-width: 560px) {
-  .infoPage {
-    padding: var(--space-lg);
+  .goalList {
+    margin-left: 0;
   }
 }

@@ -41,6 +41,7 @@ export {
   useImageService,
   useInlineCommentService,
   useInteractService,
+  useMessageService,
   useNoteService,
   useQuotaService,
   useResourceService,

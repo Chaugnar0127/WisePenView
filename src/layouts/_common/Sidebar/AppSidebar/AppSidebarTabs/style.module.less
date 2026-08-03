@@ -178,24 +178,28 @@
 
 .panelTrack {
   display: flex;
-  width: 300%;
+  width: 400%;
   height: 100%;
   min-height: 0;
   transform: translate3d(0, 0, 0);
 }
 
 .panelTrackDrive {
-  transform: translate3d(-33.333333%, 0, 0);
+  transform: translate3d(-25%, 0, 0);
+}
+
+.panelTrackNotifications {
+  transform: translate3d(-75%, 0, 0);
 }
 
 .panelTrackCourses {
-  transform: translate3d(-66.666667%, 0, 0);
+  transform: translate3d(-50%, 0, 0);
 }
 
 .tabPanel {
   box-sizing: border-box;
-  flex: 0 0 33.333333%;
-  width: 33.333333%;
+  flex: 0 0 25%;
+  width: 25%;
   height: 100%;
   min-width: 0;
   min-height: 0;
@@ -224,6 +228,7 @@
 }
 
 .drivePanel,
+.notificationPanel,
 .coursePanel {
   display: flex;
   flex-direction: column;

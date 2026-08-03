@@ -9,6 +9,7 @@ import type { IGroupService } from '@/domains/Group';
 import type { IImageService } from '@/domains/Image';
 import type { IInlineCommentService } from '@/domains/InlineComment';
 import type { IInteractService } from '@/domains/Interact';
+import type { IMessageService } from '@/domains/Message';
 import type { INoteService } from '@/domains/Note';
 import type { IQuotaService } from '@/domains/Quota';
 import type { IResourceService } from '@/domains/Resource';
@@ -30,6 +31,7 @@ export interface ServicesContextValue {
   imageService: IImageService;
   inlineCommentService: IInlineCommentService;
   interactService: IInteractService;
+  messageService: IMessageService;
   noteService: INoteService;
   quotaService: IQuotaService;
   resourceService: IResourceService;

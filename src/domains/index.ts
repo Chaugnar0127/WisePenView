@@ -14,6 +14,7 @@ export {
   useImageService,
   useInlineCommentService,
   useInteractService,
+  useMessageService,
   useNoteService,
   useQuotaService,
   useResourceService,
@@ -24,5 +25,6 @@ export {
   useWalletService,
 } from './_registry';
 export type { ServicesContextValue } from './_registry';
+export type { IMessageService, UserMessage } from './Message';
 export { FEEDBACK_TYPE } from './User';
 export type { FeedbackType, SubmitFeedbackRequest } from './User';

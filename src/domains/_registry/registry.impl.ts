@@ -21,6 +21,7 @@ import { createGroupServices } from '@/domains/Group/service/GroupServices.impl'
 import { createImageServices } from '@/domains/Image/service/ImageServices.impl';
 import { createInlineCommentServices } from '@/domains/InlineComment/service/InlineCommentServices.impl';
 import { createInteractServices } from '@/domains/Interact/service/InteractServices.impl';
+import { createMessageServices } from '@/domains/Message/service/MessageServices.impl';
 import { createNoteServices } from '@/domains/Note/service/NoteServices.impl';
 import { createQuotaServices } from '@/domains/Quota/service/QuotaServices.impl';
 import { createResourceServices } from '@/domains/Resource/service/ResourceServices.impl';
@@ -40,6 +41,7 @@ const groupService = createGroupServices();
 const imageService = createImageServices();
 const inlineCommentService = createInlineCommentServices();
 const interactService = createInteractServices();
+const messageService = createMessageServices();
 const quotaService = createQuotaServices();
 const speechService = createSpeechServices();
 const userService = createUserServices();
@@ -88,6 +90,7 @@ const servicesValue: ServicesContextValue = {
   imageService: imageService,
   inlineCommentService: inlineCommentService,
   interactService: interactService,
+  messageService: messageService,
   noteService: noteService,
   quotaService: quotaService,
   resourceService: resourceService,

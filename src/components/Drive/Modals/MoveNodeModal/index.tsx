@@ -1,15 +1,12 @@
-import DriveNavigator from '@/components/Drive/DriveNavigator';
-import AppModal from '@/components/Overlay/AppModal';
 import { useDriveService } from '@/domains';
 import type { FolderNode, IDriveService } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getDriveScopeGroupId, type DriveActionTarget } from '../../common/driveComponentModel';
+import DriveFolderPickerModal from '../DriveFolderPickerModal';
 import type { MoveNodeModalProps } from './index.type';
-import styles from './style.module.less';
 
 const getNodeName = (node: DriveActionTarget): string => {
   if (node.type === 'folder') return node.name;
@@ -58,7 +55,6 @@ function MoveNodeModal({
 }: MoveNodeModalProps) {
   const { t } = useTranslation(['drive', 'common']);
   const driveService = useDriveService();
-  const [selectedTargetId, setSelectedTargetId] = useState<string>();
   const nodeIdsKey = nodes.map((node) => node.id).join('\u0000');
   const effectiveRootId = nodes[0]?.scope.rootId ?? rootId;
   const effectiveGroupId = groupId ?? (nodes[0] ? getDriveScopeGroupId(nodes[0].scope) : undefined);
@@ -87,9 +83,6 @@ function MoveNodeModal({
     {
       ready: isOpen && nodes.length > 0,
       refreshDeps: [isOpen, nodeIdsKey, effectiveRootId, effectiveGroupId],
-      onBefore: () => {
-        setSelectedTargetId(undefined);
-      },
       onError: (err) => {
         toast.danger(parseErrorMessage(err));
       },
@@ -111,8 +104,8 @@ function MoveNodeModal({
   })();
 
   const { loading: moving, run: runMove } = useRequest(
-    async () => {
-      if (nodes.length === 0 || !selectedTargetId) return;
+    async (selectedTargetId: string) => {
+      if (nodes.length === 0) return 0;
       return await driveService.moveNodesToFolder({
         nodeIds: nodes.map((node) => node.id),
         targetFolderNodeId: selectedTargetId,
@@ -121,7 +114,7 @@ function MoveNodeModal({
     },
     {
       manual: true,
-      onSuccess: (movedCount) => {
+      onSuccess: (movedCount, [selectedTargetId]) => {
         if (movedCount === 0) {
           toast.success(t('move.feedback.alreadyThere'));
           onOpenChange(false);
@@ -132,9 +125,7 @@ function MoveNodeModal({
             ? t('move.feedback.movedToDrive', { count: movedCount })
             : t('move.feedback.moved', { count: movedCount })
         );
-        if (selectedTargetId) {
-          onSuccess?.(selectedTargetId);
-        }
+        onSuccess?.(selectedTargetId);
         onOpenChange(false);
       },
       onError: (err) => {
@@ -143,64 +134,24 @@ function MoveNodeModal({
     }
   );
 
-  const handleConfirm = () => {
-    if (nodes.length === 0 || !selectedTargetId) return;
-    runMove();
-  };
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen && moving) return;
-    onOpenChange(nextOpen);
-  };
-
   return (
-    <AppModal
+    <DriveFolderPickerModal
       isOpen={isOpen && nodes.length > 0}
-      onOpenChange={handleOpenChange}
       title={isTrashView ? t('move.titleToDrive') : t('move.titleToFolder')}
-      size="md"
-      isDismissable={!moving}
-      actions={
-        <>
-          <Button variant="secondary" isDisabled={moving} onPress={() => handleOpenChange(false)}>
-            {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
-            variant="primary"
-            isDisabled={moving || !selectedTargetId}
-            aria-busy={moving || undefined}
-            onPress={handleConfirm}
-          >
-            {t('actions.confirm', { ns: 'common' })}
-          </Button>
-        </>
+      hint={
+        nodes.length === 1
+          ? t('move.selectedItem', { name: getNodeName(nodes[0]) })
+          : t('move.selectedCount', { count: nodes.length })
       }
-    >
-      <div className={styles.wrapper}>
-        {nodes.length === 1 ? (
-          <div className={styles.hint}>
-            {t('move.selectedItem', { name: getNodeName(nodes[0]) })}
-          </div>
-        ) : (
-          <div className={styles.hint}>{t('move.selectedCount', { count: nodes.length })}</div>
-        )}
-        <div className={styles.treeWrap}>
-          <DriveNavigator
-            rootId={effectiveRootId}
-            groupId={effectiveGroupId}
-            selectableTypes={['root', 'folder']}
-            disabledNodeIds={[...disabledTargetIds]}
-            disabled={moving}
-            onChange={(selected) => {
-              const targetFolder = selected.find(
-                (item) => item.kind === 'root' || item.kind === 'folder'
-              );
-              setSelectedTargetId(targetFolder?.nodeId);
-            }}
-          />
-        </div>
-      </div>
-    </AppModal>
+      rootId={effectiveRootId}
+      groupId={effectiveGroupId}
+      disabledNodeIds={[...disabledTargetIds]}
+      isSubmitting={moving}
+      confirmText={t('actions.confirm', { ns: 'common' })}
+      cancelText={t('actions.cancel', { ns: 'common' })}
+      onOpenChange={onOpenChange}
+      onConfirm={(target) => runMove(target.nodeId)}
+    />
   );
 }
 

@@ -2,13 +2,15 @@ import { registerServiceCacheCleaner } from '@/domains/_shared/cacheRegistry';
 import { createTtlCache } from '@/domains/_shared/ttlCache';
 import type { IResourceService } from '@/domains/Resource';
 import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
-import type { TagListByTagResponse, TagTreeNode } from '@/domains/Tag';
+import { TAG_META_SCHEMA, type TagListByTagResponse, type TagTreeNode } from '@/domains/Tag';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { normalizeTagGroupId } from '@/utils/normalize/normalizeTagGroupId';
 import { TagApi } from '../apis/TagApi';
 import { TagServicesMap } from '../mapper/TagServices.map';
 import type {
   GetResByTagRequest,
   ITagService,
+  ReorderSiblingTagsRequest,
   TagCreateRequest,
   TagDeleteRequest,
   TagMoveRequest,
@@ -20,6 +22,7 @@ const TAG_TREE_CACHE_TTL_MS = 15_000;
 /** 系统保留前缀：以 `.` 开头的 tag（如 `.Trash`）对 Tag 视图不可见 */
 const HIDDEN_TAG_PREFIX = '.';
 const TRASH_FOLDER_NAME = '.Trash';
+const TAG_SORT_ORDER_STEP = 1024;
 
 const buildFlatMap = (roots: TagTreeNode[]): Map<string, TagTreeNode> => {
   const map = new Map<string, TagTreeNode>();
@@ -203,6 +206,47 @@ export const createTagServices = (deps: TagServicesDeps): ITagService => {
     clearTagTreeCache(params.groupId);
   };
 
+  const reorderSiblingTags = async (params: ReorderSiblingTagsRequest): Promise<void> => {
+    const normalizedGroupId = normalizeTagGroupId(params.groupId);
+    const cacheKey = normalizedGroupId ?? CACHE_KEY_DEFAULT;
+    await getRawTagTree(normalizedGroupId);
+    const flatMap = rawTagFlatCache.get(cacheKey);
+    const uniqueTagIds = new Set(params.orderedTagIds);
+    const nodes = params.orderedTagIds.map((tagId) => flatMap?.get(tagId));
+    const parentIds = new Set(nodes.map((node) => node?.parentId ?? '0'));
+    if (
+      uniqueTagIds.size !== params.orderedTagIds.length ||
+      nodes.some((node) => !node) ||
+      parentIds.size > 1
+    ) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, {
+        field: 'orderedTagIds',
+      });
+    }
+
+    try {
+      for (const [index, node] of nodes.entries()) {
+        if (!node) continue;
+        const sortOrder = (index + 1) * TAG_SORT_ORDER_STEP;
+        if (node.tagMetaInfo?.sortOrder === sortOrder) continue;
+        await TagApi.changeTag(
+          TagServicesMap.mapUpdateTagRequest({
+            groupId: normalizedGroupId,
+            targetTagId: node.tagId,
+            tagMetaInfo: {
+              ...node.tagMetaInfo,
+              schema: node.tagMetaInfo?.schema ?? TAG_META_SCHEMA,
+              sortOrder,
+            },
+          })
+        );
+      }
+    } finally {
+      // Java 暂无批量排序接口；任一请求失败时也必须失效缓存以反映已成功的部分更新。
+      clearTagTreeCache(normalizedGroupId);
+    }
+  };
+
   return {
     getRawTagTree,
     getRawTagById,
@@ -214,5 +258,6 @@ export const createTagServices = (deps: TagServicesDeps): ITagService => {
     addTag,
     deleteTag,
     moveTag,
+    reorderSiblingTags,
   };
 };

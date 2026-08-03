@@ -3,6 +3,7 @@ import enUSAgent from './locales/en-US/agent';
 import enUSAuth from './locales/en-US/auth';
 import enUSChat from './locales/en-US/chat';
 import enUSCommon from './locales/en-US/common';
+import enUSCourse from './locales/en-US/course';
 import enUSDrive from './locales/en-US/drive';
 import enUSErrors from './locales/en-US/errors';
 import enUSGroup from './locales/en-US/group';
@@ -19,6 +20,7 @@ import zhCNAgent from './locales/zh-CN/agent';
 import zhCNAuth from './locales/zh-CN/auth';
 import zhCNChat from './locales/zh-CN/chat';
 import zhCNCommon from './locales/zh-CN/common';
+import zhCNCourse from './locales/zh-CN/course';
 import zhCNDrive from './locales/zh-CN/drive';
 import zhCNErrors from './locales/zh-CN/errors';
 import zhCNGroup from './locales/zh-CN/group';
@@ -46,6 +48,7 @@ export const I18N_NAMESPACES = {
   RESOURCE: 'resource',
   CHAT: 'chat',
   GROUP: 'group',
+  COURSE: 'course',
   WALLET: 'wallet',
   PROFILE: 'profile',
   WORKSPACE: 'workspace',
@@ -68,6 +71,7 @@ export const resources = {
     [I18N_NAMESPACES.RESOURCE]: zhCNResource,
     [I18N_NAMESPACES.CHAT]: zhCNChat,
     [I18N_NAMESPACES.GROUP]: zhCNGroup,
+    [I18N_NAMESPACES.COURSE]: zhCNCourse,
     [I18N_NAMESPACES.WALLET]: zhCNWallet,
     [I18N_NAMESPACES.PROFILE]: zhCNProfile,
     [I18N_NAMESPACES.WORKSPACE]: zhCNWorkspace,
@@ -86,6 +90,7 @@ export const resources = {
     [I18N_NAMESPACES.RESOURCE]: enUSResource,
     [I18N_NAMESPACES.CHAT]: enUSChat,
     [I18N_NAMESPACES.GROUP]: enUSGroup,
+    [I18N_NAMESPACES.COURSE]: enUSCourse,
     [I18N_NAMESPACES.WALLET]: enUSWallet,
     [I18N_NAMESPACES.PROFILE]: enUSProfile,
     [I18N_NAMESPACES.WORKSPACE]: enUSWorkspace,

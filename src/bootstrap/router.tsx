@@ -6,6 +6,8 @@ import AdminLayout from '@/layouts/Admin/AdminLayout';
 import AppLayout from '@/layouts/App/AppLayout';
 import AppNavigationLayout from '@/layouts/AppNavigation/AppNavigationLayout';
 import AuthLayout from '@/layouts/Auth/AuthLayout';
+import CourseLayout from '@/layouts/Course/CourseLayout';
+import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
 import HomeLayout from '@/layouts/Home/HomeLayout';
 import WorkspaceLayout from '@/layouts/Workspace/WorkspaceLayout';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
@@ -39,6 +41,15 @@ const WorkspaceResourceView = lazy(() => import('@/views/workspace/WorkspaceReso
 const ChatPage = lazy(() => import('@/views/app/chat'));
 const ResourceNotFound = lazy(() => import('@/views/app/error/ResourceNotFound'));
 const AppError = lazy(() => import('@/views/app/error/AppError'));
+const CourseListPage = lazy(() => import('@/views/app/course/CourseListPage'));
+const CourseRoute = lazy(() => import('@/views/app/course/CourseRoute'));
+const CourseContextPage = lazy(() => import('@/views/app/course/CourseContextPage'));
+const CourseAssignmentsPage = lazy(() => import('@/views/app/course/CourseAssignmentsPage'));
+const CourseAssignmentDetailPage = lazy(
+  () => import('@/views/app/course/CourseAssignmentDetailPage')
+);
+const CourseMaterialsPage = lazy(() => import('@/views/app/course/CourseMaterialsPage'));
+const CourseEditorPage = lazy(() => import('@/views/app/course/CourseEditorPage'));
 
 const router = createBrowserRouter([
   // ==============================
@@ -180,6 +191,49 @@ const router = createBrowserRouter([
               {
                 path: 'my-group/:id',
                 element: <GroupDetail />,
+              },
+              {
+                path: 'course',
+                element: <CourseListPage />,
+              },
+              {
+                path: 'course/:courseId',
+                element: <CourseRoute />,
+                children: [
+                  {
+                    element: <CourseLayout />,
+                    children: [
+                      {
+                        index: true,
+                        element: <Navigate to="home" replace />,
+                      },
+                      {
+                        path: 'home',
+                        element: <CourseContextPage />,
+                      },
+                      {
+                        path: 'assignments',
+                        element: <CourseAssignmentsPage />,
+                      },
+                      {
+                        path: 'assignments/:assignmentId',
+                        element: <CourseAssignmentDetailPage />,
+                      },
+                      {
+                        path: 'materials',
+                        element: <CourseMaterialsPage />,
+                      },
+                    ],
+                  },
+                  {
+                    path: 'learning/:outlineNodeId?',
+                    element: <CourseLearningLayout />,
+                  },
+                  {
+                    path: 'edit',
+                    element: <CourseEditorPage />,
+                  },
+                ],
               },
               {
                 path: 'profile/usage',

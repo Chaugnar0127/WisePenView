@@ -7,6 +7,8 @@ export interface GroupMember {
   userId: string;
   realname: string;
   nickname: string;
+  campusNo?: string;
+  email?: string;
   /** 组内角色（由接口数字角色码经 ROLE.getKey 映射） */
   role: EnumKey<typeof ROLE>;
   joinTime: string;
@@ -45,6 +47,7 @@ export interface GroupBaseInfo {
   groupName: string;
   groupDesc: string;
   groupCoverUrl: string;
+  groupMetaInfo: Record<string, unknown>;
   groupType: number;
 }
 
@@ -54,6 +57,7 @@ export interface Group {
   groupName: string;
   groupDesc: string;
   groupCoverUrl: string;
+  groupMetaInfo: Record<string, unknown>;
   groupType: number;
   ownerId?: string;
   ownerInfo?: GroupOwnerInfo;

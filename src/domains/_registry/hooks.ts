@@ -4,6 +4,7 @@ import type { IAdminService } from '@/domains/Admin';
 import type { IAgentService } from '@/domains/Agent';
 import type { IAuthService } from '@/domains/Auth';
 import type { IChatService } from '@/domains/Chat';
+import type { ICourseService } from '@/domains/Course';
 import type { IDocumentService } from '@/domains/Document';
 import type { IDriveService } from '@/domains/Drive';
 import type { IGroupService } from '@/domains/Group';
@@ -38,6 +39,7 @@ export const useAdminService = (): IAdminService => useServicesContext().adminSe
 export const useAgentService = (): IAgentService => useServicesContext().agentService;
 export const useAuthService = (): IAuthService => useServicesContext().authService;
 export const useChatService = (): IChatService => useServicesContext().chatService;
+export const useCourseService = (): ICourseService => useServicesContext().courseService;
 export const useDocumentService = (): IDocumentService => useServicesContext().documentService;
 export const useDriveService = (): IDriveService => useServicesContext().driveService;
 export const useGroupService = (): IGroupService => useServicesContext().groupService;

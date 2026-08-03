@@ -17,6 +17,7 @@ const ACCEPT_DOCUMENT_TYPES = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx';
 function UploadDocumentModal({
   isOpen,
   pathTagId,
+  description,
   onOpenChange,
   onSuccess,
 }: UploadDocumentModalProps) {
@@ -66,7 +67,7 @@ function UploadDocumentModal({
       isOpen={isOpen}
       onOpenChange={handleOpenChange}
       title={t('upload.title')}
-      description={t('upload.description')}
+      description={description ?? t('upload.description')}
       size="lg"
       containerClassName={styles.container}
       dialogClassName={styles.dialog}

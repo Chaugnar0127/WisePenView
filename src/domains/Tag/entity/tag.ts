@@ -5,6 +5,13 @@
 import type { ResourceItem } from '@/domains/Resource';
 import type { AccessControlScope, TagResourceAction, TagVisibilityModeString } from '../enum';
 
+/** 后端以 JSON 字符串透传；前端保留未知字段，避免不同功能相互覆盖。 */
+export interface TagMetaInfo {
+  schema?: string;
+  sortOrder?: number;
+  [key: string]: unknown;
+}
+
 /** Mapper 归一化后的标签树节点。 */
 export interface TagTreeNode {
   tagId: string;
@@ -13,6 +20,7 @@ export interface TagTreeNode {
   tagDesc?: string;
   tagIcon?: string;
   tagColor?: string;
+  tagMetaInfo?: TagMetaInfo;
   tagCreator?: string;
   isPath?: boolean;
   visibilityMode?: TagVisibilityModeString;

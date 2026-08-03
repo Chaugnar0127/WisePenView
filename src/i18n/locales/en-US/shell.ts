@@ -4,6 +4,7 @@ const enUSShell = {
     newChat: 'New chat',
     drive: 'Documents and Drive',
     groups: 'My groups',
+    courses: 'My courses',
     back: 'Back',
     forward: 'Forward',
     expandSidebar: 'Expand sidebar',
@@ -15,6 +16,7 @@ const enUSShell = {
     contentAria: 'Sidebar content',
     sessions: 'Chat',
     drive: 'Drive',
+    courses: 'Courses',
   },
   commandPalette: {
     open: 'Open command palette',

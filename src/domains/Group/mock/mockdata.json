@@ -5,7 +5,7 @@
       "groupName": "示例小组",
       "groupDesc": "这是一个 mock 小组，用于测试小组 Skill",
       "groupCoverUrl": "",
-      "groupType": 2,
+      "groupType": 1,
       "ownerId": "1",
       "ownerInfo": {
         "nickname": "Mock User",
@@ -24,7 +24,7 @@
       "groupName": "前端开发组",
       "groupDesc": "前端技术小组，用于测试跨组 Skill 选择",
       "groupCoverUrl": "",
-      "groupType": 2,
+      "groupType": 1,
       "ownerId": "1",
       "ownerInfo": {
         "nickname": "李四",
@@ -44,7 +44,7 @@
     "groupName": "示例小组",
     "groupDesc": "这是一个 mock 小组",
     "groupCoverUrl": "",
-    "groupType": 2,
+    "groupType": 1,
     "ownerId": "1",
     "ownerInfo": {
       "nickname": "Mock User",

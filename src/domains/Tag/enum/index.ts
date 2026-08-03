@@ -13,6 +13,8 @@ import {
 import type { EnumKey, EnumValue } from '@/utils/enum';
 import { createEnum } from '@/utils/enum';
 
+export const TAG_META_SCHEMA = 'wisepen.tag-meta.v1';
+
 /** 与 OpenAPI 文档语义对应的别名，值为接口要求的字符串 */
 export const TAG_VISIBILITY_MODE = createEnum([
   { value: '0', key: 'ALL', label: '全部可见' },

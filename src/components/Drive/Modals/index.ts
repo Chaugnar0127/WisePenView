@@ -1,5 +1,6 @@
 export { default as DriveCreateModal } from './DriveCreateModal';
 export { default as DriveDeleteModal } from './DriveDeleteModal';
+export { default as DriveFolderPickerModal } from './DriveFolderPickerModal';
 export { default as MoveNodeModal } from './MoveNodeModal';
 export { default as RenameNodeModal } from './RenameNodeModal';
 export { default as ResourcePermissionModal } from './ResourcePermissionModal';
@@ -10,6 +11,7 @@ export { default as UploadFileToGroupModal } from './UploadFileToGroupModal';
 
 export type { DriveCreateModalProps, DriveCreateType } from './DriveCreateModal/index.type';
 export type { DriveDeleteModalProps } from './DriveDeleteModal/index.type';
+export type { DriveFolderPickerModalProps } from './DriveFolderPickerModal/index.type';
 export type { MoveNodeModalProps } from './MoveNodeModal/index.type';
 export type { RenameNodeModalProps } from './RenameNodeModal/index.type';
 export type {

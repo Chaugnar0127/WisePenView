@@ -6,6 +6,7 @@
 import type {
   AccessControlScope,
   TagListByTagResponse,
+  TagMetaInfo,
   TagResourceAction,
   TagTreeNode,
   TagVisibilityModeString,
@@ -29,6 +30,8 @@ export interface ITagService {
   addTag(params: TagCreateRequest): Promise<string>;
   deleteTag(params: TagDeleteRequest): Promise<void>;
   moveTag(params: TagMoveRequest): Promise<void>;
+  /** 按传入顺序更新一组同级 Tag；Java 暂无批量接口，当前按节点顺序提交。 */
+  reorderSiblingTags(params: ReorderSiblingTagsRequest): Promise<void>;
 }
 
 export interface GetTagTreeOptions {
@@ -51,6 +54,7 @@ export interface TagCreateRequest {
   tagDesc?: string;
   tagIcon?: string;
   tagColor?: string;
+  tagMetaInfo?: TagMetaInfo;
   tagCreator?: string;
   isPath?: boolean;
   visibilityMode?: TagVisibilityModeString;
@@ -68,6 +72,7 @@ export interface TagUpdateRequest {
   tagDesc?: string;
   tagIcon?: string;
   tagColor?: string;
+  tagMetaInfo?: TagMetaInfo;
   tagCreator?: string;
   isPath?: boolean;
   visibilityMode?: TagVisibilityModeString;
@@ -90,4 +95,10 @@ export interface TagMoveRequest {
   groupId?: string;
   targetTagId: string;
   newParentId?: string;
+}
+
+export interface ReorderSiblingTagsRequest {
+  groupId?: string;
+  /** 必须是同一 parentId 下 Tag 的目标展示顺序。 */
+  orderedTagIds: string[];
 }

@@ -4,7 +4,7 @@ import type { TagResourceAction } from '@/domains/Tag';
 /** GroupService 接口：供依赖注入使用 */
 export interface IGroupService {
   fetchGroupList(params: FetchGroupListRequest): Promise<{ groups: Group[]; total: number }>;
-  fetchAllMyGroups(): Promise<Group[]>;
+  fetchAllMyGroups(groupRoleFilter?: GroupRoleFilter): Promise<Group[]>;
   fetchGroupBaseInfo(groupId: string): Promise<GroupBaseInfo>;
   fetchGroupInfo(groupId: string): Promise<Group>;
   getGroupWalletInfo(params: GetGroupWalletInfoRequest): Promise<number>;
@@ -36,10 +36,12 @@ export interface GetGroupWalletInfoRequest {
 
 /** 获取小组列表请求参数 */
 export interface FetchGroupListRequest {
-  groupRoleFilter: 'ALL' | 'JOINED' | 'MANAGED';
+  groupRoleFilter: GroupRoleFilter;
   page: number;
   size: number;
 }
+
+export type GroupRoleFilter = 'ALL' | 'JOINED' | 'MANAGED';
 
 /** 创建小组请求参数；基础字段与 OpenAPI addGroup 对齐 */
 export interface CreateGroupRequest {
@@ -47,6 +49,7 @@ export interface CreateGroupRequest {
   groupType: number;
   groupDesc: string;
   groupCoverUrl?: string;
+  groupMetaInfo?: Record<string, unknown>;
 }
 
 /** 编辑小组请求参数（与 OpenAPI changeGroup 对齐）；groupId 用 string 避免大数精度丢失 */
@@ -55,6 +58,7 @@ export interface EditGroupRequest {
   groupName: string;
   groupDesc: string;
   groupCoverUrl: string;
+  groupMetaInfo?: Record<string, unknown>;
   groupType: number;
 }
 

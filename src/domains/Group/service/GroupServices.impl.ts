@@ -29,13 +29,15 @@ const fetchGroupList = async (
   return GroupServicesMap.mapFetchGroupListFromApi(payload);
 };
 
-const fetchAllMyGroups = async (): Promise<Group[]> => {
+const fetchAllMyGroups = async (
+  groupRoleFilter: FetchGroupListRequest['groupRoleFilter'] = 'ALL'
+): Promise<Group[]> => {
   const groups: Group[] = [];
   let page = 1;
 
   while (true) {
     const data = await fetchGroupList({
-      groupRoleFilter: 'ALL',
+      groupRoleFilter,
       page,
       size: ALL_GROUPS_PAGE_SIZE,
     });

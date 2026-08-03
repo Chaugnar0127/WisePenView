@@ -4,6 +4,7 @@ const zhCNShell = {
     newChat: '新建对话',
     drive: '文档与云盘',
     groups: '我的小组',
+    courses: '我的课程',
     back: '后退',
     forward: '前进',
     expandSidebar: '展开侧边栏',
@@ -15,6 +16,7 @@ const zhCNShell = {
     contentAria: '侧边栏内容',
     sessions: '对话',
     drive: '云盘',
+    courses: '课程',
   },
   commandPalette: {
     open: '打开命令面板',

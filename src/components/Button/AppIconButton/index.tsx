@@ -8,6 +8,7 @@ function AppIconButton({
   icon,
   label,
   className,
+  disabledVariant = 'filled',
   isActive,
   isDisabled = false,
   onClick,
@@ -27,6 +28,7 @@ function AppIconButton({
     styles[size],
     styles[variant],
     isActive && styles.active,
+    isDisabled && disabledVariant === 'ghost' && styles.disabledGhost,
     className
   );
   const button = toggleId ? (

@@ -8,7 +8,7 @@ import type { CopyButtonProps } from './index.type';
 
 const ICON_SIZE = 17;
 
-function CopyButton({ text, label, className }: CopyButtonProps) {
+function CopyButton({ text, label, className, disabledVariant, isDisabled }: CopyButtonProps) {
   const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);
 
@@ -34,6 +34,8 @@ function CopyButton({ text, label, className }: CopyButtonProps) {
       }
       label={copied ? t('copy.copied') : (label ?? t('copy.action'))}
       isActive={copied}
+      isDisabled={isDisabled}
+      disabledVariant={disabledVariant}
       className={className}
       onPress={() => void handleCopy()}
     />

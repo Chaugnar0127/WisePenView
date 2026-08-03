@@ -12,6 +12,7 @@ import { GroupServicesMock } from '@/domains/Group/mock/GroupServices.mock';
 import { ImageServicesMock } from '@/domains/Image/mock/ImageServices.mock';
 import { InlineCommentServicesMock } from '@/domains/InlineComment/mock/InlineCommentServices.mock';
 import { InteractServicesMock } from '@/domains/Interact/mock/InteractServices.mock';
+import { MessageServicesMock } from '@/domains/Message/mock/MessageServices.mock';
 import { NoteServicesMock } from '@/domains/Note/mock/NoteServices.mock';
 import { QuotaServicesMock } from '@/domains/Quota/mock/QuotaServices.mock';
 import { ResourceServicesMock } from '@/domains/Resource/mock/ResourceServices.mock';
@@ -38,6 +39,7 @@ const mockServicesValue: ServicesContextValue = {
   imageService: ImageServicesMock,
   inlineCommentService: InlineCommentServicesMock,
   interactService: InteractServicesMock,
+  messageService: MessageServicesMock,
   noteService: NoteServicesMock,
   quotaService: QuotaServicesMock,
   resourceService: ResourceServicesMock,

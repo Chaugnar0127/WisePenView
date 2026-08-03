@@ -150,6 +150,22 @@
   }
 }
 
+.disabledGhost {
+  &:disabled,
+  &[aria-disabled='true'],
+  &[data-disabled] {
+    color: var(--text-disabled);
+    background: transparent;
+    opacity: 1;
+    cursor: not-allowed;
+
+    &:hover {
+      color: var(--text-disabled);
+      background: transparent;
+    }
+  }
+}
+
 .root[data-selected] {
   color: var(--accent);
   background: var(--accent-soft);

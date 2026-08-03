@@ -40,6 +40,7 @@ const WorkspaceResourceView = lazy(() => import('@/views/workspace/WorkspaceReso
 // Zen Mode 暂不上线，保留实现代码便于后续恢复。
 // const ZenModeLayout = lazy(() => import('@/layouts/ZenMode/ZenModeLayout'));
 const ChatPage = lazy(() => import('@/views/app/chat'));
+const NotificationsPage = lazy(() => import('@/views/app/notifications'));
 const ResourceNotFound = lazy(() => import('@/views/app/error/ResourceNotFound'));
 const AppError = lazy(() => import('@/views/app/error/AppError'));
 const CourseListPage = lazy(() => import('@/views/app/course/CourseListPage'));
@@ -162,6 +163,14 @@ const router = createBrowserRouter([
               {
                 path: 'chat/:sessionId',
                 element: <ChatPage />,
+              },
+              {
+                path: 'notifications',
+                element: <NotificationsPage />,
+              },
+              {
+                path: 'notifications/:messageId',
+                element: <NotificationsPage />,
               },
               // 文档与云盘页
               {

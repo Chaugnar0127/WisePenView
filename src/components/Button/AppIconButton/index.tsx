@@ -40,6 +40,7 @@ function AppIconButton({
       isDisabled={isDisabled}
       className={classNames}
       aria-label={label}
+      data-disabled={isDisabled || undefined}
       onPress={isDisabled ? undefined : onPress}
     >
       {icon}
@@ -62,6 +63,7 @@ function AppIconButton({
       aria-label={label}
       aria-pressed={isActive}
       aria-disabled={isDisabled || undefined}
+      data-disabled={isDisabled || undefined}
     >
       {icon}
     </button>

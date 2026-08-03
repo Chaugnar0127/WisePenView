@@ -10,7 +10,6 @@ import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
 import {
   clampSidebarWidth,
   SIDEBAR_COLLAPSED_WIDTH,
-  SIDEBAR_MAX_WIDTH,
   SIDEBAR_MIN_WIDTH,
 } from '@/layouts/_common/Sidebar/sidebarLayoutConfig';
 import {
@@ -20,6 +19,10 @@ import {
 } from '@/layouts/_common/SystemResizable';
 import { useCompactSidebarCollapse } from '@/layouts/_common/useCompactSidebarCollapse';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
+import {
+  SIDEBAR_COLLAPSE_DURATION_MS,
+  useSidebarCollapseMotion,
+} from '@/layouts/_common/useSidebarCollapseMotion';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
@@ -51,7 +54,17 @@ function AppLayout() {
   const collapsedSidebarWidth = desktopWindow.isDesktop
     ? SIDEBAR_COLLAPSED_WIDTH
     : APP_WEB_SIDEBAR_COLLAPSED_WIDTH;
-  const sidebarPanelSize = sidebarCollapsed ? collapsedSidebarWidth : sidebarWidth;
+  const {
+    panelSize: sidebarPanelSize,
+    minSize: sidebarMinSize,
+    maxSize: sidebarMaxSize,
+    showSidebarContent,
+    showCollapsedChrome,
+  } = useSidebarCollapseMotion({
+    collapsed: sidebarCollapsed,
+    expandedWidth: sidebarWidth,
+    collapsedWidth: collapsedSidebarWidth,
+  });
 
   const persistSidebarWidthFromPanel = () => {
     const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
@@ -71,6 +84,8 @@ function AppLayout() {
   useResizablePanelSize({
     panelRef: sidebarPanelRef,
     size: sidebarPanelSize,
+    animate: true,
+    durationMs: SIDEBAR_COLLAPSE_DURATION_MS,
   });
 
   const handleSidebarToggle = () => {
@@ -106,8 +121,9 @@ function AppLayout() {
           id="app-sidebar"
           panelRef={sidebarPanelRef}
           defaultSize={sidebarPanelSize}
-          minSize={sidebarCollapsed ? collapsedSidebarWidth : SIDEBAR_MIN_WIDTH}
-          maxSize={sidebarCollapsed ? collapsedSidebarWidth : SIDEBAR_MAX_WIDTH}
+          /* min=0 允许收起/展开插值；展开态下限由 clampSidebarWidth 在拖拽落定后保证 */
+          minSize={sidebarMinSize}
+          maxSize={sidebarMaxSize}
           groupResizeBehavior="preserve-pixel-size"
           className={clsx(
             styles.leftSider,
@@ -117,7 +133,7 @@ function AppLayout() {
           aria-hidden={sidebarCollapsed && desktopWindow.isDesktop ? true : undefined}
           onResize={handleSidebarResize}
         >
-          {sidebarCollapsed && !desktopWindow.isDesktop ? (
+          {showCollapsedChrome && !desktopWindow.isDesktop ? (
             <header className={styles.webCollapsedSidebar}>
               <AppNavigationControls
                 sidebarCollapsed
@@ -130,7 +146,7 @@ function AppLayout() {
               />
             </header>
           ) : null}
-          {!sidebarCollapsed ? (
+          {showSidebarContent ? (
             <AppSidebar
               canGoBack={appNavigation.canGoBack}
               canGoForward={appNavigation.canGoForward}
@@ -158,7 +174,7 @@ function AppLayout() {
                 desktopWindow.hasMacTitleBarInset && styles.macDesktopHeader
               )}
             >
-              {sidebarCollapsed ? (
+              {showCollapsedChrome ? (
                 <div className={styles.collapsedHeaderControls}>
                   <AppNavigationControls
                     sidebarCollapsed

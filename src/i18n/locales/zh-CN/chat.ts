@@ -66,6 +66,7 @@ const zhCNChat = {
       trigger: '选择 Agent',
       currentDraft: '当前草稿',
       defaultAgent: '默认 Agent',
+      loadingAria: '正在加载 Agent 列表',
     },
     skillMenu: {
       title: 'Skill',
@@ -77,6 +78,7 @@ const zhCNChat = {
       toolsTitle: '工具',
       selectTools: '选择工具',
       providedBy: ' · 由 {{name}} 提供',
+      loadingAria: '正在加载 Skill 与工具',
     },
     otherSkillPicker: {
       title: '选择其他 Skill',
@@ -118,6 +120,7 @@ const zhCNChat = {
       title: '你好，我是 AI 助理小 W',
       subtitle: '今天想做点什么？',
     },
+    conversationLoading: '加载对话中...',
     scrollToBottom: '滚动到底部',
     scrollToTop: '滚动到顶部',
     historyLoading: '正在加载更早消息...',

@@ -78,6 +78,7 @@ export function useChatPanelController({
   const {
     canLoadMore: canLoadMoreHistory,
     loadingMore: loadingMoreHistory,
+    loadingInitial: loadingInitialHistory,
     replaceHistory,
     prependHistory,
     clearConversation,
@@ -337,6 +338,7 @@ export function useChatPanelController({
     handleToggleSessionBar,
     isDebugSaveDialogOpen: pendingDebugSend != null,
     loadMoreHistoryMessages,
+    loadingInitialHistory,
     loadingMoreHistory,
     messages,
     panelTitle,

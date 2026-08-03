@@ -12,6 +12,7 @@ import type { ChatStatus } from 'ai';
 import { ArrowDown } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import ConversationLoading from './ConversationLoading';
 import HistoryLoader from './HistoryLoader';
 import Message from './Message';
 import MessageHistoryNavigator from './MessageHistoryNavigator';
@@ -25,6 +26,7 @@ interface MessageListProps {
   messages: WisePenUIMessage[];
   sessionId?: string;
   canLoadMoreHistory: boolean;
+  loadingInitialHistory: boolean;
   loadingMoreHistory: boolean;
   onLoadMoreHistory: () => Promise<void>;
   status: ChatStatus;
@@ -36,6 +38,7 @@ function MessageList({
   messages,
   sessionId,
   canLoadMoreHistory,
+  loadingInitialHistory,
   loadingMoreHistory,
   onLoadMoreHistory,
   status,
@@ -44,6 +47,8 @@ function MessageList({
 }: MessageListProps) {
   const { t } = useTranslation('chat');
   const isGenerating = status === 'submitted' || status === 'streaming';
+  const showConversationLoading = messages.length === 0 && loadingInitialHistory;
+  const showWelcome = messages.length === 0 && !loadingInitialHistory;
 
   return (
     <MessageScrollerProvider
@@ -60,7 +65,11 @@ function MessageList({
             <StreamingScrollFollower active={isGenerating} messages={messages} />
 
             <div className={styles.messagesBody} data-empty={messages.length === 0}>
-              {messages.length === 0 ? (
+              {showConversationLoading ? (
+                <MessageScrollerItem className={styles.welcomeItem}>
+                  <ConversationLoading />
+                </MessageScrollerItem>
+              ) : showWelcome ? (
                 <MessageScrollerItem className={styles.welcomeItem}>
                   <Welcome />
                 </MessageScrollerItem>

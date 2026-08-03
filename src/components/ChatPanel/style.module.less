@@ -6,29 +6,25 @@
   min-width: 0;
   min-height: 0;
   position: relative;
-  /* 与 Note / Workspace 主区同纸面；fullWidth 亦同 */
   --chat-shell-bg: var(--surface);
   background-color: var(--chat-shell-bg);
   overflow: hidden;
-  --chat-message-font-size: 15px;
+  --chat-message-font-size: 14px;
   --chat-message-font-weight: var(--font-weight-regular);
   --chat-markdown-font-weight: var(--font-weight-medium);
   --chat-user-message-font-weight: var(--font-weight-medium);
   --chat-message-line-height: 1.6;
-  --chat-thinking-font-size: var(--font-size-sm);
+  --chat-thinking-font-size: var(--font-size-xs);
   --chat-thinking-line-height: 1.6;
   --chat-hr-margin-bottom: var(--space-sm);
   --chat-message-inline-padding: var(--space-2xl);
-  /* 侧栏：右侧历史横条轨留白收紧，消息更靠近右侧条 */
   --chat-message-inline-padding-end: calc(var(--space-xl) + var(--space-xl));
   --chat-message-max-width: none;
   --chat-content-max-width: none;
   --chat-input-max-width: 100%;
-  /* 侧栏：用户消息收窄，避免占满整栏 */
   --chat-user-message-max-width: 72%;
   --chat-avatar-size: 24px;
   --chat-model-meta-font-size: var(--font-size-base);
-  /* 历史导航：侧栏紧凑 */
   --history-nav-preview-font-size: var(--font-size-xs);
   --history-nav-item-padding-block: var(--space-2xs);
   --history-nav-item-padding-inline: var(--space-xs);
@@ -44,6 +40,7 @@
   --history-nav-bar-hover-height: 3px;
   --history-nav-bar-active-height: 3px;
   --history-nav-bar-gap: var(--space-xs);
+  --history-nav-rail-top: 50%;
 
   &.fullWidth {
     min-width: 0;
@@ -64,7 +61,6 @@
     --chat-user-message-max-width: 520px;
     --chat-avatar-size: 28px;
     --chat-model-meta-font-size: var(--font-size-base);
-    /* 全宽场景仅略微增加长度，避免历史定位器抢占正文注意力 */
     --history-nav-preview-font-size: var(--font-size-xs);
     --history-nav-item-padding-block: var(--space-2xs);
     --history-nav-item-padding-inline: var(--space-xs);
@@ -80,6 +76,7 @@
     --history-nav-bar-hover-height: 3px;
     --history-nav-bar-active-height: 4px;
     --history-nav-bar-gap: 6px;
+    --history-nav-rail-top: 66%;
 
     .conversationPanel {
       width: 100%;
@@ -188,7 +185,6 @@
   display: flex;
   flex-direction: column;
   padding-top: 0;
-  /* 输入框已移到滚动容器外，滚动按钮不再需要为 footer 预留偏移 */
   --chat-footer-scroll-offset: 0px;
 }
 

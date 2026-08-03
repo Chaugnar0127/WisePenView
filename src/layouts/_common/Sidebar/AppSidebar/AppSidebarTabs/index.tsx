@@ -3,14 +3,13 @@ import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCur
 import {
   APP_HEADER_NAV_KEY,
   resolveAppHeaderNavKey,
-  type AppHeaderNavKey,
 } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive';
 import CommandPaletteTrigger from '@/layouts/AppNavigation/CommandPaletteTrigger';
 import { Tabs, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
-import { FolderOpen, MessageSquare } from 'lucide-react';
-import { useState } from 'react';
+import { FolderOpen, MessageSquare, type LucideIcon } from 'lucide-react';
+import { useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import SessionListGroup from '../SessionListGroup';
@@ -23,8 +22,30 @@ const SIDEBAR_TAB = {
 
 type SidebarTabKey = (typeof SIDEBAR_TAB)[keyof typeof SIDEBAR_TAB];
 
-const resolveSidebarTab = (activeNavKey: AppHeaderNavKey | undefined): SidebarTabKey =>
-  activeNavKey === APP_HEADER_NAV_KEY.CHAT ? SIDEBAR_TAB.SESSIONS : SIDEBAR_TAB.DRIVE;
+interface SidebarViewTabProps {
+  id: SidebarTabKey;
+  label: string;
+  icon: LucideIcon;
+  selected: boolean;
+}
+
+function SidebarViewTab({ id, label, icon: Icon, selected }: SidebarViewTabProps) {
+  return (
+    <Tabs.Tab id={id} className={styles.tab} aria-label={label}>
+      <Tooltip isDisabled={selected}>
+        <Tooltip.Trigger className={styles.tabTooltipTrigger}>
+          <span className={styles.tabContent}>
+            <Icon size={18} aria-hidden="true" />
+            <span className={styles.tabLabel}>
+              <span className={styles.tabLabelInner}>{label}</span>
+            </span>
+          </span>
+        </Tooltip.Trigger>
+        <Tooltip.Content placement="bottom">{label}</Tooltip.Content>
+      </Tooltip>
+    </Tabs.Tab>
+  );
+}
 
 function AppSidebarTabs() {
   const { t } = useTranslation('shell');
@@ -32,80 +53,71 @@ function AppSidebarTabs() {
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
-  const [tabState, setTabState] = useState(() => ({
-    observedNavKey: activeNavKey,
-    selectedTab: resolveSidebarTab(activeNavKey),
-  }));
-
-  let selectedTab = tabState.selectedTab;
-  if (tabState.observedNavKey !== activeNavKey) {
-    selectedTab = resolveSidebarTab(activeNavKey);
-    setTabState({ observedNavKey: activeNavKey, selectedTab });
-  }
+  // 独立于上方路由导航：仅本处 Tabs 切换
+  const [selectedTab, setSelectedTab] = useState<SidebarTabKey>(() =>
+    activeNavKey === APP_HEADER_NAV_KEY.CHAT ? SIDEBAR_TAB.SESSIONS : SIDEBAR_TAB.DRIVE
+  );
 
   const selectedKeys =
     activeNavKey === APP_HEADER_NAV_KEY.CHAT && currentSessionId
       ? [`session-${currentSessionId}`]
       : [];
 
+  const handleTabChange = (key: Key) => {
+    const nextTab = String(key);
+    if (nextTab === SIDEBAR_TAB.SESSIONS || nextTab === SIDEBAR_TAB.DRIVE) {
+      setSelectedTab(nextTab);
+    }
+  };
+
   return (
     <div className={styles.menuContainer}>
-      <Tabs
-        className={styles.tabs}
-        selectedKey={selectedTab}
-        onSelectionChange={(key) => {
-          const nextTab = String(key);
-          if (nextTab === SIDEBAR_TAB.SESSIONS || nextTab === SIDEBAR_TAB.DRIVE) {
-            setTabState({ observedNavKey: activeNavKey, selectedTab: nextTab });
-          }
-        }}
-      >
+      <Tabs className={styles.tabs} selectedKey={selectedTab} onSelectionChange={handleTabChange}>
         <Tabs.ListContainer className={styles.tabListContainer}>
           <div className={styles.tabToolbar}>
             <Tabs.List className={styles.tabList} aria-label={t('sidebar.contentAria')}>
-              <Tabs.Tab
+              <SidebarViewTab
                 id={SIDEBAR_TAB.SESSIONS}
-                className={styles.tab}
-                aria-label={t('sidebar.sessions')}
-              >
-                <Tooltip>
-                  <Tooltip.Trigger className={styles.tabTooltipTrigger}>
-                    <MessageSquare size={18} aria-hidden="true" />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content placement="bottom">{t('sidebar.sessions')}</Tooltip.Content>
-                </Tooltip>
-              </Tabs.Tab>
-              <Tabs.Tab
+                label={t('sidebar.sessions')}
+                icon={MessageSquare}
+                selected={selectedTab === SIDEBAR_TAB.SESSIONS}
+              />
+              <SidebarViewTab
                 id={SIDEBAR_TAB.DRIVE}
-                className={styles.tab}
-                aria-label={t('sidebar.drive')}
-              >
-                <Tooltip>
-                  <Tooltip.Trigger className={styles.tabTooltipTrigger}>
-                    <FolderOpen size={18} aria-hidden="true" />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content placement="bottom">{t('sidebar.drive')}</Tooltip.Content>
-                </Tooltip>
-              </Tabs.Tab>
+                label={t('sidebar.drive')}
+                icon={FolderOpen}
+                selected={selectedTab === SIDEBAR_TAB.DRIVE}
+              />
             </Tabs.List>
-            <CommandPaletteTrigger />
+            <span className={styles.tabSearch}>
+              <CommandPaletteTrigger />
+            </span>
           </div>
         </Tabs.ListContainer>
 
-        <Tabs.Panel
-          id={SIDEBAR_TAB.SESSIONS}
-          className={clsx(styles.tabPanel, styles.sessionPanel)}
-          shouldForceMount
-        >
-          <SessionListGroup selectedKeys={selectedKeys} refreshVersion={refreshVersion} />
-        </Tabs.Panel>
-        <Tabs.Panel
-          id={SIDEBAR_TAB.DRIVE}
-          className={clsx(styles.tabPanel, styles.drivePanel)}
-          shouldForceMount
-        >
-          <SidebarDrive />
-        </Tabs.Panel>
+        <div className={styles.panelViewport}>
+          <div
+            className={clsx(
+              styles.panelTrack,
+              selectedTab === SIDEBAR_TAB.DRIVE && styles.panelTrackDrive
+            )}
+          >
+            <Tabs.Panel
+              id={SIDEBAR_TAB.SESSIONS}
+              className={clsx(styles.tabPanel, styles.sessionPanel)}
+              shouldForceMount
+            >
+              <SessionListGroup selectedKeys={selectedKeys} refreshVersion={refreshVersion} />
+            </Tabs.Panel>
+            <Tabs.Panel
+              id={SIDEBAR_TAB.DRIVE}
+              className={clsx(styles.tabPanel, styles.drivePanel)}
+              shouldForceMount
+            >
+              <SidebarDrive />
+            </Tabs.Panel>
+          </div>
+        </div>
       </Tabs>
     </div>
   );

@@ -48,7 +48,6 @@
     overflow-y: hidden;
     padding-block: var(--space-2xs) var(--space-xs);
     -webkit-overflow-scrolling: touch;
-    /* ?? AttachmentGroup ?????????? + ???? */
     scrollbar-width: thin !important;
     scrollbar-color: var(--scrollbar-thumb) transparent !important;
 
@@ -166,7 +165,6 @@
 .toolsRight {
   grid-column: 3;
   justify-self: end;
-  /* 模型选择与录音/发送之间需稳定间距，避免文案溢出叠上去 */
   gap: var(--space-xs);
 
   > :global(*) {
@@ -225,7 +223,9 @@
 }
 
 .popoverPanelScrollable {
+  box-sizing: border-box;
   width: 260px;
+  height: min(360px, 70vh);
   max-height: 420px;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -254,6 +254,7 @@
 }
 
 .deferredPopoverPanel {
+  box-sizing: border-box;
   min-width: 220px;
   min-height: 72px;
   padding: var(--space-xs);
@@ -262,12 +263,75 @@
 
 .deferredSkillMenuPanel {
   width: 260px;
-  min-height: 180px;
+  height: min(360px, 70vh);
+  max-height: 420px;
+  min-height: 0;
+}
+
+.deferredAgentMenuPanel {
+  box-sizing: border-box;
+  width: 240px;
+  min-height: 96px;
 }
 
 .deferredModelMenu {
   width: 320px;
   min-height: 112px;
+}
+
+.popoverPanelAgent {
+  box-sizing: border-box;
+  width: 240px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.popoverPanelAgentSkeleton {
+  min-height: 96px;
+}
+
+.popoverSkeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  width: 100%;
+  min-height: 100%;
+}
+
+.popoverSkeletonSection {
+  width: 56px;
+  height: 12px;
+  margin: var(--space-xs) var(--space-xs) var(--space-2xs);
+  border-radius: var(--radius-sm);
+}
+
+.popoverSkeletonRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  padding: var(--space-2xs) var(--space-xs);
+}
+
+.popoverSkeletonIcon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+}
+
+.popoverSkeletonLabel {
+  flex: 1;
+  min-width: 0;
+  height: 12px;
+  max-width: 72%;
+  border-radius: var(--radius-sm);
+}
+
+.popoverSkeletonLabelWide {
+  max-width: 88%;
 }
 
 .popoverTitle {
@@ -297,7 +361,6 @@
   min-width: 0;
 }
 
-/* ???????????????? flex ?? */
 .listItemContent > :global(svg),
 .agentMain > :global(svg) {
   flex-shrink: 0;
@@ -416,7 +479,6 @@
     gap: 2px;
   }
 
-  /* 右侧控件保持可读间距，防止模型文案与麦克风重叠 */
   .toolsRight {
     gap: var(--space-xs);
   }

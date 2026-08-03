@@ -1,5 +1,15 @@
 .navContainer {
   position: relative;
+  padding-bottom: var(--space-sm);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: var(--sidebar-content-inset, var(--space-lg));
+    right: var(--sidebar-content-inset, var(--space-lg));
+    bottom: 0;
+    border-bottom: 1px solid var(--border-light);
+  }
 }
 
 .headerMenu {
@@ -60,17 +70,14 @@
   background: transparent;
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1), font-weight 0.3s ease;
 
-  &:hover,
-  &[data-hovered],
-  &[data-focused] {
+  &:hover:not([data-nav-active='true']),
+  &[data-hovered]:not([data-nav-active='true']),
+  &[data-focused]:not([data-nav-active='true']) {
     color: var(--foreground);
     background: var(--accent-soft);
-    transition: color 0.15s ease, background 0.15s ease;
-  }
-
-  &[data-selected] {
-    color: var(--accent);
-    font-weight: var(--font-weight-semibold);
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
   }
 
   &[data-disabled] {
@@ -78,6 +85,21 @@
     cursor: not-allowed;
     background: transparent;
   }
+}
+
+/* 路由选中态，与 ListBox selection 解耦 */
+.menuItemActive,
+.menuItem[data-nav-active='true'],
+.menuItemActive:hover,
+.menuItemActive[data-hovered],
+.menuItemActive[data-focused],
+.menuItemActive[data-focus-visible],
+.menuItem[data-nav-active='true']:hover,
+.menuItem[data-nav-active='true'][data-hovered],
+.menuItem[data-nav-active='true'][data-focused],
+.menuItem[data-nav-active='true'][data-focus-visible] {
+  color: var(--foreground);
+  font-weight: var(--font-weight-semibold);
 }
 
 .menuItemCollapsed {
@@ -92,6 +114,7 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 18px;
+  color: inherit;
 }
 
 .menuLabel {
@@ -100,4 +123,5 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: inherit;
 }

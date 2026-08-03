@@ -75,6 +75,13 @@ export const RESOURCE_SIDE_PANEL_MIN_WIDTH = 280;
 export const NOTE_WITH_SIDE_PANEL_MIN_WIDTH =
   NOTE_EDITOR_MIN_WIDTH + RESOURCE_SIDE_PANEL_MIN_WIDTH + LAYOUT_RESIZE_HANDLE_RESERVE;
 
+/**
+ * 笔记+批注/评论 + 右侧 Chat 同时打开时的内层下限。
+ * 不够时由 workspaceArea 横向滚动，禁止互相遮挡。
+ */
+export const WORKSPACE_INNER_WITH_CHAT_AND_SIDE_MIN_WIDTH =
+  NOTE_WITH_SIDE_PANEL_MIN_WIDTH + CHAT_PANEL_MIN_WIDTH + LAYOUT_RESIZE_HANDLE_RESERVE;
+
 export const LAYOUT_COMPACT_MAX_WIDTH = WORKSPACE_THREE_COLUMN_MIN_WIDTH;
 
 /** fullWidth ChatInput 窄于此宽度时，模型按钮改为仅图标 */
@@ -214,6 +221,7 @@ export const getLayoutScaleCssVars = (
     '--layout-resource-side-panel-min-width': `${RESOURCE_SIDE_PANEL_MIN_WIDTH}px`,
     '--layout-note-with-side-panel-min-width': `${NOTE_WITH_SIDE_PANEL_MIN_WIDTH}px`,
     '--layout-workspace-inner-chat-min-width': `${WORKSPACE_INNER_WITH_CHAT_MIN_WIDTH}px`,
+    '--layout-workspace-inner-chat-side-min-width': `${WORKSPACE_INNER_WITH_CHAT_AND_SIDE_MIN_WIDTH}px`,
     '--layout-resize-handle-reserve': `${LAYOUT_RESIZE_HANDLE_RESERVE}px`,
     '--layout-note-outline-open-width': `${NOTE_OUTLINE_OPEN_WIDTH}px`,
     '--layout-note-outline-collapsed-width': `${NOTE_OUTLINE_COLLAPSED_WIDTH}px`,

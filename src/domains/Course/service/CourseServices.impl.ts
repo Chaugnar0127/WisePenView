@@ -1,11 +1,4 @@
-import type {
-  CourseOutlineEditorNode,
-  CreateCourseRequest,
-  ICourseService,
-  ListCourseMembersRequest,
-  ListMyCoursesRequest,
-  UpdateCourseRequest,
-} from '@/domains/Course';
+import type { CourseOutlineEditorNode } from '@/domains/Course/entity/course';
 import { GROUP_TYPE, type IGroupService } from '@/domains/Group';
 import type { IInteractService } from '@/domains/Interact';
 import type { IResourceService } from '@/domains/Resource';
@@ -13,6 +6,13 @@ import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
 import type { ITagService } from '@/domains/Tag';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { CourseServicesMap } from '../mapper/CourseServices.map';
+import type {
+  CreateCourseRequest,
+  ICourseService,
+  ListCourseMembersRequest,
+  ListMyCoursesRequest,
+  UpdateCourseRequest,
+} from './index.type';
 
 const unavailable = async (..._args: unknown[]): Promise<never> => {
   throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_SERVICE_UNAVAILABLE);
@@ -127,9 +127,18 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
   const getCourseOutlineEditor = async (courseId: string): Promise<CourseOutlineEditorNode[]> => {
     const group = await groupService.fetchGroupInfo(courseId);
     const courseMeta = CourseServicesMap.parseCourseMeta(group.groupMetaInfo);
+    if (!courseMeta.outlineRootTagId) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, { courseId });
+    }
     const tags = await tagService.getTagTree(courseId);
     const outlineRoot = tags.find((tag) => tag.tagId === courseMeta.outlineRootTagId);
-    const nodes = await mapOutlineEditorNodes(tagService, outlineRoot?.children ?? []);
+    if (!outlineRoot) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
+        courseId,
+        outlineRootTagId: courseMeta.outlineRootTagId,
+      });
+    }
+    const nodes = await mapOutlineEditorNodes(tagService, outlineRoot.children ?? []);
     return nodes.map((node) => ({ ...node, parentId: undefined }));
   };
 

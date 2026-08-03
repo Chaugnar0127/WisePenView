@@ -11,7 +11,7 @@ import type {
   CourseOutline,
   CourseOutlineEditorNode,
   CourseSummary,
-} from '@/domains/Course';
+} from '@/domains/Course/entity/course';
 
 export interface CourseListPage {
   list: CourseSummary[];

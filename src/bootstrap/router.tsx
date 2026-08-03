@@ -11,12 +11,6 @@ import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
 import HomeLayout from '@/layouts/Home/HomeLayout';
 import WorkspaceLayout from '@/layouts/Workspace/WorkspaceLayout';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
-import {
-  CourseAnnouncementsPage,
-  CourseInfoPage,
-  CourseMembersPage,
-} from '@/views/app/course/CourseContextPages';
-import CourseRoute from '@/views/app/course/CourseRoute';
 import RouteError from '@/views/app/error/RouteError';
 
 // 页面使用 lazy load，按路由切分 chunk
@@ -48,9 +42,12 @@ const ChatPage = lazy(() => import('@/views/app/chat'));
 const ResourceNotFound = lazy(() => import('@/views/app/error/ResourceNotFound'));
 const AppError = lazy(() => import('@/views/app/error/AppError'));
 const CourseListPage = lazy(() => import('@/views/app/course/CourseListPage'));
-const CourseHomePage = lazy(() => import('@/views/app/course/CourseHomePage'));
+const CourseRoute = lazy(() => import('@/views/app/course/CourseRoute'));
+const CourseContextPage = lazy(() => import('@/views/app/course/CourseContextPage'));
 const CourseAssignmentsPage = lazy(() => import('@/views/app/course/CourseAssignmentsPage'));
-const CourseAssignmentPage = lazy(() => import('@/views/app/course/CourseAssignmentPage'));
+const CourseAssignmentDetailPage = lazy(
+  () => import('@/views/app/course/CourseAssignmentDetailPage')
+);
 const CourseMaterialsPage = lazy(() => import('@/views/app/course/CourseMaterialsPage'));
 const CourseEditorPage = lazy(() => import('@/views/app/course/CourseEditorPage'));
 
@@ -212,19 +209,7 @@ const router = createBrowserRouter([
                       },
                       {
                         path: 'home',
-                        element: <CourseHomePage />,
-                      },
-                      {
-                        path: 'info',
-                        element: <CourseInfoPage />,
-                      },
-                      {
-                        path: 'members',
-                        element: <CourseMembersPage />,
-                      },
-                      {
-                        path: 'announcements',
-                        element: <CourseAnnouncementsPage />,
+                        element: <CourseContextPage />,
                       },
                       {
                         path: 'assignments',
@@ -232,7 +217,7 @@ const router = createBrowserRouter([
                       },
                       {
                         path: 'assignments/:assignmentId',
-                        element: <CourseAssignmentPage />,
+                        element: <CourseAssignmentDetailPage />,
                       },
                       {
                         path: 'materials',

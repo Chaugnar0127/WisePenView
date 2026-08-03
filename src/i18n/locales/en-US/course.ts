@@ -47,6 +47,7 @@ const enUSCourse = {
     infoShort: 'Info',
     members: 'People',
     announcements: 'Announcements',
+    contextTabsAria: 'Course content navigation',
     edit: 'Edit course',
   },
   header: { teachingWeek: 'Teaching week {{week}}', members: '{{count}} students' },
@@ -256,7 +257,7 @@ const enUSCourse = {
       openResource: 'Open resource',
       moveResource: 'Move to another section',
       moveResourceTitle: 'Move course resource',
-      moveResourceTarget: 'Target chapter or section',
+      moveResourceHint: 'Moving: {{name}}',
       removeResource: 'Remove from outline',
       removeResourceTitle: 'Remove from course outline',
       removeResourceDescription:

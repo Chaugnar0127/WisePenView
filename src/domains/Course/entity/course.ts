@@ -1,4 +1,9 @@
-import type { CourseAssignmentStatus, CourseRole } from '@/domains/Course/enum';
+import type {
+  CourseAssignmentStatus,
+  CourseFinalAssessmentType,
+  CourseRole,
+  CourseWeekPattern,
+} from '@/domains/Course/enum';
 
 export interface CourseTeacher {
   userId: string;
@@ -12,8 +17,6 @@ export interface CourseAssessmentItem {
   weight: number;
 }
 
-export type CourseWeekPattern = 'EVERY' | 'ODD' | 'EVEN';
-
 export type CoursePeriod = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
 
 export interface CourseMeeting {
@@ -24,8 +27,6 @@ export interface CourseMeeting {
   endPeriod: CoursePeriod;
   location: string;
 }
-
-export type CourseFinalAssessmentType = 'EXAM' | 'PAPER' | 'OTHER';
 
 export interface CourseFinalAssessment {
   type: CourseFinalAssessmentType;

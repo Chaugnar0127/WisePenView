@@ -1,10 +1,10 @@
 import type { GroupResConfig } from '@/domains/Group';
+import GroupDefaultAccessPermissionModal from '@/views/app/group/_components/GroupPermissions/GroupDefaultAccessPermissionModal';
+import GroupMountPermissionModal from '@/views/app/group/_components/GroupPermissions/GroupMountPermissionModal';
 import { Button } from '@heroui/react';
 import { FolderInput, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import GroupDefaultAccessPermissionModal from '../GroupDefaultAccessPermissionModal';
-import GroupMountPermissionModal from '../GroupMountPermissionModal';
 import GroupSettingsSection from '../GroupSettingsSection';
 import styles from './style.module.less';
 

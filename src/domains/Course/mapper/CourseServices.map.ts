@@ -1,18 +1,23 @@
+import {
+  calculateCourseTeachingWeek,
+  formatCoursePeriodRange,
+  getCoursePeriodTimeRange,
+  isCoursePeriod,
+} from '@/domains/Course/constants/schedule';
 import type {
   CourseAssessmentItem,
   CourseDetail,
   CourseFinalAssessment,
   CourseMeeting,
   CourseMember,
-  CourseRole,
   CourseSummary,
-} from '@/domains/Course';
-import { COURSE_ROLE } from '@/domains/Course';
+} from '@/domains/Course/entity/course';
 import {
-  formatCoursePeriodRange,
-  getCoursePeriodTimeRange,
-  isCoursePeriod,
-} from '@/domains/Course/schedule';
+  COURSE_ROLE,
+  isCourseFinalAssessmentType,
+  isCourseWeekPattern,
+  type CourseRole,
+} from '@/domains/Course/enum';
 import type { Group, GroupMember } from '@/domains/Group';
 
 const COURSE_META_SCHEMA = 'wisepen.course.v1';
@@ -62,9 +67,7 @@ const parseOptionalString = (value: unknown): string | undefined =>
 
 const parseFinalAssessment = (value: unknown): CourseFinalAssessment | undefined => {
   if (!isRecord(value)) return undefined;
-  if (value.type !== 'EXAM' && value.type !== 'PAPER' && value.type !== 'OTHER') {
-    return undefined;
-  }
+  if (!isCourseFinalAssessmentType(value.type)) return undefined;
   return {
     type: value.type,
     customName: parseOptionalString(value.customName),
@@ -75,15 +78,6 @@ const parseFinalAssessment = (value: unknown): CourseFinalAssessment | undefined
     location: parseOptionalString(value.location),
     deadline: parseOptionalString(value.deadline),
   };
-};
-
-const calculateTeachingWeek = (startAt?: string): number | undefined => {
-  if (!startAt) return undefined;
-  const startDate = new Date(`${startAt.slice(0, 10)}T00:00:00`);
-  if (Number.isNaN(startDate.getTime())) return undefined;
-  const elapsedDays = Math.floor((Date.now() - startDate.getTime()) / 86_400_000);
-  if (elapsedDays < 0) return undefined;
-  return Math.min(18, Math.floor(elapsedDays / 7) + 1);
 };
 
 const parseCourseMeta = (groupMetaInfo: Record<string, unknown>): CourseMetaV1 => {
@@ -106,9 +100,7 @@ const parseCourseMeta = (groupMetaInfo: Record<string, unknown>): CourseMetaV1 =
           (item): item is CourseMeeting =>
             isRecord(item) &&
             typeof item.meetingId === 'string' &&
-            (item.weekPattern === 'EVERY' ||
-              item.weekPattern === 'ODD' ||
-              item.weekPattern === 'EVEN') &&
+            isCourseWeekPattern(item.weekPattern) &&
             typeof item.weekday === 'string' &&
             isCoursePeriod(item.startPeriod) &&
             isCoursePeriod(item.endPeriod) &&
@@ -214,7 +206,7 @@ const mapGroupToCourseDetail = (group: Group, role: 'OWNER' | 'ADMIN' | 'MEMBER'
     meetings: metadata.meetings ?? [],
     finalAssessment: metadata.finalAssessment,
     outlineRootTagId: metadata.outlineRootTagId,
-    teachingWeek: calculateTeachingWeek(metadata.startAt),
+    teachingWeek: calculateCourseTeachingWeek(metadata.startAt),
     memberCount: group.memberCount,
   };
 };

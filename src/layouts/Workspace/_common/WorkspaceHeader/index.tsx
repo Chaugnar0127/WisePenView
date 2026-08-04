@@ -15,6 +15,7 @@ function WorkspaceHeader({
   canGoBack = false,
   canGoForward = false,
   leftSidebarCollapsed = false,
+  headerRef,
   onGoBack,
   onGoForward,
   onToggleLeftSidebar,
@@ -23,13 +24,21 @@ function WorkspaceHeader({
 }: WorkspaceHeaderProps) {
   const desktopWindow = useDesktopWindowState();
 
+  const titleBarInsetStart =
+    desktopWindow.hasTitleBarInset && desktopWindow.titleBarInsetSide === 'start';
+  /** Win：挂 end 槽位；具体留白 px 由 headerRef 上的 CSS 变量驱动 */
+  const titleBarInsetEnd =
+    desktopWindow.hasTitleBarInset && desktopWindow.titleBarInsetSide === 'end';
+
   return (
     <header
+      ref={headerRef}
       className={clsx(
         styles.root,
         desktopWindow.isDesktop && styles.desktopRoot,
-        desktopWindow.hasMacTitleBarInset && styles.macDesktopAlignedRoot,
-        leftSidebarCollapsed && desktopWindow.hasMacTitleBarInset && styles.macDesktopRoot,
+        titleBarInsetStart && styles.titleBarInsetStartAligned,
+        leftSidebarCollapsed && titleBarInsetStart && styles.titleBarInsetStart,
+        titleBarInsetEnd && styles.titleBarInsetEnd,
         leftSidebarCollapsed &&
           desktopWindow.isDesktop &&
           desktopWindow.isFullScreen &&

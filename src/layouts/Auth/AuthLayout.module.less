@@ -1,3 +1,5 @@
+@import '@/layouts/_common/desktopTitleBar.less';
+
 .root {
   position: relative;
   box-sizing: border-box;
@@ -11,6 +13,25 @@
   align-items: center;
   overflow: hidden;
   background-color: var(--background);
+}
+
+/* 登录页无导航时仍保留可拖顶栏带（含上方拖拽留白） */
+.desktopTitleBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  .desktopTitleBarChrome();
+}
+
+.titleBarInsetStart {
+  padding-left: @desktop-titlebar-start-inset;
+}
+
+.titleBarInsetEnd {
+  padding-right: @desktop-titlebar-end-reserve;
+  .desktopTitleBarEndNoDragHole();
 }
 
 .authSheet {

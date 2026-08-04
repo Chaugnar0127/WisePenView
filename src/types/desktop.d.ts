@@ -6,8 +6,13 @@ interface DesktopBridge {
   readonly platform: DesktopNodePlatform;
   isFullScreen(): boolean;
   onFullScreenChange(listener: (value: boolean) => void): () => void;
+  isMaximized?(): boolean;
+  onMaximizedChange?(listener: (value: boolean) => void): () => void;
   getAppVersion(): Promise<string>;
   openExternal(url: string): Promise<boolean>;
+  windowMinimize?(): Promise<void>;
+  windowMaximizeToggle?(): Promise<void>;
+  windowClose?(): Promise<void>;
 }
 
 interface Window {

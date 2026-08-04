@@ -1,3 +1,5 @@
+@import '@/layouts/_common/desktopTitleBar.less';
+
 @landing-inline: clamp(16px, 4vw, 40px);
 @content-max: 1160px;
 
@@ -15,6 +17,18 @@
   gap: 16px;
   min-height: 64px;
   background: transparent;
+}
+
+/* 与 Mac 壳层一致：左品牌 / 右导航；控件可点，其余区域交给外层 drag */
+.desktopBar {
+  min-height: 0;
+  height: 100%;
+  align-items: center;
+
+  .navWrap,
+  .navButton {
+    .desktopTitleBarNoDrag();
+  }
 }
 
 .brand {

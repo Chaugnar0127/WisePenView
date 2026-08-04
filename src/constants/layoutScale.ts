@@ -66,8 +66,8 @@ export const WORKSPACE_TWO_COLUMN_MIN_WIDTH =
 export const WORKSPACE_INNER_WITH_CHAT_MIN_WIDTH =
   NOTE_EDITOR_MIN_WIDTH + CHAT_PANEL_MIN_WIDTH + LAYOUT_RESIZE_HANDLE_RESERVE;
 
-/** 评论/批注栏默认最小宽 */
-export const RESOURCE_SIDE_PANEL_MIN_WIDTH = 280;
+/** 评论/批注栏默认最小宽（过窄时线程/排序条易挤坏） */
+export const RESOURCE_SIDE_PANEL_MIN_WIDTH = 320;
 
 /**
  * 笔记 + 评论/批注同时打开时的下限。
@@ -159,6 +159,15 @@ export const WINDOW_MIN_HEIGHT = Math.max(
 export const WINDOW_DEFAULT_WIDTH = 1440;
 export const WINDOW_DEFAULT_HEIGHT = 960;
 
+/** 桌面自定义顶栏总高（含上方拖拽带） */
+export const DESKTOP_TITLE_BAR_HEIGHT = 56;
+/** 顶栏上方专供拖拽的留白 */
+export const DESKTOP_TITLE_BAR_DRAG_STRIP = 10;
+/** Win 自绘窗口按钮：三枚 32px + 间距 + 右内边距 */
+export const DESKTOP_WINDOW_CONTROLS_WIDTH = 116;
+/** Mac hiddenInset 红绿灯位置（相对窗口左上） */
+export const DESKTOP_MAC_TRAFFIC_LIGHT_POSITION = { x: 20, y: 22 } as const;
+
 export const LAYOUT_DENSITY = {
   COMPACT: 'compact',
   NORMAL: 'normal',
@@ -207,6 +216,9 @@ export const getLayoutScaleCssVars = (
   const footerOffset = isShort ? CHAT_FOOTER_SCROLL_OFFSET_SHORT : CHAT_FOOTER_SCROLL_OFFSET_NORMAL;
 
   return {
+    '--desktop-title-bar-height': `${DESKTOP_TITLE_BAR_HEIGHT}px`,
+    '--desktop-title-bar-drag-strip': `${DESKTOP_TITLE_BAR_DRAG_STRIP}px`,
+    '--desktop-window-controls-width': `${DESKTOP_WINDOW_CONTROLS_WIDTH}px`,
     '--chat-panel-min-width': `${CHAT_PANEL_MIN_WIDTH}px`,
     '--chat-full-width-min-width': `${CHAT_FULL_WIDTH_MIN_WIDTH}px`,
     '--layout-sidebar-min-width': `${SIDEBAR_MIN_WIDTH}px`,

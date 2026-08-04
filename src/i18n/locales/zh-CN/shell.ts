@@ -12,6 +12,12 @@ const zhCNShell = {
     appSidebar: '应用侧边栏',
     adminSidebar: '管理侧边栏',
   },
+  windowControls: {
+    minimize: '最小化',
+    maximize: '最大化',
+    restore: '还原',
+    close: '关闭',
+  },
   sidebar: {
     contentAria: '侧边栏内容',
     sessions: '对话',

@@ -1,62 +1,63 @@
-.statusGroup {
+.statusBadge {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
-  flex-shrink: 0;
+  gap: var(--space-2xs);
+  width: fit-content;
+  padding: var(--space-2xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  background: var(--surface-secondary);
+  color: var(--muted);
 }
 
-.statusText {
-  font-size: var(--font-size-base);
-  color: var(--muted);
+.statusBadgeBanned {
+  color: var(--error);
+  background: color-mix(in oklab, var(--error) 12%, var(--surface));
+}
+
+.statusBadgeUnverified {
+  color: var(--warning);
+  background: color-mix(in oklab, var(--warning) 14%, var(--surface));
+}
+
+.statusBadgeVerified {
+  color: var(--success);
+  background: color-mix(in oklab, var(--success) 12%, var(--surface));
 }
 
 .statusIcon {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  cursor: default;
-
-  .statusIconBanned {
-    color: var(--error);
-  }
-
-  .statusIconUnverified {
-    color: var(--warning);
-  }
-
-  .statusIconVerified {
-    color: var(--success);
-  }
 }
 
+/* 独立身份页头：对齐 GitHub Settings / Linear Profile 的「先认人再看资料」 */
 .accountHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-lg);
-}
-
-.accountHeaderLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--space-lg);
+  padding: var(--space-lg) var(--space-xl);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .avatarWrap {
+  position: relative;
   flex-shrink: 0;
   display: inline-flex;
   cursor: pointer;
   border-radius: 50%;
-  overflow: hidden;
   outline: none;
-  transition: opacity 0.2s ease;
-
-  &:hover {
-    opacity: 0.88;
-  }
 
   &:focus-visible {
     box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  &:hover .avatarOverlay,
+  &:focus-visible .avatarOverlay {
+    opacity: 1;
   }
 }
 
@@ -68,9 +69,10 @@
   border-radius: 50%;
   aspect-ratio: 1;
   background-color: var(--surface-secondary);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   color: var(--foreground);
   font-weight: var(--font-weight-medium);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 8%, transparent);
 
   img {
     width: 100%;
@@ -90,27 +92,74 @@
   font-size: var(--font-size-heading-3);
 }
 
-.accountInfo {
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  border-radius: 50%;
+  /* 与主题无关的半透明遮罩，保证浅/深色下都可读 */
+  background: rgb(0 0 0 / 48%);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
 }
 
-.nameRow {
+.avatarOverlayLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.2;
+}
+
+.accountInfo {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-sm);
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-width: 0;
 }
 
 .nickname {
+  margin: 0;
   font-size: var(--font-size-heading-3);
   font-weight: var(--font-weight-medium);
   color: var(--foreground);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .username {
+  margin: 0;
   font-size: var(--font-size-base);
   color: var(--muted);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+  margin-top: var(--space-2xs);
+}
+
+.identityTag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2xs) var(--space-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--accent);
+  background-color: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  width: fit-content;
 }
 
 .avatarModalHint {
@@ -119,12 +168,20 @@
   color: var(--muted);
 }
 
-.identityTag {
-  display: inline-block;
-  padding: var(--space-2xs) var(--space-sm);
-  font-size: var(--font-size-sm);
-  color: var(--accent);
-  background-color: var(--accent-soft);
-  border-radius: var(--radius-sm);
-  width: fit-content;
+@media (max-width: 560px) {
+  .accountHeader {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-lg);
+    gap: var(--space-md);
+  }
+
+  .accountInfo {
+    align-items: center;
+  }
+
+  .tagRow {
+    justify-content: center;
+  }
 }

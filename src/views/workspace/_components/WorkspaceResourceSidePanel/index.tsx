@@ -75,6 +75,7 @@ function WorkspaceResourceSidePanel({
     ) : null;
   const panelTitle =
     activeMode === 'inlineComment' ? t('sidePanel.annotation') : t('sidePanel.comments');
+  const showFrameHeader = activeMode === 'inlineComment';
 
   return (
     <div className={styles.scrollHost}>
@@ -93,6 +94,7 @@ function WorkspaceResourceSidePanel({
         </SystemResizablePanel>
 
         <SystemResizableHandle
+          withHandle={open}
           className={clsx(styles.resizeHandle, !open && styles.resizeHandleCollapsed)}
           disabled={!open}
         />
@@ -103,6 +105,7 @@ function WorkspaceResourceSidePanel({
           defaultSize={panelSize}
           minSize={open ? WORKSPACE_RESOURCE_SIDE_PANEL_MIN_WIDTH : 0}
           maxSize={open ? WORKSPACE_RESOURCE_SIDE_PANEL_MAX_WIDTH : 0}
+          groupResizeBehavior="preserve-pixel-size"
           className={styles.sidePanel}
           aria-label={
             activeMode === 'inlineComment'
@@ -114,9 +117,11 @@ function WorkspaceResourceSidePanel({
         >
           {open ? (
             <section className={styles.panelFrame} aria-label={panelTitle}>
-              <header className={styles.panelHeader}>
-                <h2 className={styles.panelTitle}>{panelTitle}</h2>
-              </header>
+              {showFrameHeader ? (
+                <header className={styles.panelHeader}>
+                  <h2 className={styles.panelTitle}>{panelTitle}</h2>
+                </header>
+              ) : null}
               <div className={styles.panelBody}>{panelContent}</div>
             </section>
           ) : null}

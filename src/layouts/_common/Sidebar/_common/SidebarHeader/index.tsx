@@ -40,7 +40,13 @@ function SidebarHeader({
 
   return (
     <div
-      className={clsx(styles.header, desktopWindow.hasMacTitleBarInset && styles.macDesktopHeader)}
+      className={clsx(
+        styles.header,
+        desktopWindow.isDesktop && styles.desktopHeader,
+        desktopWindow.hasTitleBarInset &&
+          desktopWindow.titleBarInsetSide === 'start' &&
+          styles.titleBarInsetStart
+      )}
     >
       {desktopWindow.isDesktop ? (
         <>

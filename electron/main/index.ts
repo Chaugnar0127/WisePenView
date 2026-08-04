@@ -1,8 +1,18 @@
-import { app, BrowserWindow, ipcMain, net, protocol, shell, type WebContents } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  net,
+  protocol,
+  shell,
+  type WebContents,
+} from 'electron';
 import { existsSync, statSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
+  DESKTOP_MAC_TRAFFIC_LIGHT_POSITION,
   WINDOW_DEFAULT_HEIGHT,
   WINDOW_DEFAULT_WIDTH,
   WINDOW_MIN_HEIGHT,
@@ -98,10 +108,12 @@ function createMainWindow(): BrowserWindow {
     ...(isMac
       ? {
           titleBarStyle: 'hiddenInset' as const,
-          // 原生红绿灯坐标，可在此手动微调。
-          trafficLightPosition: { x: 20, y: 19 },
+          trafficLightPosition: { ...DESKTOP_MAC_TRAFFIC_LIGHT_POSITION },
         }
-      : {}),
+      : {
+          // Win/Linux：藏系统标题条；窗口按钮由渲染层自绘（与 header 按钮同风格）。
+          titleBarStyle: 'hidden' as const,
+        }),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -116,9 +128,17 @@ function createMainWindow(): BrowserWindow {
   const notifyFullScreenChanged = () => {
     window.webContents.send(DESKTOP_CHANNEL.fullScreenChanged, window.isFullScreen());
   };
-  window.webContents.on('did-finish-load', notifyFullScreenChanged);
+  const notifyMaximizedChanged = () => {
+    window.webContents.send(DESKTOP_CHANNEL.maximizedChanged, window.isMaximized());
+  };
+  window.webContents.on('did-finish-load', () => {
+    notifyFullScreenChanged();
+    notifyMaximizedChanged();
+  });
   window.on('enter-full-screen', notifyFullScreenChanged);
   window.on('leave-full-screen', notifyFullScreenChanged);
+  window.on('maximize', notifyMaximizedChanged);
+  window.on('unmaximize', notifyMaximizedChanged);
 
   if (DEV_RENDERER_URL) {
     void window.loadURL(DEV_RENDERER_URL);
@@ -136,9 +156,28 @@ function registerDesktopIpcHandlers(): void {
     await shell.openExternal(url);
     return true;
   });
+  ipcMain.handle(DESKTOP_CHANNEL.windowMinimize, (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.minimize();
+  });
+  ipcMain.handle(DESKTOP_CHANNEL.windowMaximizeToggle, (event) => {
+    const browserWindow = BrowserWindow.fromWebContents(event.sender);
+    if (!browserWindow) return;
+    if (browserWindow.isMaximized()) {
+      browserWindow.unmaximize();
+    } else {
+      browserWindow.maximize();
+    }
+  });
+  ipcMain.handle(DESKTOP_CHANNEL.windowClose, (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close();
+  });
 }
 
 app.whenReady().then(() => {
+  if (process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+  }
+
   protocol.handle(APP_SCHEME, (request) => {
     if (new URL(request.url).host !== APP_HOST) {
       return new Response('Not Found', { status: 404 });

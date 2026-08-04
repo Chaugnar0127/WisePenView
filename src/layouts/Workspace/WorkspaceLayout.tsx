@@ -59,6 +59,7 @@ import WorkspaceFrame from './_common/WorkspaceFrame';
 import WorkspaceHeader from './_common/WorkspaceHeader';
 import { useWorkspaceChatProtocolStore } from './_store/useWorkspaceChatProtocolStore';
 import { useWorkspaceNavigationStore } from './_store/useWorkspaceNavigationStore';
+import { useWorkspaceHeaderEndReserve } from './useWorkspaceHeaderEndReserve';
 import { useWorkspaceResourceBreadcrumb } from './useWorkspaceResourceBreadcrumb';
 import styles from './WorkspaceLayout.module.less';
 
@@ -101,16 +102,16 @@ function WorkspaceLayout() {
     panelSize: sidebarPanelSize,
     minSize: sidebarMinSize,
     maxSize: sidebarMaxSize,
-    showSidebarContent,
+    isAnimating: isSidebarAnimating,
   } = useSidebarCollapseMotion({
     collapsed: sidebarCollapsed,
     expandedWidth: leftSidebarWidth,
     collapsedWidth: SIDEBAR_COLLAPSED_WIDTH,
   });
+  const anchorSidebarSlide = isSidebarAnimating || sidebarCollapsed;
   const {
     panelSize: rightDockPanelSize,
     maxSize: rightDockMaxSize,
-    showSidebarContent: showChatPanelContent,
     isAnimating: isChatPanelAnimating,
   } = useSidebarCollapseMotion({
     collapsed: !chatPanelOpen,
@@ -133,9 +134,15 @@ function WorkspaceLayout() {
     : isChatClosing
       ? normalizedChatPanelWidth
       : frozenChatSlideWidthPx;
-  /** 展开动画期间不抬 min-width；收起动画期间保持约束 */
-  const applyChatOpenLayoutConstraints =
-    (chatPanelOpen && !isChatPanelAnimating) || (!chatPanelOpen && isChatPanelAnimating);
+  /**
+   * 展开一开始就抬布局下限，避免动画结束时 workspaceInnerGroup min-width 突然生效造成顿挫；
+   * 收起过程中保持约束，直到动画结束再放开。
+   */
+  const applyChatOpenLayoutConstraints = chatPanelOpen || isChatPanelAnimating;
+  const { headerRef: workspaceHeaderRef, onDockWidthPixels } = useWorkspaceHeaderEndReserve({
+    idleDockWidthPx: chatPanelOpen ? normalizedChatPanelWidth : 0,
+    isAnimating: isChatPanelAnimating,
+  });
   const location = useLocation();
   const resourceRouteMatch = useMatch('/app/workspace/:resourceType/:resourceId');
   const resourceListRouteMatch = useMatch('/app/workspace/:resourceType');
@@ -189,6 +196,8 @@ function WorkspaceLayout() {
     size: rightDockPanelSize,
     animate: true,
     durationMs: SIDEBAR_COLLAPSE_DURATION_MS,
+    /* 与 resize 动画同帧写顶栏留白，不再另开 rAF 轮询 */
+    onSizePixels: onDockWidthPixels,
   });
 
   /**
@@ -285,6 +294,7 @@ function WorkspaceLayout() {
   };
 
   const handleRightDockResize = (panelSize: PanelSize) => {
+    onDockWidthPixels(panelSize.inPixels);
     if (!chatPanelOpen) return;
     pendingRightDockWidthRef.current = clampWorkspaceChatPanelWidth(panelSize.inPixels);
   };
@@ -373,6 +383,7 @@ function WorkspaceLayout() {
         canGoBack={appNavigation.canGoBack}
         canGoForward={appNavigation.canGoForward}
         leftSidebarCollapsed={sidebarCollapsed}
+        headerRef={workspaceHeaderRef}
         onGoBack={appNavigation.goBack}
         onGoForward={appNavigation.goForward}
         onToggleLeftSidebar={handleSidebarToggle}
@@ -403,15 +414,29 @@ function WorkspaceLayout() {
         aria-hidden={sidebarCollapsed ? true : undefined}
         onResize={handleLeftSidebarResize}
       >
-        {showSidebarContent ? (
-          <AppSidebar
-            canGoBack={appNavigation.canGoBack}
-            canGoForward={appNavigation.canGoForward}
-            onGoBack={appNavigation.goBack}
-            onGoForward={appNavigation.goForward}
-            onToggle={handleSidebarToggle}
-          />
-        ) : null}
+        <div className={styles.sidebarSlideHost}>
+          <div
+            className={clsx(
+              styles.sidebarSlideFrame,
+              anchorSidebarSlide && styles.sidebarSlideFrameAnchored
+            )}
+            style={
+              anchorSidebarSlide
+                ? ({
+                    '--sidebar-slide-width': `${leftSidebarWidth}px`,
+                  } as CSSProperties)
+                : undefined
+            }
+          >
+            <AppSidebar
+              canGoBack={appNavigation.canGoBack}
+              canGoForward={appNavigation.canGoForward}
+              onGoBack={appNavigation.goBack}
+              onGoForward={appNavigation.goForward}
+              onToggle={handleSidebarToggle}
+            />
+          </div>
+        </div>
       </SystemResizablePanel>
 
       <SystemResizableHandle
@@ -467,7 +492,10 @@ function WorkspaceLayout() {
             id="workspace-right-dock"
             panelRef={rightDockPanelRef}
             defaultSize={rightDockPanelSize}
-            /* 动效期间 min=0 才能从 0 插值展开；静止展开后再锁 Chat 最小宽 */
+            /*
+             * 动效期间 min=0 才能从 0 插值；静止展开后锁最小宽。
+             * 与 isAnimating 同帧切换可能触发布局复核，保持尺寸已到位时再锁。
+             */
             minSize={chatPanelOpen && !isChatPanelAnimating ? CHAT_PANEL_MIN_WIDTH : 0}
             maxSize={rightDockMaxSize}
             groupResizeBehavior="preserve-pixel-size"
@@ -476,14 +504,19 @@ function WorkspaceLayout() {
             aria-hidden={!chatPanelOpen ? true : undefined}
             onResize={handleRightDockResize}
           >
-            {showChatPanelContent ? (
+            {shouldRenderChatPanel ? (
               <div className={styles.chatPanelSlideHost}>
                 <div
-                  className={clsx(styles.chatPanelSlideFrame, styles.chatPanelSlideFrameAnchored)}
+                  className={clsx(
+                    styles.chatPanelSlideFrame,
+                    isChatPanelAnimating && styles.chatPanelSlideFrameAnchored
+                  )}
                   style={
-                    {
-                      '--chat-panel-slide-width': `${chatSlideWidthPx}px`,
-                    } as CSSProperties
+                    isChatPanelAnimating
+                      ? ({
+                          '--chat-panel-slide-width': `${chatSlideWidthPx}px`,
+                        } as CSSProperties)
+                      : undefined
                   }
                 >
                   <ChatPanel

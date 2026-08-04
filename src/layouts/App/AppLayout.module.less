@@ -31,6 +31,40 @@
   overflow: hidden;
 }
 
+/* 外层插值宽度；内层锚定贴齐右侧把手，裁切后呈向左平移 */
+.sidebarSlideHost {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.sidebarSlideFrame {
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.sidebarSlideFrameAnchored {
+  flex: 0 0 auto;
+  width: var(--sidebar-slide-width);
+  min-width: var(--sidebar-slide-width);
+  max-width: var(--sidebar-slide-width);
+  contain: layout paint;
+}
+
+.sidebarSlideHostHidden {
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
 .webCollapsedSider {
   background: var(--surface);
 }
@@ -72,15 +106,25 @@
   overflow: hidden;
 }
 
+@import '@/layouts/_common/desktopTitleBar.less';
+
 .desktopHeader {
   box-sizing: border-box;
-  height: 48px;
-  flex: 0 0 48px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  padding: 0 var(--space-lg) 0 var(--space-sm);
-  background: var(--surface);
-  -webkit-app-region: drag;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-right: var(--space-sm);
+  padding-bottom: 0;
+  padding-left: var(--space-sm);
+  background: var(--header-surface, var(--paper));
+  .desktopTitleBarChrome();
+}
+
+.collapsedHeaderControls {
+  flex: 1;
+  min-width: 0;
 }
 
 .webCollapsedSidebar {
@@ -92,14 +136,18 @@
   padding-block: var(--space-sm);
 }
 
-.macDesktopHeader {
-  padding-left: 92px;
+/* Mac：折叠后主区顶栏避开红绿灯 */
+.titleBarInsetStart {
+  padding-left: @desktop-titlebar-start-inset;
 
   .collapsedHeaderControls {
     transform: translateY(1px);
   }
 }
 
-.collapsedHeaderControls {
-  -webkit-app-region: no-drag;
+/* Win/Linux：右侧留白给 App 层固定窗口按钮，并挖掉 drag */
+.titleBarInsetEnd {
+  padding-right: @desktop-titlebar-end-reserve;
+  .desktopTitleBarEndNoDragHole();
 }
+

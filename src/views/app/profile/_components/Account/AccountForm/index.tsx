@@ -5,14 +5,16 @@ import type { UpdateUserInfoRequest } from '@/domains/User';
 import { DEGREE, SEX } from '@/domains/User';
 import { parseErrorMessage } from '@/utils/error';
 import type { ProfileFieldKey } from '@/views/app/profile/profile.config';
+import { getVisibleProfileFieldGroups } from '@/views/app/profile/profile.config';
 import { Button, Form, Label, ListBox, TextField, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Pencil, X } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import SettingsList from '../SettingsList';
 import { buildProfileFormValues } from './buildProfileFormValues';
 import type { AccountFormProps } from './index.type';
-import { getProfileDisplayString } from './profileDisplay';
+import { getProfileFieldDisplay } from './profileDisplay';
 import styles from './style.module.less';
 
 type FormDraft = {
@@ -56,7 +58,6 @@ function AccountForm({
   show,
   user,
   fieldConfig,
-  visibleFields,
   readonlyFieldSet,
   onUserInfoReload,
 }: AccountFormProps) {
@@ -66,6 +67,7 @@ function AccountForm({
   const [formDraft, setFormDraft] = useState<FormDraft | null>(null);
   const userFormValues = (user ? buildProfileFormValues(user) : {}) satisfies UpdateUserInfoRequest;
   const formValues = editMode && formDraft?.user === user ? formDraft.values : userFormValues;
+  const fieldGroups = getVisibleProfileFieldGroups(fieldConfig);
 
   const { loading: saving, runAsync: runSave } = useRequest(
     async () => {
@@ -150,6 +152,86 @@ function AccountForm({
     void runSave();
   };
 
+  const renderEditField = (field: (typeof fieldGroups)[number]['fields'][number]): ReactNode => {
+    const lockedByServer = readonlyFieldSet.has(field.key);
+    const fieldLabel = t(field.labelKey);
+    const fieldPlaceholder = t(field.placeholderKey);
+    if (lockedByServer) {
+      return (
+        <TextField
+          key={field.key}
+          aria-label={fieldLabel}
+          value={getReadonlyInputValue(formValues, field.key, t)}
+          isDisabled
+          className={styles.formField}
+        >
+          <Label>{fieldLabel}</Label>
+          <Input readOnly className={styles.editableInput} />
+        </TextField>
+      );
+    }
+    return (
+      <div key={field.key} className={styles.formField}>
+        {field.type === 'input' ? (
+          <TextField
+            aria-label={fieldLabel}
+            value={getFieldInputValue(formValues, field.key)}
+            onChange={(value) => updateFormValue(field.key, value)}
+          >
+            <Label>{fieldLabel}</Label>
+            <Input placeholder={fieldPlaceholder} className={styles.editableInput} />
+          </TextField>
+        ) : (
+          <Select
+            aria-label={fieldLabel}
+            placeholder={fieldPlaceholder}
+            value={getFieldInputValue(formValues, field.key) || null}
+            onChange={(value) =>
+              updateFormValue(
+                field.key,
+                value == null || Array.isArray(value) ? undefined : Number(value)
+              )
+            }
+            className={styles.editableInput}
+          >
+            <Label>{fieldLabel}</Label>
+            <Select.Trigger>
+              <Select.Value />
+              {getFieldValue(formValues, field.key) != null ? (
+                <AppIconButton
+                  icon={<X aria-hidden="true" />}
+                  label={t('form.clearField', { field: fieldLabel })}
+                  size="sm"
+                  className={styles.clearSelectButton}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    updateFormValue(field.key, undefined);
+                  }}
+                />
+              ) : null}
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {(field.optionsKey ? OPTIONS_MAP[field.optionsKey] : []).map(({ value, key }) => (
+                  <ListBox.Item
+                    key={String(value)}
+                    id={String(value)}
+                    textValue={t(`enum.${field.optionsKey}.${key}`)}
+                  >
+                    {t(`enum.${field.optionsKey}.${key}`)}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+        )}
+      </div>
+    );
+  };
+
   if (!show) return null;
 
   return (
@@ -165,89 +247,12 @@ function AccountForm({
       </div>
       {editMode ? (
         <Form onSubmit={handleSubmit} className={styles.profileForm}>
-          <div className={styles.formFieldsGrid}>
-            {visibleFields.map((field) => {
-              const lockedByServer = readonlyFieldSet.has(field.key);
-              const fieldLabel = t(field.labelKey);
-              const fieldPlaceholder = t(field.placeholderKey);
-              if (lockedByServer) {
-                return (
-                  <TextField
-                    key={field.key}
-                    aria-label={fieldLabel}
-                    value={getReadonlyInputValue(formValues, field.key, t)}
-                    isDisabled
-                    className={styles.formField}
-                  >
-                    <Label>{fieldLabel}</Label>
-                    <Input readOnly className={styles.editableInput} />
-                  </TextField>
-                );
-              }
-              return (
-                <div key={field.key} className={styles.formField}>
-                  {field.type === 'input' ? (
-                    <TextField
-                      aria-label={fieldLabel}
-                      value={getFieldInputValue(formValues, field.key)}
-                      onChange={(value) => updateFormValue(field.key, value)}
-                    >
-                      <Label>{fieldLabel}</Label>
-                      <Input placeholder={fieldPlaceholder} className={styles.editableInput} />
-                    </TextField>
-                  ) : (
-                    <Select
-                      aria-label={fieldLabel}
-                      placeholder={fieldPlaceholder}
-                      value={getFieldInputValue(formValues, field.key) || null}
-                      onChange={(value) =>
-                        updateFormValue(
-                          field.key,
-                          value == null || Array.isArray(value) ? undefined : Number(value)
-                        )
-                      }
-                      className={styles.editableInput}
-                    >
-                      <Label>{fieldLabel}</Label>
-                      <Select.Trigger>
-                        <Select.Value />
-                        {getFieldValue(formValues, field.key) != null ? (
-                          <AppIconButton
-                            icon={<X aria-hidden="true" />}
-                            label={t('form.clearField', { field: fieldLabel })}
-                            size="sm"
-                            className={styles.clearSelectButton}
-                            onClick={(event) => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              updateFormValue(field.key, undefined);
-                            }}
-                          />
-                        ) : null}
-                        <Select.Indicator />
-                      </Select.Trigger>
-                      <Select.Popover>
-                        <ListBox>
-                          {(field.optionsKey ? OPTIONS_MAP[field.optionsKey] : []).map(
-                            ({ value, key }) => (
-                              <ListBox.Item
-                                key={String(value)}
-                                id={String(value)}
-                                textValue={t(`enum.${field.optionsKey}.${key}`)}
-                              >
-                                {t(`enum.${field.optionsKey}.${key}`)}
-                                <ListBox.ItemIndicator />
-                              </ListBox.Item>
-                            )
-                          )}
-                        </ListBox>
-                      </Select.Popover>
-                    </Select>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          {fieldGroups.map((group) => (
+            <div key={group.key} className={styles.fieldGroup}>
+              <h4 className={styles.groupTitle}>{t(group.titleKey)}</h4>
+              <div className={styles.formFieldsGrid}>{group.fields.map(renderEditField)}</div>
+            </div>
+          ))}
           <div className={styles.formActions}>
             <Button type="submit" variant="primary" isDisabled={saving}>
               {t('actions.save', { ns: 'common' })}
@@ -258,14 +263,24 @@ function AccountForm({
           </div>
         </Form>
       ) : (
-        <dl className={styles.descriptions}>
-          {visibleFields.map((field) => (
-            <div key={field.key} className={styles.descriptionItem}>
-              <dt>{t(field.labelKey)}</dt>
-              <dd>{getProfileDisplayString(user, field.key, t)}</dd>
+        <div className={styles.readonlyGroups}>
+          {fieldGroups.map((group) => (
+            <div key={group.key} className={styles.fieldGroup}>
+              <h4 className={styles.groupTitle}>{t(group.titleKey)}</h4>
+              <SettingsList
+                items={group.fields.map((field) => {
+                  const display = getProfileFieldDisplay(user, field.key, t);
+                  return {
+                    key: field.key,
+                    label: t(field.labelKey),
+                    value: display.value,
+                    empty: display.empty,
+                  };
+                })}
+              />
             </div>
           ))}
-        </dl>
+        </div>
       )}
     </div>
   );

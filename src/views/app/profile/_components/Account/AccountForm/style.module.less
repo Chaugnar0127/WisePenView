@@ -1,11 +1,7 @@
-.descriptions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 24px;
-  margin: 0;
-}
-
 .profileSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
   margin-top: 0;
 }
 
@@ -13,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  gap: var(--space-md);
 
   .sectionTitle {
     margin-bottom: 0;
@@ -21,27 +17,44 @@
 }
 
 .sectionTitle {
-  margin: 0 0 24px 0;
-  font-size: 20px;
+  margin: 0;
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);
   color: var(--foreground);
+  line-height: 1.4;
+}
+
+.readonlyGroups,
+.profileForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 .formFieldsGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md) var(--space-lg);
   margin-bottom: 0;
 }
 
 .editableInput {
   background-color: var(--field-background, var(--surface));
-}
-
-.profileForm {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 .formField {
@@ -51,8 +64,8 @@
 .formActions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
 }
 
 .clearSelectButton {
@@ -65,7 +78,7 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--font-size-base);
   line-height: 1;
   padding: 0;
 }
@@ -74,28 +87,12 @@
   margin-left: 0;
 }
 
-.descriptionItem {
-  min-width: 0;
-
-  dt {
-    margin-bottom: 6px;
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.4;
-  }
-
-  dd {
-    margin: 0;
-    color: var(--foreground);
-    font-size: 14px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-  }
-}
-
 @media (max-width: 768px) {
-  .descriptions,
   .formFieldsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .sectionHeader {
+    flex-wrap: wrap;
   }
 }

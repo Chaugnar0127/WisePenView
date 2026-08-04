@@ -1,3 +1,5 @@
+@import '@/layouts/_common/desktopTitleBar.less';
+
 @landing-inline: clamp(16px, 4vw, 40px);
 @content-max: 1160px;
 
@@ -23,6 +25,24 @@
   background-color: color-mix(in srgb, var(--surface) 88%, transparent);
   border-bottom: 1px solid var(--border-light);
   backdrop-filter: saturate(180%) blur(10px);
+}
+
+/* 桌面：加高顶栏 + 上方拖拽带；交互控件在 LandingNavbar 内 no-drag */
+.desktopNavShell {
+  .desktopTitleBarChrome();
+  display: flex;
+  align-items: stretch;
+}
+
+/* Mac：品牌左侧避让红绿灯 */
+.titleBarInsetStart {
+  padding-left: @desktop-titlebar-start-inset;
+}
+
+/* Win：右侧留白给固定窗口按钮，并挖掉 drag */
+.titleBarInsetEnd {
+  padding-right: @desktop-titlebar-end-reserve;
+  .desktopTitleBarEndNoDragHole();
 }
 
 .outlet {

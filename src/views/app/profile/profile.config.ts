@@ -24,7 +24,35 @@ export const getProfileFieldConfig = (identityType: number) => {
 export type ProfileFieldConfig = ReturnType<typeof getProfileFieldConfig>;
 export type ProfileFieldKey = keyof Omit<ProfileFieldConfig, 'showProfileSection'>;
 
-/** 基本档案字段列表，顺序决定 grid 布局（每行 2 个） */
+export type ProfileFieldGroupKey = 'identity' | 'academic';
+
+/** 基本档案只读/编辑分组：身份信息与学业/任职信息 */
+export const PROFILE_FIELD_GROUPS: Array<{
+  key: ProfileFieldGroupKey;
+  titleKey: string;
+  fieldKeys: ProfileFieldKey[];
+}> = [
+  {
+    key: 'identity',
+    titleKey: 'form.group.identity',
+    fieldKeys: ['nickname', 'realName', 'sex'],
+  },
+  {
+    key: 'academic',
+    titleKey: 'form.group.academic',
+    fieldKeys: [
+      'university',
+      'college',
+      'major',
+      'className',
+      'enrollmentYear',
+      'degreeLevel',
+      'academicTitle',
+    ],
+  },
+];
+
+/** 基本档案字段列表，顺序决定表单 grid 与只读列表展示顺序 */
 export const PROFILE_FIELDS: Array<{
   key: ProfileFieldKey;
   labelKey: string;
@@ -52,6 +80,12 @@ export const PROFILE_FIELDS: Array<{
     optionsKey: 'sex',
   },
   {
+    key: 'university',
+    labelKey: 'form.field.university.label',
+    type: 'input',
+    placeholderKey: 'form.field.university.placeholder',
+  },
+  {
     key: 'college',
     labelKey: 'form.field.college.label',
     type: 'input',
@@ -70,18 +104,6 @@ export const PROFILE_FIELDS: Array<{
     placeholderKey: 'form.field.className.placeholder',
   },
   {
-    key: 'academicTitle',
-    labelKey: 'form.field.academicTitle.label',
-    type: 'input',
-    placeholderKey: 'form.field.academicTitle.placeholder',
-  },
-  {
-    key: 'university',
-    labelKey: 'form.field.university.label',
-    type: 'input',
-    placeholderKey: 'form.field.university.placeholder',
-  },
-  {
     key: 'enrollmentYear',
     labelKey: 'form.field.enrollmentYear.label',
     type: 'input',
@@ -94,4 +116,19 @@ export const PROFILE_FIELDS: Array<{
     placeholderKey: 'form.field.degreeLevel.placeholder',
     optionsKey: 'degreeLevel',
   },
+  {
+    key: 'academicTitle',
+    labelKey: 'form.field.academicTitle.label',
+    type: 'input',
+    placeholderKey: 'form.field.academicTitle.placeholder',
+  },
 ];
+
+export function getVisibleProfileFieldGroups(fieldConfig: ProfileFieldConfig) {
+  return PROFILE_FIELD_GROUPS.map((group) => ({
+    ...group,
+    fields: PROFILE_FIELDS.filter(
+      (field) => group.fieldKeys.includes(field.key) && fieldConfig[field.key]
+    ),
+  })).filter((group) => group.fields.length > 0);
+}

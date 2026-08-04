@@ -76,7 +76,7 @@
     --history-nav-bar-hover-height: 3px;
     --history-nav-bar-active-height: 4px;
     --history-nav-bar-gap: 6px;
-    --history-nav-rail-top: 66%;
+    --history-nav-rail-top: 58%;
 
     .conversationPanel {
       width: 100%;
@@ -93,6 +93,8 @@
   }
 }
 
+@import '@/layouts/_common/desktopTitleBar.less';
+
 .header {
   box-sizing: border-box;
   width: 100%;
@@ -103,6 +105,20 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+}
+
+/* 与 Workspace 顶栏同高、同垂直居中；右侧留白给固定窗口按钮 */
+.titleBarInsetEnd {
+  .desktopTitleBarChrome();
+  padding-right: @desktop-titlebar-end-reserve;
+  padding-left: var(--space-sm);
+  .desktopTitleBarEndNoDragHole();
+
+  .headerLeft,
+  .headerRight {
+    min-height: 0;
+    height: 100%;
+  }
 }
 
 :global(html[data-layout-height='short']) {

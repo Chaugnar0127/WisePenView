@@ -31,6 +31,7 @@ function ChatPanel({
             panelTitle={controller.panelTitle}
             sessionBarOpen={controller.sessionBarOpen}
             showCollapseButton={showCollapseButton}
+            reserveTitleBarEnd={!fullWidth}
             onCollapsePanel={controller.handleCollapsePanel}
             onNewChat={controller.handleNewChat}
             onToggleSessionBar={controller.handleToggleSessionBar}

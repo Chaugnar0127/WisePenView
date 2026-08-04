@@ -20,10 +20,6 @@ function CourseEditorNav({ activeSection, onNavigate }: CourseEditorNavProps) {
       ],
     },
     {
-      title: t('editor.groups.content'),
-      items: [['course-editor-outline', t('editor.nav.outline')]],
-    },
-    {
       title: t('editor.groups.management'),
       items: [['course-editor-access', t('editor.nav.access')]],
     },

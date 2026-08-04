@@ -1,4 +1,13 @@
-import { BookOpen, ClipboardCheck, FolderOpen, Home } from 'lucide-react';
+import { COURSE_ROLE } from '@/domains/Course';
+import {
+  Bell,
+  BookOpen,
+  ClipboardCheck,
+  FolderOpen,
+  Home,
+  Settings,
+  UsersRound,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useCourseContext } from '../CourseContext';
@@ -20,13 +29,34 @@ function CourseNavigationSidebar() {
       badge: course.pendingAssignmentCount,
     },
     { key: 'materials', label: t('nav.materials'), icon: FolderOpen, to: `${basePath}/materials` },
+    {
+      key: 'announcements',
+      label: t('nav.announcements'),
+      icon: Bell,
+      to: `${basePath}/announcements`,
+    },
+    { key: 'members', label: t('nav.members'), icon: UsersRound, to: `${basePath}/members` },
+    ...(course.myRole === COURSE_ROLE.TEACHER
+      ? [
+          {
+            key: 'edit',
+            label: t('nav.edit'),
+            icon: Settings,
+            to: `${basePath}/edit`,
+          },
+        ]
+      : []),
   ];
 
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
-        <button type="button" className={styles.backLink} onClick={() => navigate('/app/course')}>
-          {t('common.backToCourses')}
+        <button
+          type="button"
+          className={styles.backLink}
+          onClick={() => navigate('/app/my-group?section=courseGroups')}
+        >
+          {t('common.backToCourseGroups')}
         </button>
         <div className={styles.courseName}>
           <BookOpen size={18} aria-hidden />

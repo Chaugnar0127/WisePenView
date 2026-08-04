@@ -6,10 +6,10 @@ import { Button, Chip } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Bell, Pin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import sharedStyles from '../../_styles/contextTab.module.less';
+import sharedStyles from '../_styles/contextPage.module.less';
 import styles from './style.module.less';
 
-function CourseAnnouncementsTab() {
+function CourseAnnouncementsPage() {
   const { t, i18n } = useTranslation('course');
   const { course } = useCourseContext();
   const courseService = useCourseService();
@@ -90,4 +90,4 @@ function CourseAnnouncementsTab() {
   );
 }
 
-export default CourseAnnouncementsTab;
+export default CourseAnnouncementsPage;

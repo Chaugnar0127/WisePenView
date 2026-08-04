@@ -50,11 +50,14 @@ function SidebarViewTab({ id, label, icon: Icon, selected }: SidebarViewTabProps
   );
 }
 
-const resolveSidebarTab = (activeNavKey: AppHeaderNavKey | undefined): SidebarTabKey =>
-  activeNavKey === APP_HEADER_NAV_KEY.CHAT
-    ? SIDEBAR_TAB.SESSIONS
-    : activeNavKey === APP_HEADER_NAV_KEY.COURSE
-      ? SIDEBAR_TAB.COURSES
+const resolveSidebarTab = (
+  activeNavKey: AppHeaderNavKey | undefined,
+  pathname: string
+): SidebarTabKey =>
+  pathname === '/app/course' || pathname.startsWith('/app/course/')
+    ? SIDEBAR_TAB.COURSES
+    : activeNavKey === APP_HEADER_NAV_KEY.CHAT
+      ? SIDEBAR_TAB.SESSIONS
       : SIDEBAR_TAB.DRIVE;
 
 function AppSidebarTabs() {
@@ -63,15 +66,16 @@ function AppSidebarTabs() {
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
+  const routeTab = resolveSidebarTab(activeNavKey, location.pathname);
   const [tabState, setTabState] = useState(() => ({
-    observedNavKey: activeNavKey,
-    selectedTab: resolveSidebarTab(activeNavKey),
+    observedRouteTab: routeTab,
+    selectedTab: routeTab,
   }));
 
   let selectedTab = tabState.selectedTab;
-  if (tabState.observedNavKey !== activeNavKey) {
-    selectedTab = resolveSidebarTab(activeNavKey);
-    setTabState({ observedNavKey: activeNavKey, selectedTab });
+  if (tabState.observedRouteTab !== routeTab) {
+    selectedTab = routeTab;
+    setTabState({ observedRouteTab: routeTab, selectedTab });
   }
 
   const selectedKeys =
@@ -91,7 +95,7 @@ function AppSidebarTabs() {
             nextTab === SIDEBAR_TAB.DRIVE ||
             nextTab === SIDEBAR_TAB.COURSES
           ) {
-            setTabState({ observedNavKey: activeNavKey, selectedTab: nextTab });
+            setTabState({ observedRouteTab: routeTab, selectedTab: nextTab });
           }
         }}
       >

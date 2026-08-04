@@ -5,7 +5,6 @@ const enUSShell = {
     drive: 'Documents and Drive',
     notifications: 'Notifications',
     groups: 'My groups',
-    courses: 'My courses',
     back: 'Back',
     forward: 'Forward',
     expandSidebar: 'Expand sidebar',

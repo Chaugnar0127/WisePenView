@@ -7,7 +7,11 @@ import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useRef, useState, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createCourseEditorForm, getCourseAssessmentTotal, type CourseEditorForm } from '../model';
+import {
+  mapCourseDetailToEditorForm,
+  mapCourseEditorFormToUpdateRequest,
+} from '../courseEditorForm.mapper';
+import { getCourseAssessmentTotal, type CourseEditorForm } from '../model';
 
 interface UseCourseEditorFormControllerParams {
   course: CourseDetail;
@@ -21,7 +25,7 @@ export function useCourseEditorFormController({
   const { t } = useTranslation('course');
   const courseService = useCourseService();
   const imageService = useImageService();
-  const [form, setForm] = useState<CourseEditorForm>(() => createCourseEditorForm(course));
+  const [form, setForm] = useState<CourseEditorForm>(() => mapCourseDetailToEditorForm(course));
   const [saved, setSaved] = useState(true);
   const [coverModalOpen, setCoverModalOpen] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -40,23 +44,13 @@ export function useCourseEditorFormController({
         });
         coverUrl = uploadResult.publicUrl;
       }
-      await courseService.updateCourse({
-        courseId: course.courseId,
-        name: form.name.trim(),
-        description: form.description.trim(),
-        coverUrl,
-        term: form.term.trim(),
-        category: form.category.trim() || undefined,
-        startAt: form.startAt || undefined,
-        endAt: form.endAt || undefined,
-        learningObjectives: form.learningObjectives
-          .split('\n')
-          .map((item) => item.trim())
-          .filter(Boolean),
-        meetings: form.meetings,
-        assessmentItems: form.assessmentItems.map(({ label, weight }) => ({ label, weight })),
-        finalAssessment: form.finalAssessment,
-      });
+      await courseService.updateCourse(
+        mapCourseEditorFormToUpdateRequest({
+          courseId: course.courseId,
+          coverUrl,
+          form,
+        })
+      );
       return coverUrl;
     },
     {

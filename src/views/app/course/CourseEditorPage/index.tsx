@@ -9,7 +9,6 @@ import CourseBasicSection from './_components/CourseBasicSection';
 import CourseCoverModal from './_components/CourseCoverModal';
 import CourseEditorNav from './_components/CourseEditorNav';
 import CourseGoalsSection from './_components/CourseGoalsSection';
-import CourseOutlineEditor from './_components/CourseOutlineEditor';
 import CoursePermissionSection from './_components/CoursePermissionSection';
 import CourseScheduleSection from './_components/CourseScheduleSection';
 import { useCourseEditorFormController } from './controllers/useCourseEditorFormController';
@@ -80,10 +79,6 @@ function CourseEditorPage() {
               onUpdateDeadlineDate={editor.updateDeadlineDate}
               onUpdateDeadlineTime={editor.updateDeadlineTime}
             />
-
-            <section id="course-editor-outline" className={styles.editorSection}>
-              <CourseOutlineEditor courseId={course.courseId} />
-            </section>
 
             <section id="course-editor-access" className={styles.editorSection}>
               <div className={styles.sectionHead}>

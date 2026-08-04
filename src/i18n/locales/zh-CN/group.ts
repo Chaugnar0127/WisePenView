@@ -137,6 +137,7 @@ const zhCNGroup = {
       summary: '共 {{count}} 人',
       columns: {
         member: '成员',
+        email: '邮箱',
         role: '角色',
         joinedAt: '加入时间',
         quota: '配额使用',

@@ -16,7 +16,10 @@ export const useCourseLearningNavigationController = (courseId: string) => {
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const basePath = `/app/course/${courseId}`;
-  const request = useRequest(() => courseService.getCourseOutline(courseId));
+  const request = useRequest(() => courseService.getCourseOutline(courseId), {
+    ready: Boolean(courseId),
+    refreshDeps: [courseId],
+  });
   const outlineNodes = request.data?.nodes ?? [];
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
   const visibleNodes = filterCourseOutline(outlineNodes, normalizedQuery);
@@ -43,18 +46,10 @@ export const useCourseLearningNavigationController = (courseId: string) => {
     error: request.error,
     refresh: request.refresh,
     openOutlineNode: (nodeId: string) => navigate(`${basePath}/learning/${nodeId}`),
-    openCourseSection: (section: string) => {
-      if (section === 'info') {
-        navigate(`${basePath}/home?tab=info`);
-        return;
-      }
-      if (section !== 'learning') navigate(`${basePath}/${section}`);
-    },
     openResource: (resourceId: string) => {
       const resource = findOutlineResourceByResourceId(outlineNodes, resourceId);
       if (resource) navigate(`${basePath}/learning/${resource.nodeId}`);
     },
     openCourseHome: () => navigate(`${basePath}/home`),
-    openCourseList: () => navigate('/app/course'),
   };
 };

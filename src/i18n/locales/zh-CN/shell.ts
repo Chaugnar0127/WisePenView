@@ -5,7 +5,6 @@ const zhCNShell = {
     drive: '文档与云盘',
     notifications: '通知',
     groups: '我的小组',
-    courses: '我的课程',
     back: '后退',
     forward: '前进',
     expandSidebar: '展开侧边栏',

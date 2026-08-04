@@ -6,7 +6,7 @@ import { Button, Label, TextField, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styles from '../../style.module.less';
+import styles from './style.module.less';
 
 interface CourseCreateForm {
   name: string;

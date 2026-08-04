@@ -8,12 +8,12 @@ import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styles from '../../style.module.less';
+import styles from './style.module.less';
 
 interface CourseResourcePickerModalProps {
   isOpen: boolean;
   courseId: string;
-  targetTagId: string;
+  targetNodeId: string;
   targetName: string;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
@@ -22,7 +22,7 @@ interface CourseResourcePickerModalProps {
 function CourseResourcePickerModal({
   isOpen,
   courseId,
-  targetTagId,
+  targetNodeId,
   targetName,
   onOpenChange,
   onSuccess,
@@ -40,7 +40,7 @@ function CourseResourcePickerModal({
     () =>
       courseService.mountCourseOutlineResources({
         courseId,
-        targetNodeId: targetTagId,
+        targetNodeId,
         resources: selectedResources,
       }),
     {

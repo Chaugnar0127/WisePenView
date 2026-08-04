@@ -68,6 +68,12 @@ export interface RenameCourseOutlineSectionRequest {
   name: string;
 }
 
+export interface UpdateCourseOutlineSectionDescriptionRequest {
+  courseId: string;
+  nodeId: string;
+  description: string;
+}
+
 export interface DeleteCourseOutlineSectionRequest {
   courseId: string;
   nodeId: string;
@@ -95,6 +101,8 @@ export interface MoveCourseOutlineResourceRequest {
   resourceId: string;
   sourceNodeId: string;
   targetNodeId: string;
+  /** Optional final order for resources in targetNodeId. */
+  orderedResourceIds?: string[];
 }
 
 export interface RemoveCourseOutlineResourceRequest {
@@ -127,6 +135,9 @@ export interface ICourseService {
   getCourseOutlineEditor(courseId: string): Promise<CourseOutlineEditorNode[]>;
   createCourseOutlineSection(params: CreateCourseOutlineSectionRequest): Promise<string>;
   renameCourseOutlineSection(params: RenameCourseOutlineSectionRequest): Promise<void>;
+  updateCourseOutlineSectionDescription(
+    params: UpdateCourseOutlineSectionDescriptionRequest
+  ): Promise<void>;
   deleteCourseOutlineSection(params: DeleteCourseOutlineSectionRequest): Promise<void>;
   reorderCourseOutlineSections(params: ReorderCourseOutlineSectionsRequest): Promise<void>;
   mountCourseOutlineResources(params: MountCourseOutlineResourcesRequest): Promise<void>;

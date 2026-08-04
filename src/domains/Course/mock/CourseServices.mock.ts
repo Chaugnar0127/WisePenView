@@ -27,6 +27,7 @@ import {
   mapCourseMockDetailToSummary,
   mapCourseMockOutlineToEditorNodes,
   markCourseMockResourceRead,
+  reorderCourseMockOutlineResources,
   reorderCourseMockOutlineSections,
   syncCourseMockBaseInfoFromGroup,
   takeCourseMockOutlineResource,
@@ -242,6 +243,15 @@ export function createCourseServicesMock(): ICourseService {
       node.title = name;
     },
 
+    async updateCourseOutlineSectionDescription({ courseId, nodeId, description }) {
+      await delay();
+      const node = findCourseMockOutlineContainer(outlines[courseId] ?? [], nodeId);
+      if (!node) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, { nodeId });
+      }
+      node.description = description || undefined;
+    },
+
     async deleteCourseOutlineSection({ courseId, nodeId }) {
       await delay();
       if (!deleteCourseMockOutlineNode(outlines[courseId] ?? [], nodeId)) {
@@ -284,7 +294,13 @@ export function createCourseServicesMock(): ICourseService {
       syncProgress(courseId);
     },
 
-    async moveCourseOutlineResource({ courseId, resourceId, sourceNodeId, targetNodeId }) {
+    async moveCourseOutlineResource({
+      courseId,
+      resourceId,
+      sourceNodeId,
+      targetNodeId,
+      orderedResourceIds,
+    }) {
       await delay();
       const resource = takeCourseMockOutlineResource(
         outlines[courseId] ?? [],
@@ -298,6 +314,11 @@ export function createCourseServicesMock(): ICourseService {
         });
       }
       target.children.push(resource);
+      if (orderedResourceIds && !reorderCourseMockOutlineResources(target, orderedResourceIds)) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
+          targetNodeId,
+        });
+      }
     },
 
     async removeCourseOutlineResource({ courseId, resourceId, sourceNodeId }) {

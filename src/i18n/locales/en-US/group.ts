@@ -138,6 +138,7 @@ const enUSGroup = {
       summary: '{{count}} members',
       columns: {
         member: 'Member',
+        email: 'Email',
         role: 'Role',
         joinedAt: 'Joined',
         quota: 'Quota usage',

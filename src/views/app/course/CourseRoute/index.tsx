@@ -35,7 +35,9 @@ function CourseRoute() {
           subTitle={error ? parseErrorMessage(error) : t('common.notFound')}
           extra={
             <div className={styles.resultActions}>
-              <Button onPress={() => navigate('/app/course')}>{t('common.backToCourses')}</Button>
+              <Button onPress={() => navigate('/app/my-group?section=courseGroups')}>
+                {t('common.backToCourseGroups')}
+              </Button>
               <Button variant="primary" onPress={refresh}>
                 {t('common.retry')}
               </Button>

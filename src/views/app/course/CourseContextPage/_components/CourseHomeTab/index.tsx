@@ -1,6 +1,6 @@
-import AppAvatar from '@/components/Avatar';
 import { Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
+import { COURSE_ROLE } from '@/domains/Course';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, Meter, ProgressBar } from '@heroui/react';
@@ -10,19 +10,18 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styles from './style.module.less';
 
-interface CourseHomeTabProps {
-  onViewAnnouncements: () => void;
-}
-
-function CourseHomeTab({ onViewAnnouncements }: CourseHomeTabProps) {
+function CourseHomeTab() {
   const { t, i18n } = useTranslation('course');
   const { course } = useCourseContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
   const basePath = `/app/course/${course.courseId}`;
+  const canEditOutline = course.myRole === COURSE_ROLE.TEACHER;
   const { data, loading, error, refresh } = useRequest(() =>
     courseService.getCourseHome(course.courseId)
   );
+  const visibleAssignments = data?.pendingAssignments.slice(0, 2) ?? [];
+  const visibleAnnouncements = data?.announcements.slice(0, 2) ?? [];
 
   const formatDateTime = (value: string) =>
     new Date(value).toLocaleString(i18n.language, {
@@ -70,7 +69,7 @@ function CourseHomeTab({ onViewAnnouncements }: CourseHomeTabProps) {
             </div>
           </div>
           <Button variant="primary" onPress={() => navigate(`${basePath}/learning`)}>
-            {t('home.enterLearning')}
+            {canEditOutline ? t('home.enterEditing') : t('home.enterLearning')}
             <ArrowRight size={16} aria-hidden />
           </Button>
         </section>
@@ -91,9 +90,9 @@ function CourseHomeTab({ onViewAnnouncements }: CourseHomeTabProps) {
               {t('home.viewAll')}
             </Button>
           </div>
-          {data.pendingAssignments.length > 0 ? (
+          {visibleAssignments.length > 0 ? (
             <div className={styles.assignmentList}>
-              {data.pendingAssignments.map((assignment) => (
+              {visibleAssignments.map((assignment) => (
                 <button
                   key={assignment.assignmentId}
                   type="button"
@@ -124,13 +123,17 @@ function CourseHomeTab({ onViewAnnouncements }: CourseHomeTabProps) {
               </span>
               <h2>{t('home.announcements')}</h2>
             </div>
-            <Button variant="secondary" size="sm" onPress={onViewAnnouncements}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onPress={() => navigate(`${basePath}/announcements`)}
+            >
               {t('home.viewAll')}
             </Button>
           </div>
-          {data.announcements.length > 0 ? (
+          {visibleAnnouncements.length > 0 ? (
             <div className={styles.announcementList}>
-              {data.announcements.map((announcement) => (
+              {visibleAnnouncements.map((announcement) => (
                 <article key={announcement.announcementId} className={styles.announcement}>
                   <div>
                     <h3>{announcement.title}</h3>
@@ -177,18 +180,6 @@ function CourseHomeTab({ onViewAnnouncements }: CourseHomeTabProps) {
           <div className={styles.metric}>
             <span className={styles.metricLabel}>{t('home.pendingAssignments')}</span>
             <div className={styles.metricValue}>{data.pendingAssignments.length}</div>
-          </div>
-        </div>
-        <div className={styles.teacherSummary}>
-          <AppAvatar size="sm" className={styles.teacherAvatar}>
-            {course.teacher.avatar ? (
-              <AppAvatar.Image src={course.teacher.avatar} alt={course.teacher.name} />
-            ) : null}
-            <AppAvatar.Fallback>{course.teacher.name.charAt(0)}</AppAvatar.Fallback>
-          </AppAvatar>
-          <div>
-            <strong>{course.teacher.name}</strong>
-            {course.teacher.department ? <small>{course.teacher.department}</small> : null}
           </div>
         </div>
       </aside>

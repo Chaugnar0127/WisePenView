@@ -1,9 +1,12 @@
 .homeLayout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
+  box-sizing: border-box;
+  width: min(100%, var(--course-context-max-width));
   min-width: 0;
   min-height: 0;
   height: 100%;
+  margin: 0 auto;
   overflow: hidden;
 }
 
@@ -11,7 +14,7 @@
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--space-xl) clamp(var(--space-xl), 5vw, 64px) 56px;
+  padding: var(--space-xl) var(--course-context-gutter) 56px;
 }
 
 .homeSection {
@@ -29,6 +32,10 @@
 
 .homeSection:nth-child(n + 2) {
   display: block;
+}
+
+.homeSection:last-child {
+  border-bottom: 0;
 }
 
 .sectionHeading,
@@ -72,6 +79,12 @@
 .assignmentList,
 .announcementList {
   display: grid;
+}
+
+.assignmentList,
+.announcementList,
+.emptyCopy {
+  margin-left: calc(36px + var(--space-md));
 }
 
 .assignmentRow {
@@ -149,8 +162,7 @@
   display: flex;
   min-height: 0;
   flex-direction: column;
-  justify-content: space-between;
-  padding: var(--space-xl) var(--space-xl) 0;
+  padding: var(--space-xl);
   border-left: 1px solid var(--border-light);
   background: var(--surface-secondary);
   overflow: hidden;
@@ -208,50 +220,6 @@
   height: 8px;
 }
 
-.teacherSummary {
-  display: flex;
-  min-width: 0;
-  min-height: 60px;
-  flex: 0 0 60px;
-  align-items: center;
-  gap: var(--space-md);
-  margin-inline: calc(var(--space-xl) * -1);
-  padding-inline: var(--space-xl);
-  border-top: 1px solid var(--border-light);
-  box-sizing: border-box;
-}
-
-.teacherSummary > div {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  line-height: 1.5;
-}
-
-.teacherSummary small {
-  color: var(--muted);
-  margin-top: -2px;
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.teacherSummary strong {
-  overflow: hidden;
-  color: var(--foreground);
-  font-size: var(--font-size-md, 14px);
-  font-weight: 500;
-  line-height: 1.5;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.teacherAvatar {
-  flex: 0 0 auto;
-  border: 1px solid var(--border-light);
-  color: var(--foreground);
-  background: var(--accent-soft);
-}
-
 .state {
   display: flex;
   min-height: 100%;
@@ -274,14 +242,18 @@
 
   .progressAside {
     min-height: 240px;
+    padding-right: var(--course-context-gutter);
+    padding-left: var(--course-context-gutter);
     border-top: 1px solid var(--border-light);
     border-left: 0;
   }
 }
 
 @media (max-width: 640px) {
-  .leftScroll {
-    padding: var(--space-lg);
+  .assignmentList,
+  .announcementList,
+  .emptyCopy {
+    margin-left: 0;
   }
 
   .homeSection:first-child,

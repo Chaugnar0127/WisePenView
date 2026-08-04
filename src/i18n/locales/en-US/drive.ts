@@ -108,7 +108,7 @@ const enUSDrive = {
     importNote: 'Import note',
     skill: 'New Skill',
     agent: 'New Agent',
-    upload: 'Upload files',
+    upload: 'Add from local',
     success: 'Created',
     currentDirectory: 'Current folder',
     createUnder: 'Create in "{{parent}}"',

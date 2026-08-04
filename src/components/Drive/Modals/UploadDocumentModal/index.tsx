@@ -1,4 +1,5 @@
 import {
+  DRIVE_DOCUMENT_FILE_ACCEPT,
   getSupportedDriveDocumentFiles,
   useDriveDocumentUpload,
 } from '@/components/Drive/common/useDriveDocumentUpload';
@@ -10,8 +11,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { UploadDocumentModalProps } from './index.type';
 import styles from './style.module.less';
-
-const ACCEPT_DOCUMENT_TYPES = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx';
 
 /** 文档上传：MD5 -> init -> OSS PUT；后端注册成功后挂载到指定目录。 */
 function UploadDocumentModal({
@@ -88,7 +87,7 @@ function UploadDocumentModal({
       <UploadZone
         files={selectedFiles}
         multiple
-        accept={ACCEPT_DOCUMENT_TYPES}
+        accept={DRIVE_DOCUMENT_FILE_ACCEPT}
         label={t('upload.zoneLabel')}
         description={t('upload.zoneDescription')}
         onFilesChange={handleFilesChange}

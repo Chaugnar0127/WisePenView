@@ -7,11 +7,15 @@ import {
   TagMountPermissionModal,
   TagPermissionModal,
   TrashDeleteModal,
-  UploadDocumentModal,
   UploadFileToGroupModal,
   type DriveCreateType,
   type ResourcePermissionModalTarget,
 } from '@/components/Drive/Modals';
+import {
+  DRIVE_DOCUMENT_FILE_ACCEPT,
+  getSupportedDriveDocumentFiles,
+  useDriveDocumentUpload,
+} from '@/components/Drive/common/useDriveDocumentUpload';
 import { useNewNoteStore } from '@/components/Note/_store/useNewNoteStore';
 import {
   MARKDOWN_NOTE_FILE_ACCEPT,
@@ -24,7 +28,7 @@ import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/u
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useState, type ReactElement } from 'react';
+import { useRef, useState, type ChangeEvent, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveActionTarget } from '../../common/driveComponentModel';
 import type { DriveTableRow, TableDriveActionConfig } from '../index.type';
@@ -107,7 +111,6 @@ export function useTableDriveActionsController({
     }
   );
 
-  const [uploadDocumentOpen, setUploadDocumentOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [tagAccessPermissionTagId, setTagAccessPermissionTagId] = useState<string>();
   const [tagMountPermissionTagId, setTagMountPermissionTagId] = useState<string>();
@@ -139,6 +142,8 @@ export function useTableDriveActionsController({
       });
     },
   });
+  const documentFileInputRef = useRef<HTMLInputElement>(null);
+  const { queueDocuments } = useDriveDocumentUpload({ pathTagId: mountTagId, onSuccess: refresh });
 
   const { loading: creatingNote, run: runCreateNote } = useRequest(
     async () => {
@@ -186,20 +191,31 @@ export function useTableDriveActionsController({
   const ModalHost = (
     <>
       <input
+        ref={documentFileInputRef}
+        type="file"
+        accept={DRIVE_DOCUMENT_FILE_ACCEPT}
+        multiple
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          const files = Array.from(event.target.files ?? []);
+          event.target.value = '';
+          if (files.length === 0) return;
+          const supportedFiles = getSupportedDriveDocumentFiles(files);
+          if (supportedFiles.length !== files.length) {
+            toast.warning(t('upload.feedback.unsupportedType'));
+          }
+          if (supportedFiles.length === 0) return;
+          queueDocuments(supportedFiles);
+          toast.success(t('upload.feedback.queued', { count: supportedFiles.length }));
+        }}
+        hidden
+      />
+      <input
         ref={markdownFileInputRef}
         type="file"
         accept={MARKDOWN_NOTE_FILE_ACCEPT}
         onChange={handleMarkdownFileChange}
         hidden
       />
-      {uploadDocumentOpen && mountTagId ? (
-        <UploadDocumentModal
-          isOpen
-          pathTagId={mountTagId}
-          onOpenChange={setUploadDocumentOpen}
-          onSuccess={refresh}
-        />
-      ) : null}
       {groupId && uploadOpen ? (
         <UploadFileToGroupModal
           isOpen={uploadOpen}
@@ -337,7 +353,7 @@ export function useTableDriveActionsController({
         openMarkdownFilePicker();
         break;
       case 'upload':
-        setUploadDocumentOpen(true);
+        documentFileInputRef.current?.click();
         break;
     }
   };

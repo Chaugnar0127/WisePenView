@@ -188,6 +188,7 @@ export function useNoteEditorCommands(
         await printNotePdfViaBrowser(editor, notePluginRegistry, {
           title: options?.title,
           titleRoot: options?.titleRoot,
+          defaultFileName: options?.defaultFileName,
         });
       } finally {
         dispatch({ type: 'REVIEW_DISPLAY_MODE_CHANGED', displayMode });

@@ -15,6 +15,7 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 const DOCUMENT_ALLOWED_EXTENSION_SET = new Set<string>(DOCUMENT_ALLOWED_EXTENSIONS);
+export const DRIVE_DOCUMENT_FILE_ACCEPT = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx';
 const UPLOAD_STATUS_SYNC_DELAY_MS = 3000;
 const QUEUE_DONE_VISIBLE_DELAY_MS = 900;
 const PROCESS_STATUS_SYNC_INTERVAL_MS = 2000;

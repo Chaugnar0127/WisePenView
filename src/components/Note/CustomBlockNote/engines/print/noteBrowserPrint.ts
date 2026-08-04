@@ -10,6 +10,8 @@ interface PrintNotePdfOptions {
   title?: string;
   /** 克隆自 NoteTitle 的 ProseMirror 根；有则不再插入合成 h1 */
   titleRoot?: HTMLElement | null;
+  /** 桌面端保存对话框默认文件名 */
+  defaultFileName?: string;
 }
 
 const PRINT_IFRAME_STYLE =
@@ -267,6 +269,27 @@ function buildPrintDocument(
   doc.body.appendChild(article);
 }
 
+function buildDesktopPrintHtml(
+  proseMirrorRoot: HTMLElement,
+  registry: NotePluginRegistry,
+  options?: PrintNotePdfOptions
+): string {
+  const doc = document.implementation.createHTMLDocument(
+    options?.title?.trim() || i18n.t('export.printDocumentTitle', { ns: 'note' })
+  );
+  const meta = doc.createElement('meta');
+  meta.setAttribute('charset', 'UTF-8');
+  doc.head.appendChild(meta);
+
+  const base = doc.createElement('base');
+  base.href = document.baseURI;
+  doc.head.appendChild(base);
+
+  cloneHostStylesInto(doc.head);
+  buildPrintDocument(doc, proseMirrorRoot, registry, options);
+  return `<!DOCTYPE html>${doc.documentElement.outerHTML}`;
+}
+
 /**
  * 通过系统「打印 → 另存为 PDF」：克隆正文 ProseMirror DOM，样式来自宿主页 head + 补充 CSS。
  *
@@ -282,6 +305,19 @@ export async function printNotePdfViaBrowser(
     throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_EXPORT_FAILED, {
       reason: '无法获取编辑器内容',
     });
+  }
+
+  if (window.desktop?.savePdfFromHtml) {
+    try {
+      await window.desktop.savePdfFromHtml({
+        html: buildDesktopPrintHtml(proseMirrorRoot, registry, options),
+        defaultFileName: options?.defaultFileName ?? '笔记.pdf',
+      });
+      return;
+    } catch (error) {
+      if (isWisePenError(error)) throw error;
+      throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_EXPORT_FAILED, undefined, error);
+    }
   }
 
   const iframe = document.createElement('iframe');

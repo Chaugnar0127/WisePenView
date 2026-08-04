@@ -28,8 +28,12 @@ export interface NoteBodyEditorHandle {
   focus: () => void;
   openFind: (initialQuery?: string) => void;
   scrollToAnchor: (anchor: NoteEditorAnchor) => void;
-  /** 通过系统打印对话框另存为 PDF（克隆 DOM + 打印前临时仅旧文本） */
-  exportPdf: (options?: { title?: string; titleRoot?: HTMLElement | null }) => Promise<void>;
+  /** 导出 PDF（桌面端直接保存到本地，浏览器端通过系统打印对话框另存） */
+  exportPdf: (options?: {
+    title?: string;
+    titleRoot?: HTMLElement | null;
+    defaultFileName?: string;
+  }) => Promise<void>;
   /** 导出正文 Markdown artifact（AIDiff 按仅旧文本投影） */
   exportMarkdown: () => NoteMarkdownArtifact;
 }

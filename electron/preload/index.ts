@@ -42,6 +42,8 @@ const desktopBridge = Object.freeze({
   windowMaximizeToggle: (): Promise<void> =>
     ipcRenderer.invoke(DESKTOP_CHANNEL.windowMaximizeToggle),
   windowClose: (): Promise<void> => ipcRenderer.invoke(DESKTOP_CHANNEL.windowClose),
+  savePdfFromHtml: (options: { html: string; defaultFileName: string }): Promise<string | null> =>
+    ipcRenderer.invoke(DESKTOP_CHANNEL.savePdfFromHtml, options),
 });
 
 contextBridge.exposeInMainWorld('desktop', desktopBridge);

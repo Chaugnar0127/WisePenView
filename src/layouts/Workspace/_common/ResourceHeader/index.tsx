@@ -208,8 +208,11 @@ function ResourceHeaderMore({
           {menu?.onPrint || menu?.download ? (
             <Dropdown.Section>
               {menu.onPrint ? (
-                <Dropdown.Item id="print" textValue={t('header.print')}>
-                  <ResourceHeaderMenuItemContent icon={Printer} label={t('header.print')} />
+                <Dropdown.Item id="print" textValue={menu.printLabel ?? t('header.print')}>
+                  <ResourceHeaderMenuItemContent
+                    icon={menu.printIcon ?? Printer}
+                    label={menu.printLabel ?? t('header.print')}
+                  />
                 </Dropdown.Item>
               ) : null}
               {menu.download ? (

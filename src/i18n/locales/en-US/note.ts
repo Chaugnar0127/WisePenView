@@ -53,6 +53,8 @@ const enUSNote = {
     editorNotReady: 'The editor is not ready',
     markdownStarted: 'Markdown download started',
     downloadMarkdown: 'Download as Markdown',
+    downloadPdf: 'Download PDF',
+    printPdf: 'Print PDF',
     printDocumentTitle: 'Note',
     printFrameTitle: 'Note print preview',
   },

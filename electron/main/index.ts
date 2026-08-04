@@ -1,6 +1,7 @@
 import {
   app,
   BrowserWindow,
+  dialog,
   ipcMain,
   Menu,
   net,
@@ -8,7 +9,7 @@ import {
   shell,
   type WebContents,
 } from 'electron';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, promises as fs, statSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
@@ -26,6 +27,7 @@ const APP_ORIGIN = `${APP_SCHEME}://${APP_HOST}`;
 const DEV_RENDERER_URL = process.env.ELECTRON_RENDERER_URL;
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const preloadPath = join(currentDirectory, '../preload/index.cjs');
+const PDF_EXPORT_TIMEOUT_MS = 30_000;
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -95,6 +97,92 @@ function protectWindowNavigation(contents: WebContents): void {
       void shell.openExternal(url);
     }
   });
+}
+
+function normalizePdfDefaultName(value: unknown): string {
+  if (typeof value !== 'string') return '笔记.pdf';
+  const trimmed = value.trim();
+  if (!trimmed) return '笔记.pdf';
+  return trimmed.toLowerCase().endsWith('.pdf') ? trimmed : `${trimmed}.pdf`;
+}
+
+function waitForWebContentsReady(contents: WebContents): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('PDF 导出页面加载超时'));
+    }, PDF_EXPORT_TIMEOUT_MS);
+
+    const cleanup = () => {
+      clearTimeout(timeout);
+      contents.off('did-finish-load', handleReady);
+      contents.off('did-fail-load', handleFail);
+    };
+
+    const handleReady = () => {
+      cleanup();
+      resolve();
+    };
+    const handleFail = (_event: unknown, _code: number, description: string) => {
+      cleanup();
+      reject(new Error(description || 'PDF 导出页面加载失败'));
+    };
+
+    contents.once('did-finish-load', handleReady);
+    contents.once('did-fail-load', handleFail);
+  });
+}
+
+async function savePdfFromHtml(
+  parent: BrowserWindow | null,
+  html: string,
+  defaultFileName: string
+) {
+  const saveDialogOptions = {
+    title: '导出 PDF',
+    defaultPath: normalizePdfDefaultName(defaultFileName),
+    filters: [{ name: 'PDF', extensions: ['pdf'] }],
+  };
+  const { canceled, filePath } = parent
+    ? await dialog.showSaveDialog(parent, saveDialogOptions)
+    : await dialog.showSaveDialog(saveDialogOptions);
+  if (canceled || !filePath) return null;
+
+  const pdfWindow = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false,
+      webSecurity: true,
+    },
+  });
+
+  try {
+    const ready = waitForWebContentsReady(pdfWindow.webContents);
+    await pdfWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+    await ready;
+    await pdfWindow.webContents.executeJavaScript(
+      `Promise.all([
+        document.fonts?.ready ?? Promise.resolve(),
+        Promise.all(Array.from(document.images).map((image) => image.complete
+          ? Promise.resolve()
+          : new Promise((resolve) => {
+              image.addEventListener('load', resolve, { once: true });
+              image.addEventListener('error', resolve, { once: true });
+              setTimeout(resolve, 5000);
+            })))
+      ]).then(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))`
+    );
+    const pdf = await pdfWindow.webContents.printToPDF({
+      printBackground: true,
+      preferCSSPageSize: true,
+    });
+    await fs.writeFile(filePath, pdf);
+    return filePath;
+  } finally {
+    pdfWindow.destroy();
+  }
 }
 
 function createMainWindow(): BrowserWindow {
@@ -170,6 +258,22 @@ function registerDesktopIpcHandlers(): void {
   });
   ipcMain.handle(DESKTOP_CHANNEL.windowClose, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close();
+  });
+  ipcMain.handle(DESKTOP_CHANNEL.savePdfFromHtml, async (event, options: unknown) => {
+    if (
+      !options ||
+      typeof options !== 'object' ||
+      typeof (options as { html?: unknown }).html !== 'string'
+    ) {
+      return null;
+    }
+
+    const parent = BrowserWindow.fromWebContents(event.sender);
+    return savePdfFromHtml(
+      parent,
+      (options as { html: string }).html,
+      normalizePdfDefaultName((options as { defaultFileName?: unknown }).defaultFileName)
+    );
   });
 }
 

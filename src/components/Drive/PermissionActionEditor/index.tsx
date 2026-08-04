@@ -5,6 +5,7 @@ import {
   TAG_PERMISSION_RESOURCE_STRATEGIES,
   type TagPermissionResourceStrategy,
 } from '@/components/Drive/common/tagPermissionPreset';
+import { Checkbox } from '@/components/Input';
 import {
   buildTagPermissionListActionSelectionPatch,
   isTagPermissionListActionSelected,
@@ -13,11 +14,13 @@ import {
   type TagPermissionPresetKey,
   type TagResourceAction,
 } from '@/domains/Tag';
-import { Button, Checkbox } from '@heroui/react';
+import { Tabs } from '@heroui/react';
 import { Check, X } from 'lucide-react';
 import styles from './style.module.less';
 
 type ActionPresetKey = Exclude<TagPermissionPresetKey, 'custom'>;
+type PresetTabKey = ActionPresetKey | 'custom';
+const PRESET_TAB_KEYS: PresetTabKey[] = ['private', 'readonly', 'shared', 'custom'];
 
 interface TagPermissionActionEditorProps {
   ariaLabel: string;
@@ -60,8 +63,6 @@ function TagPermissionActionEditor({
   onActionsChange,
 }: TagPermissionActionEditorProps) {
   const selectedPresetKey = resolveActionPresetKey(actions);
-  const selectedPresetLabel =
-    selectedPresetKey === 'custom' ? labels.customPreset : labels.getPresetLabel(selectedPresetKey);
 
   const handlePresetChange = (presetKey: ActionPresetKey) => {
     const preset = TAG_PERMISSION_ACTION_PRESET_OPTIONS.find((item) => item.key === presetKey);
@@ -83,20 +84,27 @@ function TagPermissionActionEditor({
     <section className={styles.permissionCard} aria-label={ariaLabel}>
       <div className={styles.presetBar}>
         <span className={styles.presetLabel}>{labels.basedOnPreset}</span>
-        <div className={styles.presetButtons} role="group" aria-label={labels.basedOnPreset}>
-          {TAG_PERMISSION_ACTION_PRESET_OPTIONS.map((preset) => (
-            <Button
-              key={preset.key}
-              variant={selectedPresetKey === preset.key ? 'primary' : 'secondary'}
-              size="sm"
-              isDisabled={isDisabled}
-              onPress={() => handlePresetChange(preset.key)}
-            >
-              {labels.getPresetLabel(preset.key)}
-            </Button>
-          ))}
-        </div>
-        <span className={styles.currentPreset}>{labels.currentPreset(selectedPresetLabel)}</span>
+        <Tabs
+          variant="secondary"
+          aria-label={labels.basedOnPreset}
+          className={styles.presetTabs}
+          selectedKey={selectedPresetKey}
+          onSelectionChange={(key) => {
+            if (key === 'custom' || isDisabled) return;
+            handlePresetChange(String(key) as ActionPresetKey);
+          }}
+        >
+          <Tabs.ListContainer className={styles.presetTabsListContainer}>
+            <Tabs.List className={styles.presetTabsList} aria-label={labels.basedOnPreset}>
+              {PRESET_TAB_KEYS.map((key) => (
+                <Tabs.Tab key={key} id={key} className={styles.presetTab}>
+                  {key === 'custom' ? labels.customPreset : labels.getPresetLabel(key)}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs.ListContainer>
+        </Tabs>
       </div>
 
       <div className={styles.permissionTableShell}>

@@ -10,6 +10,7 @@ import { Clock3, FileType2, GitBranch, HardDrive, ShieldCheck, UserRound } from 
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isDriveActionTarget } from '../../../common/driveComponentModel';
+import { resolveTagPermissionPresetKey } from '../../../common/tagPermissionPreset';
 import type { DriveTableRow } from '../../index.type';
 import styles from './style.module.less';
 
@@ -37,9 +38,12 @@ function formatVersion(version?: number): string {
   return typeof version === 'number' ? `v${version}` : EMPTY_META;
 }
 
-function formatActionList(actions?: ResourceAction[] | null): string {
+function formatActionList(
+  actions: ResourceAction[] | null | undefined,
+  getActionLabel: (action: ResourceAction) => string
+): string {
   if (!actions || actions.length === 0) return EMPTY_META;
-  return actions.map((action) => RESOURCE_ACTION.getLabel(action)).join('、');
+  return actions.map(getActionLabel).join('、');
 }
 
 function formatAccessScope(scope?: AccessControlScope): string {
@@ -130,6 +134,34 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
     noteMeta?.resourceInfo ?? documentMeta?.resourceInfo ?? fallbackResourceInfo;
   const detailLoading = loadingNoteMeta || loadingDocumentMeta;
   const actionTarget = isDriveActionTarget(selectedRow.node) ? selectedRow.node : null;
+  const getActionLabel = (action: ResourceAction) => {
+    const key = RESOURCE_ACTION.getKey(action);
+    return key ? t(`permission.actions.${key}`, { ns: 'resource' }) : String(action);
+  };
+  const formatResourceDefaultPermission = (
+    scope?: AccessControlScope,
+    actions?: ResourceAction[] | null
+  ): ReactNode => {
+    const presetKey = resolveTagPermissionPresetKey({
+      taggedResourceAclGrantScope: scope,
+      grantedActions: actions ?? undefined,
+    });
+    const presetLabel = t(`permission.tag.preset.${presetKey}.label`, { ns: 'resource' });
+    const shouldShowIncludedActions = presetKey === 'custom' || Boolean(actions?.length);
+    const includedActions = shouldShowIncludedActions
+      ? t('table.meta.includedActions', {
+          actions: formatActionList(actions, getActionLabel),
+        })
+      : '';
+    return (
+      <span className={styles.detailMetaValueStack}>
+        <span>{presetLabel}</span>
+        {includedActions ? (
+          <span className={styles.detailMetaSecondary}>{includedActions}</span>
+        ) : null}
+      </span>
+    );
+  };
   const detailMetaItems: DetailMetaItem[] = (() => {
     const items: DetailMetaItem[] = [
       {
@@ -181,7 +213,10 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
           key: 'resourceDefaultPermission',
           label: t('table.meta.resourceDefaultPermission'),
           icon: <ShieldCheck size={18} aria-hidden="true" />,
-          value: `${formatAccessScope(actionTarget.taggedResourceAclGrantScope)} / ${formatActionList(actionTarget.grantedActions)}`,
+          value: formatResourceDefaultPermission(
+            actionTarget.taggedResourceAclGrantScope,
+            actionTarget.grantedActions
+          ),
         },
         {
           key: 'mountPermission',
@@ -195,7 +230,7 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
         key: 'currentPermission',
         label: t('table.meta.currentPermission'),
         icon: <ShieldCheck size={18} aria-hidden="true" />,
-        value: formatActionList(detailResourceInfo.currentActions),
+        value: formatActionList(detailResourceInfo.currentActions, getActionLabel),
       });
     }
 

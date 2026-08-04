@@ -1,5 +1,6 @@
 import { Spin } from '@/components/Feedback';
 import { ServicesProvider } from '@/domains';
+import DesktopWindowControls from '@/layouts/_common/DesktopWindowControls';
 import { useViewportLayoutScale } from '@/layouts/_common/useViewportLayoutScale';
 import { DEFAULT_HEROUI_THEME, ThemeApplier } from '@/theme';
 import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
@@ -44,6 +45,8 @@ function App() {
     <ThemeApplier defaultTheme={DEFAULT_HEROUI_THEME}>
       <ServicesProvider>
         <Toast.Provider maxVisibleToasts={3} placement="top" />
+        {/* 与 Chat 侧栏动画解耦：固定右上，避免随 Header 迁移产生卡顿 */}
+        <DesktopWindowControls />
         <Suspense fallback={<PageLoadingFallback />}>
           <RouterProvider router={router} onError={handleRouterError} />
         </Suspense>

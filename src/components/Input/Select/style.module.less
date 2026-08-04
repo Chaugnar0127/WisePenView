@@ -45,6 +45,8 @@
   --field-border-focus: var(--app-select-trigger-border-focus);
   --field-focus: var(--app-select-trigger-bg-focus);
   --field-shadow: none;
+
+  background-color: transparent;
 }
 
 .selectTrigger:global(.select__trigger) {
@@ -56,6 +58,7 @@
   border-color: var(--app-select-trigger-border);
   background-color: var(--app-select-trigger-bg);
   color: var(--field-foreground, var(--foreground));
+  font-weight: var(--field-text-font-weight, var(--font-weight-medium));
   box-shadow: none;
   letter-spacing: 0;
 }
@@ -105,6 +108,7 @@
 
 .select:global(.select) :global(.select__value) {
   min-width: 0;
+  line-height: var(--line-height-base);
   letter-spacing: 0;
 }
 

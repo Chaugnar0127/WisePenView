@@ -1,35 +1,32 @@
+import type {
+  NoteBodyEditorHandle,
+  NoteCollaborationUser,
+} from '@/components/Note/CustomBlockNote/index.type';
 import { useInlineCommentService, useInteractService, useUserService } from '@/domains';
 import type {
   NoteInfoDisplayData,
   NoteInlineCommentDraft,
   NoteSelectionSnapshot,
 } from '@/domains/Note';
-import type {
-  NoteBodyEditorHandle,
-  NoteCollaborationUser,
-} from '@/components/Note/CustomBlockNote/index.type';
-import {
-  NoteInlineCommentSession,
-  useNoteSession,
-} from '@/domains/Note';
+import { NoteInlineCommentSession, useNoteSession } from '@/domains/Note';
 import { useSmoothFlag } from '@/hooks/useSmoothFlag';
 import { parseErrorMessage } from '@/utils/error';
 import { useResourceHostChatContextActions } from '@/views/workspace/ResourceHostContext';
 import { useWorkspaceResourceSidePanelStore } from '@/views/workspace/_store/useWorkspaceResourceSidePanelStore';
-import { useRequest, useUnmount, useMemoizedFn } from 'ahooks';
+import { toast } from '@heroui/react';
+import { useMemoizedFn, useRequest, useUnmount } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { useState, useSyncExternalStore, type RefObject } from 'react';
-import { toast } from '@heroui/react';
 import {
   createNoteChatStateProvider,
   createNoteSelectionChatContext,
 } from '../../NoteChatProtocol';
+import type { NoteTitleHandle } from '../NoteTitle';
 import {
   buildNoteCollaborationUser,
   downloadTextArtifact,
   sanitizeDownloadFileName,
 } from './noteWorkspaceModel';
-import type { NoteTitleHandle } from '../NoteTitle';
 
 const INLINE_COMMENT_POLLING_INTERVAL = 8_000;
 
@@ -120,7 +117,11 @@ export function useNoteWorkspaceController({
     const titleRoot = titleApi?.getProseMirrorRoot() ?? null;
     try {
       setExportPending(true);
-      await bodyApi.exportPdf({ title, titleRoot });
+      await bodyApi.exportPdf({
+        title,
+        titleRoot,
+        defaultFileName: `${sanitizeDownloadFileName(title, untitledTitle)}.pdf`,
+      });
     } catch (err) {
       toast.danger(parseErrorMessage(err));
     } finally {

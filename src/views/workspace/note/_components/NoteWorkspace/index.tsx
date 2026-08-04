@@ -13,12 +13,13 @@ import type { NoteInfoDisplayData } from '@/domains/Note';
 import { encodeNoteClientContentSignature } from '@/domains/Note';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
+import { isDesktop } from '@/utils/platform';
 import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/workspace/ResourceHostContext';
 import { Alert, Button } from '@heroui/react';
-import { History } from 'lucide-react';
+import { Download, History } from 'lucide-react';
 import styles from '../../style.module.less';
 import NoteInfoBar from '../NoteInfoBar';
 import NoteOutline, { NOTE_OUTLINE_TITLE_ID } from '../NoteOutline';
@@ -255,6 +256,8 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
           ],
           onSearch: () => bodyEditorRef.current?.openFind(),
           onPrint: handlePrintPdf,
+          printLabel: isDesktop() ? t('export.downloadPdf') : t('export.printPdf'),
+          printIcon: isDesktop() ? Download : undefined,
           download: {
             label: t('export.downloadMarkdown'),
             onAction: handleDownloadMarkdown,

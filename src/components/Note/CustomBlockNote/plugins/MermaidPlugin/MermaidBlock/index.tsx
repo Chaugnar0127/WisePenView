@@ -215,12 +215,13 @@ function MermaidBlockView({ block, contentRef, editor }: MermaidBlockRenderProps
             />
           </div>
         </div>
-        <div className={styles.body} data-view={view}>
+        <div className={styles.body} data-view={view} data-mermaid-block-body="">
           <section
             className={view === 'graph' ? `${styles.pane} ${styles.paneHidden}` : styles.pane}
             data-view={view}
+            data-mermaid-pane="source"
           >
-            <div className={styles.paneHeader} contentEditable={false}>
+            <div className={styles.paneHeader} contentEditable={false} data-mermaid-pane-header="">
               <span className={styles.paneTitle}>{t('mermaid.source')}</span>
             </div>
             <pre className={styles.source} data-readonly={readOnly || undefined}>
@@ -230,8 +231,9 @@ function MermaidBlockView({ block, contentRef, editor }: MermaidBlockRenderProps
           <section
             className={view === 'code' ? `${styles.pane} ${styles.paneHidden}` : styles.pane}
             data-view={view}
+            data-mermaid-pane="graph"
           >
-            <div className={styles.paneHeader} contentEditable={false}>
+            <div className={styles.paneHeader} contentEditable={false} data-mermaid-pane-header="">
               <span className={styles.paneTitle}>{t('mermaid.graph')}</span>
             </div>
             <div className={styles.preview} contentEditable={false}>

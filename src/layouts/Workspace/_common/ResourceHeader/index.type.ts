@@ -22,6 +22,8 @@ export interface ResourceHeaderMoreMenu {
   advanced?: ReactNode;
   actions?: readonly ResourceHeaderMoreAction[];
   onPrint?: () => void;
+  printLabel?: string;
+  printIcon?: LucideIcon;
   download?: ResourceHeaderDownloadAction;
   isPending?: boolean;
   /** 全文搜索：点击后由页面自行展示搜索条（非菜单 hover 子面板） */

@@ -33,7 +33,11 @@ function HighlightIconPicker({ block, editor }: HighlightBlockRenderProps) {
   return (
     <AppPopover isOpen={open} onOpenChange={setOpen} deferContent={false}>
       <AppIconButton
-        icon={<span className={styles.iconGlyph}>{props.icon}</span>}
+        icon={
+          <span className={styles.iconGlyph} data-highlight-block-icon="">
+            {props.icon}
+          </span>
+        }
         label={t('highlight.changeIcon')}
         size="sm"
         isActive={open}
@@ -67,7 +71,7 @@ function HighlightBlockView({ block, editor, contentRef }: HighlightBlockRenderP
     >
       <div className={styles.iconSlot} contentEditable={false} data-highlight-block-controls="">
         {readOnly ? (
-          <span className={styles.readOnlyIcon} aria-hidden="true">
+          <span className={styles.readOnlyIcon} aria-hidden="true" data-highlight-block-icon="">
             {props.icon}
           </span>
         ) : (
@@ -95,7 +99,7 @@ function HighlightBlockToExternalHTML({ block, contentRef }: HighlightBlockRende
       data-highlight-text-alignment={props.textAlignment}
       data-icon={props.icon}
     >
-      <span className={styles.readOnlyIcon} aria-hidden="true">
+      <span className={styles.readOnlyIcon} aria-hidden="true" data-highlight-block-icon="">
         {props.icon}
       </span>
       <div ref={contentRef} className={styles.content} />

@@ -10,10 +10,12 @@ interface PrintNotePdfOptions {
   title?: string;
   /** 克隆自 NoteTitle 的 ProseMirror 根；有则不再插入合成 h1 */
   titleRoot?: HTMLElement | null;
+  /** 桌面端保存对话框默认文件名 */
+  defaultFileName?: string;
 }
 
 const PRINT_IFRAME_STYLE =
-  'position:fixed;width:0;height:0;right:0;bottom:0;border:0;opacity:0;pointer-events:none;visibility:hidden;';
+  'position:fixed;width:100vw;height:100vh;left:-10000px;top:0;border:0;opacity:0;pointer-events:none;';
 
 const PRINT_IFRAME_CLEANUP_MS = 120_000;
 const STYLESHEET_LOAD_TIMEOUT_MS = 5_000;
@@ -29,6 +31,10 @@ const PRINT_BASE_CSS = `
   body {
     margin: 0;
     padding: 0;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
     background: #fff;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -57,12 +63,17 @@ const PRINT_BASE_CSS = `
     min-width: 0 !important;
     min-height: 0 !important;
     height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
   .note-print-content {
     margin: 0;
   }
   .note-print-body {
     color: inherit;
+    width: 100%;
+    min-height: 0;
+    overflow: visible !important;
   }
   .note-print-body img,
   .note-print-title img {
@@ -70,7 +81,11 @@ const PRINT_BASE_CSS = `
     height: auto !important;
   }
   .note-print-body .bn-editor {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     padding-bottom: 0 !important;
+    overflow: visible !important;
   }
   .note-print-body .bodyBlockNoteView {
     padding-right: 0 !important;
@@ -254,6 +269,27 @@ function buildPrintDocument(
   doc.body.appendChild(article);
 }
 
+function buildDesktopPrintHtml(
+  proseMirrorRoot: HTMLElement,
+  registry: NotePluginRegistry,
+  options?: PrintNotePdfOptions
+): string {
+  const doc = document.implementation.createHTMLDocument(
+    options?.title?.trim() || i18n.t('export.printDocumentTitle', { ns: 'note' })
+  );
+  const meta = doc.createElement('meta');
+  meta.setAttribute('charset', 'UTF-8');
+  doc.head.appendChild(meta);
+
+  const base = doc.createElement('base');
+  base.href = document.baseURI;
+  doc.head.appendChild(base);
+
+  cloneHostStylesInto(doc.head);
+  buildPrintDocument(doc, proseMirrorRoot, registry, options);
+  return `<!DOCTYPE html>${doc.documentElement.outerHTML}`;
+}
+
 /**
  * 通过系统「打印 → 另存为 PDF」：克隆正文 ProseMirror DOM，样式来自宿主页 head + 补充 CSS。
  *
@@ -269,6 +305,19 @@ export async function printNotePdfViaBrowser(
     throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_EXPORT_FAILED, {
       reason: '无法获取编辑器内容',
     });
+  }
+
+  if (window.desktop?.savePdfFromHtml) {
+    try {
+      await window.desktop.savePdfFromHtml({
+        html: buildDesktopPrintHtml(proseMirrorRoot, registry, options),
+        defaultFileName: options?.defaultFileName ?? '笔记.pdf',
+      });
+      return;
+    } catch (error) {
+      if (isWisePenError(error)) throw error;
+      throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_EXPORT_FAILED, undefined, error);
+    }
   }
 
   const iframe = document.createElement('iframe');

@@ -13,6 +13,7 @@ interface DesktopBridge {
   windowMinimize?(): Promise<void>;
   windowMaximizeToggle?(): Promise<void>;
   windowClose?(): Promise<void>;
+  savePdfFromHtml(options: { html: string; defaultFileName: string }): Promise<string | null>;
 }
 
 interface Window {

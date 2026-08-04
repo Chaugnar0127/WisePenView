@@ -1,5 +1,7 @@
 export { default as AppAlertDialog } from './AppAlertDialog';
 export type * from './AppAlertDialog/index.type';
+export { default as AppBanner } from './AppBanner';
+export type * from './AppBanner/index.type';
 export { default as AppDisplayDialog } from './AppDisplayDialog';
 export type * from './AppDisplayDialog/index.type';
 export { default as AppFormDialog } from './AppFormDialog';

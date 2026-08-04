@@ -127,6 +127,7 @@ function DriveNavigator({
   selectableTypes = DEFAULT_SELECTABLE_TYPES,
   resourcePreviewLimit = DEFAULT_RESOURCE_PREVIEW_LIMIT,
   disabled = false,
+  dimUnselectableNodes = true,
   disabledNodeIds,
   multiple = false,
   initialSelectedIds,
@@ -175,6 +176,7 @@ function DriveNavigator({
       {
         renderableTypes: renderableTypeSet,
         selectableTypes: selectableTypeSet,
+        dimUnselectableNodes,
         disabledNodeIds: disabledNodeIdSet,
         getTreeKey,
         renderTitle,
@@ -300,6 +302,7 @@ function DriveNavigator({
         renderableTypeKey,
         selectableTypeKey,
         disabledNodeIdKey,
+        dimUnselectableNodes,
       ],
       onSuccess: (data) => {
         setTreeData(data);

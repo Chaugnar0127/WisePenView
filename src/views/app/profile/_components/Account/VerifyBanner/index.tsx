@@ -1,4 +1,5 @@
-import { Alert, Button } from '@heroui/react';
+import AppBanner from '@/components/Overlay/AppBanner';
+import { Button } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 import type { VerifyBannerProps } from './index.type';
 import styles from './style.module.less';
@@ -8,17 +9,16 @@ function VerifyBanner({ visible, onGoVerify }: VerifyBannerProps) {
 
   if (!visible) return null;
   return (
-    <Alert status="warning" className={styles.statusBanner}>
-      <Alert.Indicator />
-      <Alert.Content className={styles.bannerContent}>
-        <Alert.Description>{t('verification.banner')}</Alert.Description>
-      </Alert.Content>
-      <div className={styles.bannerAction}>
+    <AppBanner
+      status="warning"
+      className={styles.statusBanner}
+      description={t('verification.banner')}
+      action={
         <Button size="sm" variant="primary" onPress={onGoVerify}>
           {t('verification.goVerify')}
         </Button>
-      </div>
-    </Alert>
+      }
+    />
   );
 }
 

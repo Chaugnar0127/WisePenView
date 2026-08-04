@@ -12,6 +12,7 @@ interface DriveNodeSelectionOptions {
 
 interface BuildDriveTreeDataOptions extends DriveNodeSelectionOptions {
   renderableTypes: Set<DriveItemKind>;
+  dimUnselectableNodes?: boolean;
   getTreeKey: (node: DriveNode) => string;
   renderTitle: (node: DriveNode) => ReactNode;
 }
@@ -63,9 +64,11 @@ export function isDriveNodeSelectable(
 
 function resolveNodeState(node: DriveNode, options: BuildDriveTreeDataOptions) {
   const selectable = isDriveNodeSelectable(node, options);
+  const disabledByRule =
+    options.disabledNodeIds.has(node.id) || options.isNodeDisabled?.(node) === true;
 
   return {
-    disabled: !selectable,
+    disabled: disabledByRule || (options.dimUnselectableNodes !== false && !selectable),
     selectable,
   };
 }
@@ -88,7 +91,7 @@ function toTreeDataNode(
     };
   }
 
-  const { selectable } = resolveNodeState(node, options);
+  const { disabled, selectable } = resolveNodeState(node, options);
 
   if (node.type === 'root' || node.type === 'folder') {
     return {
@@ -96,7 +99,7 @@ function toTreeDataNode(
       title,
       selectable,
       checkable: false,
-      disabled: !selectable,
+      disabled,
       isLeaf: false,
     };
   }
@@ -106,7 +109,7 @@ function toTreeDataNode(
     title,
     selectable,
     checkable: false,
-    disabled: !selectable,
+    disabled,
     isLeaf: true,
   };
 }

@@ -74,40 +74,60 @@ export function isDrivePinnedFirstRow(row: DriveTableRow): boolean {
 }
 
 export const buildDriveTableColumns = (
-  t: TFunction<'drive'>
-): FolderTableColumn<DriveTableRow>[] => [
-  {
-    id: 'name',
-    label: t('table.columns.name'),
-    width: 'fill',
-    align: 'start',
-    isRowHeader: true,
-    isNameColumn: true,
-    allowsSorting: true,
-    sortFolderGroup: true,
-    getSortValue: (row) => row.name,
-  },
-  {
-    id: 'size',
-    label: t('table.columns.size'),
-    width: 'folderSize',
-    allowsSorting: true,
-    getSortValue: (row) =>
-      row.node.type === 'resource' || row.node.type === 'link' ? row.node.size : undefined,
-    renderCell: (row) => (row.entryType === 'loading' ? '' : (row.sizeLabel ?? '—')),
-  },
-  {
-    id: 'type',
-    label: t('table.columns.type'),
-    width: 'folderType',
-    allowsSorting: true,
-    getSortValue: (row) => row.typeLabel,
-    renderCell: (row) => (row.entryType === 'loading' ? '' : row.typeLabel),
-  },
-  {
+  t: TFunction<'drive'>,
+  showFolderCreator: boolean
+): FolderTableColumn<DriveTableRow>[] => {
+  const columns: FolderTableColumn<DriveTableRow>[] = [
+    {
+      id: 'name',
+      label: t('table.columns.name'),
+      width: 'fill',
+      align: 'start',
+      isRowHeader: true,
+      isNameColumn: true,
+      allowsSorting: true,
+      sortFolderGroup: true,
+      getSortValue: (row) => row.name,
+    },
+    {
+      id: 'size',
+      label: t('table.columns.size'),
+      width: 'folderSize',
+      allowsSorting: true,
+      getSortValue: (row) =>
+        row.node.type === 'resource' || row.node.type === 'link' ? row.node.size : undefined,
+      renderCell: (row) => (row.entryType === 'loading' ? '' : (row.sizeLabel ?? '—')),
+    },
+    {
+      id: 'type',
+      label: t('table.columns.type'),
+      width: 'folderType',
+      allowsSorting: true,
+      getSortValue: (row) => row.typeLabel,
+      renderCell: (row) => (row.entryType === 'loading' ? '' : row.typeLabel),
+    },
+  ];
+
+  if (showFolderCreator) {
+    columns.push({
+      id: 'creator',
+      label: t('table.columns.creator'),
+      width: 'md',
+      allowsSorting: true,
+      getSortValue: (row) => (row.node.type === 'folder' ? row.node.tagCreator : undefined),
+      renderCell: (row) =>
+        row.entryType === 'loading' || row.node.type !== 'folder'
+          ? ''
+          : (row.node.tagCreator ?? '—'),
+    });
+  }
+
+  columns.push({
     id: 'actions',
     label: t('table.columns.actions'),
     width: 'folderAction',
     isActionColumn: true,
-  },
-];
+  });
+
+  return columns;
+};

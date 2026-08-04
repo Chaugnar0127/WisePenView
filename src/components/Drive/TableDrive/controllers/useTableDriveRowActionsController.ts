@@ -1,6 +1,11 @@
 import type { ResourcePermissionModalTarget } from '@/components/Drive/Modals';
 import type { FolderTableRowAction } from '@/components/Table';
-import { resolveResourceKind } from '@/utils/navigation/resourceTarget';
+import {
+  RESOURCE_KIND,
+  RESOURCE_VIEWER,
+  resolveResourceKind,
+  type ResourceViewer,
+} from '@/utils/navigation/resourceTarget';
 import { useTranslation } from 'react-i18next';
 import {
   isDriveActionTarget,
@@ -15,7 +20,7 @@ interface UseTableDriveRowActionsControllerParams {
   isTrashView: boolean;
   showManagePermission: boolean;
   onEnterFolder: (nodeId: string) => void;
-  onOpenNode: (row: DriveTableRow) => void;
+  onOpenNode: (row: DriveTableRow, viewer?: ResourceViewer) => void;
   onRename: (node: DriveActionTarget) => void;
   onMoveNodes: (nodes: DriveActionTarget[]) => void;
   onDelete: (node: DriveActionTarget) => void;
@@ -60,6 +65,25 @@ export function useTableDriveRowActionsController({
           };
 
     const actions: FolderTableRowAction<DriveTableRow>[] = [openAction];
+    const resourceKind =
+      actionTarget.type === 'resource' || actionTarget.type === 'link'
+        ? resolveResourceKind(actionTarget.resourceType)
+        : undefined;
+
+    if (resourceKind === RESOURCE_KIND.FILE) {
+      actions.push(
+        {
+          key: 'open-pdf-preview',
+          label: t('table.pdfPreview'),
+          onPress: () => onOpenNode(row, RESOURCE_VIEWER.PDF_PREVIEW),
+        },
+        {
+          key: 'open-office',
+          label: 'Office',
+          onPress: () => onOpenNode(row, RESOURCE_VIEWER.OFFICE),
+        }
+      );
+    }
 
     if (showManagePermission && !isTrashView) {
       if (actionTarget.type === 'folder') {

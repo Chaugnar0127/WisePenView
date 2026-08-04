@@ -166,7 +166,7 @@ function TableDrive({
     onNodeActionSuccess: handleNodeActionSuccess,
   });
 
-  const columns = buildDriveTableColumns(t);
+  const columns = buildDriveTableColumns(t, resolvedScope.scope.type === 'group');
   const isEditMode = interaction.checkedRowKeys.size > 0;
   const checkboxSelection = {
     selectedKeys: interaction.checkedRowKeys,
@@ -349,16 +349,6 @@ function TableDrive({
                   selectedRow={interaction.selectedRow}
                   isEditMode={isEditMode}
                   selectedCount={interaction.checkedRowKeys.size}
-                  groupId={resolvedScope.groupId}
-                  isTrashView={trash.isTrashView}
-                  showManagePermission={actionsController.showManagePermission}
-                  onActivate={handleClickNode}
-                  onRename={actionsController.setRenameTarget}
-                  onMoveNodes={actionsController.setMoveNodes}
-                  onDelete={actionsController.setDeleteTarget}
-                  onOpenTagAccessPermission={actionsController.openTagAccessPermission}
-                  onOpenTagMountPermission={actionsController.openTagMountPermission}
-                  onOpenResourcePermission={actionsController.openResourcePermission}
                 />
               ) : null}
             </aside>

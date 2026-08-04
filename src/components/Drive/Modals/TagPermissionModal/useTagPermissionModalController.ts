@@ -16,6 +16,7 @@ import {
   MAX_GROUP_MEMBER_PAGE_COUNT,
   normalizeFormForMode,
   normalizeSpecifiedUsersByScope,
+  normalizeSupportedScope,
   selectionToUserIds,
   type PersonnelPolicyTarget,
   type TagPermissionFormValues,
@@ -196,22 +197,23 @@ export const useTagPermissionModalController = ({
 
   const handlePersonnelScopeChange = (target: PersonnelPolicyTarget, nextKey: Key) => {
     const nextScope = Number(nextKey) as TagPermissionFormValues['taggedResourceAclGrantScope'];
+    const supportedScope = normalizeSupportedScope(nextScope);
     setPermissionForm((prev) => {
       if (target === 'resourceGrant') {
         return {
           ...prev,
-          taggedResourceAclGrantScope: nextScope,
+          taggedResourceAclGrantScope: supportedScope,
           taggedResourceAclGrantSpecifiedUsers: normalizeSpecifiedUsersByScope(
-            nextScope,
+            supportedScope,
             prev.taggedResourceAclGrantSpecifiedUsers
           ),
         };
       }
       return {
         ...prev,
-        tagMountPermissionScope: nextScope,
+        tagMountPermissionScope: supportedScope,
         tagMountSpecifiedUsers: normalizeSpecifiedUsersByScope(
-          nextScope,
+          supportedScope,
           prev.tagMountSpecifiedUsers
         ),
       };

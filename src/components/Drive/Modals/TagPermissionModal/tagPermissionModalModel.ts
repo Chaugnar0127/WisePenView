@@ -52,10 +52,12 @@ export const GROUP_MEMBER_PAGE_SIZE = 100;
 export const MAX_GROUP_MEMBER_PAGE_COUNT = 50;
 export const PERSONNEL_SCOPE_OPTIONS = [
   { scope: ACCESS_CONTROL_SCOPE.ALL, labelKey: 'permission.tag.scope.all' },
-  { scope: ACCESS_CONTROL_SCOPE.ONLY_ADMIN, labelKey: 'permission.tag.scope.onlyAdmin' },
   { scope: ACCESS_CONTROL_SCOPE.BLACKLIST, labelKey: 'permission.tag.scope.blacklist' },
   { scope: ACCESS_CONTROL_SCOPE.WHITELIST, labelKey: 'permission.tag.scope.whitelist' },
 ] as const;
+
+export const normalizeSupportedScope = (scope: AccessControlScope): AccessControlScope =>
+  scope === ACCESS_CONTROL_SCOPE.ONLY_ADMIN ? ACCESS_CONTROL_SCOPE.ALL : scope;
 
 export const isSpecifiedUserScope = (scope: AccessControlScope): boolean =>
   scope === ACCESS_CONTROL_SCOPE.WHITELIST || scope === ACCESS_CONTROL_SCOPE.BLACKLIST;
@@ -156,9 +158,13 @@ export const buildSelectionFromTag = (tag: TagTreeNode, groupId?: string): Drive
 };
 
 export const buildFormFromTag = (tag: TagTreeNode): TagPermissionFormValues => ({
-  taggedResourceAclGrantScope: tag.taggedResourceAclGrantScope ?? ACCESS_CONTROL_SCOPE.ALL,
+  taggedResourceAclGrantScope: normalizeSupportedScope(
+    tag.taggedResourceAclGrantScope ?? ACCESS_CONTROL_SCOPE.ALL
+  ),
   taggedResourceAclGrantSpecifiedUsers: tag.taggedResourceAclGrantSpecifiedUsers ?? [],
-  tagMountPermissionScope: tag.tagMountPermissionScope ?? ACCESS_CONTROL_SCOPE.ALL,
+  tagMountPermissionScope: normalizeSupportedScope(
+    tag.tagMountPermissionScope ?? ACCESS_CONTROL_SCOPE.ALL
+  ),
   tagMountSpecifiedUsers: tag.tagMountSpecifiedUsers ?? [],
   grantedActions: normalizeResourceActions(tag.grantedActions),
 });

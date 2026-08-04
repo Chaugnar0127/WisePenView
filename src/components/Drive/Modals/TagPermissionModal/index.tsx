@@ -8,8 +8,10 @@ import DriveNavigator from '@/components/Drive/DriveNavigator';
 import TagPermissionActionEditor from '@/components/Drive/PermissionActionEditor';
 import { Empty, Spin } from '@/components/Feedback';
 import AppModal from '@/components/Overlay/AppModal';
+import { ACCESS_CONTROL_SCOPE } from '@/domains/Tag';
 import { parseErrorMessage } from '@/utils/error';
 import {
+  Alert,
   Autocomplete,
   Button,
   EmptyState,
@@ -159,7 +161,7 @@ const TagPolicyModalBase = ({
             <Autocomplete.Value>
               {({ defaultChildren, isPlaceholder }) => {
                 if (isPlaceholder || selectedMembers.length === 0) {
-                  return defaultChildren;
+                  return <span className={styles.memberPickerPlaceholder}>{defaultChildren}</span>;
                 }
 
                 return (
@@ -243,6 +245,12 @@ const TagPolicyModalBase = ({
 
   const renderPersonnelPolicy = (policy: PersonnelPolicyConfig) => {
     const shouldShowMemberPicker = isSpecifiedUserScope(policy.scope);
+    const scopeHint =
+      policy.scope === ACCESS_CONTROL_SCOPE.WHITELIST
+        ? t('permission.tag.whitelistHint')
+        : policy.scope === ACCESS_CONTROL_SCOPE.BLACKLIST
+          ? t('permission.tag.blacklistHint')
+          : null;
 
     return (
       <section key={policy.target} className={styles.personnelCard} aria-label={policy.title}>
@@ -277,6 +285,14 @@ const TagPolicyModalBase = ({
             </Tabs.List>
           </Tabs.ListContainer>
         </Tabs>
+        {scopeHint ? (
+          <Alert status="accent" className={styles.scopeHintBanner}>
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Description>{scopeHint}</Alert.Description>
+            </Alert.Content>
+          </Alert>
+        ) : null}
         {shouldShowMemberPicker ? (
           renderMemberPicker(policy)
         ) : (

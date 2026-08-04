@@ -116,11 +116,17 @@ export const useAccountVerificationController = ({
       },
       onError: (pollErr) => {
         if (!uisPollingActiveRef.current) return;
-        endUisPolling();
+        dismissUisOutcome();
         toast.danger(parseErrorMessage(pollErr));
       },
     }
   );
+
+  const dismissUisOutcome = () => {
+    endUisPolling();
+    setUisOutcomeOpen(false);
+    setUisOutcome(null);
+  };
 
   const endUisPolling = () => {
     uisPollingActiveRef.current = false;
@@ -220,9 +226,7 @@ export const useAccountVerificationController = ({
   const handleUisOutcomeModalClose = () => {
     if (uisAwaitingScan) return;
 
-    endUisPolling();
-    setUisOutcomeOpen(false);
-    setUisOutcome(null);
+    dismissUisOutcome();
     void (async () => {
       try {
         await onUserInfoReload();

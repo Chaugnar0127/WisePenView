@@ -4,7 +4,7 @@ import { useInteractService, useUserService } from '@/domains';
 import type { CommentSortBy, ResourceComment } from '@/domains/Interact';
 import type { ResourceItem } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Separator, Tabs, toast } from '@heroui/react';
+import { Button, Tabs, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +17,7 @@ import { updateCommentLikeCount } from './utils';
 
 const COMMENT_PAGE_SIZE = 10;
 const EMPTY_LIKED_COMMENT_IDS = new Set<string>();
+
 interface ResourceCommentPanelProps {
   resource: ResourceItem;
   onResourceChanged?: () => unknown | Promise<unknown>;
@@ -28,13 +29,6 @@ interface OptimisticLikeState {
   count: number;
   liked: boolean;
 }
-
-// TODO: rating 功能暂时下线；未来恢复评分提交时再打开乐观评分状态。
-// interface OptimisticScoreState {
-//   resourceId: string;
-//   baseScore: number;
-//   score: number;
-// }
 
 interface PendingDeletion {
   comment: ResourceComment;
@@ -48,8 +42,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   const resourceId = resource.resourceId;
   const resourceLikeCount = resource.likeCount ?? 0;
   const [optimisticLike, setOptimisticLike] = useState<OptimisticLikeState>();
-  // TODO: rating 功能暂时下线；未来恢复评分提交时再打开乐观评分状态。
-  // const [optimisticScore, setOptimisticScore] = useState<OptimisticScoreState>();
   const [commentLikeIds, setCommentLikeIds] = useState<ReadonlySet<string>>();
   const [pendingLikeIds, setPendingLikeIds] = useState<ReadonlySet<string>>(new Set());
   const [comments, setComments] = useState<ResourceComment[]>([]);
@@ -88,22 +80,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
       },
     }
   );
-
-  // TODO: rating 功能暂时下线；未来恢复评分提交时再打开评分请求。
-  // const { run: submitResourceScore, loading: resourceScorePending } = useRequest(
-  //   async (score: number) => {
-  //     await interactService.rateResource({ resourceId, score });
-  //     return score;
-  //   },
-  //   {
-  //     manual: true,
-  //     onSuccess: notifyResourceChanged,
-  //     onError: (error) => {
-  //       setOptimisticScore(undefined);
-  //       toast.danger(parseErrorMessage(error));
-  //     },
-  //   }
-  // );
 
   const {
     data: commentPageData,
@@ -186,18 +162,10 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     }
   );
 
-  // TODO: rating 功能暂时下线；未来恢复评分展示时再读取 interaction.score。
-  // const interactionScore = interaction?.score ?? 0;
   const activeOptimisticLike =
     optimisticLike?.resourceId === resourceId && optimisticLike.baseCount === resourceLikeCount
       ? optimisticLike
       : undefined;
-  // TODO: rating 功能暂时下线；未来恢复评分提交时再打开乐观评分读取。
-  // const activeOptimisticScore =
-  //   optimisticScore?.resourceId === resourceId && optimisticScore.baseScore === interactionScore
-  //     ? optimisticScore
-  //     : undefined;
-  const commentCount = commentPageData?.total ?? resource.commentCount ?? 0;
   const hasMoreComments = Boolean(commentPageData && commentPage < commentPageData.totalPage);
   const commentSortOptions: Array<{ key: CommentSortBy; label: string }> = [
     { key: 'CREATE_TIME', label: t('resource:comment.sort.latest') },
@@ -215,12 +183,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     submitResourceLike(liked);
   };
 
-  // TODO: rating 功能暂时下线；未来恢复评分提交时再打开打星处理。
-  // const handleScoreChange = (score: number) => {
-  //   setOptimisticScore({ resourceId, baseScore: interactionScore, score });
-  //   submitResourceScore(score);
-  // };
-
   const handleSortChange = (nextSortBy: CommentSortBy) => {
     setSortBy(nextSortBy);
     void loadComments(1, false, nextSortBy);
@@ -235,30 +197,16 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
 
   return (
     <div className={styles.panel}>
+      <header className={styles.panelHeader}>
+        <h2 className={styles.panelTitle}>{t('resource:sidePanel.comments')}</h2>
+      </header>
+
       <div className={styles.content}>
-        <ResourceFeedbackSummary
-          readCount={resource.readCount}
-          favoriteCount={resource.favoriteCount}
-          liked={activeOptimisticLike?.liked ?? interaction?.liked ?? false}
-          likeCount={activeOptimisticLike?.count ?? resourceLikeCount}
-          likePending={interactionLoading || resourceLikePending || !interaction}
-          onLikeChange={handleResourceLikeChange}
-          favoriteAction={
-            <ResourceFavoriteAction
-              resourceId={resourceId}
-              showLabel
-              onSuccess={onResourceChanged}
-            />
-          }
-        />
-
-        <Separator />
-
-        <section className={styles.commentsSection} aria-labelledby="resource-comments-title">
+        <section
+          className={styles.commentsSection}
+          aria-label={t('resource:sidePanel.commentsAria')}
+        >
           <div className={styles.commentsHeader}>
-            <h3 id="resource-comments-title" className={styles.sectionTitle}>
-              {t('resource:comment.count', { count: commentCount })}
-            </h3>
             <Tabs
               variant="secondary"
               selectedKey={sortBy}
@@ -279,6 +227,17 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
                 </Tabs.List>
               </Tabs.ListContainer>
             </Tabs>
+            <ResourceFeedbackSummary
+              readCount={resource.readCount}
+              favoriteCount={resource.favoriteCount}
+              liked={activeOptimisticLike?.liked ?? interaction?.liked ?? false}
+              likeCount={activeOptimisticLike?.count ?? resourceLikeCount}
+              likePending={interactionLoading || resourceLikePending || !interaction}
+              onLikeChange={handleResourceLikeChange}
+              favoriteAction={
+                <ResourceFavoriteAction resourceId={resourceId} onSuccess={onResourceChanged} />
+              }
+            />
           </div>
 
           {commentsError ? (

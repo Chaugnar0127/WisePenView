@@ -1,66 +1,105 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/_shadcn';
-import type { ResourcePermissionModalTarget } from '@/components/Drive/Modals';
 import EntryIcon from '@/components/Icons/EntryIcon';
-import {
-  RESOURCE_KIND,
-  RESOURCE_VIEWER,
-  resolveResourceKind,
-  resolveResourceViewer,
-  type ResourceViewer,
-} from '@/utils/navigation/resourceTarget';
-import { Button, ToggleButton, ToggleButtonGroup } from '@heroui/react';
-import { FolderInput, FolderOpen, Pencil, ShieldCheck, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useDocumentService, useNoteService } from '@/domains';
+import { RESOURCE_ACTION, type ResourceAction, type ResourceItem } from '@/domains/Resource';
+import { ACCESS_CONTROL_SCOPE, type AccessControlScope } from '@/domains/Tag';
+import type { UserDisplayBase } from '@/domains/User';
+import { formatFileSize } from '@/utils/format/formatFileSize';
+import { RESOURCE_KIND, resolveResourceKind } from '@/utils/navigation/resourceTarget';
+import { useRequest } from 'ahooks';
+import { Clock3, FileType2, GitBranch, HardDrive, ShieldCheck, UserRound } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  isDriveActionTarget,
-  isDriveSystemFolderNode,
-  type DriveActionTarget,
-} from '../../../common/driveComponentModel';
+import { isDriveActionTarget } from '../../../common/driveComponentModel';
 import type { DriveTableRow } from '../../index.type';
 import styles from './style.module.less';
+
+const EMPTY_META = '—';
+const NOTE_RESOURCE_TYPES = new Set(['note', 'drawio']);
 
 interface DriveDetailPanelProps {
   selectedRow?: DriveTableRow;
   isEditMode: boolean;
   selectedCount: number;
-  groupId?: string;
-  isTrashView: boolean;
-  showManagePermission: boolean;
-  onActivate: (row: DriveTableRow, viewer?: ResourceViewer) => void;
-  onRename: (node: DriveActionTarget) => void;
-  onMoveNodes: (nodes: DriveActionTarget[]) => void;
-  onDelete: (node: DriveActionTarget) => void;
-  onOpenTagAccessPermission: (tagId: string) => void;
-  onOpenTagMountPermission: (tagId: string) => void;
-  onOpenResourcePermission: (target: ResourcePermissionModalTarget) => void;
 }
 
-function DriveDetailPanel({
-  selectedRow,
-  isEditMode,
-  selectedCount,
-  groupId,
-  isTrashView,
-  showManagePermission,
-  onActivate,
-  onRename,
-  onMoveNodes,
-  onDelete,
-  onOpenTagAccessPermission,
-  onOpenTagMountPermission,
-  onOpenResourcePermission,
-}: DriveDetailPanelProps) {
+interface DetailMetaItem {
+  key: string;
+  label: string;
+  value: ReactNode;
+  icon: ReactNode;
+}
+
+function getUserDisplayName(user?: UserDisplayBase, fallbackId?: string): string {
+  return user?.nickname?.trim() || user?.realName?.trim() || fallbackId || EMPTY_META;
+}
+
+function formatVersion(version?: number): string {
+  return typeof version === 'number' ? `v${version}` : EMPTY_META;
+}
+
+function formatActionList(actions?: ResourceAction[] | null): string {
+  if (!actions || actions.length === 0) return EMPTY_META;
+  return actions.map((action) => RESOURCE_ACTION.getLabel(action)).join('、');
+}
+
+function formatAccessScope(scope?: AccessControlScope): string {
+  return scope == null ? EMPTY_META : ACCESS_CONTROL_SCOPE.getLabel(scope);
+}
+
+function DetailMetaLoading({ label }: { label: string }) {
+  return <span className={styles.detailMetaLoading}>{label}</span>;
+}
+
+function resolveResourceInfoFromNode(row: DriveTableRow): ResourceItem | undefined {
+  const node = row.node;
+  if (node.type !== 'resource' && node.type !== 'link') return undefined;
+  return {
+    resourceId: node.resourceId,
+    resourceName: row.name,
+    ownerId: node.ownerId,
+    ownerInfo: node.ownerInfo ?? {},
+    resourceType: node.resourceType,
+    preview: node.description,
+    size: node.size,
+    resourceIconType: node.resourceIconType,
+    mainTagId: node.type === 'link' ? node.primaryTagId : node.folderTagId,
+    currentActions: node.currentActions,
+    resourceAccessRole: node.resourceAccessRole,
+  };
+}
+
+function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetailPanelProps) {
   const { t } = useTranslation(['drive', 'resource', 'common']);
-  const [selectedViewer, setSelectedViewer] = useState<ResourceViewer>(() => {
-    if (selectedRow && (selectedRow.node.type === 'resource' || selectedRow.node.type === 'link')) {
-      return (
-        resolveResourceViewer({ resourceType: selectedRow.node.resourceType }) ??
-        RESOURCE_VIEWER.PDF_PREVIEW
-      );
+  const noteService = useNoteService();
+  const documentService = useDocumentService();
+
+  const resourceNode =
+    selectedRow && (selectedRow.node.type === 'resource' || selectedRow.node.type === 'link')
+      ? selectedRow.node
+      : undefined;
+  const resourceKind = resourceNode ? resolveResourceKind(resourceNode.resourceType) : undefined;
+  const resourceTypeToken = resourceNode?.resourceType?.trim().toLowerCase();
+  const shouldLoadNoteMeta = Boolean(
+    resourceNode?.resourceId && resourceTypeToken && NOTE_RESOURCE_TYPES.has(resourceTypeToken)
+  );
+  const shouldLoadDocumentMeta = Boolean(
+    resourceNode?.resourceId && resourceKind === RESOURCE_KIND.FILE && !shouldLoadNoteMeta
+  );
+
+  const { data: noteMeta, loading: loadingNoteMeta } = useRequest(
+    () => noteService.getNoteInfoDisplay({ resourceId: resourceNode?.resourceId ?? '' }),
+    {
+      ready: shouldLoadNoteMeta,
+      refreshDeps: [resourceNode?.resourceId],
     }
-    return RESOURCE_VIEWER.PDF_PREVIEW;
-  });
+  );
+  const { data: documentMeta, loading: loadingDocumentMeta } = useRequest(
+    () => documentService.getDocInfo(resourceNode?.resourceId ?? ''),
+    {
+      ready: shouldLoadDocumentMeta,
+      refreshDeps: [resourceNode?.resourceId],
+    }
+  );
 
   if (isEditMode) {
     return (
@@ -86,31 +125,82 @@ function DriveDetailPanel({
     );
   }
 
+  const fallbackResourceInfo = selectedRow ? resolveResourceInfoFromNode(selectedRow) : undefined;
+  const detailResourceInfo =
+    noteMeta?.resourceInfo ?? documentMeta?.resourceInfo ?? fallbackResourceInfo;
+  const detailLoading = loadingNoteMeta || loadingDocumentMeta;
   const actionTarget = isDriveActionTarget(selectedRow.node) ? selectedRow.node : null;
-  const modifiableActionTarget =
-    actionTarget && !isDriveSystemFolderNode(actionTarget) ? actionTarget : undefined;
-  const activateLabel =
-    selectedRow.node.type === 'root' || selectedRow.node.type === 'folder'
-      ? t('table.enter')
-      : t('table.open');
-  const deleteLabel = groupId
-    ? t('delete.remove')
-    : isTrashView
-      ? t('delete.permanent')
-      : selectedRow.node.type === 'link'
-        ? t('delete.deleteLink')
-        : t('delete.moveToTrash');
-  const resourceKind =
-    selectedRow.node.type === 'resource' || selectedRow.node.type === 'link'
-      ? resolveResourceKind(selectedRow.node.resourceType)
-      : undefined;
-  const isFileResource = resourceKind === RESOURCE_KIND.FILE;
-  const permissionTarget =
-    showManagePermission &&
-    !isTrashView &&
-    (actionTarget?.type === 'folder' || actionTarget?.type === 'resource')
-      ? actionTarget
-      : undefined;
+  const detailMetaItems: DetailMetaItem[] = (() => {
+    const items: DetailMetaItem[] = [
+      {
+        key: 'lastEditedAt',
+        label: t('table.meta.lastEditedAt'),
+        icon: <Clock3 size={18} aria-hidden="true" />,
+        value: detailLoading ? (
+          <DetailMetaLoading label={t('status.loading', { ns: 'common' })} />
+        ) : (
+          noteMeta?.lastEditedAtText || EMPTY_META
+        ),
+      },
+      {
+        key: 'size',
+        label: t('table.columns.size'),
+        icon: <HardDrive size={18} aria-hidden="true" />,
+        value:
+          detailResourceInfo?.size != null
+            ? formatFileSize(detailResourceInfo.size)
+            : (selectedRow.sizeLabel ?? EMPTY_META),
+      },
+      {
+        key: 'type',
+        label: t('table.columns.type'),
+        icon: <FileType2 size={18} aria-hidden="true" />,
+        value: selectedRow.typeLabel || detailResourceInfo?.resourceType || EMPTY_META,
+      },
+      {
+        key: 'version',
+        label: t('table.meta.version'),
+        icon: <GitBranch size={18} aria-hidden="true" />,
+        value: detailLoading ? (
+          <DetailMetaLoading label={t('status.loading', { ns: 'common' })} />
+        ) : (
+          formatVersion(noteMeta?.version ?? documentMeta?.docMetaInfo.version)
+        ),
+      },
+      {
+        key: 'owner',
+        label: t('table.meta.owner'),
+        icon: <UserRound size={18} aria-hidden="true" />,
+        value: getUserDisplayName(detailResourceInfo?.ownerInfo, detailResourceInfo?.ownerId),
+      },
+    ];
+
+    if (actionTarget?.type === 'folder') {
+      items.push(
+        {
+          key: 'resourceDefaultPermission',
+          label: t('table.meta.resourceDefaultPermission'),
+          icon: <ShieldCheck size={18} aria-hidden="true" />,
+          value: `${formatAccessScope(actionTarget.taggedResourceAclGrantScope)} / ${formatActionList(actionTarget.grantedActions)}`,
+        },
+        {
+          key: 'mountPermission',
+          label: t('table.meta.mountPermission'),
+          icon: <ShieldCheck size={18} aria-hidden="true" />,
+          value: formatAccessScope(actionTarget.tagMountPermissionScope),
+        }
+      );
+    } else if (detailResourceInfo?.currentActions) {
+      items.push({
+        key: 'currentPermission',
+        label: t('table.meta.currentPermission'),
+        icon: <ShieldCheck size={18} aria-hidden="true" />,
+        value: formatActionList(detailResourceInfo.currentActions),
+      });
+    }
+
+    return items;
+  })();
 
   return (
     <div className={styles.detailContent}>
@@ -128,147 +218,20 @@ function DriveDetailPanel({
         </div>
       </div>
       <div className={styles.detailBody}>
-        <Accordion multiple defaultValue={['details']} className={styles.detailAccordion}>
-          <AccordionItem value="details" className={styles.detailSection}>
-            <AccordionTrigger className={styles.detailSectionTrigger}>
-              {t('table.details')}
-            </AccordionTrigger>
-            <AccordionContent className={styles.detailSectionContent}>
-              <dl className={styles.detailMeta}>
-                <div>
-                  <dt>{t('table.nodeId')}</dt>
-                  <dd>{selectedRow.node.id}</dd>
+        <section className={styles.detailMetaSection} aria-labelledby="drive-detail-meta-title">
+          <h2 id="drive-detail-meta-title">{t('table.details')}</h2>
+          <dl className={styles.detailMetaList}>
+            {detailMetaItems.map((item) => (
+              <div key={item.key} className={styles.detailMetaItem}>
+                <span className={styles.detailMetaIcon}>{item.icon}</span>
+                <div className={styles.detailMetaText}>
+                  <dt>{item.label}</dt>
+                  <dd>{item.value}</dd>
                 </div>
-                <div>
-                  <dt>{t('table.columns.size')}</dt>
-                  <dd>{selectedRow.sizeLabel ?? '—'}</dd>
-                </div>
-              </dl>
-            </AccordionContent>
-          </AccordionItem>
-
-          {permissionTarget ? (
-            <AccordionItem value="permission" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>
-                {t('table.permission')}
-              </AccordionTrigger>
-              <AccordionContent className={styles.detailSectionContent}>
-                {permissionTarget.type === 'folder' ? (
-                  <div className={styles.detailSectionActions}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onPress={() => onOpenTagAccessPermission(permissionTarget.tagId)}
-                    >
-                      <ShieldCheck size={16} aria-hidden="true" />
-                      {t('permission.accessPermission', { ns: 'resource' })}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onPress={() => onOpenTagMountPermission(permissionTarget.tagId)}
-                    >
-                      <FolderInput size={16} aria-hidden="true" />
-                      {t('permission.mountPermission', { ns: 'resource' })}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className={styles.detailSectionButton}
-                    onPress={() =>
-                      onOpenResourcePermission({
-                        resourceId: permissionTarget.resourceId,
-                        resourceType: resolveResourceKind(permissionTarget.resourceType),
-                        resourceName: selectedRow.name,
-                        fallbackTagId: permissionTarget.folderTagId,
-                      })
-                    }
-                  >
-                    <ShieldCheck size={16} aria-hidden="true" />
-                    {t('permission.resourcePermission', { ns: 'resource' })}
-                  </Button>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          ) : null}
-
-          {modifiableActionTarget ? (
-            <AccordionItem value="operations" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>
-                {t('table.operations')}
-              </AccordionTrigger>
-              <AccordionContent className={styles.detailSectionContent}>
-                <div className={styles.detailSectionActions}>
-                  {modifiableActionTarget.type !== 'link' ? (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onPress={() => onRename(modifiableActionTarget)}
-                    >
-                      <Pencil size={16} aria-hidden="true" />
-                      {t('actions.rename', { ns: 'common' })}
-                    </Button>
-                  ) : null}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onPress={() => onMoveNodes([modifiableActionTarget])}
-                  >
-                    <FolderInput size={16} aria-hidden="true" />
-                    {isTrashView ? t('move.titleToDrive') : t('table.move')}
-                  </Button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ) : null}
-
-          {isFileResource ? (
-            <AccordionItem value="open-with" className={styles.detailSection}>
-              <AccordionTrigger className={styles.detailSectionTrigger}>
-                {t('table.openWith')}
-              </AccordionTrigger>
-              <AccordionContent className={styles.detailSectionContent}>
-                <ToggleButtonGroup
-                  aria-label={t('table.openWith')}
-                  selectionMode="single"
-                  selectedKeys={new Set([selectedViewer])}
-                  onSelectionChange={(keys) => {
-                    const [key] = [...keys];
-                    if (key != null) setSelectedViewer(String(key) as ResourceViewer);
-                  }}
-                  orientation="horizontal"
-                  size="sm"
-                  fullWidth
-                  disallowEmptySelection
-                  className={styles.openWithOptions}
-                >
-                  <ToggleButton id={RESOURCE_VIEWER.PDF_PREVIEW}>
-                    {t('table.pdfPreview')}
-                  </ToggleButton>
-                  <ToggleButton id={RESOURCE_VIEWER.OFFICE}>Office</ToggleButton>
-                </ToggleButtonGroup>
-              </AccordionContent>
-            </AccordionItem>
-          ) : null}
-        </Accordion>
-      </div>
-      <div className={styles.detailActions}>
-        <Button
-          variant="primary"
-          size="sm"
-          onPress={() => onActivate(selectedRow, isFileResource ? selectedViewer : undefined)}
-        >
-          <FolderOpen size={16} aria-hidden="true" />
-          {activateLabel}
-        </Button>
-        {modifiableActionTarget ? (
-          <Button variant="danger" size="sm" onPress={() => onDelete(modifiableActionTarget)}>
-            <Trash2 size={16} aria-hidden="true" />
-            {deleteLabel}
-          </Button>
-        ) : null}
+              </div>
+            ))}
+          </dl>
+        </section>
       </div>
     </div>
   );

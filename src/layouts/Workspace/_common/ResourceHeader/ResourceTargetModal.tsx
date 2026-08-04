@@ -97,6 +97,7 @@ function ResourceTargetModal({
             groupId={scope.type === 'group' ? scope.groupId : undefined}
             selectableTypes={['root', 'folder']}
             disabled={submitting}
+            dimUnselectableNodes={false}
             isNodeSelectable={isNavigatorNodeSelectable}
             onChange={(items) => setTarget(items[0])}
           />

@@ -16,6 +16,8 @@ export interface DriveNavigatorProps {
   resourcePreviewLimit?: number;
   /** 禁用树的选择、展开和懒加载交互。 */
   disabled?: boolean;
+  /** 不可选节点是否展示为置灰禁用态。 */
+  dimUnselectableNodes?: boolean;
   disabledNodeIds?: string[];
   multiple?: boolean;
   initialSelectedIds?: string[];

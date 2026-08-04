@@ -1,4 +1,3 @@
-import { GripVertical } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import * as ResizablePrimitive from 'react-resizable-panels';
 
@@ -37,14 +36,10 @@ function SystemResizableHandle({
   return (
     <ResizablePrimitive.Separator
       data-slot="system-resizable-handle"
-      className={clsx(styles.handle, className)}
+      className={clsx(styles.handle, withHandle && styles.handleWithGrip, className)}
       {...props}
     >
-      {withHandle ? (
-        <div className={styles.handleGrip}>
-          <GripVertical className={styles.handleGripIcon} />
-        </div>
-      ) : null}
+      {withHandle ? <span className={styles.handleGrip} aria-hidden="true" /> : null}
     </ResizablePrimitive.Separator>
   );
 }

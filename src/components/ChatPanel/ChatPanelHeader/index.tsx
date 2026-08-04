@@ -1,4 +1,6 @@
 import AppIconButton from '@/components/Button/AppIconButton';
+import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
+import clsx from 'clsx';
 import { History, PanelRightClose, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
@@ -8,17 +10,24 @@ function ChatPanelHeader({
   panelTitle,
   sessionBarOpen,
   showCollapseButton,
+  reserveTitleBarEnd = false,
   onCollapsePanel,
   onNewChat,
   onToggleSessionBar,
 }: ChatPanelHeaderProps) {
   const { t } = useTranslation('chat');
+  const desktopWindow = useDesktopWindowState();
   const sessionBarLabel = sessionBarOpen
     ? t('panel.sessionList.close')
     : t('panel.sessionList.open');
+  // 窗口按钮已固定在 App 层；此处只为 +/历史 预留右上空间，避免与固定按钮重叠。
+  const titleBarInsetEnd =
+    reserveTitleBarEnd &&
+    desktopWindow.hasTitleBarInset &&
+    desktopWindow.titleBarInsetSide === 'end';
 
   return (
-    <div className={styles.header}>
+    <div className={clsx(styles.header, titleBarInsetEnd && styles.titleBarInsetEnd)}>
       <div className={styles.headerLeft}>
         {showCollapseButton ? (
           <AppIconButton

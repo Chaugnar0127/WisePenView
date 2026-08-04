@@ -12,9 +12,15 @@ interface UseResizablePanelSizeOptions {
   animate?: boolean;
   /** 缓动时长 ms，仅 animate 时生效 */
   durationMs?: number;
+  /**
+   * 尺寸写入后回调（含动画每一帧）。
+   * 经 ref 读取，不进入 resize effect 依赖，避免打断插值。
+   */
+  onSizePixels?: (sizePx: number) => void;
 }
 
-const easeInOutCubic = (t: number): number => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+/** 短促 ease-out，收起/展开更跟手 */
+const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
 const toPixelSize = (size: ResizablePanelSize): number | null =>
   typeof size === 'number' && Number.isFinite(size) ? size : null;
@@ -25,9 +31,21 @@ export function useResizablePanelSize({
   size,
   enabled = true,
   animate = false,
-  durationMs = 300,
+  durationMs = 200,
+  onSizePixels,
 }: UseResizablePanelSizeOptions) {
   const frameRef = useRef<number | null>(null);
+  const onSizePixelsRef = useRef(onSizePixels);
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：回调引用变化时更新 ref，供 resize 动画帧读取最新回调。
+   * 不可替代原因：不能把回调放进 resize effect 依赖，否则会打断插值。
+   * cleanup：无。
+   */
+  useEffect(() => {
+    onSizePixelsRef.current = onSizePixels;
+  }, [onSizePixels]);
 
   /**
    * @wisepen-manual-effect
@@ -45,9 +63,21 @@ export function useResizablePanelSize({
       }
     };
 
+    const reportSize = (sizePx: number) => {
+      onSizePixelsRef.current?.(sizePx);
+    };
+
+    const resizeTo = (next: ResizablePanelSize) => {
+      panelRef.current?.resize(next);
+      const px = toPixelSize(next) ?? panelRef.current?.getSize().inPixels;
+      if (px != null && Number.isFinite(px)) {
+        reportSize(px);
+      }
+    };
+
     const panel = panelRef.current;
     if (!panel) {
-      const retry = window.requestAnimationFrame(() => panelRef.current?.resize(size));
+      const retry = window.requestAnimationFrame(() => resizeTo(size));
       frameRef.current = retry;
       return cancelFrame;
     }
@@ -56,16 +86,15 @@ export function useResizablePanelSize({
     const currentPx = panel.getSize().inPixels;
 
     if (!animate || targetPx == null || !Number.isFinite(currentPx)) {
-      const resizePanel = () => panelRef.current?.resize(size);
-      resizePanel();
-      frameRef.current = window.requestAnimationFrame(resizePanel);
+      resizeTo(size);
+      frameRef.current = window.requestAnimationFrame(() => resizeTo(size));
       return cancelFrame;
     }
 
     const startPx = currentPx;
     const delta = targetPx - startPx;
     if (Math.abs(delta) < 0.5) {
-      panel.resize(targetPx);
+      resizeTo(targetPx);
       return cancelFrame;
     }
 
@@ -73,12 +102,12 @@ export function useResizablePanelSize({
     const tick = (now: number) => {
       if (startedAt == null) startedAt = now;
       const progress = Math.min(1, (now - startedAt) / durationMs);
-      const next = startPx + delta * easeInOutCubic(progress);
-      panelRef.current?.resize(next);
+      const next = startPx + delta * easeOutCubic(progress);
+      resizeTo(next);
       if (progress < 1) {
         frameRef.current = window.requestAnimationFrame(tick);
       } else {
-        panelRef.current?.resize(targetPx);
+        resizeTo(targetPx);
         frameRef.current = null;
       }
     };

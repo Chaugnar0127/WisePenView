@@ -8,12 +8,11 @@ import { parseErrorMessage } from '@/utils/error';
 import { IMAGE_UPLOAD_MAX_SIZE_LABEL } from '@/utils/image/uploadLimit';
 import { Button, toast, Tooltip } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { Check, TriangleAlert, X } from 'lucide-react';
+import { Camera, Check, TriangleAlert, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AccountHeaderProps } from './index.type';
 import styles from './style.module.less';
-
 function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {
   const { t } = useTranslation(['profile', 'shell', 'common']);
   const userService = useUserService();
@@ -112,61 +111,74 @@ function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {
         ? t('header.status.banned')
         : verifiedText;
 
+  const statusToneClass =
+    user?.userInfo?.status === USER_STATUS.BANNED
+      ? styles.statusBadgeBanned
+      : user?.userInfo?.status === USER_STATUS.UNVERIFIED
+        ? styles.statusBadgeUnverified
+        : styles.statusBadgeVerified;
+
   return (
     <>
-      <div className={styles.accountHeader}>
-        <div className={styles.accountHeaderLeft}>
-          <Tooltip>
-            <Tooltip.Trigger>
-              <span
-                className={styles.avatarWrap}
-                role="button"
-                tabIndex={0}
-                onClick={openAvatarModal}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openAvatarModal();
-                  }
-                }}
-              >
-                <AppAvatar aria-label={nickname} className={styles.avatar}>
-                  {user?.userInfo?.avatar && (
-                    <AppAvatar.Image alt={nickname} draggable={false} src={user.userInfo.avatar} />
-                  )}
-                  <AppAvatar.Fallback className={styles.avatarFallback}>
-                    {avatarLetter}
-                  </AppAvatar.Fallback>
-                </AppAvatar>
+      <header className={styles.accountHeader}>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <span
+              className={styles.avatarWrap}
+              role="button"
+              tabIndex={0}
+              aria-label={t('header.changeAvatar')}
+              onClick={openAvatarModal}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openAvatarModal();
+                }
+              }}
+            >
+              <AppAvatar aria-label={nickname} className={styles.avatar}>
+                {user?.userInfo?.avatar && (
+                  <AppAvatar.Image alt={nickname} draggable={false} src={user.userInfo.avatar} />
+                )}
+                <AppAvatar.Fallback className={styles.avatarFallback}>
+                  {avatarLetter}
+                </AppAvatar.Fallback>
+              </AppAvatar>
+              <span className={styles.avatarOverlay} aria-hidden="true">
+                <Camera size={20} strokeWidth={1.75} />
+                <span className={styles.avatarOverlayLabel}>{t('header.changeAvatar')}</span>
               </span>
-            </Tooltip.Trigger>
-            <Tooltip.Content>{t('header.changeAvatar')}</Tooltip.Content>
-          </Tooltip>
-          <div className={styles.accountInfo}>
-            <div className={styles.nameRow}>
-              <span className={styles.nickname}>{nickname}</span>
-              {user?.userInfo?.username != null && (
-                <span className={styles.username}>{user.userInfo.username}</span>
-              )}
-            </div>
-            {identityLabel && <span className={styles.identityTag}>{identityLabel}</span>}
-          </div>
-        </div>
-        {user?.userInfo?.status != null && (
-          <span className={styles.statusGroup}>
-            <span className={styles.statusText}>{statusText}</span>
-            <span className={styles.statusIcon} title={statusText}>
-              {user.userInfo.status === USER_STATUS.BANNED ? (
-                <X size={24} className={styles.statusIconBanned} />
-              ) : user.userInfo.status === USER_STATUS.UNVERIFIED ? (
-                <TriangleAlert size={24} className={styles.statusIconUnverified} />
-              ) : (
-                <Check size={24} className={styles.statusIconVerified} />
-              )}
             </span>
-          </span>
-        )}
-      </div>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('header.changeAvatar')}</Tooltip.Content>
+        </Tooltip>
+
+        <div className={styles.accountInfo}>
+          <h2 className={styles.nickname}>{nickname}</h2>
+          {user?.userInfo?.username != null ? (
+            <p className={styles.username}>@{user.userInfo.username}</p>
+          ) : null}
+          {(identityLabel || user?.userInfo?.status != null) && (
+            <div className={styles.tagRow}>
+              {identityLabel ? <span className={styles.identityTag}>{identityLabel}</span> : null}
+              {user?.userInfo?.status != null ? (
+                <span className={[styles.statusBadge, statusToneClass].join(' ')}>
+                  <span className={styles.statusIcon} aria-hidden="true">
+                    {user.userInfo.status === USER_STATUS.BANNED ? (
+                      <X size={14} />
+                    ) : user.userInfo.status === USER_STATUS.UNVERIFIED ? (
+                      <TriangleAlert size={14} />
+                    ) : (
+                      <Check size={14} />
+                    )}
+                  </span>
+                  {statusText}
+                </span>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </header>
 
       <AppModal
         isOpen={avatarModalOpen}

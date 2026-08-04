@@ -61,6 +61,11 @@ const enUSProfile = {
     edit: 'Edit profile',
     saveSuccess: 'Saved successfully',
     clearField: 'Clear {{field}}',
+    emptyValue: 'Not set',
+    group: {
+      identity: 'Identity',
+      academic: 'Academic',
+    },
     field: {
       nickname: { label: 'Nickname', placeholder: 'Enter nickname' },
       realName: { label: 'Full name', placeholder: 'Enter full name' },

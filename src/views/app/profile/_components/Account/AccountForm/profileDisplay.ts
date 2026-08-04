@@ -13,23 +13,36 @@ function getProfileFieldValue(
   return user.userProfile[key] ?? undefined;
 }
 
+export type ProfileFieldDisplay = {
+  value: string;
+  empty: boolean;
+};
+
 /**
- * 基本档案只读展示用文案：空值为「-」，性别/学历走枚举中文，其余 `String`。
+ * 基本档案只读展示：空值为「未填写」并标记 empty，性别/学历走枚举文案。
  */
-export function getProfileDisplayString(
+export function getProfileFieldDisplay(
   user: UserAccountProfile | null,
   key: ProfileFieldKey,
   t: TFunction<'profile'>
-): string {
+): ProfileFieldDisplay {
   const raw = getProfileFieldValue(user, key);
-  if (raw === null || raw === undefined || raw === '') return '-';
+  if (raw === null || raw === undefined || raw === '') {
+    return { value: t('form.emptyValue'), empty: true };
+  }
   if (key === 'sex') {
     const enumKey = SEX.getKey(raw as number);
-    return enumKey ? t(`enum.sex.${enumKey}`) : String(raw);
+    return {
+      value: enumKey ? t(`enum.sex.${enumKey}`) : String(raw),
+      empty: false,
+    };
   }
   if (key === 'degreeLevel') {
     const enumKey = DEGREE.getKey(raw as number);
-    return enumKey ? t(`enum.degreeLevel.${enumKey}`) : String(raw);
+    return {
+      value: enumKey ? t(`enum.degreeLevel.${enumKey}`) : String(raw),
+      empty: false,
+    };
   }
-  return String(raw);
+  return { value: String(raw), empty: false };
 }

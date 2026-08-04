@@ -61,6 +61,11 @@ const zhCNProfile = {
     edit: '编辑资料',
     saveSuccess: '保存成功',
     clearField: '清空{{field}}',
+    emptyValue: '未填写',
+    group: {
+      identity: '身份信息',
+      academic: '学业与任职',
+    },
     field: {
       nickname: { label: '昵称', placeholder: '请输入昵称' },
       realName: { label: '真实姓名', placeholder: '请输入真实姓名' },

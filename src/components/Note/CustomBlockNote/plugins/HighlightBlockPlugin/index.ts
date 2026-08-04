@@ -60,7 +60,20 @@ export function createHighlightBlockPlugin(
   page-break-inside: avoid;
 }
 .note-print-body [data-highlight-block-controls] button {
-  display: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: var(--control-height-sm, 28px) !important;
+  height: var(--control-height-sm, 28px) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+.note-print-body [data-highlight-block-icon] {
+  display: inline-flex !important;
 }`,
       ],
     },

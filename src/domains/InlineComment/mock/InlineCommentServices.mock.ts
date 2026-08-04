@@ -12,12 +12,13 @@ import type {
   UpdateInlineCommentItemRequest,
 } from '@/domains/InlineComment';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+import { createUuid } from '@/utils/random/createUuid';
 
 const threadsById = new Map<string, InlineCommentThread>();
 const currentUser = { id: 'mock-current-user', name: '当前用户' };
 
 function createId(prefix: string): string {
-  return `${prefix}-${crypto.randomUUID()}`;
+  return `${prefix}-${createUuid()}`;
 }
 
 function getThread(inlineCommentId: string): InlineCommentThread {

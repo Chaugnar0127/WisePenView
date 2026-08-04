@@ -6,6 +6,7 @@ import {
   type CourseMeeting,
   type CourseWeekPattern,
 } from '@/domains/Course';
+import { createUuid } from '@/utils/random/createUuid';
 
 export interface CourseAssessmentEditorItem extends CourseAssessmentItem {
   editorId: string;
@@ -46,7 +47,7 @@ export const COURSE_EDITOR_SECTION_IDS = [
 export type CourseEditorSectionId = (typeof COURSE_EDITOR_SECTION_IDS)[number];
 
 export const createCourseMeeting = (): CourseMeeting => ({
-  meetingId: crypto.randomUUID(),
+  meetingId: createUuid(),
   weekPattern: COURSE_WEEK_PATTERN.EVERY,
   weekday: '周一',
   startPeriod: 1,
@@ -58,7 +59,7 @@ export const createAssessmentEditorItem = (
   item: CourseAssessmentItem
 ): CourseAssessmentEditorItem => ({
   ...item,
-  editorId: crypto.randomUUID(),
+  editorId: createUuid(),
 });
 
 export const getCourseAssessmentTotal = (items: CourseAssessmentEditorItem[]) =>

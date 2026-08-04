@@ -45,6 +45,24 @@ const mermaidBlockPlugin = {
         .note-print-body .bn-block-content[data-content-type='mermaid'] [data-mermaid-toolbar-actions] {
           display: none !important;
         }
+        .note-print-body .bn-block-content[data-content-type='mermaid'] [data-mermaid-block-body] {
+          display: block !important;
+          background: transparent !important;
+        }
+        .note-print-body .bn-block-content[data-content-type='mermaid'] [data-mermaid-pane='source'] {
+          display: none !important;
+        }
+        .note-print-body .bn-block-content[data-content-type='mermaid'] [data-mermaid-pane='graph'] {
+          display: flex !important;
+          min-height: 0 !important;
+          max-height: none !important;
+        }
+        .note-print-body .bn-block-content[data-content-type='mermaid'] [data-mermaid-pane-header] {
+          display: none !important;
+        }
+        .note-print-body .bn-block-content[data-content-type='mermaid'] [data-mermaid-pane='graph'] > div {
+          overflow: visible !important;
+        }
       `,
     ],
   },

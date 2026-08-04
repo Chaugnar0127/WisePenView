@@ -13,7 +13,7 @@ interface PrintNotePdfOptions {
 }
 
 const PRINT_IFRAME_STYLE =
-  'position:fixed;width:0;height:0;right:0;bottom:0;border:0;opacity:0;pointer-events:none;visibility:hidden;';
+  'position:fixed;width:100vw;height:100vh;left:-10000px;top:0;border:0;opacity:0;pointer-events:none;';
 
 const PRINT_IFRAME_CLEANUP_MS = 120_000;
 const STYLESHEET_LOAD_TIMEOUT_MS = 5_000;
@@ -29,6 +29,10 @@ const PRINT_BASE_CSS = `
   body {
     margin: 0;
     padding: 0;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
     background: #fff;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -57,12 +61,17 @@ const PRINT_BASE_CSS = `
     min-width: 0 !important;
     min-height: 0 !important;
     height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
   .note-print-content {
     margin: 0;
   }
   .note-print-body {
     color: inherit;
+    width: 100%;
+    min-height: 0;
+    overflow: visible !important;
   }
   .note-print-body img,
   .note-print-title img {
@@ -70,7 +79,11 @@ const PRINT_BASE_CSS = `
     height: auto !important;
   }
   .note-print-body .bn-editor {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     padding-bottom: 0 !important;
+    overflow: visible !important;
   }
   .note-print-body .bodyBlockNoteView {
     padding-right: 0 !important;

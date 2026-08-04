@@ -10,7 +10,7 @@ import { Clock3, FileType2, GitBranch, HardDrive, ShieldCheck, UserRound } from 
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isDriveActionTarget } from '../../../common/driveComponentModel';
-import { resolveTagPermissionPresetKey } from '../../../common/tagPermissionPreset';
+import { resolveTagPermissionActionPresetKey } from '../../../common/tagPermissionPreset';
 import type { DriveTableRow } from '../../index.type';
 import styles from './style.module.less';
 
@@ -139,26 +139,18 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
     return key ? t(`permission.actions.${key}`, { ns: 'resource' }) : String(action);
   };
   const formatResourceDefaultPermission = (
-    scope?: AccessControlScope,
+    _scope?: AccessControlScope,
     actions?: ResourceAction[] | null
   ): ReactNode => {
-    const presetKey = resolveTagPermissionPresetKey({
-      taggedResourceAclGrantScope: scope,
-      grantedActions: actions ?? undefined,
-    });
+    const presetKey = resolveTagPermissionActionPresetKey(actions ?? []);
     const presetLabel = t(`permission.tag.preset.${presetKey}.label`, { ns: 'resource' });
-    const shouldShowIncludedActions = presetKey === 'custom' || Boolean(actions?.length);
-    const includedActions = shouldShowIncludedActions
-      ? t('table.meta.includedActions', {
-          actions: formatActionList(actions, getActionLabel),
-        })
-      : '';
+    const includedActions = t('table.meta.includedActions', {
+      actions: formatActionList(actions, getActionLabel),
+    });
     return (
       <span className={styles.detailMetaValueStack}>
         <span>{presetLabel}</span>
-        {includedActions ? (
-          <span className={styles.detailMetaSecondary}>{includedActions}</span>
-        ) : null}
+        <span className={styles.detailMetaSecondary}>{includedActions}</span>
       </span>
     );
   };
@@ -230,7 +222,7 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
         key: 'currentPermission',
         label: t('table.meta.currentPermission'),
         icon: <ShieldCheck size={18} aria-hidden="true" />,
-        value: formatActionList(detailResourceInfo.currentActions, getActionLabel),
+        value: formatResourceDefaultPermission(undefined, detailResourceInfo.currentActions),
       });
     }
 

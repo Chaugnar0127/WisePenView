@@ -187,6 +187,15 @@ const isSameActionSet = (
   return [...leftSet].every((action) => rightSet.has(action));
 };
 
+export const resolveTagPermissionActionPresetKey = (
+  actions: TagResourceAction[]
+): Exclude<TagPermissionPresetKey, 'custom'> | 'custom' => {
+  const matchedPreset = TAG_PERMISSION_ACTION_PRESET_OPTIONS.find((preset) =>
+    isSameActionSet(preset.values.grantedActions, actions)
+  );
+  return matchedPreset?.key ?? 'custom';
+};
+
 const isPresetValuesMatched = (
   presetValues: TagPermissionPresetValues,
   values: Partial<TagPermissionPresetValues>

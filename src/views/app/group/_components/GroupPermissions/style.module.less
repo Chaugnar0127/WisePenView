@@ -24,10 +24,9 @@
 
 .advancedAccessGrid {
   display: grid;
-  flex: 1;
   min-width: 0;
   min-height: 0;
-  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
   gap: var(--space-md);
 }
 
@@ -40,13 +39,10 @@
 .personnelCard {
   display: flex;
   min-width: 0;
-  min-height: 420px;
+  min-height: 0;
   flex-direction: column;
   gap: var(--space-sm);
-  padding: var(--space-md);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  overflow: hidden;
 }
 
 .personnelHeader {
@@ -60,9 +56,9 @@
   min-width: 0;
   overflow: hidden;
   color: var(--foreground);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-sm);
+  line-height: var(--line-height-md);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -89,15 +85,21 @@
 .memberState {
   display: flex;
   flex: 1;
-  min-height: 180px;
+  min-height: 120px;
   align-items: center;
   justify-content: center;
-  border: 1px dashed var(--border-light);
-  border-radius: var(--radius-md);
-  background: var(--surface-secondary);
   color: var(--muted);
   font-size: var(--font-size-sm);
   line-height: var(--line-height-sm);
+}
+
+.permissionCard {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--space-md);
+  overflow: hidden;
 }
 
 @media (max-width: 860px) {

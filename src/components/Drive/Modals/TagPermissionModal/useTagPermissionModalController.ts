@@ -2,11 +2,10 @@ import { useGroupService, useTagService } from '@/domains';
 import type { GroupMember } from '@/domains/Group';
 import type { TagTreeNode } from '@/domains/Tag';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { useState, type Key } from 'react';
-import { toast } from '@heroui/react';
-import type { Selection } from '@heroui/react';
 import type { TagPermissionModalProps } from './index.type';
 import {
   buildFormFromTag,
@@ -15,10 +14,9 @@ import {
   DEFAULT_FORM_VALUES,
   GROUP_MEMBER_PAGE_SIZE,
   MAX_GROUP_MEMBER_PAGE_COUNT,
-  mergeVisibleSelection,
   normalizeFormForMode,
   normalizeSpecifiedUsersByScope,
-  type MemberOption,
+  selectionToUserIds,
   type PersonnelPolicyTarget,
   type TagPermissionFormValues,
   type TagPolicyModalMode,
@@ -46,8 +44,6 @@ export const useTagPermissionModalController = ({
     null
   );
   const [tagRefreshSeed, setTagRefreshSeed] = useState(0);
-  const [accessMemberSearchValue, setAccessMemberSearchValue] = useState('');
-  const [mountMemberSearchValue, setMountMemberSearchValue] = useState('');
   const showTagTree = !initialTagId;
   const selectedUserIds = Array.from(
     new Set([
@@ -117,8 +113,6 @@ export const useTagPermissionModalController = ({
       onBefore: () => {
         setSelectedTag(null);
         resetPermissionForm();
-        setAccessMemberSearchValue('');
-        setMountMemberSearchValue('');
         setTagRefreshSeed((prev) => prev + 1);
         if (!initialTagId) return;
         const cachedTag = resolveCachedTag(initialTagId);
@@ -196,8 +190,6 @@ export const useTagPermissionModalController = ({
     if (nextOpen) return;
     if (saving) return;
     setSelectedTag(null);
-    setAccessMemberSearchValue('');
-    setMountMemberSearchValue('');
     resetPermissionForm();
     onOpenChange(false);
   };
@@ -228,11 +220,9 @@ export const useTagPermissionModalController = ({
 
   const handlePersonnelUsersChange = (
     target: PersonnelPolicyTarget,
-    keys: Selection,
-    visibleMemberOptions: MemberOption[],
-    currentUserIds: string[]
+    keys: Key[] | Set<Key> | Key | 'all' | null
   ) => {
-    const userIds = mergeVisibleSelection(keys, visibleMemberOptions, currentUserIds);
+    const userIds = selectionToUserIds(keys, memberOptions);
     setPermissionForm((prev) =>
       target === 'resourceGrant'
         ? { ...prev, taggedResourceAclGrantSpecifiedUsers: userIds }
@@ -240,31 +230,20 @@ export const useTagPermissionModalController = ({
     );
   };
 
-  const handlePersonnelSearchChange = (target: PersonnelPolicyTarget, value: string) => {
-    if (target === 'resourceGrant') {
-      setAccessMemberSearchValue(value);
-      return;
-    }
-    setMountMemberSearchValue(value);
-  };
-
   const setGrantedActions = (actions: TagPermissionFormValues['grantedActions']) => {
     setPermissionForm((prev) => ({ ...prev, grantedActions: actions }));
   };
 
   return {
-    accessMemberSearchValue,
     groupMemberError,
     groupMemberLoading,
     handleOpenChange,
-    handlePersonnelSearchChange,
     handlePersonnelScopeChange,
     handlePersonnelUsersChange,
     handleSubmit,
     handleTagChange,
     initialTagLoading,
     memberOptions,
-    mountMemberSearchValue,
     permissionForm,
     saving,
     selectedTag,

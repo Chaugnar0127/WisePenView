@@ -5,8 +5,12 @@ import {
   buildResourcePermissionActionOptions,
   filterResourcePermissionActionsByOptions,
   getResourcePermissionActionLabel,
+  getResourcePermissionPresetActions,
   resolveResourcePermissionPolicy,
+  resolveResourcePermissionPresetKey,
   resolveTagInheritedResourceActions,
+  RESOURCE_PERMISSION_PRESETS,
+  type ResourcePermissionPresetKey,
 } from '@/components/Drive/common/resourcePermissionPolicy';
 import { Spin } from '@/components/Feedback';
 import AppModal from '@/components/Overlay/AppModal';
@@ -19,7 +23,7 @@ import {
   type ResourcePermissionOverview,
 } from '@/domains/Resource';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
-import { Button, ListBox, toast, type Selection } from '@heroui/react';
+import { Button, ListBox, Tabs, toast, type Selection } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -49,6 +53,22 @@ const readSelectedActionsFromKeys = (
     actionOptions.filter((option) => keys.has(option.key)).map((option) => option.action),
     actionOptions
   );
+
+const resolveSelectedPresetKey = (
+  selectedActions: ResourceAction[],
+  policy: ResourcePermissionModalData['policy']
+): ResourcePermissionPresetKey => {
+  if (
+    areResourcePermissionActionsEqual(
+      selectedActions,
+      policy.inheritedActions,
+      policy.supportedActions
+    )
+  ) {
+    return 'inherit';
+  }
+  return resolveResourcePermissionPresetKey(selectedActions, policy.supportedActions);
+};
 
 function ResourcePermissionModal({
   isOpen,
@@ -129,6 +149,7 @@ function ResourcePermissionModal({
     label: getResourcePermissionActionLabel(option.action),
   }));
   const selectedActionKeys = buildResourcePermissionActionKeySet(selectedActions, actionOptions);
+  const selectedPresetKey = policy ? resolveSelectedPresetKey(selectedActions, policy) : 'inherit';
   const draftInconsistent = Boolean(
     policy &&
     !areResourcePermissionActionsEqual(
@@ -205,6 +226,17 @@ function ResourcePermissionModal({
     );
   };
 
+  const handlePresetChange = (key: ResourcePermissionPresetKey) => {
+    if (!policy || key === 'custom') return;
+    if (key === 'inherit') {
+      setSelectedActions(policy.inheritedActions);
+      return;
+    }
+    const presetActions = getResourcePermissionPresetActions(key, policy.supportedActions);
+    if (!presetActions) return;
+    setSelectedActions(presetActions);
+  };
+
   return (
     <AppModal
       isOpen={isOpen}
@@ -237,6 +269,32 @@ function ResourcePermissionModal({
         <div className={styles.state}>{parseErrorMessage(error)}</div>
       ) : policy ? (
         <div className={styles.content}>
+          <div className={styles.presetBar}>
+            <span className={styles.presetLabel}>{t('permission.editor.basedOnPreset')}</span>
+            <Tabs
+              variant="secondary"
+              aria-label={t('permission.editor.basedOnPreset')}
+              className={styles.presetTabs}
+              selectedKey={selectedPresetKey}
+              onSelectionChange={(key) =>
+                handlePresetChange(String(key) as ResourcePermissionPresetKey)
+              }
+            >
+              <Tabs.ListContainer className={styles.presetTabsListContainer}>
+                <Tabs.List
+                  className={styles.presetTabsList}
+                  aria-label={t('permission.editor.basedOnPreset')}
+                >
+                  {RESOURCE_PERMISSION_PRESETS.map((preset) => (
+                    <Tabs.Tab key={preset.key} id={preset.key} className={styles.presetTab}>
+                      {preset.label}
+                      <Tabs.Indicator />
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
+              </Tabs.ListContainer>
+            </Tabs>
+          </div>
           <div className={draftInconsistent ? styles.warning : styles.inheritHint}>
             {draftInconsistent
               ? t('permission.editor.inconsistent')

@@ -1,4 +1,5 @@
 import AppAvatar from '@/components/Avatar';
+import AppIconButton from '@/components/Button/AppIconButton';
 import {
   TAG_PERMISSION_ACTION_PRESET_OPTIONS,
   type TagPermissionResourceStrategy,
@@ -6,14 +7,25 @@ import {
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import TagPermissionActionEditor from '@/components/Drive/PermissionActionEditor';
 import { Empty, Spin } from '@/components/Feedback';
-import { Input } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, ListBox, Tabs, TextField } from '@heroui/react';
+import {
+  Autocomplete,
+  Button,
+  EmptyState,
+  ListBox,
+  SearchField,
+  Tabs,
+  Tag,
+  TagGroup,
+  useFilter,
+} from '@heroui/react';
+import { X } from 'lucide-react';
+import type { Key, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TagMountPermissionModalProps, TagPermissionModalProps } from './index.type';
+import styles from './style.module.less';
 import {
-  filterMemberOptions,
   getDisplayInitial,
   isSpecifiedUserScope,
   PERSONNEL_SCOPE_OPTIONS,
@@ -21,7 +33,6 @@ import {
   type TagPolicyModalMode,
 } from './tagPermissionModalModel';
 import { useTagPermissionModalController } from './useTagPermissionModalController';
-import styles from './style.module.less';
 
 interface TagPolicyModalBaseProps extends TagPermissionModalProps {
   mode: TagPolicyModalMode;
@@ -36,19 +47,17 @@ const TagPolicyModalBase = ({
   onSuccess,
 }: TagPolicyModalBaseProps) => {
   const { t } = useTranslation(['resource', 'common']);
+  const { contains } = useFilter({ sensitivity: 'base' });
   const {
-    accessMemberSearchValue,
     groupMemberError,
     groupMemberLoading,
     handleOpenChange,
-    handlePersonnelSearchChange,
     handlePersonnelScopeChange,
     handlePersonnelUsersChange,
     handleSubmit,
     handleTagChange,
     initialTagLoading,
     memberOptions,
-    mountMemberSearchValue,
     permissionForm,
     saving,
     selectedTag,
@@ -65,7 +74,7 @@ const TagPolicyModalBase = ({
     t,
   });
 
-  const renderMemberList = (policy: PersonnelPolicyConfig) => {
+  const renderMemberPicker = (policy: PersonnelPolicyConfig) => {
     if (groupMemberLoading) {
       return (
         <div className={styles.memberState}>
@@ -86,51 +95,149 @@ const TagPolicyModalBase = ({
       );
     }
 
-    const visibleMemberOptions = filterMemberOptions(memberOptions, policy.searchValue);
-    if (visibleMemberOptions.length === 0) {
+    const selectedMembers = policy.specifiedUsers
+      .map((userId) => memberOptions.find((member) => member.userId === userId))
+      .filter((member) => member != null);
+
+    const renderSelectedMembers = (): ReactNode => {
+      if (selectedMembers.length === 0) {
+        return (
+          <div className={styles.selectedMemberEmpty}>
+            <Empty description={t('permission.tag.noSelectedMembers')} />
+          </div>
+        );
+      }
+
       return (
-        <div className={styles.memberState}>
-          <Empty description={t('permission.tag.noMatchingMembers')} />
-        </div>
-      );
-    }
-
-    const visibleMemberIds = new Set(visibleMemberOptions.map((member) => member.userId));
-    const visibleSelectedUserIds = policy.specifiedUsers.filter((userId) =>
-      visibleMemberIds.has(userId)
-    );
-
-    return (
-      <ListBox
-        aria-label={t('permission.tag.memberListAria', { title: policy.title })}
-        selectionMode="multiple"
-        selectedKeys={new Set(visibleSelectedUserIds)}
-        onSelectionChange={(keys) =>
-          handlePersonnelUsersChange(
-            policy.target,
-            keys,
-            visibleMemberOptions,
-            policy.specifiedUsers
-          )
-        }
-        className={styles.memberList}
-      >
-        {visibleMemberOptions.map((member) => (
-          <ListBox.Item key={member.userId} id={member.userId} textValue={member.name}>
-            <span className={styles.memberItem}>
-              <AppAvatar aria-label={member.name} className={styles.memberAvatar}>
+        <div className={styles.selectedMemberList}>
+          {selectedMembers.map((member) => (
+            <div key={member.userId} className={styles.selectedMemberItem}>
+              <AppAvatar aria-label={member.name} className={styles.selectedMemberAvatar}>
                 {member.avatar ? <AppAvatar.Image alt={member.name} src={member.avatar} /> : null}
                 <AppAvatar.Fallback>{getDisplayInitial(member.name)}</AppAvatar.Fallback>
               </AppAvatar>
-              <span className={styles.memberMeta}>
-                <span className={styles.memberName}>{member.name}</span>
-                <span className={styles.memberDescription}>{member.description}</span>
-              </span>
-            </span>
-            <ListBox.ItemIndicator />
-          </ListBox.Item>
-        ))}
-      </ListBox>
+              <div className={styles.selectedMemberMeta}>
+                <span className={styles.selectedMemberName}>{member.name}</span>
+                <span className={styles.selectedMemberDescription}>{member.description}</span>
+              </div>
+              <AppIconButton
+                icon={<X size={14} aria-hidden="true" />}
+                label={t('permission.tag.removeSelectedMember', { name: member.name })}
+                size="sm"
+                variant="ghost"
+                onPress={() =>
+                  handlePersonnelUsersChange(
+                    policy.target,
+                    policy.specifiedUsers.filter((userId) => userId !== member.userId)
+                  )
+                }
+              />
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    const handleRemoveTags = (keys: Set<Key>) => {
+      const removedUserIds = new Set([...keys].map(String));
+      handlePersonnelUsersChange(
+        policy.target,
+        policy.specifiedUsers.filter((userId) => !removedUserIds.has(userId))
+      );
+    };
+
+    return (
+      <>
+        <Autocomplete
+          className={styles.memberPicker}
+          placeholder={t('permission.tag.selectPlaceholder')}
+          selectionMode="multiple"
+          value={policy.specifiedUsers}
+          onChange={(keys) => handlePersonnelUsersChange(policy.target, keys)}
+        >
+          <Autocomplete.Trigger className={styles.memberPickerTrigger}>
+            <Autocomplete.Value>
+              {({ defaultChildren, isPlaceholder }) => {
+                if (isPlaceholder || selectedMembers.length === 0) {
+                  return defaultChildren;
+                }
+
+                return (
+                  <TagGroup size="sm" onRemove={handleRemoveTags}>
+                    <TagGroup.List className={styles.selectedTags}>
+                      {selectedMembers.map((member) => (
+                        <Tag key={member.userId} id={member.userId} className={styles.selectedTag}>
+                          <AppAvatar aria-label={member.name} className={styles.selectedTagAvatar}>
+                            {member.avatar ? (
+                              <AppAvatar.Image alt={member.name} src={member.avatar} />
+                            ) : null}
+                            <AppAvatar.Fallback>
+                              {getDisplayInitial(member.name)}
+                            </AppAvatar.Fallback>
+                          </AppAvatar>
+                          <span className={styles.selectedTagName}>{member.name}</span>
+                        </Tag>
+                      ))}
+                    </TagGroup.List>
+                  </TagGroup>
+                );
+              }}
+            </Autocomplete.Value>
+            <Autocomplete.ClearButton />
+            <Autocomplete.Indicator />
+          </Autocomplete.Trigger>
+          <Autocomplete.Popover className={styles.memberPickerPopover}>
+            <Autocomplete.Filter filter={contains}>
+              <SearchField autoFocus name={`${policy.target}MemberSearch`} variant="secondary">
+                <SearchField.Group>
+                  <SearchField.SearchIcon />
+                  <SearchField.Input placeholder={t('permission.tag.searchPlaceholder')} />
+                  <SearchField.ClearButton />
+                </SearchField.Group>
+              </SearchField>
+              <ListBox
+                className={styles.memberList}
+                aria-label={t('permission.tag.memberListAria', { title: policy.title })}
+                renderEmptyState={() => (
+                  <EmptyState>{t('permission.tag.noMatchingMembers')}</EmptyState>
+                )}
+              >
+                {memberOptions.map((member) => (
+                  <ListBox.Item
+                    key={member.userId}
+                    id={member.userId}
+                    textValue={`${member.name} ${member.description} ${member.userId}`}
+                    className={styles.memberListItem}
+                  >
+                    <span className={styles.memberItem}>
+                      <AppAvatar aria-label={member.name} className={styles.memberAvatar}>
+                        {member.avatar ? (
+                          <AppAvatar.Image alt={member.name} src={member.avatar} />
+                        ) : null}
+                        <AppAvatar.Fallback>{getDisplayInitial(member.name)}</AppAvatar.Fallback>
+                      </AppAvatar>
+                      <span className={styles.memberMeta}>
+                        <span className={styles.memberName}>{member.name}</span>
+                        <span className={styles.memberDescription}>{member.description}</span>
+                      </span>
+                    </span>
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Autocomplete.Filter>
+          </Autocomplete.Popover>
+        </Autocomplete>
+        <div className={styles.selectedMemberPanel}>
+          <div className={styles.selectedMemberHeader}>
+            <div className={styles.selectedMemberTitle}>{t('permission.tag.selectedMembers')}</div>
+            <div className={styles.personnelCount}>
+              {t('permission.tag.selectedCount', { count: selectedMembers.length })}
+            </div>
+          </div>
+          {renderSelectedMembers()}
+        </div>
+      </>
     );
   };
 
@@ -171,19 +278,7 @@ const TagPolicyModalBase = ({
           </Tabs.ListContainer>
         </Tabs>
         {shouldShowMemberPicker ? (
-          <>
-            <TextField
-              aria-label={t('permission.tag.searchAria', { title: policy.title })}
-              value={policy.searchValue}
-              onChange={(value) => handlePersonnelSearchChange(policy.target, value)}
-            >
-              <Input
-                placeholder={t('permission.tag.searchPlaceholder')}
-                className={styles.memberSearchInput}
-              />
-            </TextField>
-            {renderMemberList(policy)}
-          </>
+          renderMemberPicker(policy)
         ) : (
           <div className={styles.memberState}>{t('permission.tag.noListNeeded')}</div>
         )}
@@ -221,7 +316,6 @@ const TagPolicyModalBase = ({
       title: t('permission.tag.accessList'),
       scope: permissionForm.taggedResourceAclGrantScope,
       specifiedUsers: permissionForm.taggedResourceAclGrantSpecifiedUsers,
-      searchValue: accessMemberSearchValue,
     };
 
     return (
@@ -238,7 +332,6 @@ const TagPolicyModalBase = ({
       title: t('permission.tag.mountList'),
       scope: permissionForm.tagMountPermissionScope,
       specifiedUsers: permissionForm.tagMountSpecifiedUsers,
-      searchValue: mountMemberSearchValue,
     };
 
     return <div className={styles.advancedMountGrid}>{renderPersonnelPolicy(mountPolicy)}</div>;

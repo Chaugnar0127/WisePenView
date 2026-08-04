@@ -8,12 +8,12 @@ import {
   type TagTreeNode,
 } from '@/domains/Tag';
 import type { TFunction } from 'i18next';
+import type { Key } from 'react';
 import {
   resolveDriveScope,
   toDriveSelectionItem,
   type DriveSelectionItem,
 } from '../../common/driveComponentModel';
-import type { Selection } from '@heroui/react';
 
 export type TagPolicyModalMode = 'access' | 'mount';
 export type PersonnelPolicyTarget = 'resourceGrant' | 'tagMount';
@@ -31,7 +31,6 @@ export interface PersonnelPolicyConfig {
   title: string;
   scope: AccessControlScope;
   specifiedUsers: string[];
-  searchValue: string;
 }
 
 export interface MemberOption {
@@ -66,12 +65,10 @@ export const normalizeSpecifiedUsersByScope = (
   userIds: string[]
 ): string[] => (isSpecifiedUserScope(scope) ? userIds : []);
 
-export const getDisplayInitial = (name: string): string => name.trim().charAt(0).toUpperCase() || '?';
+export const getDisplayInitial = (name: string): string =>
+  name.trim().charAt(0).toUpperCase() || '?';
 
-export const getMemberDisplayName = (
-  member: GroupMember,
-  t: TFunction<'resource'>
-): string =>
+export const getMemberDisplayName = (member: GroupMember, t: TFunction<'resource'>): string =>
   member.realname?.trim() ||
   member.nickname?.trim() ||
   t('permission.tag.memberFallback', { userId: member.userId });
@@ -107,35 +104,14 @@ export const buildMemberOptions = (
 };
 
 export const selectionToUserIds = (
-  keys: Selection,
+  keys: Key[] | Set<Key> | Key | 'all' | null,
   memberOptions: MemberOption[]
 ): string[] => {
   if (keys === 'all') return memberOptions.map((member) => member.userId);
-  return [...keys].map((key) => String(key));
-};
-
-export const mergeVisibleSelection = (
-  keys: Selection,
-  visibleMemberOptions: MemberOption[],
-  currentUserIds: string[]
-): string[] => {
-  const visibleMemberIds = new Set(visibleMemberOptions.map((member) => member.userId));
-  const hiddenSelectedUserIds = currentUserIds.filter((userId) => !visibleMemberIds.has(userId));
-  return Array.from(
-    new Set([...hiddenSelectedUserIds, ...selectionToUserIds(keys, visibleMemberOptions)])
-  );
-};
-
-export const filterMemberOptions = (
-  members: MemberOption[],
-  keyword: string
-): MemberOption[] => {
-  const normalizedKeyword = keyword.trim().toLowerCase();
-  if (!normalizedKeyword) return members;
-  return members.filter((member) => {
-    const searchableText = `${member.name} ${member.description} ${member.userId}`.toLowerCase();
-    return searchableText.includes(normalizedKeyword);
-  });
+  if (Array.isArray(keys)) return keys.map(String);
+  if (keys instanceof Set) return [...keys].map(String);
+  if (keys == null) return [];
+  return [String(keys)];
 };
 
 export const normalizeFormForMode = (
@@ -162,10 +138,7 @@ export const normalizeFormForMode = (
   };
 };
 
-export const buildSelectionFromTag = (
-  tag: TagTreeNode,
-  groupId?: string
-): DriveSelectionItem => {
+export const buildSelectionFromTag = (tag: TagTreeNode, groupId?: string): DriveSelectionItem => {
   const scope = resolveDriveScope(groupId ? { type: 'group', groupId } : undefined).scope;
   const node = mapTagToFolderNode(tag, null, scope);
   const selection = toDriveSelectionItem(node);

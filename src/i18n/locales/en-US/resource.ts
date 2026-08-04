@@ -252,6 +252,7 @@ const enUSResource = {
     editor: {
       title: 'Resource permissions',
       loading: 'Loading resource permissions',
+      basedOnPreset: 'Based on preset',
       inconsistent:
         'These permissions differ from the tag. Saving applies them to this resource only.',
       inherited: 'These permissions match the tag and will continue to inherit its policy.',
@@ -328,7 +329,11 @@ const enUSResource = {
       selectedCount: '{{count}} selected',
       rangeAria: '{{title}} range',
       searchAria: 'Search members for {{title}}',
+      selectPlaceholder: 'Select members',
       searchPlaceholder: 'Search members',
+      selectedMembers: 'Selected members',
+      noSelectedMembers: 'No members selected',
+      removeSelectedMember: 'Remove {{name}}',
       noListNeeded: 'No member list is needed for this policy',
       basedOnPreset: 'Based on preset',
       currentPreset: 'Current preset: {{preset}}',

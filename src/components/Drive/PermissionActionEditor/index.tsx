@@ -3,6 +3,7 @@ import {
   TAG_PERMISSION_ACTION_PRESET_OPTIONS,
   TAG_PERMISSION_ACTION_ROWS,
   TAG_PERMISSION_RESOURCE_STRATEGIES,
+  resolveTagPermissionActionPresetKey,
   type TagPermissionResourceStrategy,
 } from '@/components/Drive/common/tagPermissionPreset';
 import { Checkbox } from '@/components/Input';
@@ -41,20 +42,6 @@ interface TagPermissionActionEditorProps {
   onActionsChange: (actions: TagResourceAction[]) => void;
 }
 
-function isSameActionSet(left: TagResourceAction[], right: TagResourceAction[]): boolean {
-  const leftSet = new Set(normalizeResourceActions(left));
-  const rightSet = new Set(normalizeResourceActions(right));
-  if (leftSet.size !== rightSet.size) return false;
-  return [...leftSet].every((action) => rightSet.has(action));
-}
-
-function resolveActionPresetKey(actions: TagResourceAction[]): ActionPresetKey | 'custom' {
-  const matchedPreset = TAG_PERMISSION_ACTION_PRESET_OPTIONS.find((preset) =>
-    isSameActionSet(preset.values.grantedActions, actions)
-  );
-  return matchedPreset?.key ?? 'custom';
-}
-
 function TagPermissionActionEditor({
   ariaLabel,
   actions,
@@ -62,7 +49,7 @@ function TagPermissionActionEditor({
   labels,
   onActionsChange,
 }: TagPermissionActionEditorProps) {
-  const selectedPresetKey = resolveActionPresetKey(actions);
+  const selectedPresetKey = resolveTagPermissionActionPresetKey(actions);
 
   const handlePresetChange = (presetKey: ActionPresetKey) => {
     const preset = TAG_PERMISSION_ACTION_PRESET_OPTIONS.find((item) => item.key === presetKey);

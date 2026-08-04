@@ -191,6 +191,7 @@ const enUSDrive = {
       name: 'Name',
       size: 'Size',
       type: 'Type',
+      creator: 'Created by',
       actions: 'Actions',
     },
     dragSelected: '{{count}} items selected',

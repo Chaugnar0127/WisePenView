@@ -1,0 +1,35 @@
+.banner {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-sm, 12px);
+  border: 1px solid var(--border-light, var(--border));
+  border-radius: var(--radius-lg, 8px);
+  color: var(--foreground);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.banner :global([data-slot='alert-indicator']) {
+  align-self: center;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.content :global([data-slot='alert-title']),
+.content :global([data-slot='alert-description']) {
+  margin: 0;
+  line-height: var(--line-height-sm, 20px);
+}
+
+.action {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}

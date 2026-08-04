@@ -40,6 +40,8 @@ interface FolderNode extends DriveNodeBase {
   type: 'folder';
   tagId: string;
   name: string;
+  /** 标签树返回的文件夹创建者标识。 */
+  tagCreator?: string;
   /** 系统目录由 Drive 渲染特殊名称，并禁止前端重命名、移动或删除。 */
   systemType?: DriveSystemFolderType;
   description?: string;

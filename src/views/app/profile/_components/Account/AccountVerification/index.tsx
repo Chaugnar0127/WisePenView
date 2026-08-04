@@ -1,6 +1,7 @@
+import AppBanner from '@/components/Overlay/AppBanner';
 import AppModal from '@/components/Overlay/AppModal';
 import { USER_STATUS } from '@/domains/User';
-import { Alert, Button } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -82,14 +83,12 @@ function AccountVerification({
           </>
         }
       >
-        <Alert className={styles.verifySharedInfo} status="accent">
-          <Alert.Indicator>
-            <Info size={18} />
-          </Alert.Indicator>
-          <Alert.Content>
-            <Alert.Description>{t('profile:verification.description')}</Alert.Description>
-          </Alert.Content>
-        </Alert>
+        <AppBanner
+          className={styles.verifySharedInfo}
+          status="accent"
+          icon={<Info size={18} />}
+          description={t('profile:verification.description')}
+        />
         <AccountVerificationForm
           formId="account-verification-form"
           verifyMode={verification.verifyMode}

@@ -7,11 +7,11 @@ import {
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import TagPermissionActionEditor from '@/components/Drive/PermissionActionEditor';
 import { Empty, Spin } from '@/components/Feedback';
+import AppBanner from '@/components/Overlay/AppBanner';
 import AppModal from '@/components/Overlay/AppModal';
 import { ACCESS_CONTROL_SCOPE } from '@/domains/Tag';
 import { parseErrorMessage } from '@/utils/error';
 import {
-  Alert,
   Autocomplete,
   Button,
   EmptyState,
@@ -286,12 +286,7 @@ const TagPolicyModalBase = ({
           </Tabs.ListContainer>
         </Tabs>
         {scopeHint ? (
-          <Alert status="accent" className={styles.scopeHintBanner}>
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Description>{scopeHint}</Alert.Description>
-            </Alert.Content>
-          </Alert>
+          <AppBanner status="accent" className={styles.scopeHintBanner} description={scopeHint} />
         ) : null}
         {shouldShowMemberPicker ? (
           renderMemberPicker(policy)

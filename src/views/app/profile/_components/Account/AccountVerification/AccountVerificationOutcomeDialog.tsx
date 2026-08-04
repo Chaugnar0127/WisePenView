@@ -1,3 +1,4 @@
+import AppBanner from '@/components/Overlay/AppBanner';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { Alert } from '@heroui/react';
 import { CircleCheck, Info, TriangleAlert } from 'lucide-react';
@@ -48,14 +49,12 @@ function AccountVerificationOutcomeDialog({
                 </Alert>
               ) : uisQrImageSrc != null ? (
                 <>
-                  <Alert className={styles.uisOutcomeHint} status="accent">
-                    <Alert.Indicator>
-                      <Info size={18} />
-                    </Alert.Indicator>
-                    <Alert.Content>
-                      <Alert.Title>{t('verification.scanHint')}</Alert.Title>
-                    </Alert.Content>
-                  </Alert>
+                  <AppBanner
+                    className={styles.uisOutcomeHint}
+                    status="accent"
+                    icon={<Info size={18} />}
+                    title={t('verification.scanHint')}
+                  />
                   <div className={styles.uisQrWrap}>
                     <img
                       src={uisQrImageSrc}

@@ -188,6 +188,7 @@ const zhCNDrive = {
       name: '名称',
       size: '大小',
       type: '类型',
+      creator: '创建者',
       actions: '操作',
     },
     dragSelected: '共选中 {{count}} 项',

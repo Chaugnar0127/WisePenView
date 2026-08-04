@@ -166,7 +166,7 @@ function TableDrive({
     onNodeActionSuccess: handleNodeActionSuccess,
   });
 
-  const columns = buildDriveTableColumns(t);
+  const columns = buildDriveTableColumns(t, resolvedScope.scope.type === 'group');
   const isEditMode = interaction.checkedRowKeys.size > 0;
   const checkboxSelection = {
     selectedKeys: interaction.checkedRowKeys,

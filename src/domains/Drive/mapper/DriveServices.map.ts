@@ -98,6 +98,7 @@ export const mapTagToFolderNode = (
     scope,
     tagId: tag.tagId,
     name: getFolderName(tag.tagName),
+    tagCreator: tag.tagCreator,
     systemType: resolveSystemFolderType(tag.tagName),
     description: tag.tagDesc,
     taggedResourceAclGrantScope: tag.taggedResourceAclGrantScope,

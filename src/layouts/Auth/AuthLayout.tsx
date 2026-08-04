@@ -1,4 +1,6 @@
 import loginImage from '@/assets/images/login.png';
+import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
+import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import AuthBackground from './AuthBackground';
@@ -6,9 +8,24 @@ import styles from './AuthLayout.module.less';
 
 function AuthLayout() {
   const { t } = useTranslation('auth');
+  const desktopWindow = useDesktopWindowState();
+  const titleBarInsetStart =
+    desktopWindow.hasTitleBarInset && desktopWindow.titleBarInsetSide === 'start';
+  const titleBarInsetEnd =
+    desktopWindow.hasTitleBarInset && desktopWindow.titleBarInsetSide === 'end';
 
   return (
     <main className={styles.root}>
+      {desktopWindow.isDesktop ? (
+        <div
+          className={clsx(
+            styles.desktopTitleBar,
+            titleBarInsetStart && styles.titleBarInsetStart,
+            titleBarInsetEnd && styles.titleBarInsetEnd
+          )}
+          aria-hidden
+        />
+      ) : null}
       <AuthBackground />
       <div className={styles.authSheet}>
         <img src={loginImage} className={styles.loginImage} alt="" />

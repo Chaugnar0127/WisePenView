@@ -26,7 +26,7 @@ import {
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
-import { useRef, useState } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -58,13 +58,14 @@ function AppLayout() {
     panelSize: sidebarPanelSize,
     minSize: sidebarMinSize,
     maxSize: sidebarMaxSize,
-    showSidebarContent,
     showCollapsedChrome,
+    isAnimating: isSidebarAnimating,
   } = useSidebarCollapseMotion({
     collapsed: sidebarCollapsed,
     expandedWidth: sidebarWidth,
     collapsedWidth: collapsedSidebarWidth,
   });
+  const anchorSidebarSlide = isSidebarAnimating || sidebarCollapsed;
 
   const persistSidebarWidthFromPanel = () => {
     const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
@@ -146,15 +147,34 @@ function AppLayout() {
               />
             </header>
           ) : null}
-          {showSidebarContent ? (
-            <AppSidebar
-              canGoBack={appNavigation.canGoBack}
-              canGoForward={appNavigation.canGoForward}
-              onGoBack={appNavigation.goBack}
-              onGoForward={appNavigation.goForward}
-              onToggle={handleSidebarToggle}
-            />
-          ) : null}
+          <div
+            className={clsx(
+              styles.sidebarSlideHost,
+              showCollapsedChrome && styles.sidebarSlideHostHidden
+            )}
+          >
+            <div
+              className={clsx(
+                styles.sidebarSlideFrame,
+                anchorSidebarSlide && styles.sidebarSlideFrameAnchored
+              )}
+              style={
+                anchorSidebarSlide
+                  ? ({
+                      '--sidebar-slide-width': `${sidebarWidth}px`,
+                    } as CSSProperties)
+                  : undefined
+              }
+            >
+              <AppSidebar
+                canGoBack={appNavigation.canGoBack}
+                canGoForward={appNavigation.canGoForward}
+                onGoBack={appNavigation.goBack}
+                onGoForward={appNavigation.goForward}
+                onToggle={handleSidebarToggle}
+              />
+            </div>
+          </div>
         </SystemResizablePanel>
 
         <SystemResizableHandle
@@ -171,7 +191,12 @@ function AppLayout() {
             <header
               className={clsx(
                 styles.desktopHeader,
-                desktopWindow.hasMacTitleBarInset && styles.macDesktopHeader
+                desktopWindow.hasTitleBarInset &&
+                  desktopWindow.titleBarInsetSide === 'start' &&
+                  styles.titleBarInsetStart,
+                desktopWindow.hasTitleBarInset &&
+                  desktopWindow.titleBarInsetSide === 'end' &&
+                  styles.titleBarInsetEnd
               )}
             >
               {showCollapsedChrome ? (

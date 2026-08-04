@@ -34,15 +34,24 @@
   padding: 0;
 }
 
-.macDesktopHeader .headerTop {
+@import '@/layouts/_common/desktopTitleBar.less';
+
+/* 桌面侧栏顶栏：加高 + 上方拖拽带 */
+.desktopHeader .headerTop {
   box-sizing: border-box;
-  height: 48px;
-  padding-left: 92px;
-  -webkit-app-region: drag;
+  .desktopTitleBarChrome();
+
+  > * {
+    .desktopTitleBarNoDrag();
+  }
+}
+
+/* Mac：再避开左上红绿灯并微调垂直对齐 */
+.titleBarInsetStart .headerTop {
+  padding-left: @desktop-titlebar-start-inset;
 
   > * {
     transform: translateY(var(--desktop-header-content-offset-y, 1px));
-    -webkit-app-region: no-drag;
   }
 }
 

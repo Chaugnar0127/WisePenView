@@ -24,6 +24,33 @@
   overflow: hidden;
 }
 
+/* 外层插值宽度；内层锚定贴齐右侧把手，裁切后呈向左平移 */
+.sidebarSlideHost {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.sidebarSlideFrame {
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.sidebarSlideFrameAnchored {
+  flex: 0 0 auto;
+  width: var(--sidebar-slide-width);
+  min-width: var(--sidebar-slide-width);
+  max-width: var(--sidebar-slide-width);
+  contain: layout paint;
+}
+
 .middleLayout {
   width: 100%;
   min-width: 0;
@@ -85,7 +112,6 @@
   overflow: hidden;
 }
 
-/* 外层变宽/变窄腾布局，内层保持目标宽度贴右，裁切后看起来像平移进出 */
 .chatPanelSlideHost {
   display: flex;
   justify-content: flex-end;
@@ -94,6 +120,8 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  /* 动画期间限制重排范围，减轻展开时与主栏抢布局 */
+  contain: layout paint;
 }
 
 .chatPanelSlideFrame {
@@ -108,6 +136,7 @@
   width: var(--chat-panel-slide-width);
   min-width: var(--chat-panel-slide-width);
   max-width: var(--chat-panel-slide-width);
+  contain: layout paint;
 }
 
 .resizeHandle {

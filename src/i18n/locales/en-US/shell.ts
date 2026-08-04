@@ -13,6 +13,12 @@ const enUSShell = {
     appSidebar: 'Application sidebar',
     adminSidebar: 'Admin sidebar',
   },
+  windowControls: {
+    minimize: 'Minimize',
+    maximize: 'Maximize',
+    restore: 'Restore',
+    close: 'Close',
+  },
   sidebar: {
     contentAria: 'Sidebar content',
     sessions: 'Chat',

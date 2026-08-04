@@ -16,6 +16,9 @@
   background: var(--header-surface, var(--paper));
   /* 与左右栏的布局分隔线使用同一边框色 */
   border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-sm);
 }
 
 :global(html[data-layout-height='short']) {
@@ -28,27 +31,45 @@
   }
 }
 
+@import '@/layouts/_common/desktopTitleBar.less';
+
+/* 与 Chat 顶栏同高、同垂直居中；上方为拖拽带 */
 .desktopRoot .bar {
-  height: 50px;
-  padding-block: var(--space-xs);
-  -webkit-app-region: drag;
+  .desktopTitleBarChrome();
+  padding-right: var(--space-sm);
+  padding-left: var(--space-lg);
 
   .toolbar {
     height: 100%;
     min-height: 0;
+    align-items: center;
   }
 }
 
-.macDesktopAlignedRoot .toolbar {
+.titleBarInsetStartAligned .toolbar {
   transform: translateY(var(--desktop-header-content-offset-y, 1px));
 }
 
-.macDesktopRoot .bar {
-  padding-left: 92px;
+/* Mac：侧栏折叠后顶栏避开红绿灯 */
+.titleBarInsetStart .bar {
+  padding-left: @desktop-titlebar-start-inset;
 }
 
-.desktopRoot .bar :is(button, a, input, textarea, select, [role='button'], [tabindex]) {
-  -webkit-app-region: no-drag;
+/* Win：--workspace-header-end-reserve 由 useWorkspaceHeaderEndReserve 写入 */
+.titleBarInsetEnd .bar {
+  padding-right: max(var(--space-sm), var(--workspace-header-end-reserve, 0px));
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--workspace-header-end-reserve, 0px);
+    height: 100%;
+    .desktopTitleBarNoDrag();
+    pointer-events: none;
+  }
 }
 
 /* 全屏时展开控件与展开侧栏中的收起控件共用左侧基线。 */
@@ -60,6 +81,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  flex: 1;
+  min-width: 0;
+  width: 100%;
   min-height: 40px;
 }
 

@@ -1,13 +1,15 @@
+import logoImg from '@/assets/images/logo-icon.png';
+import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
+import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-
-import logoImg from '@/assets/images/logo-icon.png';
 import type { LandingNavbarProps } from './index.type';
 import styles from './style.module.less';
 
 function LandingNavbar({ activeKey }: LandingNavbarProps) {
   const { t } = useTranslation('shell');
   const navigate = useNavigate();
+  const desktopWindow = useDesktopWindowState();
   const navItems = [
     { key: '1', label: t('home.nav.home'), path: '/' },
     { key: '2', label: t('home.nav.register'), path: '/register' },
@@ -15,7 +17,7 @@ function LandingNavbar({ activeKey }: LandingNavbarProps) {
   ];
 
   return (
-    <div className={styles.bar}>
+    <div className={clsx(styles.bar, desktopWindow.isDesktop && styles.desktopBar)}>
       <div className={styles.brand}>
         <img src={logoImg} alt="WisePen" className={styles.logo} />
         <span className={styles.brandText}>WisePen</span>
@@ -25,7 +27,7 @@ function LandingNavbar({ activeKey }: LandingNavbarProps) {
           <button
             key={item.key}
             type="button"
-            className={`${styles.navButton} ${activeKey === item.key ? styles.navButtonActive : ''}`}
+            className={clsx(styles.navButton, activeKey === item.key && styles.navButtonActive)}
             aria-current={activeKey === item.key ? 'page' : undefined}
             onClick={() => navigate(item.path)}
           >

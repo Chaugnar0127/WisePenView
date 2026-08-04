@@ -1,12 +1,26 @@
-import { Outlet } from 'react-router-dom';
-
+import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import LandingNavbar from '@/layouts/Home/_components/LandingNavbar';
+import clsx from 'clsx';
+import { Outlet } from 'react-router-dom';
 import styles from './HomeLayout.module.less';
 
 function HomeLayout() {
+  const desktopWindow = useDesktopWindowState();
+  const titleBarInsetStart =
+    desktopWindow.hasTitleBarInset && desktopWindow.titleBarInsetSide === 'start';
+  const titleBarInsetEnd =
+    desktopWindow.hasTitleBarInset && desktopWindow.titleBarInsetSide === 'end';
+
   return (
     <div className={styles.root}>
-      <div className={styles.navShell}>
+      <div
+        className={clsx(
+          styles.navShell,
+          desktopWindow.isDesktop && styles.desktopNavShell,
+          titleBarInsetStart && styles.titleBarInsetStart,
+          titleBarInsetEnd && styles.titleBarInsetEnd
+        )}
+      >
         <LandingNavbar activeKey="1" />
       </div>
 

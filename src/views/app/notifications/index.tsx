@@ -1,4 +1,4 @@
-import { EmptyState, LoadingState, ResultState } from '@/components/Feedback';
+import { EmptyState, ResultState, Spin } from '@/components/Feedback';
 import { useMessageService } from '@/domains';
 import type { UserMessage } from '@/domains/Message';
 import { parseErrorMessage } from '@/utils/error';
@@ -39,6 +39,7 @@ function NotificationsPage() {
   const selectedMessage = messagesRequest.data?.messages.find(
     (message) => message.messageId === selectedMessageId
   );
+  const isInitialLoading = messagesRequest.loading && messagesRequest.data == null;
 
   const { runAsync: readMessage } = useRequest(
     (messageId: string) => messageService.readMessage({ messageId }),
@@ -84,60 +85,8 @@ function NotificationsPage() {
     navigate(message.jumpUrl);
   };
 
-  if (messagesRequest.loading) {
-    return (
-      <div className={styles.pageContainer}>
-        <LoadingState label={t('page.loading')} />
-      </div>
-    );
-  }
-
-  if (messagesRequest.error) {
-    return (
-      <div className={styles.pageContainer}>
-        <ResultState
-          status="error"
-          title={t('page.loadFailed')}
-          subTitle={parseErrorMessage(messagesRequest.error)}
-          extra={
-            <Button variant="primary" onPress={messagesRequest.refresh}>
-              <RotateCw size={16} />
-              {t('page.refresh')}
-            </Button>
-          }
-        />
-      </div>
-    );
-  }
-
   const messages = messagesRequest.data?.messages ?? [];
   const hasUnreadMessages = messages.some((message) => !message.read);
-
-  if (messages.length === 0) {
-    return (
-      <div className={styles.pageContainer}>
-        <EmptyState
-          title={t('page.emptyTitle')}
-          description={t('page.emptyDescription')}
-          className={styles.emptyState}
-        />
-      </div>
-    );
-  }
-
-  if (selectedMessageId && !selectedMessage) {
-    return (
-      <div className={styles.pageContainer}>
-        <div className={styles.notificationCenter}>
-          <ResultState
-            status="404"
-            title={t('page.notFoundTitle')}
-            subTitle={t('page.notFoundDescription')}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.pageContainer}>
@@ -160,79 +109,124 @@ function NotificationsPage() {
           </Button>
         </div>
 
-        <div className={styles.messageList}>
-          {messages.map((message) => {
-            const isSelected = message.messageId === selectedMessageId;
-            const title = message.title || t('page.untitled');
-            const preview = extractMarkdownPlainText(message.content);
-            const content = extractMarkdownPlainText(message.content, { preserveLineBreaks: true });
+        <div className={styles.pageBody}>
+          {messagesRequest.error ? (
+            <div className={styles.pageState}>
+              <ResultState
+                status="error"
+                title={t('page.loadFailed')}
+                subTitle={parseErrorMessage(messagesRequest.error)}
+                extra={
+                  <Button variant="primary" onPress={messagesRequest.refresh}>
+                    <RotateCw size={16} />
+                    {t('page.refresh')}
+                  </Button>
+                }
+              />
+            </div>
+          ) : isInitialLoading ? (
+            <div className={styles.pageState} role="status" aria-live="polite" aria-busy="true">
+              <Spin size="large" tip={t('page.loading')} />
+            </div>
+          ) : messages.length === 0 ? (
+            <div className={styles.pageState}>
+              <EmptyState
+                title={t('page.emptyTitle')}
+                description={t('page.emptyDescription')}
+                className={styles.emptyState}
+              />
+            </div>
+          ) : selectedMessageId && !selectedMessage ? (
+            <div className={styles.pageState}>
+              <ResultState
+                status="404"
+                title={t('page.notFoundTitle')}
+                subTitle={t('page.notFoundDescription')}
+              />
+            </div>
+          ) : (
+            <div className={styles.messageList}>
+              {messages.map((message) => {
+                const isSelected = message.messageId === selectedMessageId;
+                const title = message.title || t('page.untitled');
+                const preview = extractMarkdownPlainText(message.content);
+                const content = extractMarkdownPlainText(message.content, {
+                  preserveLineBreaks: true,
+                });
 
-            return (
-              <article
-                key={message.messageId}
-                className={clsx(styles.messageItem, isSelected && styles.messageItemSelected)}
-              >
-                <div className={styles.messageSummary}>
-                  <button
-                    type="button"
-                    className={styles.messageOpenButton}
-                    aria-expanded={isSelected}
-                    onClick={() => void handleSelectMessage(message)}
+                return (
+                  <article
+                    key={message.messageId}
+                    className={clsx(styles.messageItem, isSelected && styles.messageItemSelected)}
                   >
-                    <span className={styles.messageInfo}>
-                      <span className={styles.messageStatusLine}>
-                        <span
-                          className={clsx(styles.statusDot, message.read && styles.statusDotRead)}
-                          aria-hidden="true"
-                        />
-                        <span>{resolveMessageTypeLabel(message, t)}</span>
-                        {message.read ? <span>{t('page.readStatus.read')}</span> : null}
-                      </span>
-                      <strong className={styles.messageTitle}>{title}</strong>
-                      {!isSelected ? (
-                        <span className={styles.messagePreview}>{preview}</span>
-                      ) : null}
-                    </span>
-                  </button>
-                  <span className={styles.messageSide}>
-                    <time
-                      className={styles.sentAt}
-                      dateTime={
-                        message.createTime ? new Date(message.createTime).toISOString() : undefined
-                      }
-                    >
-                      {formatTimestampToDateTime(message.createTime)}
-                    </time>
-                    <button
-                      type="button"
-                      className={styles.toggleDetail}
-                      onClick={() => void handleToggleMessage(message)}
-                    >
-                      {isSelected ? t('page.hideMessage') : t('page.showMessage')}
-                    </button>
-                  </span>
-                </div>
-
-                {isSelected ? (
-                  <div className={styles.messageBody}>
-                    <p className={styles.messageContent}>{content}</p>
-                    {message.jumpUrl ? (
-                      <div className={styles.messageActions}>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onPress={() => handleOpenJumpUrl(message)}
+                    <div className={styles.messageSummary}>
+                      <button
+                        type="button"
+                        className={styles.messageOpenButton}
+                        aria-expanded={isSelected}
+                        onClick={() => void handleSelectMessage(message)}
+                      >
+                        <span className={styles.messageInfo}>
+                          <span className={styles.messageStatusLine}>
+                            <span
+                              className={clsx(
+                                styles.statusDot,
+                                message.read && styles.statusDotRead
+                              )}
+                              aria-hidden="true"
+                            />
+                            <span>{resolveMessageTypeLabel(message, t)}</span>
+                            {message.read ? <span>{t('page.readStatus.read')}</span> : null}
+                          </span>
+                          <strong className={styles.messageTitle}>{title}</strong>
+                          {!isSelected ? (
+                            <span className={styles.messagePreview}>{preview}</span>
+                          ) : null}
+                        </span>
+                      </button>
+                      <span className={styles.messageSide}>
+                        <time
+                          className={styles.sentAt}
+                          dateTime={
+                            message.createTime
+                              ? new Date(message.createTime).toISOString()
+                              : undefined
+                          }
                         >
-                          <ExternalLink size={16} />
-                          {t('page.jumpLink')}
-                        </Button>
+                          {formatTimestampToDateTime(message.createTime)}
+                        </time>
+                        <button
+                          type="button"
+                          className={styles.toggleDetail}
+                          onClick={() => void handleToggleMessage(message)}
+                        >
+                          {isSelected ? t('page.hideMessage') : t('page.showMessage')}
+                        </button>
+                      </span>
+                    </div>
+
+                    {isSelected ? (
+                      <div className={styles.messageBody}>
+                        <p className={styles.messageContent}>{content}</p>
+                        {message.jumpUrl ? (
+                          <div className={styles.messageActions}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onPress={() => handleOpenJumpUrl(message)}
+                            >
+                              <ExternalLink size={16} />
+                              {t('page.jumpLink')}
+                            </Button>
+                          </div>
+                        ) : null}
                       </div>
                     ) : null}
-                  </div>
-                ) : null}
-              </article>
-            );
-          })}
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
     </div>

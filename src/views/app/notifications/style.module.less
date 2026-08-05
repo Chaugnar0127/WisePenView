@@ -29,6 +29,21 @@
   margin-bottom: var(--space-lg);
 }
 
+.pageBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pageState {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
 .pageTitle {
   margin: 0 0 var(--space-xs) 0;
   font-size: calc(var(--font-size-heading-3) + 4px);
@@ -42,6 +57,7 @@
 .messageList {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-height: 0;
   overflow: auto;
 }
@@ -181,6 +197,5 @@
 }
 
 .emptyState {
-  align-self: center;
   width: min(100%, var(--note-editor-max-width, 900px));
 }

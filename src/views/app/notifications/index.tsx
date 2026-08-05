@@ -160,11 +160,6 @@ function NotificationsPage() {
           </Button>
         </div>
 
-        <div className={styles.listHeader}>
-          <span>{t('page.listTitle')}</span>
-          <span>{t('page.sentAt')}</span>
-        </div>
-
         <div className={styles.messageList}>
           {messages.map((message) => {
             const isSelected = message.messageId === selectedMessageId;

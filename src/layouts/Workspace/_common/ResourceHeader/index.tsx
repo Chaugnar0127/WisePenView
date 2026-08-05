@@ -4,7 +4,7 @@ import { AppPopover } from '@/components/Overlay';
 import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import { useUserService } from '@/domains';
 import { normalizeId } from '@/utils/normalize/normalizeId';
-import { Dropdown, Spinner } from '@heroui/react';
+import { Dropdown } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import {
   ChevronRight,
@@ -70,7 +70,8 @@ function ResourceHeaderMore({
   onOpenPermission: () => void;
 }) {
   const { t } = useTranslation('resource');
-  const isPending = Boolean(menu?.isPending || operations.isLocating);
+  const isMenuPending = Boolean(menu?.isPending);
+  const isPending = isMenuPending || operations.isLocating;
   const handleAction = (key: React.Key) => {
     if (key === 'permission') {
       onOpenPermission();
@@ -123,10 +124,11 @@ function ResourceHeaderMore({
   return (
     <Dropdown>
       <AppIconButton
-        icon={isPending ? <Spinner size="sm" /> : <Ellipsis size={18} aria-hidden="true" />}
+        icon={<Ellipsis size={18} aria-hidden="true" />}
         label={t('header.more')}
         size="sm"
-        isDisabled={isDisabled || isPending}
+        isDisabled={isDisabled || isMenuPending}
+        aria-busy={isPending || undefined}
         overlayTrigger={<Dropdown.Trigger />}
       />
       <Dropdown.Popover placement="bottom end" className={styles.popover}>

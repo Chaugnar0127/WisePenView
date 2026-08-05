@@ -3,7 +3,7 @@ export interface ResourceInteractionApiRequest {
   resourceId: string;
 }
 
-/** POST /resource/interaction/like 请求体 */
+/** POST /resource/interaction/toggleLike 请求体 */
 export interface ResourceLikeApiRequest extends ResourceInteractionApiRequest {
   liked: boolean;
 }

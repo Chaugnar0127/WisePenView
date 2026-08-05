@@ -8,7 +8,7 @@ import type {
 
 /** /resource/interaction/* 子路由 API */
 function setLike(req: ResourceLikeApiRequest): Promise<void> {
-  return apiPost('/resource/interaction/like', req);
+  return apiPost('/resource/interaction/toggleLike', req);
 }
 
 function rate(req: RateApiRequest): Promise<void> {

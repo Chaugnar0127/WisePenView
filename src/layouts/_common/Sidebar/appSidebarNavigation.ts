@@ -1,4 +1,4 @@
-import { Bell, FileText, MessageSquarePlus, Users, type LucideIcon } from 'lucide-react';
+import { Bell, Folder, MessageSquarePlus, Users, type LucideIcon } from 'lucide-react';
 
 export const APP_HEADER_NAV_KEY = {
   CHAT: '/app/chat',
@@ -26,7 +26,7 @@ export const APP_HEADER_NAV_ITEMS: readonly AppHeaderNavItem[] = [
   {
     key: APP_HEADER_NAV_KEY.DRIVE,
     labelKey: 'navigation.drive',
-    icon: FileText,
+    icon: Folder,
     routePrefixes: ['/app/drive', '/app/workspace'],
   },
   {

@@ -9,7 +9,7 @@ import styles from './style.module.less';
 
 const buildInviteUrl = (inviteCode?: string): string => {
   if (!inviteCode) return '';
-  const path = `/app/my-group?inviteCode=${encodeURIComponent(inviteCode)}`;
+  const path = `/app/collaboration?inviteCode=${encodeURIComponent(inviteCode)}`;
   if (typeof window === 'undefined') return path;
   return `${window.location.origin}${path}`;
 };

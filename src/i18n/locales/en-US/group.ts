@@ -25,9 +25,11 @@ const enUSGroup = {
     public: 'Marketplace',
   },
   detail: {
+    backToGroups: 'Back to group list',
     goToCourse: 'Go to course',
     loadFailed: 'Failed to load group details',
     notFound: 'Group not found',
+    retry: 'Retry',
     aria: 'Group details',
     creator: 'Created by:',
     createdAt: 'Created at: {{date}}',

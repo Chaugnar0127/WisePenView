@@ -30,7 +30,7 @@ function DissolveGroupModal({
         toast.success(t('dissolve.success'));
         onSuccess?.();
         onOpenChange(false);
-        navigate('/app/my-group');
+        navigate('/app/collaboration');
       },
       onError: (err) => {
         toast.danger(parseErrorMessage(err));

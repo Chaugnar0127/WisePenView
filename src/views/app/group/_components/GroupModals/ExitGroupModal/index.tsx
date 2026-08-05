@@ -32,7 +32,7 @@ function ExitGroupModal({
         toast.success(t('exit.success'));
         onSuccess?.();
         onOpenChange(false);
-        navigate('/app/my-group');
+        navigate('/app/collaboration');
       },
       onError: (err) => {
         toast.danger(parseErrorMessage(err));

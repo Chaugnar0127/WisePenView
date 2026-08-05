@@ -25,9 +25,11 @@ const zhCNGroup = {
     public: '集市组',
   },
   detail: {
+    backToGroups: '返回小组列表',
     goToCourse: '前往课程',
     loadFailed: '获取小组详情失败',
     notFound: '小组不存在',
+    retry: '重试',
     aria: '小组详情',
     creator: '创建者：',
     createdAt: '创建日期：{{date}}',

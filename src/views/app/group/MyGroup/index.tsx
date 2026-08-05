@@ -1,14 +1,14 @@
 import CourseCard from '@/components/Course/CourseCard';
 import CreateCourseModal from '@/components/Course/CreateCourseModal';
 import JoinCourseModal from '@/components/Course/JoinCourseModal';
-import { Empty } from '@/components/Feedback';
+import { Empty, Spin } from '@/components/Feedback';
 import Select from '@/components/Input/Select';
 import { useCourseService, useGroupService, useUserService } from '@/domains';
 import type { CourseSummary } from '@/domains/Course';
 import type { Group } from '@/domains/Group';
 import { GROUP_ROLE_FILTER_MAP, GROUP_TYPE } from '@/domains/Group';
 import { IDENTITY } from '@/domains/User';
-import { Button, Card, ListBox, Pagination, Skeleton, Tabs, toast } from '@heroui/react';
+import { Button, ListBox, Pagination, Tabs, toast } from '@heroui/react';
 import { usePagination, useRequest } from 'ahooks';
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -21,10 +21,7 @@ import page from './style.module.less';
 
 const PAGE_SIZE = 8;
 const PAGINATION_SIBLING_COUNT = 1;
-const GROUP_CARD_SKELETON_KEYS = Array.from(
-  { length: PAGE_SIZE },
-  (_, index) => `group-card-skeleton-${index + 1}`
-);
+const GROUP_LOADING_DELAY_MS = 160;
 
 type PaginationPageItem = number | 'ellipsis';
 type GroupSection = 'groups' | 'courseGroups';
@@ -54,33 +51,16 @@ function buildPaginationItems(currentPage: number, totalPages: number): Paginati
   });
 }
 
-function GroupCardSkeleton() {
-  return (
-    <Card className={page.skeletonCard} aria-hidden="true">
-      <Skeleton animationType="shimmer" className={page.skeletonCover} />
-      <div className={page.skeletonBody}>
-        <Skeleton animationType="shimmer" className={page.skeletonTitle} />
-        <div className={page.skeletonFooter}>
-          <Skeleton animationType="shimmer" className={page.skeletonAvatar} />
-          <Skeleton animationType="shimmer" className={page.skeletonOwner} />
-          <Skeleton animationType="shimmer" className={page.skeletonMemberCount} />
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 function MyGroup() {
   const { t } = useTranslation(['group', 'course']);
   const groupService = useGroupService();
   const courseService = useCourseService();
   const userService = useUserService();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialInviteCode = searchParams.get('inviteCode') ?? undefined;
-  const [activeSection, setActiveSection] = useState<GroupSection>(() =>
-    searchParams.get('section') === 'courseGroups' ? 'courseGroups' : 'groups'
-  );
+  const activeSection: GroupSection =
+    searchParams.get('section') === 'courseGroups' ? 'courseGroups' : 'groups';
   const [activeTab, setActiveTab] = useState<string>('all');
   const [joinGroupModalOpen, setJoinGroupModalOpen] = useState(() => Boolean(initialInviteCode));
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
@@ -99,6 +79,7 @@ function MyGroup() {
   const {
     data: groupsData,
     loading,
+    error,
     refresh: refreshGroups,
     pagination: { current: pageNum, pageSize: size, onChange: onPageChange },
   } = usePagination(
@@ -124,6 +105,7 @@ function MyGroup() {
     {
       defaultCurrent: 1,
       defaultPageSize: PAGE_SIZE,
+      loadingDelay: GROUP_LOADING_DELAY_MS,
       refreshDeps: [groupRoleFilter, activeSection],
       onError: () => {
         toast.danger(t('list.loadFailed'));
@@ -132,12 +114,15 @@ function MyGroup() {
   );
   const listItems: GroupListItem[] = groupsData?.list ?? [];
   const total = groupsData?.total ?? 0;
+  const waitingForInitialData = groupsData === undefined && !error && !loading;
   const totalPages = Math.max(Math.ceil(total / size), 1);
   const pages = buildPaginationItems(pageNum, totalPages);
   const start = total === 0 ? 0 : (pageNum - 1) * size + 1;
   const end = Math.min(pageNum * size, total);
   const handleSectionChange = (key: GroupSection) => {
-    setActiveSection(key);
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set('section', key);
+    setSearchParams(nextSearchParams, { replace: true });
     onPageChange(1, size);
   };
 
@@ -145,14 +130,14 @@ function MyGroup() {
     setJoinGroupModalOpen(false);
     setCreateGroupModalOpen(false);
     if (initialInviteCode) {
-      navigate('/app/my-group', { replace: true });
+      navigate('/app/collaboration', { replace: true });
     }
     void refreshGroups();
   };
 
   const handleGroupClick = (group: Group) => {
     if (group.groupId) {
-      navigate(`/app/my-group/${group.groupId}`);
+      navigate(`/app/collaboration/${group.groupId}`);
     }
   };
 
@@ -259,18 +244,11 @@ function MyGroup() {
         ) : null}
       </div>
 
-      {loading ? (
-        <div
-          className={page.groupGrid}
-          role="status"
-          aria-live="polite"
-          aria-label={t('list.loading')}
-        >
-          {GROUP_CARD_SKELETON_KEYS.map((key) => (
-            <div key={key} className={page.groupGridItem}>
-              <GroupCardSkeleton />
-            </div>
-          ))}
+      {waitingForInitialData ? (
+        <div className={page.groupLoading} aria-hidden="true" />
+      ) : loading ? (
+        <div className={page.groupLoading} role="status" aria-label={t('list.loading')}>
+          <Spin size="large" />
         </div>
       ) : (
         <>

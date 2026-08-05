@@ -665,6 +665,9 @@
 /* BlockNote 拖拽预览会脱离 editorShell 挂到 body，默认显示样式必须单独补给预览。 */
 :global(.bn-drag-preview) {
   --bn-font-family: var(--app-font-family);
+  box-sizing: border-box;
+  width: min(var(--note-editor-content-width, 820px), calc(100vw - 108px));
+  max-width: min(var(--note-editor-content-width, 820px), calc(100vw - 108px));
   font-family: var(--app-font-family);
   font-size: 16px;
   line-height: 1.8;
@@ -690,6 +693,7 @@
 }
 
 :global(.bn-drag-preview .bn-block-content[data-content-type='heading']) {
+  max-width: 100%;
   font-size: 26px !important;
   font-weight: var(--font-weight-medium) !important;
   line-height: 1.8;
@@ -702,6 +706,9 @@
 
 :global(.bn-drag-preview .bn-block-content[data-content-type='heading'] .bn-inline-content),
 :global(.bn-drag-preview .bn-block-content[data-content-type='heading'] .bn-inline-content *) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   font-weight: var(--font-weight-medium) !important;
 }
 

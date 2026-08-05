@@ -30,6 +30,8 @@ export interface TableDriveProps {
   rootId?: string;
   /** 从路由进入云盘时需要直接打开的目录节点 */
   initialNodeId?: string;
+  /** 外层仍在解析初始目录时，先展示云盘骨架并暂停目录请求。 */
+  loading?: boolean;
   /** 当前目录由外部导航承载时，通知外部写入新的目录位置。 */
   onCurrentNodeChange?: (nodeId: string) => void;
   /** 路径加载失败时由外层处理，传入后不执行默认 toast 和根目录回退。 */

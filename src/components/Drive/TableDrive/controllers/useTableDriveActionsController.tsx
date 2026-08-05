@@ -40,6 +40,7 @@ interface UseTableDriveActionsControllerParams {
   checkedRowKeys: Set<string>;
   scope: DriveNodeScope;
   actions?: TableDriveActionConfig;
+  disabled?: boolean;
   refresh: () => void;
   mountTagId: string | undefined;
   isTrashView: boolean;
@@ -83,6 +84,7 @@ export function useTableDriveActionsController({
   checkedRowKeys,
   scope,
   actions,
+  disabled = false,
   refresh,
   mountTagId,
   isTrashView,
@@ -362,6 +364,7 @@ export function useTableDriveActionsController({
   const showUploadDocument = canCreateInCurrentFolder && !isTrashView;
 
   const showCreateMenu = Boolean(
+    !disabled &&
     !isTrashView &&
     (toolbarConfig.canCreateFolder ||
       (canCreateInCurrentFolder &&
@@ -402,7 +405,7 @@ export function useTableDriveActionsController({
 
   return {
     showCreateMenu,
-    showUploadToGroup: Boolean(toolbarConfig.canUploadToGroup && groupId),
+    showUploadToGroup: Boolean(!disabled && toolbarConfig.canUploadToGroup && groupId),
     showManagePermission: Boolean(toolbarConfig.canManageTagPermission && groupId),
     createMenuItems,
     handleCreateMenuSelect,

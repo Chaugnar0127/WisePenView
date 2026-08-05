@@ -166,9 +166,11 @@ function GroupDetail() {
   return (
     <div
       className={
-        activeDetailTabKey === 'files' || activeDetailTabKey === 'description'
+        activeDetailTabKey === 'files'
           ? `${layout.pageContainer} ${page.fixedPage}`
-          : layout.pageContainer
+          : activeDetailTabKey === 'description'
+            ? `${layout.pageContainer} ${page.descriptionPage}`
+            : layout.pageContainer
       }
     >
       <div className={`${layout.pageHeaderWithActions} ${page.detailHeader}`}>

@@ -8,42 +8,47 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
-interface CourseCreateForm {
-  name: string;
-  description: string;
-  term: string;
-}
-
 interface CreateCourseModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: (courseId: string) => void;
 }
 
-const EMPTY_COURSE: CourseCreateForm = { name: '', description: '', term: '' };
+interface CourseCreateFormValues {
+  name: string;
+  description: string;
+  term: string;
+  category: string;
+}
+
+const DEFAULT_FORM_VALUES: CourseCreateFormValues = {
+  name: '',
+  description: '',
+  term: '',
+  category: '',
+};
+
+const toCreateCourseRequest = (form: CourseCreateFormValues) => ({
+  name: form.name.trim(),
+  description: form.description.trim(),
+  term: form.term.trim(),
+  category: form.category.trim() || undefined,
+});
 
 function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModalProps) {
   const { t } = useTranslation(['course', 'common']);
   const courseService = useCourseService();
-  const [form, setForm] = useState<CourseCreateForm>(EMPTY_COURSE);
-  const request = useRequest(
-    () =>
-      courseService.createCourse({
-        name: form.name.trim(),
-        description: form.description.trim(),
-        term: form.term.trim(),
-      }),
-    {
-      manual: true,
-      onSuccess: (courseId) => {
-        toast.success(t('create.success'));
-        setForm(EMPTY_COURSE);
-        onOpenChange(false);
-        onCreated(courseId);
-      },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
-    }
-  );
+  const [form, setForm] = useState<CourseCreateFormValues>(DEFAULT_FORM_VALUES);
+  const request = useRequest(() => courseService.createCourse(toCreateCourseRequest(form)), {
+    manual: true,
+    onSuccess: (courseId) => {
+      toast.success(t('create.success'));
+      setForm(DEFAULT_FORM_VALUES);
+      onOpenChange(false);
+      onCreated(courseId);
+    },
+    onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
+  });
 
   const handleCreate = () => {
     if (!form.name.trim() || !form.description.trim() || !form.term.trim()) {
@@ -87,15 +92,6 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
           <Input placeholder={t('create.namePlaceholder')} />
         </TextField>
         <TextField
-          value={form.description}
-          onChange={(description) => setForm((current) => ({ ...current, description }))}
-          aria-label={t('create.intro')}
-          isRequired
-        >
-          <Label>{t('create.intro')}</Label>
-          <TextArea rows={4} placeholder={t('create.introPlaceholder')} />
-        </TextField>
-        <TextField
           value={form.term}
           onChange={(term) => setForm((current) => ({ ...current, term }))}
           aria-label={t('create.term')}
@@ -103,6 +99,23 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
         >
           <Label>{t('create.term')}</Label>
           <Input placeholder={t('create.termPlaceholder')} />
+        </TextField>
+        <TextField
+          value={form.category}
+          onChange={(category) => setForm((current) => ({ ...current, category }))}
+          aria-label={t('create.category')}
+        >
+          <Label>{t('create.category')}</Label>
+          <Input placeholder={t('create.categoryPlaceholder')} />
+        </TextField>
+        <TextField
+          value={form.description}
+          onChange={(description) => setForm((current) => ({ ...current, description }))}
+          aria-label={t('create.intro')}
+          isRequired
+        >
+          <Label>{t('create.intro')}</Label>
+          <TextArea rows={4} placeholder={t('create.introPlaceholder')} />
         </TextField>
       </div>
     </AppModal>

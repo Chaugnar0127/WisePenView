@@ -1,6 +1,4 @@
 import CourseCard from '@/components/Course/CourseCard';
-import CreateCourseModal from '@/components/Course/CreateCourseModal';
-import JoinCourseModal from '@/components/Course/JoinCourseModal';
 import { Empty, Spin } from '@/components/Feedback';
 import Select from '@/components/Input/Select';
 import { useCourseService, useGroupService, useUserService } from '@/domains';
@@ -15,7 +13,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import GroupCard from '../_components/GroupCard';
-import { CreateGroupModal, JoinGroupModal } from '../_components/GroupModals';
+import {
+  CreateCourseModal,
+  CreateGroupModal,
+  JoinCourseModal,
+  JoinGroupModal,
+} from '../_components/GroupModals';
 import layout from '../style.module.less';
 import page from './style.module.less';
 
@@ -119,6 +122,8 @@ function MyGroup() {
   const pages = buildPaginationItems(pageNum, totalPages);
   const start = total === 0 ? 0 : (pageNum - 1) * size + 1;
   const end = Math.min(pageNum * size, total);
+  const emptyDescription =
+    activeSection === 'courseGroups' ? t('list.empty', { ns: 'course' }) : t('list.empty');
   const handleSectionChange = (key: GroupSection) => {
     const nextSearchParams = new URLSearchParams(searchParams);
     nextSearchParams.set('section', key);
@@ -254,7 +259,7 @@ function MyGroup() {
         <>
           {listItems.length === 0 ? (
             <div className={page.emptyState}>
-              <Empty description={t('list.empty')} />
+              <Empty description={emptyDescription} />
             </div>
           ) : (
             <div className={page.groupGrid}>

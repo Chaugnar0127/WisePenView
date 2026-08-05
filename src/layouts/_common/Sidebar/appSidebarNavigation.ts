@@ -30,16 +30,16 @@ export const APP_HEADER_NAV_ITEMS: readonly AppHeaderNavItem[] = [
     routePrefixes: ['/app/drive', '/app/workspace'],
   },
   {
-    key: APP_HEADER_NAV_KEY.NOTIFICATIONS,
-    labelKey: 'navigation.notifications',
-    icon: Bell,
-    routePrefixes: ['/app/notifications'],
-  },
-  {
     key: APP_HEADER_NAV_KEY.GROUP,
     labelKey: 'navigation.groups',
     icon: Users,
     routePrefixes: ['/app/my-group'],
+  },
+  {
+    key: APP_HEADER_NAV_KEY.NOTIFICATIONS,
+    labelKey: 'navigation.notifications',
+    icon: Bell,
+    routePrefixes: ['/app/notifications'],
   },
 ];
 

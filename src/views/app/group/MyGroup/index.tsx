@@ -1,6 +1,4 @@
 import CourseCard from '@/components/Course/CourseCard';
-import CreateCourseModal from '@/components/Course/CreateCourseModal';
-import JoinCourseModal from '@/components/Course/JoinCourseModal';
 import { Empty, Spin } from '@/components/Feedback';
 import Select from '@/components/Input/Select';
 import { useCourseService, useGroupService, useUserService } from '@/domains';
@@ -15,7 +13,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import GroupCard from '../_components/GroupCard';
-import { CreateGroupModal, JoinGroupModal } from '../_components/GroupModals';
+import {
+  CreateCourseModal,
+  CreateGroupModal,
+  JoinCourseModal,
+  JoinGroupModal,
+} from '../_components/GroupModals';
 import layout from '../style.module.less';
 import page from './style.module.less';
 

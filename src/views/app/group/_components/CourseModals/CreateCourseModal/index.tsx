@@ -8,44 +8,47 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
-interface CourseCreateForm {
-  name: string;
-  description: string;
-  term: string;
-  category: string;
-}
-
 interface CreateCourseModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: (courseId: string) => void;
 }
 
-const EMPTY_COURSE: CourseCreateForm = { name: '', description: '', term: '', category: '' };
+interface CourseCreateFormValues {
+  name: string;
+  description: string;
+  term: string;
+  category: string;
+}
+
+const DEFAULT_FORM_VALUES: CourseCreateFormValues = {
+  name: '',
+  description: '',
+  term: '',
+  category: '',
+};
+
+const toCreateCourseRequest = (form: CourseCreateFormValues) => ({
+  name: form.name.trim(),
+  description: form.description.trim(),
+  term: form.term.trim(),
+  category: form.category.trim() || undefined,
+});
 
 function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModalProps) {
   const { t } = useTranslation(['course', 'common']);
   const courseService = useCourseService();
-  const [form, setForm] = useState<CourseCreateForm>(EMPTY_COURSE);
-  const request = useRequest(
-    () =>
-      courseService.createCourse({
-        name: form.name.trim(),
-        description: form.description.trim(),
-        term: form.term.trim(),
-        category: form.category.trim() || undefined,
-      }),
-    {
-      manual: true,
-      onSuccess: (courseId) => {
-        toast.success(t('create.success'));
-        setForm(EMPTY_COURSE);
-        onOpenChange(false);
-        onCreated(courseId);
-      },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
-    }
-  );
+  const [form, setForm] = useState<CourseCreateFormValues>(DEFAULT_FORM_VALUES);
+  const request = useRequest(() => courseService.createCourse(toCreateCourseRequest(form)), {
+    manual: true,
+    onSuccess: (courseId) => {
+      toast.success(t('create.success'));
+      setForm(DEFAULT_FORM_VALUES);
+      onOpenChange(false);
+      onCreated(courseId);
+    },
+    onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
+  });
 
   const handleCreate = () => {
     if (!form.name.trim() || !form.description.trim() || !form.term.trim()) {

@@ -119,6 +119,8 @@ function MyGroup() {
   const pages = buildPaginationItems(pageNum, totalPages);
   const start = total === 0 ? 0 : (pageNum - 1) * size + 1;
   const end = Math.min(pageNum * size, total);
+  const emptyDescription =
+    activeSection === 'courseGroups' ? t('list.empty', { ns: 'course' }) : t('list.empty');
   const handleSectionChange = (key: GroupSection) => {
     const nextSearchParams = new URLSearchParams(searchParams);
     nextSearchParams.set('section', key);
@@ -254,7 +256,7 @@ function MyGroup() {
         <>
           {listItems.length === 0 ? (
             <div className={page.emptyState}>
-              <Empty description={t('list.empty')} />
+              <Empty description={emptyDescription} />
             </div>
           ) : (
             <div className={page.groupGrid}>

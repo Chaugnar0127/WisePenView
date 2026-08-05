@@ -211,7 +211,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
       label: t('navigation.groups', { ns: 'shell' }),
       keywords: ['group', '团队', '小组'],
       icon: Users,
-      onSelect: () => handleNavigate('/app/my-group'),
+      onSelect: () => handleNavigate('/app/collaboration'),
     },
     {
       id: 'favorites',

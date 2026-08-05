@@ -28,13 +28,20 @@
 }
 
 .root {
+  --note-editor-gutter: 54px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
   width: 100%;
-  max-width: var(--note-editor-max-width, 900px);
+  max-width: var(
+    --note-editor-canvas-width,
+    calc(
+      var(--note-editor-content-width, 820px) + var(--note-editor-gutter, 54px) +
+        var(--note-editor-gutter, 54px)
+    )
+  );
   margin: 0 auto;
   padding: 0;
 }
@@ -74,7 +81,11 @@
   min-width: 0;
   container-type: inline-size;
   container-name: note-content;
-  --note-editor-max-width: 900px;
+  --note-editor-gutter: 54px;
+  --note-editor-content-width: 820px;
+  --note-editor-canvas-width: calc(
+    var(--note-editor-content-width) + var(--note-editor-gutter) + var(--note-editor-gutter)
+  );
   --note-outline-open-width: clamp(
     180px,
     18cqw,
@@ -87,7 +98,7 @@
   margin-left: clamp(
     0px,
     calc(
-      var(--note-editor-max-width) + var(--note-outline-open-width) +
+      var(--note-editor-canvas-width) + var(--note-outline-open-width) +
         var(--note-outline-open-width) - 100cqw
     ),
     min(

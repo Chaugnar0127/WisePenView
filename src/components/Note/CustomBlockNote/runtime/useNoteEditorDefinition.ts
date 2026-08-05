@@ -165,6 +165,10 @@ export function useNoteEditorDefinition({
       schema: blockNoteSchema,
       dictionary: buildNoteDictionary(i18n.resolvedLanguage),
       trailingBlock: true,
+      dropCursor: {
+        color: 'var(--primary)',
+        width: 2,
+      },
       disableExtensions: ['history', 'yUndo'],
       uploadFile,
       pasteHandler: handlePasteIntoNote,

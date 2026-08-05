@@ -736,6 +736,7 @@ export default function NoteSideMenu({ plugins }: { plugins: readonly NoteConten
   const [isPointerSelectingText, setIsPointerSelectingText] = useState(false);
   const handleEditorPointerDown = (event: Event) => {
     if (!(event instanceof globalThis.PointerEvent) || event.button !== 0) return;
+    if (event.target instanceof Element && event.target.closest('.bn-side-menu')) return;
     setIsPointerSelectingText(true);
   };
   const handlePointerSelectionEnd = () => setIsPointerSelectingText(false);

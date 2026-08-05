@@ -3,7 +3,7 @@ const zhCNCourse = {
     loadFailed: '课程数据加载失败',
     notFound: '未找到课程',
     retry: '重试',
-    backToCourseGroups: '返回课程组',
+    backToCourseGroups: '返回小组列表',
   },
   list: {
     title: '我的课程',

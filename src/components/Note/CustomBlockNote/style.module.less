@@ -120,9 +120,12 @@
     z-index: calc(var(--note-table-selection-layer, 25) + 1);
   }
 
-  :global(.ProseMirror .column-resize-handle),
-  :global(.bn-table-drop-cursor) {
+  :global(.ProseMirror .column-resize-handle) {
     background-color: var(--accent);
+  }
+
+  :global(.bn-table-drop-cursor) {
+    background-color: var(--primary);
   }
 
   :global([data-show-selection]) {
@@ -136,7 +139,7 @@
   }
 
   :global(.bn-container .bn-side-menu[data-block-type='heading'][data-level='1']) {
-    min-height: calc(26px * 1.8 + 6px);
+    min-height: calc(25px * 1.4 + 6px);
   }
   :global(.bn-container .bn-side-menu[data-block-type='heading'][data-level='2']) {
     min-height: calc(22px * 1.4 + 6px);
@@ -152,7 +155,7 @@
     min-height: calc(16px * 1.4 + 6px);
   }
   :global(.bn-container .bn-side-menu[data-block-type='paragraph']) {
-    min-height: calc(16px * 1.8 + 6px);
+    min-height: calc(16px * 1.68 + 6px);
   }
   :global(.bn-container .bn-side-menu[data-block-type='math']) {
     min-height: 48px;
@@ -177,27 +180,46 @@
   /* 贴近飞书文档的正文与标题字阶（仅作用正文编辑区） */
   :global(.bodyBlockNoteView .bn-editor) {
     font-size: 16px;
-    line-height: 1.8;
+    line-height: 1.68;
+    padding-inline: var(--note-editor-gutter, 54px) !important;
     /* 保留接近 Notion 的文末留白，让最后一段内容可以滚离窗口底部 */
     padding-bottom: 50vh;
   }
 
   :global(.bn-editor .bn-block-outer) {
-    line-height: 1.8;
+    line-height: 1.68;
+  }
+
+  :global(.bn-editor .bn-block-outer:has(> .bn-block > .bn-block-content[data-content-type='heading'])) {
+    margin-top: 18px;
+    margin-bottom: 8px;
   }
 
   :global(.bn-editor .bn-block-content) {
     /* 块类型切换时 BlockNote 会短暂挂载上一类型属性，必须持续压住其原生排版与字号动画。 */
     font-size: 16px !important;
     font-weight: var(--font-weight-regular) !important;
-    line-height: 1.8;
+    line-height: 1.68;
     margin-top: 0;
+    margin-bottom: 4px;
     transition: none !important;
   }
 
   :global(.bn-editor .bn-block-content:not([data-content-type='heading']) .bn-inline-content),
   :global(.bn-editor .bn-block-content:not([data-content-type='heading']) .bn-inline-content *) {
-    line-height: 1.8 !important;
+    line-height: 1.68 !important;
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='bulletListItem']::before) {
+    color: var(--foreground);
+    font-size: 1.25em;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.34;
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='numberedListItem']::before) {
+    color: var(--primary);
+    font-weight: var(--font-weight-bold);
   }
 
   :global(.bn-editor .bn-inline-content a),
@@ -214,14 +236,15 @@
   }
 
   :global(.bn-editor .bn-block-content[data-content-type='heading']) {
-    font-size: 26px !important;
+    font-size: 25px !important;
     font-weight: var(--font-weight-medium) !important;
-    line-height: 1.8;
+    line-height: 1.4;
+    margin-top: 0;
     margin-left: -2px;
     margin-right: -2px;
     padding-left: 2px;
     padding-right: 2px;
-    margin-bottom: 10px;
+    margin-bottom: 0;
   }
 
   :global(.bn-editor .bn-block-content[data-content-type='heading'] .bn-inline-content),
@@ -256,7 +279,7 @@
     margin: 8px 0 10px;
     overflow: visible;
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-xl);
+    border-radius: 8px;
     background-color: var(--surface-secondary) !important;
     color: var(--foreground);
     box-shadow: none;
@@ -642,6 +665,9 @@
 /* BlockNote 拖拽预览会脱离 editorShell 挂到 body，默认显示样式必须单独补给预览。 */
 :global(.bn-drag-preview) {
   --bn-font-family: var(--app-font-family);
+  box-sizing: border-box;
+  width: min(var(--note-editor-content-width, 820px), calc(100vw - 108px));
+  max-width: min(var(--note-editor-content-width, 820px), calc(100vw - 108px));
   font-family: var(--app-font-family);
   font-size: 16px;
   line-height: 1.8;
@@ -667,6 +693,7 @@
 }
 
 :global(.bn-drag-preview .bn-block-content[data-content-type='heading']) {
+  max-width: 100%;
   font-size: 26px !important;
   font-weight: var(--font-weight-medium) !important;
   line-height: 1.8;
@@ -679,6 +706,9 @@
 
 :global(.bn-drag-preview .bn-block-content[data-content-type='heading'] .bn-inline-content),
 :global(.bn-drag-preview .bn-block-content[data-content-type='heading'] .bn-inline-content *) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   font-weight: var(--font-weight-medium) !important;
 }
 

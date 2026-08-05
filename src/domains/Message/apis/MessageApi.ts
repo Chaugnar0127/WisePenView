@@ -10,7 +10,7 @@ function listUserMessages(req: ListUserMessagesApiRequest): Promise<ListUserMess
 }
 
 function readMessage(req: ReadMessageApiRequest): Promise<void> {
-  return apiPost('/user/message/readMessage', null, { params: req });
+  return apiPost('/user/message/readMessage', req);
 }
 
 export const MessageApi = {

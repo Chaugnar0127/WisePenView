@@ -11,6 +11,7 @@ import type { DriveRow } from '../index.type';
 interface UseTableDriveNavigationControllerParams {
   initialNodeId?: string;
   scope: DriveNodeScope;
+  ready?: boolean;
   onPathError?: (error: unknown) => void;
 }
 
@@ -49,6 +50,7 @@ interface DriveRowsResult {
 export function useTableDriveNavigationController({
   initialNodeId,
   scope,
+  ready = true,
   onPathError,
 }: UseTableDriveNavigationControllerParams): UseTableDriveNavigationControllerReturn {
   const driveService = useDriveService();
@@ -121,6 +123,7 @@ export function useTableDriveNavigationController({
       };
     },
     {
+      ready,
       refreshDeps: [currentNodeId, groupId, rootId],
       onBefore: () => {
         if (loadedLocationKeyRef.current !== locationKey) {
@@ -142,6 +145,7 @@ export function useTableDriveNavigationController({
       nodes: await driveService.getNodePath({ nodeId: currentNodeId, groupId }),
     }),
     {
+      ready,
       refreshDeps: [currentNodeId, groupId],
       onError: (err) => {
         if (onPathError) {
@@ -205,7 +209,7 @@ export function useTableDriveNavigationController({
     currentNodeId,
     dataSource,
     pathNodes,
-    loading,
+    loading: !ready || loading,
     expandedRowKeys,
     enterFolder,
     handleExpandedChange,

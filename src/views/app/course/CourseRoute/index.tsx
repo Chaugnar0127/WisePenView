@@ -4,6 +4,7 @@ import { CourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { Button } from '@heroui/react';
 import { useRequest } from 'ahooks';
+import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
@@ -35,7 +36,11 @@ function CourseRoute() {
           subTitle={error ? parseErrorMessage(error) : t('common.notFound')}
           extra={
             <div className={styles.resultActions}>
-              <Button onPress={() => navigate('/app/my-group?section=courseGroups')}>
+              <Button
+                variant="ghost"
+                onPress={() => navigate('/app/collaboration?section=courseGroups')}
+              >
+                <ArrowLeft size={16} aria-hidden />
                 {t('common.backToCourseGroups')}
               </Button>
               <Button variant="primary" onPress={refresh}>

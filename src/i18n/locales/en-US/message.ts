@@ -13,8 +13,6 @@ const enUSMessage = {
     notFoundTitle: 'Notification not found',
     notFoundDescription: 'This notification may have been removed or is not in the current list.',
     loadFailed: 'Failed to load notifications',
-    listTitle: 'Message details',
-    sentAt: 'Sent',
     showMessage: 'Show message',
     hideMessage: 'Hide message',
     markAllAsRead: 'Mark all as read',

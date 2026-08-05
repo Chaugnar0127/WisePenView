@@ -11,26 +11,28 @@ import clsx from 'clsx';
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAppSidebarSelectionStore } from '../_store/useAppSidebarSelectionStore';
 import styles from './style.module.less';
 
 function AppHeaderNav() {
   const { t } = useTranslation('shell');
   const navigate = useNavigate();
   const location = useLocation();
-  const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
+  const headerNavInitialized = useAppSidebarSelectionStore((state) => state.headerNavInitialized);
+  const selectedHeaderNavKey = useAppSidebarSelectionStore((state) => state.selectedHeaderNavKey);
+  const initializeSelectedHeaderNavKey = useAppSidebarSelectionStore(
+    (state) => state.initializeSelectedHeaderNavKey
+  );
+  const setSelectedHeaderNavKey = useAppSidebarSelectionStore(
+    (state) => state.setSelectedHeaderNavKey
+  );
 
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
-  /**
-   * 有进行中的 Chat 会话时，选中态在会话列表而非顶栏「新对话」。
-   * 指示器与视觉选中态都跟 activeKey 走，不依赖 ListBox 的 data-selected（失焦会被冲掉）。
-   */
-  const selectedKey =
-    activeNavKey && !(activeNavKey === APP_HEADER_NAV_KEY.CHAT && currentSessionId)
-      ? activeNavKey
-      : undefined;
+  const selectedKey = headerNavInitialized ? selectedHeaderNavKey : activeNavKey;
 
   const handleNavItemPress = (navKey: AppHeaderNavKey) => {
+    setSelectedHeaderNavKey(navKey);
     if (navKey === APP_HEADER_NAV_KEY.CHAT) {
       clearCurrentSession();
       clearNewChatSessionStore();
@@ -50,6 +52,12 @@ function AppHeaderNav() {
       itemRefs.current.delete(key);
     }
   };
+
+  useLayoutEffect(() => {
+    if (!headerNavInitialized && activeNavKey) {
+      initializeSelectedHeaderNavKey(activeNavKey);
+    }
+  }, [activeNavKey, headerNavInitialized, initializeSelectedHeaderNavKey]);
 
   useLayoutEffect(() => {
     const indicatorEl = indicatorRef.current;

@@ -27,6 +27,7 @@ const Home = lazy(() => import('@/views/app/home'));
 const Drive = lazy(() => import('@/views/app/drive/Drive'));
 const MyGroup = lazy(() => import('@/views/app/group/MyGroup'));
 const GroupDetail = lazy(() => import('@/views/app/group/GroupDetail'));
+const GroupRoute = lazy(() => import('@/views/app/group/GroupRoute'));
 const Account = lazy(() => import('@/views/app/profile/Account'));
 const Usage = lazy(() => import('@/views/app/profile/Usage'));
 const Appearance = lazy(() => import('@/views/app/profile/Appearance'));
@@ -208,12 +209,18 @@ const router = createBrowserRouter([
                 element: <Drive viewMode="trash" />,
               },
               {
-                path: 'my-group',
+                path: 'collaboration',
                 element: <MyGroup />,
               },
               {
-                path: 'my-group/:id',
-                element: <GroupDetail />,
+                path: 'collaboration/:groupId',
+                element: <GroupRoute />,
+                children: [
+                  {
+                    index: true,
+                    element: <GroupDetail />,
+                  },
+                ],
               },
               {
                 path: 'course',

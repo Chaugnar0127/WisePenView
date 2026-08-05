@@ -2,7 +2,6 @@ import type { FormEvent, KeyboardEvent, RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-import { AppPopover } from '@/components/Overlay';
 import { useEffect } from 'react';
 import popoverStyles from '../InlineMath/style.module.less';
 import { sanitizeLatexInput } from '../latexInput';
@@ -123,7 +122,7 @@ export function LatexEditPopover(props: LatexEditPopoverProps) {
       role="dialog"
       aria-label={title}
     >
-      <AppPopover.Header>{title}</AppPopover.Header>
+      <div className={popoverStyles.inlineEditTitle}>{title}</div>
       <div className={popoverStyles.inlineEditPopoverBody}>
         <textarea
           ref={inputRef}

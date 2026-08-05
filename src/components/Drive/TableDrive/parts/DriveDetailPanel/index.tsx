@@ -134,6 +134,7 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
     noteMeta?.resourceInfo ?? documentMeta?.resourceInfo ?? fallbackResourceInfo;
   const detailLoading = loadingNoteMeta || loadingDocumentMeta;
   const actionTarget = isDriveActionTarget(selectedRow.node) ? selectedRow.node : null;
+  const shouldShowPermissionMeta = selectedRow.node.scope.type === 'group';
   const getActionLabel = (action: ResourceAction) => {
     const key = RESOURCE_ACTION.getKey(action);
     return key ? t(`permission.actions.${key}`, { ns: 'resource' }) : String(action);
@@ -199,7 +200,7 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
       },
     ];
 
-    if (actionTarget?.type === 'folder') {
+    if (shouldShowPermissionMeta && actionTarget?.type === 'folder') {
       items.push(
         {
           key: 'resourceDefaultPermission',
@@ -217,7 +218,7 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
           value: formatAccessScope(actionTarget.tagMountPermissionScope),
         }
       );
-    } else if (detailResourceInfo?.currentActions) {
+    } else if (shouldShowPermissionMeta && detailResourceInfo?.currentActions) {
       items.push({
         key: 'currentPermission',
         label: t('table.meta.currentPermission'),

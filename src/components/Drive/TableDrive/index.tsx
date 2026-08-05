@@ -90,6 +90,7 @@ function TableDrive({
   groupId,
   rootId,
   initialNodeId,
+  loading: externalLoading = false,
   onCurrentNodeChange,
   onPathError,
   scope,
@@ -105,6 +106,7 @@ function TableDrive({
   const navigation = useTableDriveNavigationController({
     initialNodeId,
     scope: resolvedScope.scope,
+    ready: !externalLoading,
     onPathError,
   });
 
@@ -160,6 +162,7 @@ function TableDrive({
     checkedRowKeys: interaction.checkedRowKeys,
     scope: resolvedScope.scope,
     actions,
+    disabled: externalLoading,
     refresh: navigation.refresh,
     mountTagId,
     isTrashView: trash.isTrashView,

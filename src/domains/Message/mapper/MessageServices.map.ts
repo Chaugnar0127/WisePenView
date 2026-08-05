@@ -13,36 +13,17 @@ import type {
 } from '../service/index.type';
 import { normalizeMessageType } from './messageType.mapper';
 
-const normalizeReadFlag = (value: UserMessageApiModel['read']): boolean | undefined => {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return value > 0;
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (['true', 'read', 'readed', 'yes', '1'].includes(normalized)) return true;
-    if (['false', 'unread', 'no', '0'].includes(normalized)) return false;
-  }
-  return undefined;
-};
-
-const mapUserMessageApiModelToEntity = (raw: UserMessageApiModel): UserMessage => {
-  const explicitRead =
-    normalizeReadFlag(raw.read) ??
-    normalizeReadFlag(raw.hasRead) ??
-    normalizeReadFlag(raw.isRead) ??
-    normalizeReadFlag(raw.readStatus);
-
-  return {
-    messageId: normalizeId(raw.messageId),
-    deliveryScope: raw.deliveryScope ?? undefined,
-    messageType: normalizeMessageType(raw.messageType ?? undefined) ?? raw.messageType ?? undefined,
-    title: raw.title?.trim() ?? '',
-    content: raw.content ?? '',
-    jumpUrl: raw.jumpUrl?.trim() || undefined,
-    extra: raw.extra ?? undefined,
-    read: explicitRead ?? Boolean(raw.readTime),
-    createTime: raw.createTime ?? undefined,
-  };
-};
+const mapUserMessageApiModelToEntity = (raw: UserMessageApiModel): UserMessage => ({
+  messageId: normalizeId(raw.messageId),
+  deliveryScope: raw.deliveryScope ?? undefined,
+  messageType: normalizeMessageType(raw.messageType ?? undefined) ?? raw.messageType ?? undefined,
+  title: raw.title?.trim() ?? '',
+  content: raw.content ?? '',
+  jumpUrl: raw.jumpUrl?.trim() || undefined,
+  extra: raw.extra ?? undefined,
+  read: Boolean(raw.readTime),
+  createTime: raw.createTime ?? undefined,
+});
 
 const mapListUserMessagesRequest = (
   params: ListUserMessagesRequest

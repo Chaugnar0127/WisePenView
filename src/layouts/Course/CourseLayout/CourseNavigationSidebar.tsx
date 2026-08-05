@@ -1,5 +1,7 @@
 import { COURSE_ROLE } from '@/domains/Course';
+import { Button } from '@heroui/react';
 import {
+  ArrowLeft,
   Bell,
   BookOpen,
   ClipboardCheck,
@@ -51,13 +53,15 @@ function CourseNavigationSidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           className={styles.backLink}
-          onClick={() => navigate('/app/my-group?section=courseGroups')}
+          onPress={() => navigate('/app/collaboration?section=courseGroups')}
         >
+          <ArrowLeft size={16} aria-hidden />
           {t('common.backToCourseGroups')}
-        </button>
+        </Button>
         <div className={styles.courseName}>
           <BookOpen size={18} aria-hidden />
           <strong>{course.name}</strong>

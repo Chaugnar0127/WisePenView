@@ -10,5 +10,5 @@ export interface UserMessage {
   jumpUrl?: string;
   extra?: string;
   read: boolean;
-  createTime?: string;
+  createTime?: number;
 }

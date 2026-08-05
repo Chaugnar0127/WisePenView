@@ -22,10 +22,6 @@ import Tree from '@/components/Tree';
 import { useGroupService, useNoteService } from '@/domains';
 import type { DriveNode, FolderNode, RootNode } from '@/domains/Drive';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
-import {
-  APP_HEADER_NAV_KEY,
-  resolveAppHeaderNavKey,
-} from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
@@ -33,7 +29,6 @@ import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
 
 import {
   getSidebarExistingFolderNames,
@@ -55,7 +50,6 @@ interface SidebarDriveCreateTarget {
 
 function SidebarDrive() {
   const { t } = useTranslation('drive');
-  const location = useLocation();
   const groupService = useGroupService();
   const noteService = useNoteService();
   const scope = useSidebarDriveScopeStore((state) => state.scope);
@@ -67,7 +61,6 @@ function SidebarDrive() {
   const [renameTarget, setRenameTarget] = useState<DriveActionTarget | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
   const importTargetRef = useRef<RootNode | FolderNode | null>(null);
-  const activeNavKey = resolveAppHeaderNavKey(location.pathname);
   const { data: groupBaseInfo } = useRequest(
     async () => {
       if (!groupId) return undefined;
@@ -278,7 +271,7 @@ function SidebarDrive() {
           blockNode
           selectable
           expandAction="click"
-          selectedKeys={activeNavKey === APP_HEADER_NAV_KEY.DRIVE ? selectedKeys : []}
+          selectedKeys={selectedKeys}
           expandedKeys={expandedKeys}
           onSelect={handleSelect}
           onExpand={handleExpand}

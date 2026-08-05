@@ -1,6 +1,6 @@
 import type { IMessageService, ListUserMessagesResponse } from '../service/index.type';
 
-const now = new Date();
+const now = Date.now();
 
 const mockMessages: ListUserMessagesResponse['messages'] = [
   {
@@ -29,7 +29,7 @@ WisePen 将在 **今晚 23:30 - 23:50** 进行一次短暂维护。维护期间�
 维护结束后无需重新登录。若遇到异常，可先刷新页面，或通过用户反馈联系我们。`,
     jumpUrl: '/app/drive/personal',
     read: false,
-    createTime: now.toISOString(),
+    createTime: now,
   },
   {
     messageId: 'mock-message-2',
@@ -44,7 +44,7 @@ WisePen 将在 **今晚 23:30 - 23:50** 进行一次短暂维护。维护期间�
 
 请进入课程页面查看详情，并根据材料中的检查项更新自己的写作草稿。`,
     read: true,
-    createTime: new Date(now.getTime() - 86_400_000).toISOString(),
+    createTime: now - 86_400_000,
   },
 ];
 

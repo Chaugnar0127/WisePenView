@@ -3,7 +3,7 @@ const enUSCourse = {
     loadFailed: 'Failed to load course data',
     notFound: 'Course not found',
     retry: 'Retry',
-    backToCourseGroups: 'Back to course groups',
+    backToCourseGroups: 'Back to group list',
   },
   list: {
     title: 'My courses',

@@ -1,4 +1,3 @@
-import { appendRedirectParam } from '@/bootstrap/authContinuation';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { copyText } from '@/utils/browser/copyText';
 import { Button, toast } from '@heroui/react';
@@ -8,15 +7,9 @@ import { useTranslation } from 'react-i18next';
 import type { InviteUserModalProps } from './index.type';
 import styles from './style.module.less';
 
-const buildInviteRedirectPath = (inviteCode: string): string =>
-  `/app/my-group?inviteCode=${encodeURIComponent(inviteCode)}`;
-
-const buildInviteRegisterPath = (inviteCode: string): string =>
-  appendRedirectParam('/register', buildInviteRedirectPath(inviteCode));
-
 const buildInviteUrl = (inviteCode?: string): string => {
   if (!inviteCode) return '';
-  const path = buildInviteRegisterPath(inviteCode);
+  const path = `/app/collaboration?inviteCode=${encodeURIComponent(inviteCode)}`;
   if (typeof window === 'undefined') return path;
   return `${window.location.origin}${path}`;
 };

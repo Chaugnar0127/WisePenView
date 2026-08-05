@@ -11,22 +11,19 @@ import CommandPaletteTrigger from '@/layouts/AppNavigation/CommandPaletteTrigger
 import { Tabs, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
 import { BookOpen, FolderOpen, MessageSquare, type LucideIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import {
+  APP_SIDEBAR_TAB,
+  useAppSidebarSelectionStore,
+  type AppSidebarTabKey,
+} from '../_store/useAppSidebarSelectionStore';
 import SessionListGroup from '../SessionListGroup';
 import styles from './style.module.less';
 
-const SIDEBAR_TAB = {
-  SESSIONS: 'session-history',
-  DRIVE: 'drive',
-  COURSES: 'courses',
-} as const;
-
-type SidebarTabKey = (typeof SIDEBAR_TAB)[keyof typeof SIDEBAR_TAB];
-
 interface SidebarViewTabProps {
-  id: SidebarTabKey;
+  id: AppSidebarTabKey;
   label: string;
   icon: LucideIcon;
   selected: boolean;
@@ -50,38 +47,35 @@ function SidebarViewTab({ id, label, icon: Icon, selected }: SidebarViewTabProps
   );
 }
 
-const resolveSidebarTab = (
+const resolveInitialSidebarTab = (
   activeNavKey: AppHeaderNavKey | undefined,
   pathname: string
-): SidebarTabKey =>
+): AppSidebarTabKey =>
   pathname === '/app/course' || pathname.startsWith('/app/course/')
-    ? SIDEBAR_TAB.COURSES
+    ? APP_SIDEBAR_TAB.COURSES
     : activeNavKey === APP_HEADER_NAV_KEY.CHAT
-      ? SIDEBAR_TAB.SESSIONS
-      : SIDEBAR_TAB.DRIVE;
+      ? APP_SIDEBAR_TAB.SESSIONS
+      : APP_SIDEBAR_TAB.DRIVE;
 
 function AppSidebarTabs() {
   const { t } = useTranslation('shell');
   const location = useLocation();
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
+  const tabInitialized = useAppSidebarSelectionStore((state) => state.tabInitialized);
+  const storedSelectedTab = useAppSidebarSelectionStore((state) => state.selectedTab);
+  const initializeSelectedTab = useAppSidebarSelectionStore((state) => state.initializeSelectedTab);
+  const setSelectedTab = useAppSidebarSelectionStore((state) => state.setSelectedTab);
   const activeNavKey = resolveAppHeaderNavKey(location.pathname);
-  const routeTab = resolveSidebarTab(activeNavKey, location.pathname);
-  const [tabState, setTabState] = useState(() => ({
-    observedRouteTab: routeTab,
-    selectedTab: routeTab,
-  }));
+  const initialTab = resolveInitialSidebarTab(activeNavKey, location.pathname);
+  const selectedTab = tabInitialized ? storedSelectedTab : initialTab;
+  const selectedKeys = currentSessionId ? [`session-${currentSessionId}`] : [];
 
-  let selectedTab = tabState.selectedTab;
-  if (tabState.observedRouteTab !== routeTab) {
-    selectedTab = routeTab;
-    setTabState({ observedRouteTab: routeTab, selectedTab });
-  }
-
-  const selectedKeys =
-    activeNavKey === APP_HEADER_NAV_KEY.CHAT && currentSessionId
-      ? [`session-${currentSessionId}`]
-      : [];
+  useLayoutEffect(() => {
+    if (!tabInitialized) {
+      initializeSelectedTab(initialTab);
+    }
+  }, [initialTab, initializeSelectedTab, tabInitialized]);
 
   return (
     <div className={styles.menuContainer}>
@@ -91,11 +85,11 @@ function AppSidebarTabs() {
         onSelectionChange={(key) => {
           const nextTab = String(key);
           if (
-            nextTab === SIDEBAR_TAB.SESSIONS ||
-            nextTab === SIDEBAR_TAB.DRIVE ||
-            nextTab === SIDEBAR_TAB.COURSES
+            nextTab === APP_SIDEBAR_TAB.SESSIONS ||
+            nextTab === APP_SIDEBAR_TAB.DRIVE ||
+            nextTab === APP_SIDEBAR_TAB.COURSES
           ) {
-            setTabState({ observedRouteTab: routeTab, selectedTab: nextTab });
+            setSelectedTab(nextTab);
           }
         }}
       >
@@ -103,22 +97,22 @@ function AppSidebarTabs() {
           <div className={styles.tabToolbar}>
             <Tabs.List className={styles.tabList} aria-label={t('sidebar.contentAria')}>
               <SidebarViewTab
-                id={SIDEBAR_TAB.SESSIONS}
+                id={APP_SIDEBAR_TAB.SESSIONS}
                 label={t('sidebar.sessions')}
                 icon={MessageSquare}
-                selected={selectedTab === SIDEBAR_TAB.SESSIONS}
+                selected={selectedTab === APP_SIDEBAR_TAB.SESSIONS}
               />
               <SidebarViewTab
-                id={SIDEBAR_TAB.DRIVE}
+                id={APP_SIDEBAR_TAB.DRIVE}
                 label={t('sidebar.drive')}
                 icon={FolderOpen}
-                selected={selectedTab === SIDEBAR_TAB.DRIVE}
+                selected={selectedTab === APP_SIDEBAR_TAB.DRIVE}
               />
               <SidebarViewTab
-                id={SIDEBAR_TAB.COURSES}
+                id={APP_SIDEBAR_TAB.COURSES}
                 label={t('sidebar.courses')}
                 icon={BookOpen}
-                selected={selectedTab === SIDEBAR_TAB.COURSES}
+                selected={selectedTab === APP_SIDEBAR_TAB.COURSES}
               />
             </Tabs.List>
             <span className={styles.tabSearch}>
@@ -131,26 +125,26 @@ function AppSidebarTabs() {
           <div
             className={clsx(
               styles.panelTrack,
-              selectedTab === SIDEBAR_TAB.DRIVE && styles.panelTrackDrive,
-              selectedTab === SIDEBAR_TAB.COURSES && styles.panelTrackCourses
+              selectedTab === APP_SIDEBAR_TAB.DRIVE && styles.panelTrackDrive,
+              selectedTab === APP_SIDEBAR_TAB.COURSES && styles.panelTrackCourses
             )}
           >
             <Tabs.Panel
-              id={SIDEBAR_TAB.SESSIONS}
+              id={APP_SIDEBAR_TAB.SESSIONS}
               className={clsx(styles.tabPanel, styles.sessionPanel)}
               shouldForceMount
             >
               <SessionListGroup selectedKeys={selectedKeys} refreshVersion={refreshVersion} />
             </Tabs.Panel>
             <Tabs.Panel
-              id={SIDEBAR_TAB.DRIVE}
+              id={APP_SIDEBAR_TAB.DRIVE}
               className={clsx(styles.tabPanel, styles.drivePanel)}
               shouldForceMount
             >
               <SidebarDrive />
             </Tabs.Panel>
             <Tabs.Panel
-              id={SIDEBAR_TAB.COURSES}
+              id={APP_SIDEBAR_TAB.COURSES}
               className={clsx(styles.tabPanel, styles.coursePanel)}
               shouldForceMount
             >

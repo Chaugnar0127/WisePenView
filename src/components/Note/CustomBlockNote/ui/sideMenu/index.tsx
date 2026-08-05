@@ -185,6 +185,70 @@ function MenuSwitch({ isSelected }: { isSelected: boolean }) {
   );
 }
 
+function getEditorRoot(editor: CustomBlockNoteEditor): Document | ShadowRoot {
+  const root = editor.domElement?.getRootNode();
+  return root instanceof Document || root instanceof ShadowRoot ? root : document;
+}
+
+function findBlockContainer(
+  root: ParentNode | null | undefined,
+  blockId: string
+): HTMLElement | null {
+  if (!root) return null;
+
+  for (const element of root.querySelectorAll<HTMLElement>(
+    '[data-node-type="blockContainer"][data-id]'
+  )) {
+    if (element.getAttribute('data-id') === blockId) {
+      return element;
+    }
+  }
+
+  return null;
+}
+
+function resolveDragPreviewYOffset(
+  event: DragEvent<HTMLElement>,
+  sourceBlock: HTMLElement,
+  dragPreview: HTMLElement,
+  previewBlock: HTMLElement | null
+): number {
+  const sourceRect = sourceBlock.getBoundingClientRect();
+  if (sourceRect.height <= 0) return 0;
+
+  const previewRect = dragPreview.getBoundingClientRect();
+  const previewHeight = previewRect.height > 0 ? previewRect.height : sourceRect.height;
+  const sourceOffsetY = event.clientY - sourceRect.top;
+
+  if (!previewBlock) {
+    return Math.max(0, Math.min(previewHeight, sourceOffsetY));
+  }
+
+  const previewBlockRect = previewBlock.getBoundingClientRect();
+  const scaleY = previewBlockRect.height > 0 ? previewBlockRect.height / sourceRect.height : 1;
+  const offsetY = previewBlockRect.top - previewRect.top + sourceOffsetY * scaleY;
+
+  return Math.max(0, Math.min(previewHeight, offsetY));
+}
+
+function alignDragPreviewWithPointer(
+  event: DragEvent<HTMLElement>,
+  editor: CustomBlockNoteEditor,
+  block: NoteBlock
+) {
+  const dragPreview = getEditorRoot(editor).querySelector<HTMLElement>('.bn-drag-preview');
+  const sourceBlock = findBlockContainer(editor.domElement, block.id);
+  if (!event.dataTransfer || !dragPreview || !sourceBlock) return;
+  const previewBlock = findBlockContainer(dragPreview, block.id);
+
+  // BlockNote 默认把热点放在预览左上角；这里只修正纵向热点，让预览文字与鼠标保持同一水平线。
+  event.dataTransfer.setDragImage(
+    dragPreview,
+    0,
+    resolveDragPreviewYOffset(event, sourceBlock, dragPreview, previewBlock)
+  );
+}
+
 function QuickBlockTypes({
   block,
   items,
@@ -407,6 +471,7 @@ function CustomSideMenu({
   const handleDragStart = (event: DragEvent<HTMLButtonElement>) => {
     setDragging(true);
     sideMenu.blockDragStart(event, block);
+    alignDragPreviewWithPointer(event, editor, block);
   };
 
   const handleDragEnd = () => {
@@ -736,6 +801,7 @@ export default function NoteSideMenu({ plugins }: { plugins: readonly NoteConten
   const [isPointerSelectingText, setIsPointerSelectingText] = useState(false);
   const handleEditorPointerDown = (event: Event) => {
     if (!(event instanceof globalThis.PointerEvent) || event.button !== 0) return;
+    if (event.target instanceof Element && event.target.closest('.bn-side-menu')) return;
     setIsPointerSelectingText(true);
   };
   const handlePointerSelectionEnd = () => setIsPointerSelectingText(false);

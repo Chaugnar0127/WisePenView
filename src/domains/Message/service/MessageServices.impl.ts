@@ -16,8 +16,8 @@ const listUserMessages = async (
 };
 
 const readMessage = async (params: ReadMessageRequest): Promise<void> => {
-  const query = MessageServicesMap.mapReadMessageRequest(params);
-  await MessageApi.readMessage(query);
+  const body = MessageServicesMap.mapReadMessageRequest(params);
+  await MessageApi.readMessage(body);
 };
 
 export const createMessageServices = (): IMessageService => ({

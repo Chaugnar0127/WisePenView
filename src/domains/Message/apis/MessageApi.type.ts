@@ -10,12 +10,8 @@ export interface UserMessageApiModel {
   content?: string | null;
   jumpUrl?: string | null;
   extra?: string | null;
-  read?: boolean | number | string | null;
-  hasRead?: boolean | number | string | null;
-  isRead?: boolean | number | string | null;
-  readStatus?: boolean | number | string | null;
   readTime?: string | null;
-  createTime?: string | null;
+  createTime?: number | null;
 }
 
 export type ListUserMessagesApiResponse = PageR<UserMessageApiModel>;

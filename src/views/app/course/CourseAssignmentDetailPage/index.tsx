@@ -4,6 +4,7 @@ import { useCourseService } from '@/domains';
 import { COURSE_ASSIGNMENT_STATUS } from '@/domains/Course';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
+import { buildCourseAssignmentPath } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { ArrowLeft, CalendarClock, CheckCircle2 } from 'lucide-react';
@@ -83,7 +84,7 @@ function CourseAssignmentDetailPage() {
       <button
         type="button"
         className={styles.backButton}
-        onClick={() => navigate(`/app/course/${course.courseId}/assignments`)}
+        onClick={() => navigate(buildCourseAssignmentPath(course.courseId))}
       >
         <ArrowLeft size={16} aria-hidden />
         {t('assignments.title')}

@@ -34,8 +34,6 @@ import {
   useSidebarCollapseMotion,
 } from '@/layouts/_common/useSidebarCollapseMotion';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
-// Zen Mode 暂不上线，保留进入逻辑便于后续恢复。
-// import { useEnterZenMode } from '@/layouts/ZenMode/useEnterZenMode';
 import { normalizeResourceKind, resolveResourceViewer } from '@/utils/navigation/resourceTarget';
 import WorkspaceResourceSidePanelActions from '@/views/workspace/_components/WorkspaceResourceSidePanel/Actions';
 import { useWorkspaceResourceSidePanelStore } from '@/views/workspace/_store/useWorkspaceResourceSidePanelStore';
@@ -54,7 +52,7 @@ import type {
   PanelImperativeHandle,
   PanelSize,
 } from 'react-resizable-panels';
-import { Outlet, useLocation, useMatch } from 'react-router-dom';
+import { Outlet, useLocation, useParams } from 'react-router-dom';
 import WorkspaceFrame from './_common/WorkspaceFrame';
 import WorkspaceHeader from './_common/WorkspaceHeader';
 import { useWorkspaceChatProtocolStore } from './_store/useWorkspaceChatProtocolStore';
@@ -69,7 +67,6 @@ function WorkspaceLayout() {
   const { t } = useTranslation('workspace');
   const appNavigation = useAppNavigation();
   const openResource = useOpenInWorkspace();
-  // const enterZenMode = useEnterZenMode();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () =>
       typeof window !== 'undefined' &&
@@ -144,12 +141,10 @@ function WorkspaceLayout() {
     isAnimating: isChatPanelAnimating,
   });
   const location = useLocation();
-  const resourceRouteMatch = useMatch('/app/workspace/:resourceType/:resourceId');
-  const resourceListRouteMatch = useMatch('/app/workspace/:resourceType');
+  const resourceRouteParams = useParams<{ resourceType?: string; resourceId?: string }>();
   const routeContext = (() => {
-    const rawResourceType =
-      resourceRouteMatch?.params.resourceType ?? resourceListRouteMatch?.params.resourceType;
-    const resourceId = resourceRouteMatch?.params.resourceId;
+    const rawResourceType = resourceRouteParams.resourceType;
+    const resourceId = resourceRouteParams.resourceId;
     const resourceType = normalizeResourceKind(rawResourceType);
     const viewer = resolveResourceViewer({
       resourceType: rawResourceType,
@@ -171,7 +166,7 @@ function WorkspaceLayout() {
       viewer,
     });
   })();
-  const resourceBreadcrumb = useWorkspaceResourceBreadcrumb(routeContext.resourceId);
+  const resourceBreadcrumbItems = useWorkspaceResourceBreadcrumb(routeContext.resourceId);
   const workspaceChatStateProvider = layoutConfig.chatStateProvider ?? routeChatStateProvider;
   const resourceSidePanelOpen = useWorkspaceResourceSidePanelStore((state) => {
     const resourceId = routeContext.resourceId;
@@ -321,22 +316,6 @@ function WorkspaceLayout() {
     setLayoutConfigState({});
   };
 
-  // const handleEnterZenMode = () => {
-  //   const { resourceId, resourceType, viewer } = routeContext;
-  //   if (!resourceId || !resourceType) return;
-  //   const resourceName =
-  //     layoutConfig.header === false ? undefined : layoutConfig.header?.resource?.resourceName;
-  //   enterZenMode(
-  //     {
-  //       resourceId,
-  //       resourceType,
-  //       resourceName,
-  //       viewer,
-  //     },
-  //     useWorkspaceNavigationStore.getState().location
-  //   );
-  // };
-
   const resourceHostContext = {
     hostId: DEFAULT_RESOURCE_HOST_ID,
     layoutConfig,
@@ -360,8 +339,7 @@ function WorkspaceLayout() {
     const resource = headerConfig.resource
       ? {
           ...headerConfig.resource,
-          breadcrumbItems: resourceBreadcrumb.items,
-          onBreadcrumbNavigate: resourceBreadcrumb.navigateToNode,
+          breadcrumbItems: resourceBreadcrumbItems,
           chatPanelCollapsed: safeChatPanelCollapsed,
           onToggleChatPanel: handleChatPanelToggle,
         }

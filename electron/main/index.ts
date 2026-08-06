@@ -19,7 +19,8 @@ import {
   WINDOW_MIN_HEIGHT,
   WINDOW_MIN_WIDTH,
 } from '../../src/constants/layoutScale';
-import { DESKTOP_CHANNEL } from '../shared/channels';
+import { APP_ROUTE_PATH } from '../../src/utils/navigation/appRoute';
+import { DESKTOP_CHANNEL, type DesktopNavigationState } from '../shared/channels';
 
 const APP_SCHEME = 'app';
 const APP_HOST = 'wisepen';
@@ -79,6 +80,34 @@ function isExternalUrl(url: string): boolean {
 function isRendererUrl(url: string): boolean {
   if (url.startsWith(`${APP_ORIGIN}/`)) return true;
   return DEV_RENDERER_URL ? url.startsWith(DEV_RENDERER_URL) : false;
+}
+
+function isAppRouteUrl(url: string): boolean {
+  if (!isRendererUrl(url)) return false;
+  try {
+    const pathname = new URL(url).pathname;
+    return pathname === APP_ROUTE_PATH.APP || pathname.startsWith(`${APP_ROUTE_PATH.APP}/`);
+  } catch {
+    return false;
+  }
+}
+
+function getAppNavigationState(contents: WebContents): DesktopNavigationState {
+  const history = contents.navigationHistory;
+  const entries = history.getAllEntries();
+  const activeIndex = history.getActiveIndex();
+  const previousEntry = entries[activeIndex - 1];
+  const nextEntry = entries[activeIndex + 1];
+
+  return {
+    canGoBack: history.canGoBack() && Boolean(previousEntry && isAppRouteUrl(previousEntry.url)),
+    canGoForward: history.canGoForward() && Boolean(nextEntry && isAppRouteUrl(nextEntry.url)),
+  };
+}
+
+function sendAppNavigationState(contents: WebContents): void {
+  if (contents.isDestroyed()) return;
+  contents.send(DESKTOP_CHANNEL.navigationStateChanged, getAppNavigationState(contents));
 }
 
 function protectWindowNavigation(contents: WebContents): void {
@@ -222,7 +251,10 @@ function createMainWindow(): BrowserWindow {
   window.webContents.on('did-finish-load', () => {
     notifyFullScreenChanged();
     notifyMaximizedChanged();
+    sendAppNavigationState(window.webContents);
   });
+  window.webContents.on('did-navigate', () => sendAppNavigationState(window.webContents));
+  window.webContents.on('did-navigate-in-page', () => sendAppNavigationState(window.webContents));
   window.on('enter-full-screen', notifyFullScreenChanged);
   window.on('leave-full-screen', notifyFullScreenChanged);
   window.on('maximize', notifyMaximizedChanged);
@@ -258,6 +290,18 @@ function registerDesktopIpcHandlers(): void {
   });
   ipcMain.handle(DESKTOP_CHANNEL.windowClose, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close();
+  });
+  ipcMain.handle(DESKTOP_CHANNEL.navigationBack, (event) => {
+    const contents = event.sender;
+    if (!getAppNavigationState(contents).canGoBack) return false;
+    contents.navigationHistory.goBack();
+    return true;
+  });
+  ipcMain.handle(DESKTOP_CHANNEL.navigationForward, (event) => {
+    const contents = event.sender;
+    if (!getAppNavigationState(contents).canGoForward) return false;
+    contents.navigationHistory.goForward();
+    return true;
   });
   ipcMain.handle(DESKTOP_CHANNEL.savePdfFromHtml, async (event, options: unknown) => {
     if (

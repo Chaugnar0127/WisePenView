@@ -1,19 +1,12 @@
+import { APP_HEADER_NAV_KEY, type AppHeaderNavKey } from '@/bootstrap/routeMeta';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Bell, Folder, MessageSquarePlus, Users, type LucideIcon } from 'lucide-react';
-
-export const APP_HEADER_NAV_KEY = {
-  CHAT: '/app/chat',
-  DRIVE: '/app/drive/personal',
-  NOTIFICATIONS: '/app/notifications',
-  GROUP: '/app/collaboration',
-} as const;
-
-export type AppHeaderNavKey = (typeof APP_HEADER_NAV_KEY)[keyof typeof APP_HEADER_NAV_KEY];
 
 interface AppHeaderNavItem {
   key: AppHeaderNavKey;
   labelKey: string;
   icon: LucideIcon;
-  routePrefixes: readonly string[];
+  to: string;
 }
 
 export const APP_HEADER_NAV_ITEMS: readonly AppHeaderNavItem[] = [
@@ -21,32 +14,24 @@ export const APP_HEADER_NAV_ITEMS: readonly AppHeaderNavItem[] = [
     key: APP_HEADER_NAV_KEY.CHAT,
     labelKey: 'navigation.newChat',
     icon: MessageSquarePlus,
-    routePrefixes: ['/app/chat'],
+    to: APP_ROUTE_PATH.CHAT,
   },
   {
     key: APP_HEADER_NAV_KEY.DRIVE,
     labelKey: 'navigation.drive',
     icon: Folder,
-    routePrefixes: ['/app/drive', '/app/workspace'],
+    to: APP_ROUTE_PATH.DRIVE_PERSONAL,
   },
   {
-    key: APP_HEADER_NAV_KEY.GROUP,
+    key: APP_HEADER_NAV_KEY.PUBLIC,
     labelKey: 'navigation.groups',
     icon: Users,
-    routePrefixes: ['/app/collaboration'],
+    to: APP_ROUTE_PATH.GROUPS,
   },
   {
     key: APP_HEADER_NAV_KEY.NOTIFICATIONS,
     labelKey: 'navigation.notifications',
     icon: Bell,
-    routePrefixes: ['/app/notifications'],
+    to: APP_ROUTE_PATH.NOTIFICATIONS,
   },
 ];
-
-const isRoutePrefixMatch = (pathname: string, routePrefix: string): boolean =>
-  pathname === routePrefix || pathname.startsWith(`${routePrefix}/`);
-
-export const resolveAppHeaderNavKey = (pathname: string): AppHeaderNavKey | undefined =>
-  APP_HEADER_NAV_ITEMS.find((item) =>
-    item.routePrefixes.some((routePrefix) => isRoutePrefixMatch(pathname, routePrefix))
-  )?.key;

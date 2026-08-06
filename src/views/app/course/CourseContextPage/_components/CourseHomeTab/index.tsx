@@ -3,6 +3,11 @@ import { useCourseService } from '@/domains';
 import { COURSE_ROLE } from '@/domains/Course';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
+import {
+  buildCourseAssignmentPath,
+  buildCourseLearningPath,
+  buildCoursePath,
+} from '@/utils/navigation/appRoute';
 import { Button, Meter, ProgressBar } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { ArrowRight, Bell, BookOpen, CalendarClock, ClipboardCheck } from 'lucide-react';
@@ -15,7 +20,6 @@ function CourseHomeTab() {
   const { course } = useCourseContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
-  const basePath = `/app/course/${course.courseId}`;
   const canEditOutline = course.myRole === COURSE_ROLE.TEACHER;
   const { data, loading, error, refresh } = useRequest(() =>
     courseService.getCourseHome(course.courseId)
@@ -68,7 +72,10 @@ function CourseHomeTab() {
               </p>
             </div>
           </div>
-          <Button variant="primary" onPress={() => navigate(`${basePath}/learning`)}>
+          <Button
+            variant="primary"
+            onPress={() => navigate(buildCourseLearningPath(course.courseId))}
+          >
             {canEditOutline ? t('home.enterEditing') : t('home.enterLearning')}
             <ArrowRight size={16} aria-hidden />
           </Button>
@@ -85,7 +92,7 @@ function CourseHomeTab() {
             <Button
               variant="secondary"
               size="sm"
-              onPress={() => navigate(`${basePath}/assignments`)}
+              onPress={() => navigate(buildCourseAssignmentPath(course.courseId))}
             >
               {t('home.viewAll')}
             </Button>
@@ -97,7 +104,9 @@ function CourseHomeTab() {
                   key={assignment.assignmentId}
                   type="button"
                   className={styles.assignmentRow}
-                  onClick={() => navigate(`${basePath}/assignments/${assignment.assignmentId}`)}
+                  onClick={() =>
+                    navigate(buildCourseAssignmentPath(course.courseId, assignment.assignmentId))
+                  }
                 >
                   <span>
                     <strong>{assignment.title}</strong>
@@ -126,7 +135,7 @@ function CourseHomeTab() {
             <Button
               variant="secondary"
               size="sm"
-              onPress={() => navigate(`${basePath}/announcements`)}
+              onPress={() => navigate(buildCoursePath(course.courseId, 'announcements'))}
             >
               {t('home.viewAll')}
             </Button>

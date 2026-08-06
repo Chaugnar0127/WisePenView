@@ -1,11 +1,11 @@
 import { useAgentService } from '@/domains';
 import type { AgentDetail, AgentSpec } from '@/domains/Agent';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { useState } from 'react';
-import { useBeforeUnload, useBlocker } from 'react-router-dom';
 import { buildGuidedPrompt, getDefaultGuidedPromptFields } from '../../../guidedPrompt';
 import {
   buildAgentDraft,
@@ -102,15 +102,12 @@ export function useAgentDraftSessionController({
     }
   );
 
-  const blocker = useBlocker(isDirty);
-  useBeforeUnload((event) => {
-    if (isDirty) event.preventDefault();
-  });
+  const unsavedChangesGuard = useUnsavedChangesGuard(isDirty);
 
   const saveAndLeave = async () => {
     try {
       await saveRequest.runAsync();
-      blocker.proceed?.();
+      unsavedChangesGuard.proceed();
     } catch {
       // 保存失败时保留当前页面，用户可以继续编辑。
     }
@@ -134,12 +131,12 @@ export function useAgentDraftSessionController({
     versionLoading;
 
   return {
-    cancelLeave: () => blocker.reset?.(),
+    cancelLeave: unsavedChangesGuard.reset,
     currentDraftAgent: buildCurrentDraftAgent(baseAgent, draft, t('agent:page.currentAgent')),
-    discardLeave: () => blocker.proceed?.(),
+    discardLeave: unsavedChangesGuard.proceed,
     draft,
     isDirty,
-    isLeaveBlocked: blocker.state === 'blocked',
+    isLeaveBlocked: unsavedChangesGuard.isBlocked,
     isReadOnly,
     publishDraft: () => publishRequest.run(),
     publishLoading: publishRequest.loading,

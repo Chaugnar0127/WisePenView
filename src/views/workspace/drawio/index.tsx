@@ -10,6 +10,7 @@ import type {
 import type { ResourceAction, ResourceItem } from '@/domains/Resource';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import {
   useResourceHostLayoutConfig,
@@ -375,7 +376,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
             status="warning"
             title={t('drawio.cannotOpen')}
             extra={
-              <Link to="/app/drive/personal">
+              <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                 <Button variant="secondary">{t('viewer.backToDrive')}</Button>
               </Link>
             }
@@ -394,7 +395,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
             title={t('drawio.loadFailed')}
             subTitle={parseErrorMessage(error)}
             extra={
-              <Link to="/app/drive/personal">
+              <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                 <Button variant="secondary">{t('viewer.backToDrive')}</Button>
               </Link>
             }

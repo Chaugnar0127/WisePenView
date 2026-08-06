@@ -1,46 +1,33 @@
+import { APP_HEADER_NAV_KEY, type AppHeaderNavKey } from '@/bootstrap/routeMeta';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
 import { clearNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
-import {
-  APP_HEADER_NAV_ITEMS,
-  APP_HEADER_NAV_KEY,
-  resolveAppHeaderNavKey,
-  type AppHeaderNavKey,
-} from '@/layouts/_common/Sidebar/appSidebarNavigation';
+import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
+import { APP_HEADER_NAV_ITEMS } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import { ListBox, ListBoxItem } from '@heroui/react';
 import clsx from 'clsx';
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAppSidebarSelectionStore } from '../_store/useAppSidebarSelectionStore';
+import { useNavigate } from 'react-router-dom';
 import styles from './style.module.less';
 
 function AppHeaderNav() {
   const { t } = useTranslation('shell');
   const navigate = useNavigate();
-  const location = useLocation();
+  const routeMeta = useAppRouteMeta();
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
-  const headerNavInitialized = useAppSidebarSelectionStore((state) => state.headerNavInitialized);
-  const selectedHeaderNavKey = useAppSidebarSelectionStore((state) => state.selectedHeaderNavKey);
-  const initializeSelectedHeaderNavKey = useAppSidebarSelectionStore(
-    (state) => state.initializeSelectedHeaderNavKey
-  );
-  const setSelectedHeaderNavKey = useAppSidebarSelectionStore(
-    (state) => state.setSelectedHeaderNavKey
-  );
-
-  const activeNavKey = resolveAppHeaderNavKey(location.pathname);
-  const selectedKey = headerNavInitialized ? selectedHeaderNavKey : activeNavKey;
+  const selectedKey = routeMeta?.headerNav;
 
   const handleNavItemPress = (navKey: AppHeaderNavKey) => {
-    setSelectedHeaderNavKey(navKey);
+    const navItem = APP_HEADER_NAV_ITEMS.find((item) => item.key === navKey);
+    if (!navItem) return;
     if (navKey === APP_HEADER_NAV_KEY.CHAT) {
       clearCurrentSession();
       clearNewChatSessionStore();
     }
-    navigate(navKey);
+    navigate(navItem.to);
   };
 
-  // Sliding indicator — direct DOM manipulation to avoid setState in effect
+  // 滑动指示器直接同步 DOM，避免在布局副作用中触发额外渲染。
   const containerRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<string, HTMLElement>>(new Map());
@@ -52,12 +39,6 @@ function AppHeaderNav() {
       itemRefs.current.delete(key);
     }
   };
-
-  useLayoutEffect(() => {
-    if (!headerNavInitialized && activeNavKey) {
-      initializeSelectedHeaderNavKey(activeNavKey);
-    }
-  }, [activeNavKey, headerNavInitialized, initializeSelectedHeaderNavKey]);
 
   useLayoutEffect(() => {
     const indicatorEl = indicatorRef.current;

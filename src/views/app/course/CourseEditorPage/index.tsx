@@ -1,9 +1,9 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { COURSE_ROLE } from '@/domains/Course';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
+import { buildCoursePath } from '@/utils/navigation/appRoute';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import CourseAssessmentSection from './_components/CourseAssessmentSection';
 import CourseBasicSection from './_components/CourseBasicSection';
 import CourseCoverModal from './_components/CourseCoverModal';
@@ -24,17 +24,13 @@ function CourseEditorPage() {
   const { activeSection, setEditorScrollElement, navigateToSection, handleEditorScroll } =
     useCourseEditorNavigationController();
 
-  if (course.myRole !== COURSE_ROLE.TEACHER) {
-    return <Navigate to={`/app/course/${course.courseId}/home`} replace />;
-  }
-
   return (
     <div className={styles.editorShell}>
       <header className={styles.editorHeader}>
         <AppIconButton
           icon={<ArrowLeft aria-hidden />}
           label={t('editor.back')}
-          onPress={() => navigate(`/app/course/${course.courseId}/home`)}
+          onPress={() => navigate(buildCoursePath(course.courseId, 'home'))}
         />
         <div>
           <strong>{course.name}</strong>

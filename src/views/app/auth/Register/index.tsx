@@ -1,12 +1,13 @@
 import {
   appendRedirectParam,
   buildRegisterOnboardingPath,
-  getAuthRedirectPath,
+  readRedirectParam,
 } from '@/bootstrap/authContinuation';
 import { Checkbox, FormField, Input, PasswordInput } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { RegisterRequest } from '@/domains/Auth';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
 import { Button, Form, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -39,7 +40,7 @@ function Register() {
   const [formErrors, setFormErrors] = useState<FieldErrors<RegisterField>>({});
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectPath = getAuthRedirectPath(location.search);
+  const redirectPath = readRedirectParam(location.search);
 
   const { run: submitLogin } = useRequest(
     (values: RegisterRequest) =>
@@ -54,7 +55,7 @@ function Register() {
       },
       onError: (err: unknown) => {
         toast.danger(parseErrorMessage(err));
-        navigate('/login', { replace: true });
+        navigate(APP_ROUTE_PATH.AUTH_LOGIN, { replace: true });
       },
     }
   );
@@ -199,7 +200,9 @@ function Register() {
           <div className={auth.centerLinks}>
             <span>
               {t('register.hasAccount')}
-              <Link to={appendRedirectParam('/login', redirectPath)}>{t('register.toLogin')}</Link>
+              <Link to={appendRedirectParam(APP_ROUTE_PATH.AUTH_LOGIN, redirectPath)}>
+                {t('register.toLogin')}
+              </Link>
             </span>
           </div>
         </div>

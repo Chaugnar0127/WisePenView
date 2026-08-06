@@ -42,6 +42,7 @@ view/component -> service -> mapper -> api -> entity/enum
 - 接入新接口：`domain-api.md`、`domain-mapper.md`、`domain-service.md`。
 - 调整后端字段：`domain-mapper.md`、`domain-entity.md`、必要时补读 `domain-api.md`。
 - 新增可复用组件：`component-boundary.md`、`component-react.md`、`component-style.md`。
+- 路由、页面级 Tab 与面包屑：`routing.md`。
 - 提交或写 PR：`commit.md`。
 
 ## 五、收敛约定

@@ -1,3 +1,8 @@
+export interface DesktopNavigationState {
+  readonly canGoBack: boolean;
+  readonly canGoForward: boolean;
+}
+
 export const DESKTOP_CHANNEL = {
   getAppVersion: 'desktop:get-app-version',
   openExternal: 'desktop:open-external',
@@ -7,4 +12,7 @@ export const DESKTOP_CHANNEL = {
   windowMinimize: 'desktop:window-minimize',
   windowMaximizeToggle: 'desktop:window-maximize-toggle',
   windowClose: 'desktop:window-close',
+  navigationStateChanged: 'desktop:navigation-state-changed',
+  navigationBack: 'desktop:navigation-back',
+  navigationForward: 'desktop:navigation-forward',
 } as const;

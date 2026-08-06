@@ -2,6 +2,7 @@ import { FormField, Input } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { ResetPasswordRequest } from '@/domains/Auth';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Alert, Button, Form, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Mail } from 'lucide-react';
@@ -100,7 +101,7 @@ function ResetPassword() {
             {t('resetPassword.submit')}
           </Button>
           <div className={auth.centerLinks}>
-            <Link to="/login">{t('resetPassword.backToLogin')}</Link>
+            <Link to={APP_ROUTE_PATH.AUTH_LOGIN}>{t('resetPassword.backToLogin')}</Link>
           </div>
         </div>
       </Form>

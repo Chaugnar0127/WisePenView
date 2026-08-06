@@ -121,8 +121,3 @@ export interface FolderTableProps<T extends FolderTableRow> {
   /** 选择后的操作区（通常配合 checkboxSelection）。 */
   selectionFooter?: ReactNode;
 }
-
-export type {
-  FolderTableBreadcrumbItem,
-  FolderTableBreadcrumbProps,
-} from './parts/FolderBreadcrumb/index.type';

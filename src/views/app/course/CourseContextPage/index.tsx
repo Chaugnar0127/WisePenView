@@ -1,38 +1,25 @@
+import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
+import { buildCoursePath } from '@/utils/navigation/appRoute';
 import { Tabs } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
-import CourseHomeTab from './_components/CourseHomeTab';
-import CourseInfoTab from './_components/CourseInfoTab';
+import { Outlet, useNavigate } from 'react-router-dom';
 import styles from './style.module.less';
 
 const COURSE_CONTEXT_TAB_KEYS = ['home', 'info'] as const;
 type CourseContextTabKey = (typeof COURSE_CONTEXT_TAB_KEYS)[number];
 
-const resolveInitialTab = (value: string | null): CourseContextTabKey =>
-  COURSE_CONTEXT_TAB_KEYS.includes(value as CourseContextTabKey)
-    ? (value as CourseContextTabKey)
-    : 'home';
-
 function CourseContextPage() {
   const { t } = useTranslation('course');
   const { course } = useCourseContext();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeTabKey = resolveInitialTab(searchParams.get('tab'));
+  const navigate = useNavigate();
+  const routeMeta = useAppRouteMeta();
+  const activeTabKey: CourseContextTabKey = routeMeta?.pageKey === 'course.info' ? 'info' : 'home';
   const tabItems = [
     { key: 'home', label: t('nav.home') },
     { key: 'info', label: t('nav.info') },
   ] satisfies { key: CourseContextTabKey; label: string }[];
   const courseKicker = [course.term, course.category].filter(Boolean).join(' · ');
-
-  const activeTabContent = (() => {
-    switch (activeTabKey) {
-      case 'info':
-        return <CourseInfoTab />;
-      default:
-        return <CourseHomeTab />;
-    }
-  })();
 
   return (
     <div className={styles.root}>
@@ -58,13 +45,7 @@ function CourseContextPage() {
           onSelectionChange={(key) => {
             const nextKey = String(key);
             if (COURSE_CONTEXT_TAB_KEYS.includes(nextKey as CourseContextTabKey)) {
-              const nextSearchParams = new URLSearchParams(searchParams);
-              if (nextKey === 'home') {
-                nextSearchParams.delete('tab');
-              } else {
-                nextSearchParams.set('tab', nextKey);
-              }
-              setSearchParams(nextSearchParams, { replace: true });
+              navigate(buildCoursePath(course.courseId, nextKey as CourseContextTabKey));
             }
           }}
           className={styles.contextTabs}
@@ -85,7 +66,7 @@ function CourseContextPage() {
       <div
         className={`${styles.tabContent} ${activeTabKey === 'home' ? styles.homeTabContent : ''}`}
       >
-        {activeTabContent}
+        <Outlet />
       </div>
     </div>
   );

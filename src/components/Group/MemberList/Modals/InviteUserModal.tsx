@@ -1,5 +1,6 @@
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { copyText } from '@/utils/browser/copyText';
+import { buildInvitePath } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
 import { Copy, Link as LinkIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -9,7 +10,7 @@ import styles from './style.module.less';
 
 const buildInviteUrl = (inviteCode?: string): string => {
   if (!inviteCode) return '';
-  const path = `/app/collaboration?inviteCode=${encodeURIComponent(inviteCode)}`;
+  const path = buildInvitePath(inviteCode);
   if (typeof window === 'undefined') return path;
   return `${window.location.origin}${path}`;
 };

@@ -1,11 +1,11 @@
 import { useSkillService } from '@/domains';
 import type { SkillDetail, SkillFileNode } from '@/domains/Skill';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useLatest, useRequest } from 'ahooks';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useBeforeUnload, useBlocker } from 'react-router-dom';
 
 import type { UnsavedSkillChangesMode } from '../_components/UnsavedSkillChangesModal';
 import type { SkillWorkspacePendingIntent } from '../_models/workspaceDraft';
@@ -63,7 +63,7 @@ export function useSkillNavigationController({
   const skillService = useSkillService();
   const hasUnsafeNavigation = hasUnsavedChanges || isSaving;
   const hasUnsavedChangesLatest = useLatest(hasUnsavedChanges);
-  const navigationBlocker = useBlocker(hasUnsafeNavigation);
+  const unsavedChangesGuard = useUnsavedChangesGuard(hasUnsafeNavigation);
 
   /**
    * @wisepen-manual-effect
@@ -72,21 +72,12 @@ export function useSkillNavigationController({
    * cleanup：blocker 生命周期由 React Router 管理，本层没有额外订阅需要清理。
    */
   useEffect(() => {
-    if (navigationBlocker.state === 'blocked') {
+    if (unsavedChangesGuard.isBlocked) {
       setPendingIntent({ type: 'leave' });
     } else if (pendingIntent?.type === 'leave') {
       setPendingIntent(null);
     }
-  }, [navigationBlocker.state, pendingIntent?.type, setPendingIntent]);
-
-  useBeforeUnload(
-    (event) => {
-      if (!hasUnsafeNavigation) return;
-      event.preventDefault();
-      event.returnValue = '';
-    },
-    { capture: true }
-  );
+  }, [unsavedChangesGuard.isBlocked, pendingIntent?.type, setPendingIntent]);
 
   const { loading: publishLoading, run: publish } = useRequest(
     async () => {
@@ -193,8 +184,8 @@ export function useSkillNavigationController({
   };
 
   const handleCancelPendingIntent = () => {
-    if (pendingIntent?.type === 'leave' && navigationBlocker.state === 'blocked') {
-      navigationBlocker.reset();
+    if (pendingIntent?.type === 'leave' && unsavedChangesGuard.isBlocked) {
+      unsavedChangesGuard.reset();
     }
     setPendingIntent(null);
   };
@@ -205,9 +196,9 @@ export function useSkillNavigationController({
       return;
     }
     if (pendingIntent?.type === 'leave') {
-      if (navigationBlocker.state !== 'blocked') return;
+      if (!unsavedChangesGuard.isBlocked) return;
       discardAll();
-      void clearDraftCache().then(() => navigationBlocker.proceed());
+      void clearDraftCache().then(unsavedChangesGuard.proceed);
       return;
     }
     if (pendingIntent?.type === 'switchVersion') {
@@ -232,7 +223,7 @@ export function useSkillNavigationController({
     }
     if (pendingIntent?.type === 'leave') {
       void saveAndContinue(() => {
-        if (navigationBlocker.state === 'blocked') navigationBlocker.proceed();
+        if (unsavedChangesGuard.isBlocked) unsavedChangesGuard.proceed();
       });
       return;
     }

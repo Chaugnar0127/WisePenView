@@ -1,4 +1,4 @@
-import type { FolderTableBreadcrumbItem } from '@/components/Table';
+import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { useDriveService } from '@/domains';
 import type { DriveNode } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
@@ -154,8 +154,8 @@ export function useTableDriveDndController({
     clearDragState();
   };
 
-  const renderBreadcrumbItem = (content: ReactNode, item: FolderTableBreadcrumbItem) => {
-    const targetNode = driveNodeMap.get(item.id);
+  const renderBreadcrumbItem = (content: ReactNode, item: AppBreadcrumbItem) => {
+    const targetNode = driveNodeMap.get(item.key);
     if (!targetNode) return content;
 
     return (

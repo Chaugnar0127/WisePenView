@@ -1,6 +1,7 @@
 import { ResultState, Spin } from '@/components/Feedback';
 import { useNoteService } from '@/domains';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
@@ -31,7 +32,7 @@ function NoteOpenFailure({ subTitle }: { subTitle?: string }) {
             title={t('workspace.openFailed')}
             subTitle={subTitle}
             extra={
-              <Link to="/app/drive/personal">
+              <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                 <Button variant="secondary">{t('workspace.backToDrive')}</Button>
               </Link>
             }

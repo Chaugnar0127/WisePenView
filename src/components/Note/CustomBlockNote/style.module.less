@@ -1,3 +1,65 @@
+.noteChecklistVariables() {
+  --app-checkbox-control-size: 18px;
+  --app-checkbox-control-bg: color-mix(
+    in oklab,
+    var(--surface-tertiary) 35%,
+    var(--surface) 65%
+  );
+  --app-checkbox-control-bg-hover: color-mix(
+    in oklab,
+    var(--surface-tertiary) 70%,
+    var(--surface) 30%
+  );
+  --app-checkbox-control-border: color-mix(
+    in oklab,
+    var(--border) 82%,
+    var(--surface) 18%
+  );
+  --app-checkbox-control-border-hover: color-mix(
+    in oklab,
+    var(--border) 56%,
+    var(--accent) 44%
+  );
+  --app-checkbox-control-border-focus: var(--focus, var(--accent));
+  --app-checkbox-focus-ring: 0 0 0 1px var(--app-checkbox-control-border-focus);
+}
+
+.noteChecklistControlWrapper() {
+  display: inline-flex;
+  align-items: center;
+  height: calc(var(--app-checkbox-control-size) + 6px);
+}
+
+.noteChecklistInput() {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--app-checkbox-control-size);
+  height: var(--app-checkbox-control-size);
+  margin: 3px 8px 0 1px;
+  border: 1px solid var(--app-checkbox-control-border);
+  border-radius: 4px;
+  appearance: none;
+  background-color: var(--app-checkbox-control-bg);
+  box-shadow: none;
+}
+
+.noteChecklistInputChecked() {
+  border-color: var(--accent);
+  background-color: var(--accent);
+}
+
+.noteChecklistInputCheckedIndicator() {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--surface);
+  border-width: 0 2px 2px 0;
+  content: '';
+  transform: rotate(45deg);
+}
+
 .editorShell {
   flex: 1;
   min-height: 0;
@@ -215,6 +277,62 @@
     font-size: 1.25em;
     font-weight: var(--font-weight-semibold);
     line-height: 1.34;
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='checkListItem']) {
+    .noteChecklistVariables();
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='checkListItem'] > div:has(> input)) {
+    .noteChecklistControlWrapper();
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='checkListItem'] > div > input) {
+    .noteChecklistInput();
+
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  :global(
+    .bn-editor
+      .bn-block-content[data-content-type='checkListItem']
+      > div
+      > input:hover:not(:disabled):not(:checked)
+  ) {
+    border-color: var(--app-checkbox-control-border-hover);
+    background-color: var(--app-checkbox-control-bg-hover);
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='checkListItem'] > div > input:focus-visible) {
+    border-color: var(--app-checkbox-control-border-focus);
+    box-shadow: var(--app-checkbox-focus-ring);
+    outline: none;
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='checkListItem'] > div > input:checked) {
+    .noteChecklistInputChecked();
+  }
+
+  :global(
+    .bn-editor .bn-block-content[data-content-type='checkListItem'] > div > input:checked::after
+  ) {
+    .noteChecklistInputCheckedIndicator();
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='checkListItem'] > div > input:disabled) {
+    border-color: color-mix(in oklab, var(--app-checkbox-control-border) 76%, transparent);
+    background-color: color-mix(in oklab, var(--app-checkbox-control-bg) 78%, transparent);
+    box-shadow: none;
+    cursor: default;
+  }
+
+  :global(.bn-editor .bn-block-content[data-content-type='checkListItem'] > div > input:checked:disabled) {
+    border-color: color-mix(in oklab, var(--accent) 76%, transparent);
+    background-color: color-mix(in oklab, var(--accent) 78%, transparent);
   }
 
   :global(.bn-editor .bn-block-content[data-content-type='numberedListItem']::before) {
@@ -731,6 +849,31 @@
 :global(.bn-drag-preview .bn-block-content[data-content-type='heading'][data-level='6']) {
   font-size: 16px !important;
   line-height: 1.4;
+}
+
+:global(.bn-drag-preview .bn-block-content[data-content-type='checkListItem']) {
+  .noteChecklistVariables();
+}
+
+:global(.bn-drag-preview .bn-block-content[data-content-type='checkListItem'] > div:has(> input)) {
+  .noteChecklistControlWrapper();
+}
+
+:global(.bn-drag-preview .bn-block-content[data-content-type='checkListItem'] > div > input) {
+  .noteChecklistInput();
+}
+
+:global(.bn-drag-preview .bn-block-content[data-content-type='checkListItem'] > div > input:checked) {
+  .noteChecklistInputChecked();
+}
+
+:global(
+  .bn-drag-preview
+    .bn-block-content[data-content-type='checkListItem']
+    > div
+    > input:checked::after
+) {
+  .noteChecklistInputCheckedIndicator();
 }
 
 :global(.bn-drag-preview .bn-block-content[data-content-type='codeBlock']) {

@@ -1,7 +1,8 @@
 import { useCourseService } from '@/domains';
+import { buildCourseLearningPath, buildCoursePath } from '@/utils/navigation/appRoute';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   collectOutlineResources,
   filterCourseOutline,
@@ -14,9 +15,7 @@ export const useCourseLearningNavigationController = (courseId: string) => {
   const courseService = useCourseService();
   const navigate = useNavigate();
   const { outlineNodeId = '' } = useParams<{ outlineNodeId: string }>();
-  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const basePath = `/app/course/${courseId}`;
   const request = useRequest(() => courseService.getCourseOutline(courseId), {
     ready: Boolean(courseId),
     refreshDeps: [courseId],
@@ -24,10 +23,7 @@ export const useCourseLearningNavigationController = (courseId: string) => {
   const outlineNodes = request.data?.nodes ?? [];
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
   const visibleNodes = filterCourseOutline(outlineNodes, normalizedQuery);
-  const selectedNode =
-    findOutlineNode(outlineNodes, outlineNodeId) ??
-    findOutlineResourceByResourceId(outlineNodes, searchParams.get('resourceId') ?? '') ??
-    outlineNodes[0];
+  const selectedNode = findOutlineNode(outlineNodes, outlineNodeId) ?? outlineNodes[0];
   const selectedResources = selectedNode
     ? selectedNode.nodeType === 'RESOURCE'
       ? [selectedNode]
@@ -52,7 +48,6 @@ export const useCourseLearningNavigationController = (courseId: string) => {
   });
 
   return {
-    basePath,
     outlineNodes,
     visibleNodes,
     selectedNode,
@@ -63,11 +58,11 @@ export const useCourseLearningNavigationController = (courseId: string) => {
     loading: request.loading,
     error: request.error,
     refresh: request.refresh,
-    openOutlineNode: (nodeId: string) => navigate(`${basePath}/learning/${nodeId}`),
+    openOutlineNode: (nodeId: string) => navigate(buildCourseLearningPath(courseId, nodeId)),
     openResource: (resourceId: string) => {
       const resource = findOutlineResourceByResourceId(outlineNodes, resourceId);
-      if (resource) navigate(`${basePath}/learning/${resource.nodeId}`);
+      if (resource) navigate(buildCourseLearningPath(courseId, resource.nodeId));
     },
-    openCourseHome: () => navigate(`${basePath}/home`),
+    openCourseHome: () => navigate(buildCoursePath(courseId, 'home')),
   };
 };

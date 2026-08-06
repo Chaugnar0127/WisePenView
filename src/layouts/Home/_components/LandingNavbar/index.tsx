@@ -1,5 +1,6 @@
 import logoImg from '@/assets/images/logo-icon.png';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -11,9 +12,9 @@ function LandingNavbar({ activeKey }: LandingNavbarProps) {
   const navigate = useNavigate();
   const desktopWindow = useDesktopWindowState();
   const navItems = [
-    { key: '1', label: t('home.nav.home'), path: '/' },
-    { key: '2', label: t('home.nav.register'), path: '/register' },
-    { key: '3', label: t('home.nav.login'), path: '/login' },
+    { key: '1', label: t('home.nav.home'), path: APP_ROUTE_PATH.HOME },
+    { key: '2', label: t('home.nav.register'), path: APP_ROUTE_PATH.AUTH_REGISTER },
+    { key: '3', label: t('home.nav.login'), path: APP_ROUTE_PATH.AUTH_LOGIN },
   ];
 
   return (

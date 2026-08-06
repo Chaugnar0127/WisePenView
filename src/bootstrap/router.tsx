@@ -1,7 +1,7 @@
 import { lazy } from 'react';
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 
-// Layout imports
+import { APP_HEADER_NAV_KEY, appRouteHandle } from '@/bootstrap/routeMeta';
 import AdminLayout from '@/layouts/Admin/AdminLayout';
 import AppLayout from '@/layouts/App/AppLayout';
 import AppNavigationLayout from '@/layouts/AppNavigation/AppNavigationLayout';
@@ -9,11 +9,16 @@ import AuthLayout from '@/layouts/Auth/AuthLayout';
 import CourseLayout from '@/layouts/Course/CourseLayout';
 import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
 import HomeLayout from '@/layouts/Home/HomeLayout';
+import PublicLayout from '@/layouts/Public/PublicLayout';
 import WorkspaceLayout from '@/layouts/Workspace/WorkspaceLayout';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
+import AppError from '@/views/app/error/AppError';
+import ResourceNotFound from '@/views/app/error/ResourceNotFound';
 import RouteError from '@/views/app/error/RouteError';
+import ScopedRouteNotFound from '@/views/app/error/ScopedRouteNotFound';
+import AuthenticatedRouteGuard from '@/views/app/guard/AuthenticatedRouteGuard';
 
-// 页面使用 lazy load，按路由切分 chunk
 const UserManagement = lazy(() => import('@/views/admin/UserManagement'));
 const ResourceManagement = lazy(() => import('@/views/admin/ResourceManagement'));
 const GroupManagement = lazy(() => import('@/views/admin/GroupManagement'));
@@ -25,9 +30,25 @@ const LogAudit = lazy(() => import('@/views/admin/LogAudit'));
 const TaskCenter = lazy(() => import('@/views/admin/TaskCenter'));
 const Home = lazy(() => import('@/views/app/home'));
 const Drive = lazy(() => import('@/views/app/drive/Drive'));
-const MyGroup = lazy(() => import('@/views/app/group/MyGroup'));
+const PublicGroupsPage = lazy(() => import('@/views/app/public/PublicGroupsPage'));
+const PublicCoursesPage = lazy(() => import('@/views/app/public/PublicCoursesPage'));
+const PublicInvitePage = lazy(() => import('@/views/app/public/Invite'));
 const GroupDetail = lazy(() => import('@/views/app/group/GroupDetail'));
 const GroupRoute = lazy(() => import('@/views/app/group/GroupRoute'));
+const GroupFilesPage = lazy(() => import('@/views/app/group/GroupDetail/_pages/GroupFilesPage'));
+const GroupMembersPage = lazy(
+  () => import('@/views/app/group/GroupDetail/_pages/GroupMembersPage')
+);
+const GroupWalletPage = lazy(() => import('@/views/app/group/GroupDetail/_pages/GroupWalletPage'));
+const GroupTokenTransferPage = lazy(
+  () => import('@/views/app/group/GroupDetail/_pages/GroupTokenTransferPage')
+);
+const GroupSettingsPage = lazy(
+  () => import('@/views/app/group/GroupDetail/_pages/GroupSettingsPage')
+);
+const GroupWalletRouteGuard = lazy(
+  () => import('@/views/app/group/GroupDetail/_guards/GroupWalletRouteGuard')
+);
 const Account = lazy(() => import('@/views/app/profile/Account'));
 const Usage = lazy(() => import('@/views/app/profile/Usage'));
 const Appearance = lazy(() => import('@/views/app/profile/Appearance'));
@@ -38,14 +59,16 @@ const ResetPassword = lazy(() => import('@/views/app/auth/ResetPassword'));
 const NewPassword = lazy(() => import('@/views/app/auth/NewPassword'));
 const VerifyEmail = lazy(() => import('@/views/app/auth/VerifyEmail'));
 const WorkspaceResourceView = lazy(() => import('@/views/workspace/WorkspaceResourceView'));
-// Zen Mode 暂不上线，保留实现代码便于后续恢复。
-// const ZenModeLayout = lazy(() => import('@/layouts/ZenMode/ZenModeLayout'));
 const ChatPage = lazy(() => import('@/views/app/chat'));
 const NotificationsPage = lazy(() => import('@/views/app/notifications'));
-const ResourceNotFound = lazy(() => import('@/views/app/error/ResourceNotFound'));
-const AppError = lazy(() => import('@/views/app/error/AppError'));
 const CourseRoute = lazy(() => import('@/views/app/course/CourseRoute'));
 const CourseContextPage = lazy(() => import('@/views/app/course/CourseContextPage'));
+const CourseHomePage = lazy(
+  () => import('@/views/app/course/CourseContextPage/_components/CourseHomeTab')
+);
+const CourseInfoPage = lazy(
+  () => import('@/views/app/course/CourseContextPage/_components/CourseInfoTab')
+);
 const CourseAssignmentsPage = lazy(() => import('@/views/app/course/CourseAssignmentsPage'));
 const CourseAssignmentDetailPage = lazy(
   () => import('@/views/app/course/CourseAssignmentDetailPage')
@@ -54,334 +77,329 @@ const CourseMaterialsPage = lazy(() => import('@/views/app/course/CourseMaterial
 const CourseMembersPage = lazy(() => import('@/views/app/course/CourseMembersPage'));
 const CourseAnnouncementsPage = lazy(() => import('@/views/app/course/CourseAnnouncementsPage'));
 const CourseEditorPage = lazy(() => import('@/views/app/course/CourseEditorPage'));
+const CourseSettingsRouteGuard = lazy(
+  () => import('@/views/app/course/_guards/CourseSettingsRouteGuard')
+);
+
+const chatHandle = appRouteHandle({
+  pageKey: 'chat',
+  headerNav: APP_HEADER_NAV_KEY.CHAT,
+});
+const chatSessionHandle = appRouteHandle({
+  pageKey: 'chat',
+  headerNav: APP_HEADER_NAV_KEY.CHAT,
+});
+const notificationHandle = appRouteHandle({
+  pageKey: 'notifications',
+  headerNav: APP_HEADER_NAV_KEY.NOTIFICATIONS,
+});
+const driveHandle = appRouteHandle({
+  pageKey: 'drive',
+  headerNav: APP_HEADER_NAV_KEY.DRIVE,
+});
+const groupHandle = (pageKey: string) =>
+  appRouteHandle({
+    pageKey,
+    headerNav: APP_HEADER_NAV_KEY.PUBLIC,
+  });
+const courseHandle = (pageKey: string) =>
+  appRouteHandle({
+    pageKey,
+    headerNav: APP_HEADER_NAV_KEY.PUBLIC,
+  });
+const publicInviteHandle = appRouteHandle({
+  pageKey: 'invite',
+  headerNav: APP_HEADER_NAV_KEY.PUBLIC,
+});
+const resourceHandle = appRouteHandle({
+  pageKey: 'resource',
+  headerNav: APP_HEADER_NAV_KEY.DRIVE,
+});
+const profileHandle = appRouteHandle({
+  pageKey: 'profile',
+});
 
 const router = createBrowserRouter([
-  // ==============================
-  // 外部门户区域
-  // ==============================
   {
-    path: '/',
+    path: APP_ROUTE_PATH.HOME,
     element: <HomeLayout />,
     errorElement: <AppError />,
     children: [
-      {
-        index: true,
-        element: <Home />,
-      },
+      { index: true, element: <Home /> },
+      { path: '*', element: <ResourceNotFound /> },
     ],
   },
   {
-    path: '/login',
+    path: APP_ROUTE_PATH.AUTH,
     element: <AuthLayout />,
     errorElement: <AppError />,
     children: [
-      {
-        index: true,
-        element: <Login />,
-      },
+      { index: true, element: <Navigate to={APP_ROUTE_PATH.AUTH_LOGIN} replace /> },
+      { path: 'login', element: <Login /> },
+      { path: 'register', element: <Register /> },
+      { path: 'onboarding/bind', element: <AuthBindingOnboarding /> },
+      { path: 'password/forgot', element: <ResetPassword /> },
+      { path: 'password/reset', element: <NewPassword /> },
+      { path: 'email/verify', element: <VerifyEmail /> },
     ],
   },
   {
-    path: '/register',
-    element: <AuthLayout />,
+    path: APP_ROUTE_PATH.APP,
+    element: <AuthenticatedRouteGuard />,
     errorElement: <AppError />,
     children: [
       {
-        index: true,
-        element: <Register />,
-      },
-    ],
-  },
-  {
-    path: '/auth/onboarding/bind',
-    element: <AuthLayout />,
-    errorElement: <AppError />,
-    children: [
-      {
-        index: true,
-        element: <AuthBindingOnboarding />,
-      },
-    ],
-  },
-  {
-    path: '/reset-pwd',
-    element: <AuthLayout />,
-    errorElement: <AppError />,
-    children: [
-      {
-        index: true,
-        element: <ResetPassword />,
-      },
-    ],
-  },
-  {
-    path: '/new-pwd',
-    element: <AuthLayout />,
-    errorElement: <AppError />,
-    children: [
-      {
-        index: true,
-        element: <NewPassword />,
-      },
-    ],
-  },
-  {
-    path: '/verify-email',
-    element: <AuthLayout />,
-    errorElement: <AppError />,
-    children: [
-      {
-        index: true,
-        element: <VerifyEmail />,
-      },
-    ],
-  },
-
-  // ==============================
-  // 内部系统区域
-  // ==============================
-  {
-    path: '/app',
-    element: <AppNavigationLayout />,
-    errorElement: <AppError />,
-    children: [
-      {
-        element: <AppLayout />, // 承载：普通 app 页面导航 + 右侧助手 + 中间内容
-        errorElement: <RouteError />,
+        element: <AppNavigationLayout />,
         children: [
           {
-            element: <Outlet />,
+            element: <AppLayout />,
             errorElement: <RouteError />,
             children: [
-              // 登录后的默认入口为 AI 对话。
-              {
-                index: true,
-                element: <Navigate to="/app/chat" replace />,
-              },
-              {
-                path: 'chat',
-                element: <ChatPage />,
-              },
-              {
-                path: 'chat/:sessionId',
-                element: <ChatPage />,
-              },
+              { index: true, element: <Navigate to={APP_ROUTE_PATH.CHAT} replace /> },
+              { path: 'chat', element: <ChatPage />, handle: chatHandle },
+              { path: 'chat/:sessionId', element: <ChatPage />, handle: chatSessionHandle },
               {
                 path: 'notifications',
                 element: <NotificationsPage />,
+                handle: notificationHandle,
               },
               {
                 path: 'notifications/:messageId',
                 element: <NotificationsPage />,
+                handle: notificationHandle,
               },
-              // 文档与云盘页
-              {
-                path: 'drive/personal',
-                element: <Drive />,
-              },
+              { path: 'drive', element: <Navigate to={APP_ROUTE_PATH.DRIVE_PERSONAL} replace /> },
+              { path: 'drive/personal', element: <Drive />, handle: driveHandle },
               {
                 path: 'drive/personal/folder/:folderId',
                 element: <Drive />,
-              },
-              {
-                path: 'drive/group/:groupId',
-                element: <Drive />,
-              },
-              {
-                path: 'drive/group/:groupId/folder/:folderId',
-                element: <Drive />,
+                handle: driveHandle,
               },
               {
                 path: 'drive/upload-queue',
                 element: <Drive viewMode="uploadQueue" />,
+                handle: driveHandle,
               },
               {
                 path: 'drive/favorites',
                 element: <Drive viewMode="favorites" />,
+                handle: driveHandle,
               },
               {
                 path: 'drive/trash',
                 element: <Drive viewMode="trash" />,
+                handle: driveHandle,
               },
               {
                 path: 'drive/trash/folder/:folderId',
                 element: <Drive viewMode="trash" />,
+                handle: driveHandle,
               },
+              { index: true, element: <Navigate to={APP_ROUTE_PATH.GROUPS} replace /> },
               {
-                path: 'collaboration',
-                element: <MyGroup />,
-              },
-              {
-                path: 'collaboration/:groupId',
-                element: <GroupRoute />,
+                element: <PublicLayout />,
                 children: [
                   {
-                    index: true,
-                    element: <GroupDetail />,
+                    path: 'invite',
+                    element: <PublicInvitePage />,
+                    handle: publicInviteHandle,
                   },
-                ],
-              },
-              {
-                path: 'course/:courseId',
-                element: <CourseRoute />,
-                children: [
                   {
-                    element: <CourseLayout />,
+                    path: 'groups',
+                    element: <PublicGroupsPage />,
+                    handle: groupHandle('groups.list'),
+                  },
+                  {
+                    path: 'groups/:groupId',
+                    element: <GroupRoute />,
                     children: [
                       {
                         index: true,
-                        element: <Navigate to="home" replace />,
+                        element: <Navigate to="files" replace />,
                       },
                       {
-                        path: 'home',
-                        element: <CourseContextPage />,
-                      },
-                      {
-                        path: 'assignments',
-                        element: <CourseAssignmentsPage />,
-                      },
-                      {
-                        path: 'assignments/:assignmentId',
-                        element: <CourseAssignmentDetailPage />,
-                      },
-                      {
-                        path: 'materials',
-                        element: <CourseMaterialsPage />,
-                      },
-                      {
-                        path: 'announcements',
-                        element: <CourseAnnouncementsPage />,
-                      },
-                      {
-                        path: 'members',
-                        element: <CourseMembersPage />,
+                        element: <GroupDetail />,
+                        children: [
+                          {
+                            path: 'files',
+                            element: <GroupFilesPage />,
+                            handle: groupHandle('group.files'),
+                          },
+                          {
+                            path: 'files/folder/:folderId',
+                            element: <GroupFilesPage />,
+                            handle: groupHandle('group.files'),
+                          },
+                          {
+                            path: 'members',
+                            element: <GroupMembersPage />,
+                            handle: groupHandle('group.members'),
+                          },
+                          {
+                            element: <GroupWalletRouteGuard />,
+                            children: [
+                              {
+                                path: 'wallet',
+                                element: <GroupWalletPage />,
+                                handle: groupHandle('group.wallet'),
+                              },
+                              {
+                                path: 'token-transfer',
+                                element: <GroupTokenTransferPage />,
+                                handle: groupHandle('group.tokenTransfer'),
+                              },
+                            ],
+                          },
+                          {
+                            path: 'settings',
+                            element: <GroupSettingsPage />,
+                            handle: groupHandle('group.settings'),
+                          },
+                        ],
                       },
                     ],
                   },
                   {
-                    path: 'learning/:outlineNodeId?',
-                    element: <CourseLearningLayout />,
+                    path: 'courses',
+                    element: <PublicCoursesPage />,
+                    handle: courseHandle('courses.list'),
                   },
                   {
-                    path: 'edit',
-                    element: <CourseEditorPage />,
+                    path: 'courses/:courseId',
+                    element: <CourseRoute />,
+                    children: [
+                      {
+                        element: <CourseLayout />,
+                        children: [
+                          {
+                            index: true,
+                            element: <Navigate to="home" replace />,
+                          },
+                          {
+                            element: <CourseContextPage />,
+                            children: [
+                              {
+                                path: 'home',
+                                element: <CourseHomePage />,
+                                handle: courseHandle('course.home'),
+                              },
+                              {
+                                path: 'info',
+                                element: <CourseInfoPage />,
+                                handle: courseHandle('course.info'),
+                              },
+                            ],
+                          },
+                          {
+                            path: 'assignments',
+                            element: <CourseAssignmentsPage />,
+                            handle: courseHandle('course.assignments'),
+                          },
+                          {
+                            path: 'assignments/:assignmentId',
+                            element: <CourseAssignmentDetailPage />,
+                            handle: courseHandle('course.assignment'),
+                          },
+                          {
+                            path: 'materials',
+                            element: <CourseMaterialsPage />,
+                            handle: courseHandle('course.materials'),
+                          },
+                          {
+                            path: 'announcements',
+                            element: <CourseAnnouncementsPage />,
+                            handle: courseHandle('course.announcements'),
+                          },
+                          {
+                            path: 'members',
+                            element: <CourseMembersPage />,
+                            handle: courseHandle('course.members'),
+                          },
+                        ],
+                      },
+                      {
+                        path: 'learning/:outlineNodeId?',
+                        element: <CourseLearningLayout />,
+                        handle: courseHandle('course.learning'),
+                      },
+                      {
+                        element: <CourseSettingsRouteGuard />,
+                        children: [
+                          {
+                            path: 'settings',
+                            element: <CourseEditorPage />,
+                            handle: courseHandle('course.settings'),
+                          },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },
               {
-                path: 'profile/usage',
-                element: <Usage />,
+                path: 'profile',
+                element: <Navigate to={APP_ROUTE_PATH.PROFILE_ACCOUNT} replace />,
               },
+              { path: 'profile/usage', element: <Usage />, handle: profileHandle },
+              { path: 'profile/account', element: <Account />, handle: profileHandle },
+              { path: 'profile/appearance', element: <Appearance />, handle: profileHandle },
               {
-                path: 'profile/account',
-                element: <Account />,
-              },
-              {
-                path: 'profile/appearance',
-                element: <Appearance />,
+                path: '*',
+                element: (
+                  <ScopedRouteNotFound homePath={APP_ROUTE_PATH.APP} homeLabelKey="page.backApp" />
+                ),
+                handle: appRouteHandle({
+                  pageKey: 'app.notFound',
+                }),
               },
             ],
           },
-        ],
-      },
-      {
-        element: <WorkspaceLayout />,
-        errorElement: <RouteError />,
-        children: [
           {
-            element: <Outlet />,
+            element: <WorkspaceLayout />,
             errorElement: <RouteError />,
             children: [
               {
-                path: 'workspace/:resourceType',
+                path: 'resources/:resourceType/:resourceId',
                 element: <WorkspaceResourceView />,
-              },
-              {
-                path: 'workspace/:resourceType/:resourceId',
-                element: <WorkspaceResourceView />,
+                handle: resourceHandle,
               },
             ],
           },
         ],
       },
-      // Zen Mode 暂不上线，暂不注册访问路由。
-      // {
-      //   path: 'zen',
-      //   element: <ZenModeLayout />,
-      //   errorElement: <RouteError />,
-      // },
     ],
   },
-
-  // ==============================
-  // 管理后台区域
-  // ==============================
   {
-    path: '/admin',
+    path: APP_ROUTE_PATH.ADMIN,
     element: <AdminRouteGuard />,
     errorElement: <AppError />,
     children: [
       {
-        element: <AdminLayout />, // 承载：admin 根页面内容
+        element: <AdminLayout />,
         errorElement: <RouteError />,
         children: [
+          { index: true, element: <Navigate to={APP_ROUTE_PATH.ADMIN_USERS} replace /> },
+          { path: 'users', element: <UserManagement /> },
+          { path: 'resources', element: <ResourceManagement /> },
+          { path: 'groups', element: <GroupManagement /> },
+          { path: 'announcements', element: <AnnouncementManagement /> },
+          { path: 'statistics', element: <DataStatistics /> },
+          { path: 'permissions', element: <PermissionManagement /> },
+          { path: 'settings', element: <SystemSettings /> },
+          { path: 'logs', element: <LogAudit /> },
+          { path: 'tasks', element: <TaskCenter /> },
           {
-            element: <Outlet />,
-            errorElement: <RouteError />,
-            children: [
-              {
-                index: true,
-                element: <Navigate to="/admin/users" replace />,
-              },
-              {
-                path: 'users',
-                element: <UserManagement />,
-              },
-              {
-                path: 'resources',
-                element: <ResourceManagement />,
-              },
-              {
-                path: 'groups',
-                element: <GroupManagement />,
-              },
-              {
-                path: 'announcements',
-                element: <AnnouncementManagement />,
-              },
-              {
-                path: 'statistics',
-                element: <DataStatistics />,
-              },
-              {
-                path: 'permissions',
-                element: <PermissionManagement />,
-              },
-              {
-                path: 'settings',
-                element: <SystemSettings />,
-              },
-              {
-                path: 'logs',
-                element: <LogAudit />,
-              },
-              {
-                path: 'tasks',
-                element: <TaskCenter />,
-              },
-            ],
+            path: '*',
+            element: (
+              <ScopedRouteNotFound
+                homePath={APP_ROUTE_PATH.ADMIN_USERS}
+                homeLabelKey="page.backAdmin"
+              />
+            ),
           },
         ],
       },
     ],
-  },
-
-  // ==============================
-  // 兜底
-  // ==============================
-  {
-    path: '*',
-    element: <ResourceNotFound />,
   },
 ]);
 

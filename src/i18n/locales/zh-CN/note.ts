@@ -49,6 +49,7 @@ const zhCNNote = {
     next: '下一个匹配',
     replaceCurrent: '替换当前',
     replaceAll: '全部替换',
+    toggleReplace: '切换替换',
     close: '关闭搜索',
   },
   export: {

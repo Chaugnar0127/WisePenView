@@ -47,6 +47,7 @@ const enUSNote = {
     next: 'Next match',
     replaceCurrent: 'Replace current match',
     replaceAll: 'Replace all',
+    toggleReplace: 'Toggle replace',
     close: 'Close search',
   },
   export: {

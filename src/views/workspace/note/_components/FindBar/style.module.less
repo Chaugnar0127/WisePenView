@@ -1,31 +1,69 @@
 .root {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  width: min(38rem, 100%);
-  min-height: 76px;
-  padding: 8px;
+  /* 顶对齐：展开/收起时上方搜索行位置不动 */
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  /* 宽度跟 dock 走，展开/收起内容变化时外框左右长度不变 */
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-2xs);
   background: var(--surface);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm, 4px);
   box-shadow: var(--card-shadow);
 }
 
+.rootFindOnly {
+  min-height: unset;
+}
+
+.rootReplaceOpen {
+  min-height: unset;
+}
+
+/* 展开替换时：左侧切换钮纵向撑满两行输入高度 */
+.replaceToggleTrigger {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  height: auto;
+}
+
+.replaceToggle {
+  flex: none;
+  /* 与 AppIconButton md 同宽，展开时不再改成 28px 导致整行横移 */
+  width: 32px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.rootReplaceOpen .replaceToggle {
+  align-self: stretch;
+  height: 100% !important;
+}
+
 .fields {
   display: grid;
   flex: 1 1 auto;
+  align-self: flex-start;
   min-width: 11rem;
-  gap: 6px;
+  gap: var(--space-2xs);
+  align-content: start;
 }
 
 .fieldRow {
   display: flex;
   align-items: center;
+  gap: var(--space-2xs);
   min-width: 0;
-  height: 30px;
+  /* 与 AppIconButton md 同高，展开/收起不抖、与右侧按钮行对齐 */
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  padding-inline: var(--space-xs);
   background: color-mix(in srgb, var(--foreground) 3%, transparent);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm, 4px);
+  box-sizing: border-box;
 
   &:focus-within {
     border-color: var(--accent);
@@ -37,7 +75,7 @@
   flex: 1;
   min-width: 0;
   height: 100%;
-  padding: 0 8px;
+  padding: 0;
   border: 0;
   outline: none;
   background: transparent;
@@ -50,38 +88,45 @@
   }
 }
 
-.navigationControls,
-.replaceControls {
-  display: inline-flex;
+.actionControls {
+  display: flex;
   flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: var(--space-2xs);
+  align-self: flex-start;
 }
 
-.replaceCount {
-  flex: 0 0 auto;
-  min-width: 3.75rem;
-  padding-right: 6px;
-  color: var(--muted);
-  font-size: var(--font-size-xs, 12px);
-  white-space: nowrap;
+.actionRow {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2xs);
 }
 
-@media (max-width: 760px) {
-  .root {
-    width: min(24rem, 100%);
-  }
+.closeButton {
+  flex: none;
+  align-self: center;
 }
 
+.replaceCount,
 .count {
   flex: 0 0 auto;
-  min-width: 36px;
-  text-align: center;
+  /* 两行共用同一占位宽，避免展开后「无匹配」横移 */
+  min-width: 3.75rem;
+  padding-inline-end: 0;
   color: var(--muted);
   font-size: var(--font-size-xs, 12px);
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  text-align: end;
   white-space: nowrap;
   user-select: none;
+}
+
+.replaceCount {
+  font-variant-numeric: normal;
+  text-align: start;
+  user-select: auto;
 }

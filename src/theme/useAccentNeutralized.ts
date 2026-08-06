@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
 const READING_MODE_STORAGE_KEY = 'wisepen-reading-mode';
-const READING_MODE_ACCENT_NEUTRAL_MIX_PERCENT = 40;
+const READING_MODE_ACCENT_SURFACE_NEUTRAL_MIX_PERCENT = 40;
+const READING_MODE_ACCENT_FOREGROUND_NEUTRAL_MIX_PERCENT = 10;
 const readingModeListeners = new Set<() => void>();
 
 function readStoredReadingMode(defaultValue: boolean): boolean {
@@ -14,8 +15,12 @@ let sharedReadingMode = readStoredReadingMode(false);
 export function applyReadingModeToDOM(isReadingMode: boolean) {
   document.documentElement.setAttribute('data-reading-mode', String(isReadingMode));
   document.documentElement.style.setProperty(
-    '--palette-accent-neutral-mix',
-    isReadingMode ? `${READING_MODE_ACCENT_NEUTRAL_MIX_PERCENT}%` : '0%'
+    '--palette-accent-surface-neutral-mix',
+    isReadingMode ? `${READING_MODE_ACCENT_SURFACE_NEUTRAL_MIX_PERCENT}%` : '0%'
+  );
+  document.documentElement.style.setProperty(
+    '--palette-accent-foreground-neutral-mix',
+    isReadingMode ? `${READING_MODE_ACCENT_FOREGROUND_NEUTRAL_MIX_PERCENT}%` : '0%'
   );
 }
 
@@ -39,7 +44,7 @@ function setSharedReadingMode(isReadingMode: boolean) {
   emitReadingModeChange();
 }
 
-/** 阅读模式：打开后将 accent 12 色阶固定混入 40% 对应 neutral 色阶 */
+/** 阅读模式：打开后低阶 accent 混入 35% neutral，高阶 accent 混入 15% neutral。 */
 export function useAccentNeutralized(defaultValue = false) {
   const isAccentNeutralized = useSyncExternalStore(
     subscribeReadingMode,

@@ -107,7 +107,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
 
@@ -191,7 +191,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
 
@@ -381,7 +381,7 @@
 
   &:hover,
   &:focus-visible {
-    color: var(--accent);
+    color: var(--accent-text);
     background: var(--surface-hover, var(--surface-secondary));
 
     .historyNavigatorBar:not([data-active='true']) {
@@ -392,12 +392,12 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
 
   &[data-active='true'] {
-    color: var(--accent);
+    color: var(--accent-text);
 
     .historyNavigatorRailPreview {
       font-weight: var(--font-weight-semibold);

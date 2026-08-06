@@ -23,7 +23,7 @@
   }
 
   &[data-state='error'] {
-    border-color: var(--error-border);
+    border-color: var(--danger-border);
   }
 
   &:has([data-slot='attachment-trigger'], [data-slot='attachment-action']):hover {
@@ -110,8 +110,8 @@
   }
 
   .attachment[data-state='error'] & {
-    background: var(--error-soft);
-    color: var(--error);
+    background: var(--danger-soft);
+    color: var(--danger-soft-foreground);
   }
 
   svg {

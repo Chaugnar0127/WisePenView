@@ -1,0 +1,194 @@
+/*
+ * 由 Radix Colors 官方自定义色板生成器生成。
+ * light/dark 共用原主题的深品牌色作为第 9 阶，深色模式不再使用旧的浅品牌色。
+ * 保留生成器的 alpha 第 5 阶，用于跟随主题的原生文本选区。
+ * 生成器版本：https://github.com/radix-ui/website/tree/bb424082fd33fadc244a6dd276d3ced55caa6234
+ */
+:root,
+.light,
+.default,
+[data-theme='light'],
+[data-theme='default'] {
+  --wisepen-default-1: #fafdff;
+  --wisepen-default-2: #f2f9ff;
+  --wisepen-default-3: #e2f4ff;
+  --wisepen-default-4: #d2edff;
+  --wisepen-default-5: #c0e4ff;
+  --wisepen-default-a5: #0092ff3f;
+  --wisepen-default-6: #abd7fc;
+  --wisepen-default-7: #8fc6f3;
+  --wisepen-default-8: #63afeb;
+  --wisepen-default-9: #127abb;
+  --wisepen-default-10: #006cac;
+  --wisepen-default-11: #0071b2;
+  --wisepen-default-12: #183c58;
+  --wisepen-default-contrast: #fff;
+
+  --wisepen-floral-1: #fffcfc;
+  --wisepen-floral-2: #fef8f8;
+  --wisepen-floral-3: #fbebec;
+  --wisepen-floral-4: #fddfe1;
+  --wisepen-floral-5: #f9d2d5;
+  --wisepen-floral-a5: #dd00112d;
+  --wisepen-floral-6: #f1c3c7;
+  --wisepen-floral-7: #e7b1b5;
+  --wisepen-floral-8: #dc999f;
+  --wisepen-floral-9: #be435a;
+  --wisepen-floral-10: #ae344d;
+  --wisepen-floral-11: #ba4057;
+  --wisepen-floral-12: #5d212b;
+  --wisepen-floral-contrast: #fff;
+
+  --wisepen-aqua-1: #fafefe;
+  --wisepen-aqua-2: #f3fbfb;
+  --wisepen-aqua-3: #e1f7f8;
+  --wisepen-aqua-4: #cef1f2;
+  --wisepen-aqua-5: #bbe8ea;
+  --wisepen-aqua-a5: #00a9b144;
+  --wisepen-aqua-6: #a5dbdd;
+  --wisepen-aqua-7: #8acacd;
+  --wisepen-aqua-8: #60b5b9;
+  --wisepen-aqua-9: #248286;
+  --wisepen-aqua-10: #0c7478;
+  --wisepen-aqua-11: #11777b;
+  --wisepen-aqua-12: #1c3f40;
+  --wisepen-aqua-contrast: #fff;
+
+  --wisepen-sunset-1: #fefcfc;
+  --wisepen-sunset-2: #fff7f4;
+  --wisepen-sunset-3: #ffebe5;
+  --wisepen-sunset-4: #ffdbcf;
+  --wisepen-sunset-5: #ffcebe;
+  --wisepen-sunset-a5: #ff3f0041;
+  --wisepen-sunset-6: #fcc1b0;
+  --wisepen-sunset-7: #f0af9d;
+  --wisepen-sunset-8: #e39680;
+  --wisepen-sunset-9: #b85d43;
+  --wisepen-sunset-10: #a95036;
+  --wisepen-sunset-11: #ad533a;
+  --wisepen-sunset-12: #4b3029;
+  --wisepen-sunset-contrast: #fff;
+
+  --wisepen-emerald-1: #fbfefc;
+  --wisepen-emerald-2: #f4fbf7;
+  --wisepen-emerald-3: #e6f6ed;
+  --wisepen-emerald-4: #d7f0e3;
+  --wisepen-emerald-5: #c6e8d6;
+  --wisepen-emerald-a5: #00994839;
+  --wisepen-emerald-6: #b1dcc6;
+  --wisepen-emerald-7: #94ccb0;
+  --wisepen-emerald-8: #69b792;
+  --wisepen-emerald-9: #2f8a64;
+  --wisepen-emerald-10: #007e55;
+  --wisepen-emerald-11: #1f7e59;
+  --wisepen-emerald-12: #203a2e;
+  --wisepen-emerald-contrast: #fff;
+
+  --wisepen-lavender-1: #fdfcfe;
+  --wisepen-lavender-2: #faf8fe;
+  --wisepen-lavender-3: #f3effe;
+  --wisepen-lavender-4: #ebe5fd;
+  --wisepen-lavender-5: #e2d9fb;
+  --wisepen-lavender-a5: #3d00e526;
+  --wisepen-lavender-6: #d5c9f6;
+  --wisepen-lavender-7: #c5b5ed;
+  --wisepen-lavender-8: #af9ae3;
+  --wisepen-lavender-9: #835ec7;
+  --wisepen-lavender-10: #7652b6;
+  --wisepen-lavender-11: #7250af;
+  --wisepen-lavender-12: #39265b;
+  --wisepen-lavender-contrast: #fff;
+}
+
+.dark,
+[data-theme='dark'] {
+  --wisepen-default-1: #05101a;
+  --wisepen-default-2: #0b1a26;
+  --wisepen-default-3: #032943;
+  --wisepen-default-4: #00365b;
+  --wisepen-default-5: #00436e;
+  --wisepen-default-a5: #0095ff63;
+  --wisepen-default-6: #005282;
+  --wisepen-default-7: #0c639a;
+  --wisepen-default-8: #0d78b9;
+  --wisepen-default-9: #127abb;
+  --wisepen-default-10: #1b6ca3;
+  --wisepen-default-11: #71c0ff;
+  --wisepen-default-12: #c8ebff;
+  --wisepen-default-contrast: #fff;
+
+  --wisepen-floral-1: #170e0f;
+  --wisepen-floral-2: #1f1415;
+  --wisepen-floral-3: #3c1219;
+  --wisepen-floral-4: #510e1e;
+  --wisepen-floral-5: #611526;
+  --wisepen-floral-a5: #ff1d5056;
+  --wisepen-floral-6: #732131;
+  --wisepen-floral-7: #8d2f41;
+  --wisepen-floral-8: #b93e56;
+  --wisepen-floral-9: #be435a;
+  --wisepen-floral-10: #ae344d;
+  --wisepen-floral-11: #ff8d9e;
+  --wisepen-floral-12: #ffd1d5;
+  --wisepen-floral-contrast: #fff;
+
+  --wisepen-aqua-1: #0b1313;
+  --wisepen-aqua-2: #111c1c;
+  --wisepen-aqua-3: #0d2d2e;
+  --wisepen-aqua-4: #033a3c;
+  --wisepen-aqua-5: #084749;
+  --wisepen-aqua-a5: #00f7ff3c;
+  --wisepen-aqua-6: #135658;
+  --wisepen-aqua-7: #1b686b;
+  --wisepen-aqua-8: #1c7d81;
+  --wisepen-aqua-9: #248286;
+  --wisepen-aqua-10: #0c7478;
+  --wisepen-aqua-11: #74cbcf;
+  --wisepen-aqua-12: #a8eef1;
+  --wisepen-aqua-contrast: #fff;
+
+  --wisepen-sunset-1: #160f0e;
+  --wisepen-sunset-2: #1e1512;
+  --wisepen-sunset-3: #371911;
+  --wisepen-sunset-4: #4c190a;
+  --wisepen-sunset-5: #5b210f;
+  --wisepen-sunset-a5: #fd440b50;
+  --wisepen-sunset-6: #6b2d1b;
+  --wisepen-sunset-7: #833e2a;
+  --wisepen-sunset-8: #aa5036;
+  --wisepen-sunset-9: #b85d43;
+  --wisepen-sunset-10: #a95036;
+  --wisepen-sunset-11: #fe9c80;
+  --wisepen-sunset-12: #fcd6cb;
+  --wisepen-sunset-contrast: #fff;
+
+  --wisepen-emerald-1: #0c1410;
+  --wisepen-emerald-2: #101c16;
+  --wisepen-emerald-3: #0b2e1f;
+  --wisepen-emerald-4: #033c27;
+  --wisepen-emerald-5: #074a31;
+  --wisepen-emerald-a5: #00fc943d;
+  --wisepen-emerald-6: #13583d;
+  --wisepen-emerald-7: #1d6a4b;
+  --wisepen-emerald-8: #22805a;
+  --wisepen-emerald-9: #2f8a64;
+  --wisepen-emerald-10: #1d7c57;
+  --wisepen-emerald-11: #76cea4;
+  --wisepen-emerald-12: #a6f3cd;
+  --wisepen-emerald-contrast: #fff;
+
+  --wisepen-lavender-1: #13101b;
+  --wisepen-lavender-2: #1a1624;
+  --wisepen-lavender-3: #291f3f;
+  --wisepen-lavender-4: #362554;
+  --wisepen-lavender-5: #3f2e61;
+  --wisepen-lavender-a5: #9b67fe54;
+  --wisepen-lavender-6: #4b386f;
+  --wisepen-lavender-7: #5b4785;
+  --wisepen-lavender-8: #7359a7;
+  --wisepen-lavender-9: #835ec7;
+  --wisepen-lavender-10: #7359a6;
+  --wisepen-lavender-11: #c1a5ff;
+  --wisepen-lavender-12: #e4dcfb;
+  --wisepen-lavender-contrast: #fff;
+}

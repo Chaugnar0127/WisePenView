@@ -12,17 +12,17 @@
 }
 
 .statusBadgeBanned {
-  color: var(--error);
-  background: color-mix(in oklab, var(--error) 12%, var(--surface));
+  color: var(--danger-soft-foreground);
+  background: var(--danger-soft);
 }
 
 .statusBadgeUnverified {
-  color: var(--warning);
+  color: var(--warning-text);
   background: color-mix(in oklab, var(--warning) 14%, var(--surface));
 }
 
 .statusBadgeVerified {
-  color: var(--success);
+  color: var(--success-text);
   background: color-mix(in oklab, var(--success) 12%, var(--surface));
 }
 
@@ -102,8 +102,8 @@
   gap: var(--space-2xs);
   border-radius: 50%;
   /* 与主题无关的半透明遮罩，保证浅/深色下都可读 */
-  background: rgb(0 0 0 / 48%);
-  color: #fff;
+  background: color-mix(in srgb, var(--black) 48%, transparent);
+  color: var(--white);
   opacity: 0;
   transition: opacity 0.18s ease;
   pointer-events: none;
@@ -156,7 +156,7 @@
   padding: var(--space-2xs) var(--space-sm);
   font-size: var(--font-size-sm);
   line-height: 1.4;
-  color: var(--accent);
+  color: var(--accent-text);
   background-color: var(--accent-soft);
   border-radius: var(--radius-sm);
   width: fit-content;

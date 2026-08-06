@@ -61,7 +61,7 @@ function VerifyEmail() {
   return (
     <div className={auth.authContainer}>
       <h1>{t('verifyEmail.title')}</h1>
-      <div className="mt-3 rounded-medium bg-primary/10 px-4 py-3 text-sm text-primary">
+      <div className="mt-3 rounded-medium bg-accent-soft px-4 py-3 text-sm text-accent-soft-foreground">
         {t('verifyEmail.alertDescription')}
       </div>
       <div className="mt-6">

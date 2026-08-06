@@ -13,7 +13,7 @@
   .tableHeaderBarLayout();
   min-height: @toolbar-height;
   padding: @table-toolbar-padding-block @table-shell-padding-inline;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--table-inner-border);
   .tableHeaderBarText();
 }
 
@@ -36,7 +36,7 @@
   flex-shrink: 0;
   width: 1px;
   height: @table-shell-padding-inline;
-  background: var(--border-light);
+  background: var(--table-inner-border);
 }
 
 .toolbar {
@@ -126,7 +126,7 @@
     max-height: @row-height-editable;
     padding: @row-cell-padding-block @row-cell-padding-inline;
     overflow: hidden;
-    border-bottom: 1px solid var(--separator);
+    border-bottom: 1px solid var(--table-inner-border);
     border-inline: 0;
     background: var(--surface);
     color: var(--foreground);
@@ -153,29 +153,29 @@
   }
 
   :global(.table-root--secondary .table__row .table__cell) {
-    border-bottom-color: var(--separator);
+    border-bottom-color: var(--table-inner-border);
     background: var(--surface);
   }
 
   :global(.table__row:last-child .table__cell) {
-    border-bottom: 1px solid var(--separator);
+    border-bottom: 1px solid var(--table-inner-border);
   }
 
   @media (hover: hover) {
     :global(.table__row:hover .table__cell),
     :global(.table__row[data-hovered='true'] .table__cell) {
-      background: var(--surface-hover);
+      background: var(--table-row-hover-bg);
     }
   }
 
   :global(.table__row[data-selected='true'] .table__cell) {
-    background: var(--accent-softer);
+    background: var(--table-row-selected-bg);
   }
 
   @media (hover: hover) {
     :global(.table__row[data-selected='true']:hover .table__cell),
     :global(.table__row[data-selected='true'][data-hovered='true'] .table__cell) {
-      background: var(--accent-soft);
+      background: var(--table-row-selected-hover-bg);
     }
   }
 
@@ -224,7 +224,7 @@
 
 .stickyCheckboxColumn:global(.table__column) {
   z-index: 5;
-  background: var(--surface-secondary);
+  background: var(--table-chrome-bg);
 }
 
 .stickyRowHeaderColumn:global(.table__column),
@@ -237,7 +237,7 @@
 
 .stickyRowHeaderColumn:global(.table__column) {
   z-index: 4;
-  background: var(--surface-secondary);
+  background: var(--table-chrome-bg);
 }
 
 .stickyActionColumn:global(.table__column),
@@ -250,7 +250,7 @@
 
 .stickyActionColumn:global(.table__column) {
   z-index: 4;
-  background: var(--surface-secondary);
+  background: var(--table-chrome-bg);
 }
 
 @media (hover: hover) {
@@ -260,14 +260,14 @@
   :global(.table__row[data-hovered='true']) .stickyRowHeaderCell:global(.table__cell),
   :global(.table__row:hover) .stickyActionCell:global(.table__cell),
   :global(.table__row[data-hovered='true']) .stickyActionCell:global(.table__cell) {
-    background: var(--surface-hover);
+    background: var(--table-row-hover-bg);
   }
 }
 
 :global(.table__row[data-selected='true']) .stickyCheckboxCell:global(.table__cell),
 :global(.table__row[data-selected='true']) .stickyRowHeaderCell:global(.table__cell),
 :global(.table__row[data-selected='true']) .stickyActionCell:global(.table__cell) {
-  background: var(--accent-softer);
+  background: var(--table-row-selected-bg);
 }
 
 @media (hover: hover) {
@@ -277,7 +277,7 @@
   :global(.table__row[data-selected='true'][data-hovered='true']) .stickyRowHeaderCell:global(.table__cell),
   :global(.table__row[data-selected='true']:hover) .stickyActionCell:global(.table__cell),
   :global(.table__row[data-selected='true'][data-hovered='true']) .stickyActionCell:global(.table__cell) {
-    background: var(--accent-soft);
+    background: var(--table-row-selected-hover-bg);
   }
 }
 
@@ -389,7 +389,7 @@
 }
 
 .tableFooter {
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--table-inner-border);
 }
 
 .editFieldDisabled {

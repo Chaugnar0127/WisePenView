@@ -22,7 +22,7 @@
 .sectionTitle {
   flex: 0 0 auto;
   padding: 8px 12px 6px;
-  color: var(--text-tertiary);
+  color: var(--muted);
   font-size: 12px;
   font-weight: var(--font-weight-medium);
   line-height: 18px;
@@ -53,7 +53,7 @@
     &:hover,
     &:focus-within {
       color: var(--foreground);
-      background: var(--accent-soft);
+      background: var(--sidebar-item-hover);
     }
   }
 
@@ -73,14 +73,14 @@
   }
 
   :global(.wisepen-tree__item[aria-selected='true']) {
-    color: var(--accent);
-    background: var(--accent-soft);
+    color: var(--accent-text-strong);
+    background: var(--sidebar-item-selected);
     font-weight: var(--font-weight-semibold);
 
     &:hover,
     &:focus-within {
-      color: var(--accent);
-      background: var(--accent-soft-hover);
+      color: var(--accent-text-strong);
+      background: var(--sidebar-item-selected-hover);
     }
   }
 
@@ -202,10 +202,10 @@
 }
 
 .nodeActionBtnDanger {
-  color: var(--danger);
+  color: var(--danger-text);
 
   &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
-    color: var(--danger);
+    color: var(--danger-text);
     background: var(--danger-soft);
   }
 }
@@ -235,10 +235,14 @@
     color 0.14s ease,
     background-color 0.14s ease;
 
-  &:hover,
+  &:hover {
+    background: var(--surface-tertiary);
+  }
+
   &:focus-visible {
     background: var(--surface-tertiary);
-    outline: none;
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
   }
 }
 
@@ -274,15 +278,19 @@
     color 0.14s ease,
     background-color 0.14s ease;
 
-  &:hover,
+  &:hover {
+    background: var(--surface-tertiary);
+  }
+
   &:focus-visible {
     background: var(--surface-tertiary);
-    outline: none;
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
   }
 
   &[aria-checked='true'] {
-    color: var(--accent);
-    background: var(--accent-soft);
+    color: var(--accent-text-strong);
+    background: var(--accent-selected);
   }
 }
 
@@ -296,7 +304,7 @@
 
 .scopeCheckIcon {
   flex: 0 0 auto;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .scopeHint {

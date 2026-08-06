@@ -20,7 +20,7 @@ function CreateMenuIcon({ id }: { id: CreateMenuItem['id'] }) {
         <EntryIcon entryType="resource" resourceIconType="note" size={16} color="currentColor" />
       );
     case 'importNote':
-      return <FileInput size={16} color="var(--primary)" aria-hidden="true" />;
+      return <FileInput size={16} color="var(--accent)" aria-hidden="true" />;
     case 'skill':
       return (
         <EntryIcon entryType="resource" resourceIconType="skill" size={16} color="currentColor" />
@@ -30,7 +30,7 @@ function CreateMenuIcon({ id }: { id: CreateMenuItem['id'] }) {
         <EntryIcon entryType="resource" resourceIconType="agent" size={16} color="currentColor" />
       );
     case 'upload':
-      return <CloudUpload size={16} color="var(--primary)" aria-hidden="true" />;
+      return <CloudUpload size={16} color="var(--accent)" aria-hidden="true" />;
   }
 }
 

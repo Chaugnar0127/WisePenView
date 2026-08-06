@@ -157,18 +157,10 @@
     var(--surface-tertiary) 35%,
     var(--surface) 65%
   );
-  --app-input-slot-border: color-mix(
-    in oklab,
-    var(--border) 82%,
-    var(--surface) 18%
-  );
-  --app-input-slot-border-hover: color-mix(
-    in oklab,
-    var(--border) 90%,
-    var(--surface) 10%
-  );
-  --app-input-slot-border-focus: color-mix(in srgb, var(--accent) 100%, transparent);
-  --app-input-slot-focus-ring: 0 0 0 1px var(--app-input-slot-border-focus);
+  --app-input-slot-border: var(--field-border);
+  --app-input-slot-border-hover: var(--field-border-hover);
+  --app-input-slot-border-focus: var(--field-border-focus);
+  --app-input-slot-focus-ring: 0 0 0 1px var(--focus);
 
   width: 100%;
   min-height: 40px;

@@ -60,6 +60,7 @@
 - React、Hooks、JSX、TypeScript：`docs/agent/component-react.md`
 - 大组件、复杂 Hook 与 Controller 拆分：`docs/agent/component-controller.md`
 - 样式、UI 组件库、Overlay：`docs/agent/component-style.md`、`docs/agent/overlay.md`
+- 颜色系统、Radix 色阶和语义 token：`docs/agent/color-system.md`
 - Store 归属、注册和生命周期：`docs/agent/store.md`
 - 分支与 commit：`docs/agent/commit.md`
 

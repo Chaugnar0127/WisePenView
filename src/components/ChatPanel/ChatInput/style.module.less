@@ -192,12 +192,12 @@
 }
 
 .voiceButtonActive {
-  color: var(--danger);
+  color: var(--danger-text);
   background: var(--danger-soft);
 }
 
 .stopButtonActive {
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--accent-soft);
 
   &:hover,
@@ -378,7 +378,7 @@
 .checkIcon {
   flex-shrink: 0;
   margin-left: auto;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .switchRow {
@@ -414,7 +414,7 @@
   padding: 0 4px;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-foreground);
   font-size: 10px;
   line-height: 16px;
   text-align: center;
@@ -494,7 +494,7 @@
   border: 1px dashed var(--accent);
   border-radius: calc(var(--radius-xl) - 1px);
   background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   pointer-events: none;

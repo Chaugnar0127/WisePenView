@@ -59,14 +59,14 @@
 }
 
 .profileMenuItem:global(.menu-item--danger) {
-  color: var(--danger-soft-foreground, var(--danger));
+  color: var(--danger-text);
 }
 
 .profileMenuItem:global(.menu-item--danger)[data-hovered],
 .profileMenuItem:global(.menu-item--danger)[data-focused],
 .profileMenu :global(.menu-item--danger[data-hovered]),
 .profileMenu :global(.menu-item--danger[data-focused]) {
-  color: var(--danger-soft-foreground, var(--danger));
+  color: var(--danger-text);
   background: var(--danger-soft) !important;
 }
 
@@ -92,7 +92,7 @@
 
 .aboutVersion {
   margin-top: 4px;
-  color: var(--text-tertiary);
+  color: var(--muted);
   font-size: var(--font-size-md, 14px);
 }
 
@@ -124,7 +124,7 @@
   outline: none;
 
   &:focus-visible {
-    box-shadow: 0 0 0 2px var(--accent-border);
+    box-shadow: 0 0 0 2px var(--focus);
   }
 }
 
@@ -155,7 +155,7 @@
 .tag {
   width: 100%;
   font-size: 10px;
-  color: var(--text-tertiary);
+  color: var(--muted);
   margin-top: -2px;
   text-align: left;
 }

@@ -1,6 +1,6 @@
-import logoImg from '@/assets/images/logo-icon.png';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
+import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
 import clsx from 'clsx';
 import type { SidebarHeaderProps } from './index.type';
 import styles from './style.module.less';
@@ -17,10 +17,11 @@ function SidebarHeader({
 }: SidebarHeaderProps) {
   const hasNav = Boolean(nav);
   const desktopWindow = useDesktopWindowState();
+  const { colorScheme } = useColorScheme();
   const logoContent = (
     <>
       <div className={styles.logoIcon}>
-        <img src={logoImg} alt="WisePen" draggable={false} />
+        <img src={COLOR_SCHEME_ICON_SRC[colorScheme]} alt="WisePen" draggable={false} />
       </div>
       <span className={styles.logoText}>{title}</span>
     </>

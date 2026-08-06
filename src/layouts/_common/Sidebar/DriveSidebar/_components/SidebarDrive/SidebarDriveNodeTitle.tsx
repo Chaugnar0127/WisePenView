@@ -142,7 +142,7 @@ function SidebarDriveNodeTitle({
                     className={styles.createMenuItem}
                     onClick={() => handleCreate('folder')}
                   >
-                    <FolderPlus size={15} color="var(--primary)" aria-hidden="true" />
+                    <FolderPlus size={15} color="var(--accent)" aria-hidden="true" />
                     <span>{t('drive:create.folder')}</span>
                   </button>
                   {canCreateResource ? (
@@ -156,7 +156,7 @@ function SidebarDriveNodeTitle({
                           entryType="resource"
                           resourceIconType="note"
                           size={15}
-                          color="var(--primary)"
+                          color="var(--accent)"
                         />
                         <span>{t('drive:create.note')}</span>
                       </button>
@@ -165,7 +165,7 @@ function SidebarDriveNodeTitle({
                         className={styles.createMenuItem}
                         onClick={() => handleCreate('importNote')}
                       >
-                        <FileInput size={15} color="var(--primary)" aria-hidden="true" />
+                        <FileInput size={15} color="var(--accent)" aria-hidden="true" />
                         <span>{t('drive:create.importNote')}</span>
                       </button>
                       <button
@@ -177,7 +177,7 @@ function SidebarDriveNodeTitle({
                           entryType="resource"
                           resourceIconType="drawio"
                           size={15}
-                          color="var(--primary)"
+                          color="var(--accent)"
                         />
                         <span>{t('drive:create.drawio')}</span>
                       </button>
@@ -190,7 +190,7 @@ function SidebarDriveNodeTitle({
                           entryType="resource"
                           resourceIconType="skill"
                           size={15}
-                          color="var(--primary)"
+                          color="var(--accent)"
                         />
                         <span>{t('drive:create.skill')}</span>
                       </button>
@@ -208,7 +208,7 @@ function SidebarDriveNodeTitle({
                           className={styles.createMenuItem}
                           onClick={() => handleCreate('upload')}
                         >
-                          <CloudUpload size={15} color="var(--primary)" aria-hidden="true" />
+                          <CloudUpload size={15} color="var(--accent)" aria-hidden="true" />
                           <span>{t('drive:create.upload')}</span>
                         </button>
                       ) : null}

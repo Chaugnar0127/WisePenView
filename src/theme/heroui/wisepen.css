@@ -126,8 +126,8 @@ html[data-theme-radius='large'] {
   );
   --app-radius-interactive: var(--app-radius-sidebar-item);
   --app-radius-scrollbar: var(--scrollbar-radius);
-  /* 业务页统一内边距（profile / drive / group / course / notifications） */
-  --app-page-padding-block-start: var(--space-2xl);
+  /* 业务页统一内边距；运行时会按窗口尺寸覆盖，兜底值与“我的小组”常规窗口一致。 */
+  --app-page-padding-block-start: var(--space-lg);
   --app-page-padding-block-end: var(--space-lg);
   --app-page-padding-inline: var(--space-xl);
   --table-row-height: 52px;

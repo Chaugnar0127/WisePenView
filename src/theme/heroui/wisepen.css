@@ -165,9 +165,10 @@ html[data-theme-form-radius='extra-large'] {
   --row-height-compact: var(--table-row-height);
 
   /* Table 布局 / 列宽（Less @table-* 供 table.module.less 引用） */
-  --table-header-row-height: var(--table-row-height);
-  --table-footer-row-height: var(--line-height-xs);
-  --table-footer-padding-block: var(--space-2xs);
+  /* 表头比正文行更紧凑，避免列名行过高占位。 */
+  --table-header-row-height: 40px;
+  --table-footer-row-height: 30px;
+  --table-footer-padding-block: 4px;
   --table-frame-width: 900px;
   --table-toolbar-height: 57px;
   --table-cell-padding-inline: var(--space-sm);

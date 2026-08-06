@@ -34,6 +34,6 @@ export const syncViewportLayoutScale = (
   const widthDensity = resolveLayoutDensity(viewportWidth);
   const heightDensity = resolveLayoutHeightDensity(viewportHeight);
   applyLayoutScaleDomAttrs(widthDensity, heightDensity);
-  applyLayoutScaleCssVars(document.documentElement.style, { heightDensity });
+  applyLayoutScaleCssVars(document.documentElement.style, { widthDensity, heightDensity });
   return { widthDensity, heightDensity };
 };

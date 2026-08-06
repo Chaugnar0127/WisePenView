@@ -137,6 +137,14 @@ export const DRIVE_PAGE_MIN_WIDTH = DRIVE_LAYOUT_MIN_WIDTH + 96;
 export const CHAT_FOOTER_SCROLL_OFFSET_NORMAL = 132;
 export const CHAT_FOOTER_SCROLL_OFFSET_SHORT = 100;
 
+/** App 业务页外边距：常规窗口对齐“我的小组”，短窗口收紧以保留内容区。 */
+export const APP_PAGE_PADDING_BLOCK_START_NORMAL = 24;
+export const APP_PAGE_PADDING_BLOCK_START_SHORT = 16;
+export const APP_PAGE_PADDING_BLOCK_END_NORMAL = 24;
+export const APP_PAGE_PADDING_BLOCK_END_SHORT = 16;
+export const APP_PAGE_PADDING_INLINE_NORMAL = 32;
+export const APP_PAGE_PADDING_INLINE_COMPACT = 24;
+
 /**
  * Electron 窗口最小宽
  */
@@ -201,6 +209,7 @@ export const clampZenChatPanelWidth = (width: number): number =>
   Math.min(Math.max(Math.round(width), CHAT_PANEL_MIN_WIDTH), ZEN_CHAT_PANEL_MAX_WIDTH);
 
 export interface LayoutScaleCssVarOptions {
+  widthDensity?: LayoutDensity;
   heightDensity?: LayoutHeightDensity;
 }
 
@@ -208,8 +217,10 @@ export interface LayoutScaleCssVarOptions {
 export const getLayoutScaleCssVars = (
   options: LayoutScaleCssVarOptions = {}
 ): Record<string, string> => {
+  const widthDensity = options.widthDensity ?? LAYOUT_DENSITY.NORMAL;
   const heightDensity = options.heightDensity ?? LAYOUT_HEIGHT_DENSITY.NORMAL;
   const isShort = heightDensity === LAYOUT_HEIGHT_DENSITY.SHORT;
+  const isCompact = widthDensity === LAYOUT_DENSITY.COMPACT;
   const driveChrome = isShort
     ? DRIVE_LAYOUT_CHROME_HEIGHT_SHORT
     : DRIVE_LAYOUT_CHROME_HEIGHT_NORMAL;
@@ -248,6 +259,15 @@ export const getLayoutScaleCssVars = (
     '--layout-drive-layout-min-width': `${DRIVE_LAYOUT_MIN_WIDTH}px`,
     '--layout-drive-page-min-width': `${DRIVE_PAGE_MIN_WIDTH}px`,
     '--layout-chat-footer-scroll-offset': `${footerOffset}px`,
+    '--app-page-padding-block-start': `${
+      isShort ? APP_PAGE_PADDING_BLOCK_START_SHORT : APP_PAGE_PADDING_BLOCK_START_NORMAL
+    }px`,
+    '--app-page-padding-block-end': `${
+      isShort ? APP_PAGE_PADDING_BLOCK_END_SHORT : APP_PAGE_PADDING_BLOCK_END_NORMAL
+    }px`,
+    '--app-page-padding-inline': `${
+      isCompact ? APP_PAGE_PADDING_INLINE_COMPACT : APP_PAGE_PADDING_INLINE_NORMAL
+    }px`,
     '--chat-input-textarea-max-height': isShort ? 'calc(6em + 16px)' : 'calc(16em + 16px)',
     '--chat-input-card-padding-block': isShort ? '8px' : '12px',
     '--chat-input-container-padding-block': isShort ? '4px' : '8px',

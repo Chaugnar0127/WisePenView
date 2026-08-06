@@ -15,7 +15,10 @@
 .codeInput {
   width: 100%;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 8px;
   letter-spacing: 0;
 }
@@ -24,17 +27,27 @@
   cursor: text;
 }
 
+.codeRow {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .codeGroup {
   min-width: 0;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   gap: 6px;
 }
 
 .codeSlot {
   width: 38px;
-  min-width: 0;
+  min-width: 38px;
   height: 44px;
-  flex: 0 1 38px;
+  flex: 0 0 38px;
   font-size: 15px;
 }
 
@@ -48,14 +61,19 @@
     gap: 4px;
   }
 
+  .codeRow {
+    gap: 4px;
+  }
+
   .codeGroup {
-    flex: 1 1 0;
     gap: 3px;
   }
 
   .codeSlot {
-    width: auto;
-    flex: 1 1 0;
+    width: 30px;
+    min-width: 30px;
+    flex-basis: 30px;
+    height: 40px;
   }
 
   .codeSeparator {

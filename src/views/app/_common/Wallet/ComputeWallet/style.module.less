@@ -1,4 +1,4 @@
-// 通用钱包：资产区 + 流水表格 + 充值/消费配色（与需求「绿充红消」一致）
+// 通用钱包：资产区 + 流水表格，流水方向通过图标、文案和金额正负号表达
 
 .card {
   padding: 24px;
@@ -62,15 +62,9 @@
   border-radius: var(--radius-lg, 8px);
 }
 
-.amountRecharge {
+.amount {
   font-variant-numeric: tabular-nums;
-  color: var(--success-text);
-  font-weight: var(--font-weight-medium);
-}
-
-.amountSpend {
-  font-variant-numeric: tabular-nums;
-  color: var(--danger-text);
+  color: var(--foreground);
   font-weight: var(--font-weight-medium);
 }
 

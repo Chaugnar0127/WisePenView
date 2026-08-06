@@ -3,8 +3,9 @@
  * 与外观页一致，使用表面卡片包裹内容区。
  */
 import { WALLET_TARGET_TYPE } from '@/domains/Wallet';
+import PageHeader from '@/layouts/_common/PageHeader';
 import ComputeWallet from '@/views/app/_common/Wallet/ComputeWallet';
-import { Card, Heading, Paragraph } from '@heroui/react';
+import { Card } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 import QuotaByGroup from '../_components/QuotaByGroup';
 import layout from '../style.module.less';
@@ -14,14 +15,7 @@ function Usage() {
 
   return (
     <div className={layout.pageContainer}>
-      <header className={layout.pageHeader}>
-        <Heading level={1} className={layout.pageTitle}>
-          {t('usage.title')}
-        </Heading>
-        <Paragraph size="sm" color="muted" className={layout.pageSubtitle}>
-          {t('usage.subtitle')}
-        </Paragraph>
-      </header>
+      <PageHeader title={t('usage.title')} subtitle={t('usage.subtitle')} />
       <Card className={layout.usagePanel}>
         <Card.Content className={layout.usageContent}>
           <ComputeWallet targetType={WALLET_TARGET_TYPE.USER} canRecharge surface="plain" />

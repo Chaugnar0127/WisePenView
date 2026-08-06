@@ -2,8 +2,9 @@ import { Spin } from '@/components/Feedback';
 import { useUserService } from '@/domains';
 import type { UserAccountProfile } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
+import PageHeader from '@/layouts/_common/PageHeader';
 import { parseErrorMessage } from '@/utils/error';
-import { Heading, Paragraph, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -62,14 +63,7 @@ function Account() {
 
   return (
     <div className={layout.pageContainer}>
-      <header className={layout.pageHeader}>
-        <Heading level={1} className={layout.pageTitle}>
-          {t('account.title')}
-        </Heading>
-        <Paragraph size="sm" color="muted" className={layout.pageSubtitle}>
-          {t('account.subtitle')}
-        </Paragraph>
-      </header>
+      <PageHeader title={t('account.title')} subtitle={t('account.subtitle')} />
       <AccountVerification user={user} onUserInfoReload={reloadUserInfo} />
       <Spin spinning={loading}>
         <div className={styles.identitySlot}>

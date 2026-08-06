@@ -1,11 +1,12 @@
 import { EmptyState, ResultState, Spin } from '@/components/Feedback';
 import { useMessageService } from '@/domains';
 import type { UserMessage } from '@/domains/Message';
+import PageHeader from '@/layouts/_common/PageHeader';
 import { parseErrorMessage } from '@/utils/error';
 import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
-import { Button, Heading, Paragraph, toast } from '@heroui/react';
+import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import clsx from 'clsx';
 import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
@@ -93,25 +94,22 @@ function NotificationsPage() {
   return (
     <div className={styles.pageContainer}>
       <section className={styles.notificationCenter} aria-labelledby="notifications-title">
-        <div className={styles.pageHeader}>
-          <div>
-            <Heading level={1} id="notifications-title" className={styles.pageTitle}>
-              {t('page.title')}
-            </Heading>
-            <Paragraph size="sm" color="muted" className={styles.pageSubtitle}>
-              {t('page.subtitle')}
-            </Paragraph>
-          </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            isDisabled={!hasUnreadMessages}
-            onPress={handleMarkAllAsRead}
-          >
-            <CheckCheck size={16} />
-            {t('page.markAllAsRead')}
-          </Button>
-        </div>
+        <PageHeader
+          titleId="notifications-title"
+          title={t('page.title')}
+          subtitle={t('page.subtitle')}
+          actions={
+            <Button
+              size="sm"
+              variant="secondary"
+              isDisabled={!hasUnreadMessages}
+              onPress={handleMarkAllAsRead}
+            >
+              <CheckCheck size={16} />
+              {t('page.markAllAsRead')}
+            </Button>
+          }
+        />
 
         <div className={styles.pageBody}>
           {messagesRequest.error ? (

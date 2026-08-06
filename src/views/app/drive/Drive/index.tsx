@@ -1,6 +1,7 @@
 import TableDrive from '@/components/Drive/TableDrive';
 import { useDriveService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
+import PageHeader from '@/layouts/_common/PageHeader';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import {
@@ -11,7 +12,7 @@ import {
   DRIVE_UPLOAD_QUEUE_PATH,
 } from '@/utils/navigation/driveRoute';
 import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
-import { Heading, Paragraph, Tabs, toast } from '@heroui/react';
+import { Tabs, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useEffect, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -113,14 +114,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
 
   return (
     <div className={styles.pageContainer}>
-      <header className={styles.pageHeader}>
-        <Heading level={1} className={styles.pageTitle}>
-          {t('page.title')}
-        </Heading>
-        <Paragraph size="sm" color="muted" className={styles.pageSubtitle}>
-          {t('page.subtitle')}
-        </Paragraph>
-      </header>
+      <PageHeader title={t('page.title')} subtitle={t('page.subtitle')} />
 
       <Tabs
         variant="secondary"

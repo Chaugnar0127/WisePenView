@@ -1,7 +1,7 @@
 @import '../styles/table.module.less';
 
 .footer {
-  padding: var(--table-footer-padding-block, var(--space-2xs)) @table-shell-padding-inline;
+  padding: @table-footer-padding-block @table-shell-padding-inline;
   border-top: 1px solid var(--table-inner-border);
   background: var(--table-chrome-bg);
 }
@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: space-between;
   gap: @table-gap;
-  min-height: calc(@table-control-min-height + @table-gap-tight);
+  min-height: @table-footer-row-height;
 }
 
 .summary {

@@ -5,9 +5,9 @@
   box-sizing: border-box;
   align-items: center;
   min-height: calc(
-    @table-control-min-height + @table-toolbar-padding-block + @table-toolbar-padding-block
+    @table-footer-row-height + @table-footer-padding-block + @table-footer-padding-block
   );
-  padding: @table-toolbar-padding-block @table-shell-padding-inline;
+  padding: @table-footer-padding-block @table-shell-padding-inline;
   border-top: 1px solid var(--table-inner-border);
   background: var(--table-chrome-bg);
 }
@@ -15,7 +15,7 @@
 .summary {
   display: flex;
   align-items: center;
-  min-height: @table-control-min-height;
+  min-height: @table-footer-row-height;
   color: var(--muted);
   font-family: @table-font-family;
   font-size: @table-font-size-xs;

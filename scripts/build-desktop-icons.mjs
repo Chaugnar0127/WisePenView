@@ -11,6 +11,8 @@ const iconsetDirectory = resolve(buildDirectory, 'icon.iconset');
 const icnsPath = resolve(buildDirectory, 'icon.icns');
 const publicFaviconPath = resolve(repoRoot, 'public/favicon.svg');
 const runtimeIconSize = 1024;
+const desktopIconInset = 8;
+const desktopIconRadius = 18;
 
 const colorSchemeIconSources = {
   default: 'src/assets/logos/logo-icon-default.svg',
@@ -45,7 +47,9 @@ function ensureTool(command) {
 function createMacIconSvg(sourcePath) {
   const sourceSvg = readFileSync(sourcePath, 'utf8');
   const background = [
-    '<rect x="0.5" y="0.5" width="99" height="99" rx="22"',
+    `<rect x="${desktopIconInset + 0.5}" y="${desktopIconInset + 0.5}"`,
+    ` width="${100 - desktopIconInset * 2 - 1}" height="${100 - desktopIconInset * 2 - 1}"`,
+    ` rx="${desktopIconRadius}"`,
     ' fill="#FFFFFF" stroke="#E6E8EB" stroke-width="1" />',
   ].join('');
 

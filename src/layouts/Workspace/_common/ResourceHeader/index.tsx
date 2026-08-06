@@ -126,7 +126,7 @@ function ResourceHeaderMore({
   return (
     <Dropdown>
       <AppIconButton
-        icon={<Ellipsis size={18} aria-hidden="true" />}
+        icon={<Ellipsis className={styles.moreIcon} size={22} aria-hidden="true" />}
         label={t('header.more')}
         size="sm"
         isDisabled={isDisabled || isMenuPending}
@@ -389,6 +389,7 @@ function ResourceHeader({
                   ? t('panel.expand', { ns: 'chat' })
                   : t('panel.collapse', { ns: 'chat' })
               }
+              size="sm"
               onPress={onToggleChatPanel}
             />
           ) : null}

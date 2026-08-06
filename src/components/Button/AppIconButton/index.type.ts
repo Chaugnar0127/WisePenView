@@ -20,7 +20,6 @@ export interface AppIconButtonProps extends Omit<
   className?: string;
   isActive?: boolean;
   isDisabled?: boolean;
-  disabledVariant?: 'filled' | 'ghost';
   onClick?: MouseEventHandler<HTMLButtonElement>;
   onPress?: () => void;
   overlayTrigger?: ReactElement;

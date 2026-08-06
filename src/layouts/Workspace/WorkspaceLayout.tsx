@@ -102,6 +102,7 @@ function WorkspaceLayout() {
     panelSize: sidebarPanelSize,
     minSize: sidebarMinSize,
     maxSize: sidebarMaxSize,
+    showCollapsedChrome: showSidebarCollapsedChrome,
     isAnimating: isSidebarAnimating,
     notifyAnimationComplete: notifySidebarAnimationComplete,
   } = useSidebarCollapseMotion({
@@ -109,7 +110,7 @@ function WorkspaceLayout() {
     expandedWidth: leftSidebarWidth,
     collapsedWidth: SIDEBAR_COLLAPSED_WIDTH,
   });
-  const anchorSidebarSlide = isSidebarAnimating || sidebarCollapsed;
+  const anchorSidebarSlide = isSidebarAnimating;
   const {
     panelSize: rightDockPanelSize,
     maxSize: rightDockMaxSize,
@@ -414,7 +415,13 @@ function WorkspaceLayout() {
           aria-hidden={sidebarCollapsed ? true : undefined}
           onResize={handleLeftSidebarResize}
         >
-          <div className={styles.sidebarSlideHost} inert={sidebarCollapsed || undefined}>
+          <div
+            className={clsx(
+              styles.sidebarSlideHost,
+              showSidebarCollapsedChrome && styles.sidebarSlideHostHidden
+            )}
+            inert={sidebarCollapsed || undefined}
+          >
             <div
               className={clsx(
                 styles.sidebarSlideFrame,

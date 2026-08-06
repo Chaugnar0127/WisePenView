@@ -10,9 +10,15 @@ import type * as Y from 'yjs';
 import { getAiContentStore } from '../engines/aiDiff/store';
 import { importNoteMarkdown } from '../engines/markdown/markdownImport';
 import type { CustomBlockNoteProps } from '../index.type';
-import { notePluginRegistry, type CustomBlockNoteEditor } from '../registry/noteEditorComposition';
+import {
+  createDefaultNoteBlock,
+  notePluginRegistry,
+  type CustomBlockNoteEditor,
+} from '../registry/noteEditorComposition';
 
 const initializedAiDiffPreviews = new WeakMap<Y.Doc, NoteAiDiffPreviewData>();
+/** BlockNote 协同空文档使用的本地占位块 ID，正式写入 Yjs 后会被替换。 */
+const INITIAL_BLOCK_ID = 'initialBlockId';
 
 function splitAiDiffPreviewBlocks(
   blocks: NoteAiDiffPreviewData['content'],
@@ -67,12 +73,25 @@ function initializeAiDiffPreview(params: {
   return true;
 }
 
+function persistInitialEmptyNoteBlock(editor: CustomBlockNoteEditor): boolean {
+  const blocks = editor.document;
+  if (blocks.length !== 1 || blocks[0]?.id !== INITIAL_BLOCK_ID) {
+    return false;
+  }
+
+  editor.replaceBlocks(blocks, [createDefaultNoteBlock(notePluginRegistry)] as Parameters<
+    CustomBlockNoteEditor['replaceBlocks']
+  >[1]);
+  return true;
+}
+
 export function useNoteEditorHydration({
   editor,
   doc,
   undoManager,
   resourceId,
   collaborationReady,
+  canWrite,
   aiDiffPreview,
   scheduleBodyContentHashRefresh,
 }: {
@@ -81,6 +100,7 @@ export function useNoteEditorHydration({
   undoManager: Y.UndoManager;
   resourceId: string;
   collaborationReady: boolean;
+  canWrite: boolean;
   aiDiffPreview: CustomBlockNoteProps['aiDiffPreview'];
   scheduleBodyContentHashRefresh: () => void;
 }) {
@@ -108,15 +128,29 @@ export function useNoteEditorHydration({
     }
   });
 
+  const persistInitialEmptyBlock = useMemoizedFn(() => {
+    if (!collaborationReady || !canWrite || aiDiffPreview) return;
+    persistInitialEmptyNoteBlock(editor);
+  });
+
   /**
    * @wisepen-manual-effect
-   * 执行时机：协作编辑器就绪或资源切换后消费该资源待导入的 Markdown。
-   * 不可替代原因：待导入数据位于 Zustand，写入目标是 BlockNote/Yjs 外部编辑器运行时。
+   * 执行时机：协作编辑器就绪或资源切换后初始化空正文并消费该资源待导入的 Markdown。
+   * 不可替代原因：空协同文档的首个 block 仅存在于本地编辑器，必须通过 BlockNote 命令写入 Yjs；
+   * 待导入数据位于 Zustand，也必须写入 BlockNote/Yjs 外部编辑器运行时。
    * cleanup：导入是同步事务且消费后立即移除待办，无需清理。
    */
   useEffect(() => {
     applyPendingMarkdownImport();
-  }, [applyPendingMarkdownImport, collaborationReady, resourceId]);
+    persistInitialEmptyBlock();
+  }, [
+    aiDiffPreview,
+    applyPendingMarkdownImport,
+    canWrite,
+    collaborationReady,
+    persistInitialEmptyBlock,
+    resourceId,
+  ]);
 
   const applyAiDiffPreview = useMemoizedFn(() => {
     if (!collaborationReady || !aiDiffPreview) return;

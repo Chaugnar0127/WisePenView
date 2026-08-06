@@ -11,14 +11,9 @@
   --scrollbar-size: 8px;
   --scrollbar-radius: 999px;
   --radius: 0.5rem;
-  --field-radius: 0.75rem;
 }
 
 /* HeroUI 主题页 Radius */
-html[data-theme-radius='none'] {
-  --radius: 0;
-}
-
 html[data-theme-radius='extra-small'] {
   --radius: 0.125rem;
 }
@@ -33,31 +28,6 @@ html[data-theme-radius='medium'] {
 
 html[data-theme-radius='large'] {
   --radius: 0.75rem;
-}
-
-/* HeroUI 主题页 Radius Form */
-html[data-theme-form-radius='none'] {
-  --field-radius: 0;
-}
-
-html[data-theme-form-radius='extra-small'] {
-  --field-radius: 0.125rem;
-}
-
-html[data-theme-form-radius='small'] {
-  --field-radius: 0.25rem;
-}
-
-html[data-theme-form-radius='medium'] {
-  --field-radius: 0.5rem;
-}
-
-html[data-theme-form-radius='large'] {
-  --field-radius: 0.75rem;
-}
-
-html[data-theme-form-radius='extra-large'] {
-  --field-radius: 1rem;
 }
 
 /* WisePen 桌面端排版：正文 14px、辅助文本 12px，重点层级使用 16px 以上字号。 */
@@ -140,7 +110,7 @@ html[data-theme-form-radius='extra-large'] {
   --radius-3xl: calc(var(--radius) * 3);
   --radius-4xl: calc(var(--radius) * 4);
   --radius-full: 999px;
-  --radius-field: var(--field-radius);
+  --radius-field: var(--radius);
   --app-popover-content-padding: var(--space-xs);
   --app-popover-item-inset: calc(var(--app-popover-content-padding) + var(--space-2xs));
   --app-radius-sidebar-item: var(--radius-2xl);
@@ -156,8 +126,8 @@ html[data-theme-form-radius='extra-large'] {
   );
   --app-radius-interactive: var(--app-radius-sidebar-item);
   --app-radius-scrollbar: var(--scrollbar-radius);
-  /* 业务页统一内边距（profile / drive / group / course / notifications） */
-  --app-page-padding-block-start: var(--space-2xl);
+  /* 业务页统一内边距；运行时会按窗口尺寸覆盖，兜底值与“我的小组”常规窗口一致。 */
+  --app-page-padding-block-start: var(--space-lg);
   --app-page-padding-block-end: var(--space-lg);
   --app-page-padding-inline: var(--space-xl);
   --table-row-height: 52px;
@@ -165,9 +135,10 @@ html[data-theme-form-radius='extra-large'] {
   --row-height-compact: var(--table-row-height);
 
   /* Table 布局 / 列宽（Less @table-* 供 table.module.less 引用） */
-  --table-header-row-height: var(--table-row-height);
-  --table-footer-row-height: var(--line-height-xs);
-  --table-footer-padding-block: var(--space-2xs);
+  /* 表头比正文行更紧凑，避免列名行过高占位。 */
+  --table-header-row-height: 40px;
+  --table-footer-row-height: 30px;
+  --table-footer-padding-block: 4px;
   --table-frame-width: 900px;
   --table-toolbar-height: 57px;
   --table-cell-padding-inline: var(--space-sm);

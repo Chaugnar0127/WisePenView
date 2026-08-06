@@ -383,24 +383,22 @@ function Appearance() {
   return (
     <div className={layout.pageContainer}>
       <AppearanceHeader />
-      <Card className={styles.panel}>
-        <Card.Content className={styles.body}>
-          <LanguageSection />
-          <Separator className={styles.divider} />
-          <ThemeModeSection value={theme} onChange={setTheme} />
-          <Separator className={styles.divider} />
-          <ColorSchemeSection value={colorScheme} onChange={setColorScheme} />
-          <Separator className={styles.divider} />
-          <ThemeShapeSection
-            radius={radius}
-            formRadius={formRadius}
-            onRadiusChange={setRadius}
-            onFormRadiusChange={setFormRadius}
-          />
-          <Separator className={styles.divider} />
-          <ThemePreviewSection />
-        </Card.Content>
-      </Card>
+      <div className={styles.body}>
+        <LanguageSection />
+        <Separator className={styles.divider} />
+        <ThemeModeSection value={theme} onChange={setTheme} />
+        <Separator className={styles.divider} />
+        <ColorSchemeSection value={colorScheme} onChange={setColorScheme} />
+        <Separator className={styles.divider} />
+        <ThemeShapeSection
+          radius={radius}
+          formRadius={formRadius}
+          onRadiusChange={setRadius}
+          onFormRadiusChange={setFormRadius}
+        />
+        <Separator className={styles.divider} />
+        <ThemePreviewSection />
+      </div>
     </div>
   );
 }

@@ -15,7 +15,8 @@
 .page {
   width: min(100%, 1040px);
   margin: 0 auto;
-  padding: var(--space-xl);
+  padding: var(--app-page-padding-block-start) var(--app-page-padding-inline)
+    var(--app-page-padding-block-end);
   box-sizing: border-box;
 }
 
@@ -24,14 +25,20 @@
 }
 
 .pageTitle {
-  margin: 0 0 var(--space-xs);
-  font-size: var(--font-size-heading-3);
-  font-weight: 600;
+  margin: 0 0 var(--space-xs) 0;
+  color: var(--foreground);
+  font-size: calc(var(--font-size-heading-3) + 4px);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+  letter-spacing: 0;
 }
 
 .pageDescription {
   margin: 0;
   color: var(--muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-sm);
 }
 
 .section {

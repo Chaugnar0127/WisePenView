@@ -10,8 +10,12 @@
   align-items: center;
   gap: var(--space-xs);
   margin-bottom: var(--space-lg);
-  padding: 0;
+  /* 与详情页返回一致：略向右收，避免贴左缘 */
+  margin-inline-start: var(--space-2xs);
+  padding-block: var(--space-2xs);
+  padding-inline: var(--space-xs);
   border: 0;
+  border-radius: var(--radius-sm, 6px);
   color: var(--muted);
   background: transparent;
   cursor: pointer;
@@ -19,6 +23,7 @@
 
 .backButton:hover {
   color: var(--foreground);
+  background: var(--surface-secondary);
 }
 
 .header {

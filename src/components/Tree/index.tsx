@@ -347,7 +347,7 @@ function Tree({
               <AppIconButton
                 icon={<span className={styles.switcherIcon}>{renderSwitcherIcon(loading)}</span>}
                 label={expanded ? t('tree.collapse') : t('tree.expand')}
-                size="sm"
+                size="xs"
                 className={clsx(styles.switcher, 'wisepen-tree__switcher')}
                 data-expanded={expanded}
                 isDisabled={disabled}

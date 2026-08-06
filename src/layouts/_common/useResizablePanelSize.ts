@@ -17,6 +17,11 @@ interface UseResizablePanelSizeOptions {
    * 经 ref 读取，不进入 resize effect 依赖，避免打断插值。
    */
   onSizePixels?: (sizePx: number) => void;
+  /**
+   * 本次尺寸同步结束（插值到达目标或瞬时写入完成）。
+   * 经 ref 读取，不进入 resize effect 依赖。
+   */
+  onComplete?: () => void;
 }
 
 /** 短促 ease-out，收起/展开更跟手 */
@@ -33,9 +38,11 @@ export function useResizablePanelSize({
   animate = false,
   durationMs = 200,
   onSizePixels,
+  onComplete,
 }: UseResizablePanelSizeOptions) {
   const frameRef = useRef<number | null>(null);
   const onSizePixelsRef = useRef(onSizePixels);
+  const onCompleteRef = useRef(onComplete);
 
   /**
    * @wisepen-manual-effect
@@ -45,7 +52,8 @@ export function useResizablePanelSize({
    */
   useEffect(() => {
     onSizePixelsRef.current = onSizePixels;
-  }, [onSizePixels]);
+    onCompleteRef.current = onComplete;
+  }, [onComplete, onSizePixels]);
 
   /**
    * @wisepen-manual-effect
@@ -67,6 +75,14 @@ export function useResizablePanelSize({
       onSizePixelsRef.current?.(sizePx);
     };
 
+    const finish = () => {
+      /* 先让最终宽度完成绘制，再清 isAnimating，避免同帧 DOM/约束切换叠在最后一击 resize 上 */
+      frameRef.current = window.requestAnimationFrame(() => {
+        frameRef.current = null;
+        onCompleteRef.current?.();
+      });
+    };
+
     const resizeTo = (next: ResizablePanelSize) => {
       panelRef.current?.resize(next);
       const px = toPixelSize(next) ?? panelRef.current?.getSize().inPixels;
@@ -77,8 +93,10 @@ export function useResizablePanelSize({
 
     const panel = panelRef.current;
     if (!panel) {
-      const retry = window.requestAnimationFrame(() => resizeTo(size));
-      frameRef.current = retry;
+      frameRef.current = window.requestAnimationFrame(() => {
+        resizeTo(size);
+        finish();
+      });
       return cancelFrame;
     }
 
@@ -87,7 +105,10 @@ export function useResizablePanelSize({
 
     if (!animate || targetPx == null || !Number.isFinite(currentPx)) {
       resizeTo(size);
-      frameRef.current = window.requestAnimationFrame(() => resizeTo(size));
+      frameRef.current = window.requestAnimationFrame(() => {
+        resizeTo(size);
+        finish();
+      });
       return cancelFrame;
     }
 
@@ -95,6 +116,7 @@ export function useResizablePanelSize({
     const delta = targetPx - startPx;
     if (Math.abs(delta) < 0.5) {
       resizeTo(targetPx);
+      finish();
       return cancelFrame;
     }
 
@@ -108,7 +130,7 @@ export function useResizablePanelSize({
         frameRef.current = window.requestAnimationFrame(tick);
       } else {
         resizeTo(targetPx);
-        frameRef.current = null;
+        finish();
       }
     };
 

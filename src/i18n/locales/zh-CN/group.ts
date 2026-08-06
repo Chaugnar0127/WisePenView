@@ -33,6 +33,7 @@ const zhCNGroup = {
     aria: '小组详情',
     creator: '创建者：',
     createdAt: '创建日期：{{date}}',
+    createdAtLabel: '创建日期：',
     noDate: '暂无',
     tabs: {
       files: '文件',

@@ -17,6 +17,7 @@ export {
   type ThemeRadiusOption,
 } from './constants';
 export { ThemeApplier } from './ThemeApplier';
+export { useAccentNeutralized } from './useAccentNeutralized';
 export { useAppTheme } from './useAppTheme';
 export { useColorScheme } from './useColorScheme';
 export { useThemeShape } from './useThemeShape';

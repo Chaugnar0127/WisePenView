@@ -20,6 +20,10 @@ const enUSProfile = {
     mode: 'Color mode',
     colorScheme: 'Theme colors (Base / Accent)',
     radius: 'Corner radius',
+    readingMode: {
+      title: 'Reading mode',
+      description: 'Tune the interface colors for long reading sessions and focused work',
+    },
     modeOption: {
       light: { label: 'Light', description: 'Always use the light interface' },
       dark: { label: 'Dark', description: 'Always use the dark interface' },

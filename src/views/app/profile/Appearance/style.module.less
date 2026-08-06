@@ -16,6 +16,28 @@
   margin: var(--space-xs, 8px) 0;
 }
 
+.switchDescription {
+  max-width: 44rem;
+  margin-top: var(--space-2xs, 4px);
+}
+
+.switchRow {
+  display: flex;
+  gap: var(--space-md, 16px);
+  align-items: center;
+  justify-content: space-between;
+  max-width: 44rem;
+}
+
+.switchCopy {
+  min-width: 0;
+}
+
+.switchContent {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
 .modeTabs {
   width: 100%;
 }
@@ -249,6 +271,10 @@
 }
 
 @media (max-width: 820px) {
+  .switchRow {
+    align-items: flex-start;
+  }
+
   .shapeControls {
     grid-template-columns: 1fr;
   }

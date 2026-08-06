@@ -2,6 +2,7 @@ import {
   Heading,
   Paragraph,
   Separator,
+  Switch,
   Tabs,
   ToggleButton,
   ToggleButtonGroup,
@@ -14,6 +15,7 @@ import {
   COLOR_SCHEME_OPTIONS,
   THEME_MODE_OPTIONS,
   THEME_RADIUS_OPTIONS,
+  useAccentNeutralized,
   useAppTheme,
   useColorScheme,
   useThemeShape,
@@ -115,6 +117,38 @@ function ThemeShapeSection({ radius, onRadiusChange }: ThemeShapeSectionProps) {
           options={THEME_RADIUS_OPTIONS}
           onChange={onRadiusChange}
         />
+      </div>
+    </section>
+  );
+}
+
+function ReadingModeSection() {
+  const { t } = useTranslation('profile');
+  const { isAccentNeutralized, setAccentNeutralized } = useAccentNeutralized();
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.switchRow}>
+        <div className={styles.switchCopy}>
+          <Heading level={3} className={layout.sectionTitle}>
+            {t('appearance.readingMode.title')}
+          </Heading>
+          <Paragraph size="sm" color="muted" className={styles.switchDescription}>
+            {t('appearance.readingMode.description')}
+          </Paragraph>
+        </div>
+        <Switch
+          size="md"
+          aria-label={t('appearance.readingMode.title')}
+          isSelected={isAccentNeutralized}
+          onChange={setAccentNeutralized}
+        >
+          <Switch.Content className={styles.switchContent}>
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+          </Switch.Content>
+        </Switch>
       </div>
     </section>
   );
@@ -245,6 +279,8 @@ function Appearance() {
         <ThemeModeSection value={theme} onChange={setTheme} />
         <Separator className={styles.divider} />
         <ColorSchemeSection value={colorScheme} onChange={setColorScheme} />
+        <Separator className={styles.divider} />
+        <ReadingModeSection />
         <Separator className={styles.divider} />
         <ThemeShapeSection radius={radius} onRadiusChange={setRadius} />
       </div>

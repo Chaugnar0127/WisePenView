@@ -58,6 +58,7 @@ const zhCNResource = {
     collapseComments: '收起评论区',
     expandComments: '展开评论区',
     openComments: '打开评论区',
+    resize: '调整侧栏宽度',
   },
   comment: {
     unknownTime: '时间未知',

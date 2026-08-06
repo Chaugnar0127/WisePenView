@@ -129,7 +129,8 @@
 
 .menuItem:hover,
 .menuItem[data-hovered],
-.menuItem[data-focused],
+.menuItem[data-focus-visible],
+.menuItem[data-focus-visible='true'],
 .menuItem[data-open] {
   background: var(--accent-soft);
 }
@@ -140,7 +141,8 @@
 
 .menuItem:global(.menu-item--danger):hover,
 .menuItem:global(.menu-item--danger)[data-hovered],
-.menuItem:global(.menu-item--danger)[data-focused] {
+.menuItem:global(.menu-item--danger)[data-focus-visible],
+.menuItem:global(.menu-item--danger)[data-focus-visible='true'] {
   color: var(--danger-text);
   background: var(--danger-soft);
 }

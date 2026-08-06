@@ -1,3 +1,11 @@
+@import '@/layouts/_common/a11y/focusRing.less';
+
+.tooltipTrigger {
+  display: inline-flex;
+  vertical-align: middle;
+  border-radius: inherit;
+}
+
 .root {
   flex-shrink: 0;
   margin: 0;
@@ -20,14 +28,20 @@
     background: var(--surface-tertiary);
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
+  &:focus-visible,
+  &:focus-visible:not(:focus),
+  &[data-focus-visible] {
+    .appFocusRing();
   }
 
   svg {
     display: block;
   }
+}
+
+.xs {
+  width: 20px;
+  height: 20px;
 }
 
 .sm {

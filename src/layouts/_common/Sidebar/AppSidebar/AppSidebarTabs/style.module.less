@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import '@/layouts/_common/a11y/focusRing.less';
 
 .menuContainer {
   flex: 1;
@@ -105,12 +106,10 @@
     }
   }
 
-  &:focus-visible {
-    outline: none;
-  }
-
+  &:focus-visible,
+  &:focus-visible:not(:focus),
   &[data-focus-visible] {
-    box-shadow: inset 0 0 0 2px var(--focus);
+    .appFocusRingInset();
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -262,9 +261,15 @@
     background 0.2s ease,
     color 0.2s ease;
 
+  &:focus-visible,
+  &:focus-visible:not(:focus),
+  &[data-focus-visible] {
+    .clearHeroFocusRing();
+  }
+
   &:hover,
   &[data-hovered],
-  &[data-focused] {
+  &[data-focus-visible] {
     color: var(--foreground);
     background: var(--sidebar-item-hover);
   }
@@ -276,7 +281,7 @@
 
     &:hover,
     &[data-hovered],
-    &[data-focused] {
+    &[data-focus-visible] {
       color: var(--accent-text-strong);
       background: var(--sidebar-item-selected-hover);
     }
@@ -292,7 +297,7 @@
 .sessionItemWithActions {
   &:hover,
   &[data-hovered],
-  &[data-focused],
+  &[data-focus-visible],
   &:focus-within {
     :global(.sessionActionsVisibleOnItem) {
       opacity: 1;

@@ -1,6 +1,7 @@
 import AppAvatar from '@/components/Avatar';
 import AppIconButton from '@/components/Button/AppIconButton';
 import type { ResourceComment } from '@/domains/Interact';
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import {
   formatRelativeTimestamp,
   formatTimestampToDateTime,
@@ -108,7 +109,7 @@ function ResourceCommentItem({
               onPress={() => onReply(comment)}
             />
             <Tooltip>
-              <Tooltip.Trigger>
+              <Tooltip.Trigger {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
                 <Button
                   variant="ghost"
                   size="sm"

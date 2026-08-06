@@ -1,4 +1,5 @@
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 import { Tabs } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +22,7 @@ function PublicSectionTabs({ selectedKey }: PublicSectionTabsProps) {
   return (
     <Tabs
       variant="secondary"
+      className={underlineTabs.underlineTabs}
       selectedKey={selectedKey}
       onSelectionChange={(key) => {
         const item = items.find((candidate) => candidate.key === String(key));

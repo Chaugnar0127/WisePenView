@@ -1,4 +1,5 @@
 import { Input, TextArea } from '@/components/Input';
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { Button, Label, TextField, Tooltip } from '@heroui/react';
 import { Pencil, Save } from 'lucide-react';
 import type { SyntheticEvent } from 'react';
@@ -64,7 +65,7 @@ function CourseBasicSection({
         <div className={styles.coverField}>
           <span className={styles.coverLabel}>{t('editor.fields.cover')}</span>
           <Tooltip>
-            <Tooltip.Trigger>
+            <Tooltip.Trigger {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
               <button
                 type="button"
                 className={styles.coverButton}

@@ -2,6 +2,8 @@ const enUSWorkspace = {
   shell: {
     appSidebar: 'Application sidebar',
     chatPanel: 'Chat panel',
+    resizeSidebar: 'Resize sidebar',
+    resizeChatPanel: 'Resize chat panel',
     enterZen: 'Enter Zen Mode',
     exitZen: 'Exit Zen Mode',
   },

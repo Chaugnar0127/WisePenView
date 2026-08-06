@@ -97,6 +97,7 @@ function WorkspaceResourceSidePanel({
           withHandle={open}
           className={clsx(styles.resizeHandle, !open && styles.resizeHandleCollapsed)}
           disabled={!open}
+          aria-label={t('sidePanel.resize')}
         />
 
         <SystemResizablePanel

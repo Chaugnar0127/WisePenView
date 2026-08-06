@@ -1,5 +1,6 @@
 import { useChatSessionHistoryRefreshStore } from '@/components/ChatPanel/_store/useChatSessionHistoryRefreshStore';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import SidebarCourse from '@/layouts/_common/Sidebar/CourseSidebar';
 import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive';
 import CommandPaletteTrigger from '@/layouts/AppNavigation/CommandPaletteTrigger';
@@ -30,7 +31,7 @@ function SidebarViewTab({ id, label, icon: Icon, selected }: SidebarViewTabProps
   return (
     <Tabs.Tab id={id} className={styles.tab} aria-label={label}>
       <Tooltip isDisabled={selected}>
-        <Tooltip.Trigger className={styles.tabTooltipTrigger}>
+        <Tooltip.Trigger className={styles.tabTooltipTrigger} {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
           <span className={styles.tabContent}>
             <Icon size={18} aria-hidden="true" />
             <span className={styles.tabLabel}>

@@ -1,6 +1,7 @@
 import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { buildCoursePath } from '@/utils/navigation/appRoute';
+import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 import { Tabs } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -48,7 +49,7 @@ function CourseContextPage() {
               navigate(buildCoursePath(course.courseId, nextKey as CourseContextTabKey));
             }
           }}
-          className={styles.contextTabs}
+          className={`${underlineTabs.underlineTabs} ${styles.contextTabs}`}
         >
           <Tabs.ListContainer>
             <Tabs.List aria-label={t('nav.contextTabsAria')}>

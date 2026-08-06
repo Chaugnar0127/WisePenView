@@ -1,3 +1,4 @@
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { Button, ToggleButton, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
 import { cloneElement, type ComponentProps, type ReactElement, type ReactNode } from 'react';
@@ -45,7 +46,7 @@ export function ToolbarButton({
 
   return (
     <Tooltip>
-      <Tooltip.Trigger>
+      <Tooltip.Trigger {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
         {overlayTrigger ? cloneElement(overlayTrigger, undefined, button) : button}
       </Tooltip.Trigger>
       <Tooltip.Content placement="bottom">{label}</Tooltip.Content>
@@ -70,7 +71,7 @@ export function ToolbarToggleButton({
 }: ToolbarToggleButtonProps) {
   return (
     <Tooltip>
-      <Tooltip.Trigger>
+      <Tooltip.Trigger {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
         <ToggleButton
           aria-label={label}
           id={id}

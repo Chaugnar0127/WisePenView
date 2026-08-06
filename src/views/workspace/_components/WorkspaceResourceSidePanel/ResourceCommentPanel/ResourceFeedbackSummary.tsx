@@ -1,3 +1,4 @@
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { formatReadCount } from '@/utils/format/formatNumber';
 import { ToggleButton, Tooltip } from '@heroui/react';
 import { Eye, ThumbsUp } from 'lucide-react';
@@ -54,7 +55,7 @@ function ResourceFeedbackSummary({
 
         <div className={styles.feedbackMetric}>
           <Tooltip>
-            <Tooltip.Trigger>
+            <Tooltip.Trigger {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
               <ToggleButton
                 variant="ghost"
                 size="sm"

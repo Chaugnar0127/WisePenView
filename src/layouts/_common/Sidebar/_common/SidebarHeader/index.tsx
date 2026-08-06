@@ -26,18 +26,18 @@ function SidebarHeader({
       <span className={styles.logoText}>{title}</span>
     </>
   );
-  const navigationControls =
-    onToggle && onGoBack && onGoForward ? (
-      <AppNavigationControls
-        sidebarCollapsed={collapsed}
-        showHistory={desktopWindow.isDesktop}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        onGoBack={onGoBack}
-        onGoForward={onGoForward}
-        onToggleSidebar={onToggle}
-      />
-    ) : null;
+  const showHistoryControls = Boolean(onGoBack && onGoForward);
+  const navigationControls = onToggle ? (
+    <AppNavigationControls
+      sidebarCollapsed={collapsed}
+      showHistory={showHistoryControls && desktopWindow.isDesktop}
+      canGoBack={canGoBack}
+      canGoForward={canGoForward}
+      onGoBack={onGoBack}
+      onGoForward={onGoForward}
+      onToggleSidebar={onToggle}
+    />
+  ) : null;
 
   return (
     <div

@@ -2,6 +2,7 @@ import { Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
 import { GROUP_TYPE, type EditGroupRequest, type Group } from '@/domains/Group';
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { parseErrorMessage } from '@/utils/error';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { PLACEHOLDER_IMAGE } from '@/utils/image/placeholder';
@@ -195,11 +196,14 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
     <>
       <GroupSettingsSection title={t('profile.creationInfo')} compact>
         <div className={styles.profileMeta}>
-          <span>
-            {t('detail.creator')}
-            {ownerName}
+          <span className={styles.metaItem}>
+            <span className={styles.metaLabel}>{t('detail.creator')}</span>
+            <span className={styles.metaValue}>{ownerName}</span>
           </span>
-          <span>{t('detail.createdAt', { date: createDate })}</span>
+          <span className={styles.metaItem}>
+            <span className={styles.metaLabel}>{t('detail.createdAtLabel')}</span>
+            <span className={styles.metaValue}>{createDate}</span>
+          </span>
         </div>
       </GroupSettingsSection>
       <GroupSettingsSection
@@ -266,7 +270,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
             <span className={styles.coverLabel}>{coverLabel}</span>
             {canEdit ? (
               <Tooltip>
-                <Tooltip.Trigger>
+                <Tooltip.Trigger {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
                   <button
                     className={styles.coverButton}
                     type="button"

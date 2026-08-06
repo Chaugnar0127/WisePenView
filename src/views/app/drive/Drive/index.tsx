@@ -10,7 +10,8 @@ import {
   DRIVE_TRASH_PATH,
   DRIVE_UPLOAD_QUEUE_PATH,
 } from '@/utils/navigation/driveRoute';
-import { Tabs, toast } from '@heroui/react';
+import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
+import { Heading, Paragraph, Tabs, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useEffect, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -113,15 +114,19 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   return (
     <div className={styles.pageContainer}>
       <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>{t('page.title')}</h1>
-        <span className={styles.pageSubtitle}>{t('page.subtitle')}</span>
+        <Heading level={1} className={styles.pageTitle}>
+          {t('page.title')}
+        </Heading>
+        <Paragraph size="sm" color="muted" className={styles.pageSubtitle}>
+          {t('page.subtitle')}
+        </Paragraph>
       </header>
 
       <Tabs
         variant="secondary"
         selectedKey={viewMode}
         onSelectionChange={handleViewModeSelectionChange}
-        className={styles.detailTabs}
+        className={`${underlineTabs.underlineTabs} ${styles.detailTabs}`}
       >
         <Tabs.ListContainer>
           <Tabs.List aria-label={t('page.viewAria')}>

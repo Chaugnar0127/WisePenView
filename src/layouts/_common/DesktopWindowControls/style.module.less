@@ -1,3 +1,4 @@
+@import '@/layouts/_common/a11y/focusRing.less';
 @import '@/layouts/_common/desktopTitleBar.less';
 
 /**
@@ -48,9 +49,10 @@
     background: var(--surface-tertiary);
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
+  &:focus-visible,
+  &:focus-visible:not(:focus),
+  &[data-focus-visible] {
+    .appFocusRing();
   }
 
   svg {

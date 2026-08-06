@@ -8,6 +8,7 @@ import {
   buildGroupPath,
   type GroupRoutePage,
 } from '@/utils/navigation/appRoute';
+import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 import { Button, Link, Tabs } from '@heroui/react';
 import { linkVariants } from '@heroui/styles';
 import { ArrowLeft, BookOpen } from 'lucide-react';
@@ -66,7 +67,12 @@ function GroupDetail() {
     <div className={containerClassName}>
       <div className={`${layout.pageHeaderWithActions} ${page.detailHeader}`}>
         <div className={page.titleStack}>
-          <Button variant="ghost" size="sm" onPress={() => navigate(APP_ROUTE_PATH.GROUPS)}>
+          <Button
+            className={page.backButton}
+            variant="ghost"
+            size="sm"
+            onPress={() => navigate(APP_ROUTE_PATH.GROUPS)}
+          >
             <ArrowLeft size={16} aria-hidden />
             {t('detail.backToGroups')}
           </Button>
@@ -87,7 +93,7 @@ function GroupDetail() {
 
       <Tabs
         variant="secondary"
-        className={layout.detailTabs}
+        className={`${underlineTabs.underlineTabs} ${layout.detailTabs}`}
         selectedKey={activePage}
         onSelectionChange={(key) => {
           const nextPage = tabs.find((item) => item.key === String(key))?.key;

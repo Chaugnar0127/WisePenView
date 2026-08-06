@@ -58,6 +58,7 @@ const enUSResource = {
     collapseComments: 'Collapse comments panel',
     expandComments: 'Expand comments panel',
     openComments: 'Open comments panel',
+    resize: 'Resize side panel',
   },
   comment: {
     unknownTime: 'Unknown time',

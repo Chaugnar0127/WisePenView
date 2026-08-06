@@ -582,10 +582,12 @@ html[data-color-scheme='lavender'] {
 
   --muted: var(--palette-neutral-11);
   --text-tertiary: var(--palette-neutral-10);
-  --control-disabled-bg: var(--palette-accent-5);
-  --control-disabled-filled-fg: var(--palette-accent-contrast);
-  --control-disabled-fg: var(--palette-accent-8);
-  --control-disabled-border: var(--palette-accent-7);
+  --control-disabled-filled-bg: var(--palette-neutral-4);
+  --control-disabled-filled-fg: var(--palette-neutral-10);
+  --control-disabled-soft-bg: var(--palette-neutral-3);
+  --control-disabled-soft-fg: var(--palette-neutral-10);
+  --control-disabled-fg: var(--palette-neutral-10);
+  --control-disabled-border: var(--palette-neutral-6);
   --text-disabled: var(--control-disabled-fg);
   --field-placeholder: var(--palette-neutral-10);
 
@@ -817,8 +819,10 @@ html[data-color-scheme] :is(.light, .dark, .default):not(html):not(:root) {
   --border-light: inherit;
   --text-tertiary: inherit;
   --text-disabled: inherit;
-  --control-disabled-bg: inherit;
+  --control-disabled-filled-bg: inherit;
   --control-disabled-filled-fg: inherit;
+  --control-disabled-soft-bg: inherit;
+  --control-disabled-soft-fg: inherit;
   --control-disabled-fg: inherit;
   --control-disabled-border: inherit;
   --table-chrome-bg: inherit;

@@ -48,14 +48,12 @@ function AppNavigationControls({
             icon={<ArrowLeft size={18} aria-hidden="true" />}
             label={t('navigation.back')}
             isDisabled={!canGoBack}
-            disabledVariant="ghost"
             onPress={onGoBack}
           />
           <AppIconButton
             icon={<ArrowRight size={18} aria-hidden="true" />}
             label={t('navigation.forward')}
             isDisabled={!canGoForward}
-            disabledVariant="ghost"
             onPress={onGoForward}
           />
         </>

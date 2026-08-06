@@ -75,12 +75,7 @@ function WalletTransactionTable({
         renderCell: (row) => {
           const inflow = isInflowKind(row.type);
           return (
-            <Chip
-              className={styles.typeChip}
-              color={inflow ? 'success' : 'danger'}
-              size="md"
-              variant="soft"
-            >
+            <Chip className={styles.typeChip} size="md" variant="soft">
               {inflow ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
               <Chip.Label>{t(getTransactionKindKey(row.type))}</Chip.Label>
             </Chip>
@@ -109,11 +104,10 @@ function WalletTransactionTable({
         width: 'md',
         align: 'end',
         renderCell: (row) => {
-          const inflow = isInflowKind(row.type);
           const amount = Number(row.amount);
           const prefix = amount > 0 ? '+' : '';
           return (
-            <span className={inflow ? styles.amountRecharge : styles.amountSpend}>
+            <span className={styles.amount}>
               {prefix}
               {formatCompactNumber(amount)}
             </span>

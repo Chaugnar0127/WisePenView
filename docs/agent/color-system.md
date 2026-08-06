@@ -53,8 +53,8 @@
 - 应用画布、主内容底色和顶栏使用带主题色的 accent 第 1 阶，通过 `background`、`canvas`、
   `header-surface` 表达；卡片、浮层、输入框和其它内容载体使用 Neutral 第 1 阶，通过 `surface`、
   `card-surface`、`overlay`、`field-background` 表达。不要用 `surface` 覆盖顶层画布。
-- 正文使用 `foreground`，辅助文字使用 `muted`；`text-tertiary` 只用于不承载关键信息且已验证
-  对比度的文字，不用于小字号导航信息。
+- 正文使用 `foreground`，辅助文字使用 `muted`；输入占位使用 `field-placeholder`。`text-tertiary`
+  只用于不传递信息的装饰图标和列表符号，不用于可读文字或交互控件。
 - 主操作和实心品牌背景使用 `accent`；品牌色文字与图标使用 `accent-text`，文字链接使用 `link`；
   第 5 阶选中背景上的小字号文字使用 `accent-text-strong`（第 12 阶）。
 - 默认透明的控件可在 hover 使用第 3 阶；有默认底色的控件 hover 使用第 4 阶；active / selected
@@ -66,9 +66,9 @@
   只读表格行保持 neutral，不用主题色制造可点击暗示。表格外框使用 Neutral 第 5 阶，内部行分隔、
   header/footer 分隔和内部面板分栏使用更淡的 Neutral 第 4 阶，降低高密度列表的网格感。
 - 键盘 focus ring 使用 `focus`（第 9 阶），原生文本选区使用 `selection`（alpha 第 5 阶）。
-- 禁用控件保留较弱的主题归属，不对整个控件叠加透明度：filled / soft 使用 accent 第 5 阶背景
-  和 `accent-foreground`，保持与 available 状态一致的前景/背景明度方向；ghost 使用第 8 阶前景，
-  outline 使用第 7 阶边框。
+- 禁用控件不对整个控件叠加透明度，并按控件变体保留形状层级：filled 使用 Neutral 第 4 阶背景和
+  Neutral 第 10 阶前景，soft 使用 Neutral 第 3 阶背景和 Neutral 第 10 阶前景；ghost 保持透明背景
+  和 Neutral 第 10 阶前景，outline 使用 Neutral 第 6 阶边框。
 - 状态实心背景使用 `info`、`success`、`warning`、`danger`；状态文字使用对应的 `*-text`。
 - 状态背景优先使用 `*-soft`，其中文字使用 `*-soft-foreground`。
 - 高密度应用界面的 Neutral 边框整体比 Radix 通用职责低一阶：`border-light` / `separator` 使用

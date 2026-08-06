@@ -109,23 +109,23 @@
 }
 
 .root:is(:disabled, [aria-disabled='true'], [data-disabled]) {
-  color: var(--control-disabled-filled-fg);
-  background: var(--control-disabled-bg);
+  color: var(--control-disabled-fg);
+  background: transparent;
   opacity: 1;
   cursor: not-allowed;
 
   &:hover {
-    color: var(--control-disabled-filled-fg);
-    background: var(--control-disabled-bg);
+    color: var(--control-disabled-fg);
+    background: transparent;
   }
 }
 
-.root.disabledGhost:is(:disabled, [aria-disabled='true'], [data-disabled]) {
-  color: var(--control-disabled-fg);
-  background: transparent;
+.root.primary:is(:disabled, [aria-disabled='true'], [data-disabled]) {
+  color: var(--control-disabled-filled-fg);
+  background: var(--control-disabled-filled-bg);
 
   &:hover {
-    color: var(--control-disabled-fg);
-    background: transparent;
+    color: var(--control-disabled-filled-fg);
+    background: var(--control-disabled-filled-bg);
   }
 }

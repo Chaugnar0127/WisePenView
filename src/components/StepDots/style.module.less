@@ -2,6 +2,9 @@
   display: flex;
   align-items: flex-start;
   width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .item {
@@ -20,7 +23,7 @@
 .item:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 5px;
+  top: 7px;
   left: calc(50% + 12px);
   right: calc(-50% + 12px);
   height: 1px;
@@ -30,11 +33,16 @@
 .dot {
   position: relative;
   z-index: 1;
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
   border: 2px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
+  color: var(--accent-foreground);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .active {
@@ -44,12 +52,17 @@
 
 .active .dot {
   border-color: var(--accent);
-  background: var(--accent);
+  background: var(--surface);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .done .dot {
   border-color: var(--accent);
+  background: var(--accent);
+}
+
+.done:not(:last-child)::after {
+  background: var(--accent);
 }
 
 .title {

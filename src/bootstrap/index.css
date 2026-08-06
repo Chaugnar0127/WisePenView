@@ -183,17 +183,30 @@
 
 @layer components {
   .button:is(:disabled, [aria-disabled='true']) {
-    --button-bg: var(--control-disabled-bg);
-    --button-bg-hover: var(--control-disabled-bg);
-    --button-bg-pressed: var(--control-disabled-bg);
-    --button-fg: var(--control-disabled-filled-fg);
     opacity: 1;
     transform: none;
     box-shadow: none;
   }
 
-  .button.button--ghost:is(:disabled, [aria-disabled='true']),
-  .button.button--outline:is(:disabled, [aria-disabled='true']) {
+  .button:is(:disabled, [aria-disabled='true']).button--primary,
+  .button:is(:disabled, [aria-disabled='true']).button--danger {
+    --button-bg: var(--control-disabled-filled-bg);
+    --button-bg-hover: var(--control-disabled-filled-bg);
+    --button-bg-pressed: var(--control-disabled-filled-bg);
+    --button-fg: var(--control-disabled-filled-fg);
+  }
+
+  .button:is(:disabled, [aria-disabled='true']).button--secondary,
+  .button:is(:disabled, [aria-disabled='true']).button--tertiary,
+  .button:is(:disabled, [aria-disabled='true']).button--danger-soft {
+    --button-bg: var(--control-disabled-soft-bg);
+    --button-bg-hover: var(--control-disabled-soft-bg);
+    --button-bg-pressed: var(--control-disabled-soft-bg);
+    --button-fg: var(--control-disabled-soft-fg);
+  }
+
+  .button:is(:disabled, [aria-disabled='true']).button--ghost,
+  .button:is(:disabled, [aria-disabled='true']).button--outline {
     --button-bg: transparent;
     --button-bg-hover: transparent;
     --button-bg-pressed: transparent;

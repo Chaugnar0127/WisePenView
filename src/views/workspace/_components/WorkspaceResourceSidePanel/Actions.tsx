@@ -31,6 +31,7 @@ function WorkspaceResourceSidePanelActions({
               ? t('sidePanel.collapseAnnotation')
               : t('sidePanel.expandAnnotation')
           }
+          size="sm"
           isActive={mode === 'inlineComment'}
           isDisabled={disabled}
           aria-expanded={mode === 'inlineComment'}
@@ -46,6 +47,7 @@ function WorkspaceResourceSidePanelActions({
       <AppIconButton
         icon={<MessagesSquare size={18} aria-hidden="true" />}
         label={mode === 'comment' ? t('sidePanel.collapseComments') : t('sidePanel.expandComments')}
+        size="sm"
         isActive={mode === 'comment'}
         isDisabled={disabled}
         aria-expanded={mode === 'comment'}

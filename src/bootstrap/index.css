@@ -209,6 +209,14 @@
     border-radius: var(--app-radius-interactive, var(--radius-2xl));
   }
 
+  .tabs:not(.tabs--secondary) > .tabs__list-container > .tabs__list {
+    background: var(--accent-softer);
+  }
+
+  .tabs:not(.tabs--secondary) > .tabs__list-container .tabs__indicator {
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--black) 8%, transparent);
+  }
+
   .popover .menu-item,
   .popover .list-box-item,
   .dropdown__popover .menu-item,

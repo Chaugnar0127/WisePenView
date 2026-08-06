@@ -241,8 +241,8 @@ html[data-color-scheme='lavender'] {
   --overlay-foreground: var(--palette-neutral-12);
   --header-surface: var(--palette-accent-1);
   --card-surface: var(--palette-neutral-1);
-  --segment: var(--palette-neutral-1);
-  --segment-foreground: var(--palette-neutral-12);
+  --segment: var(--palette-accent-1);
+  --segment-foreground: var(--foreground);
 
   --default: var(--palette-neutral-3);
   --default-foreground: var(--palette-neutral-12);

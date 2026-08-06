@@ -3,6 +3,7 @@ import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useAuthService } from '@/domains';
 import type { NewPasswordRequest } from '@/domains/Auth';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Button, Form, toast } from '@heroui/react';
 import { useMount, useRequest } from 'ahooks';
 import { useState, type FormEvent } from 'react';
@@ -154,7 +155,7 @@ function NewPassword() {
             {t('newPassword.submit')}
           </Button>
           <div className={auth.centerLinks}>
-            <Link to="/login">{t('newPassword.backToLogin')}</Link>
+            <Link to={APP_ROUTE_PATH.AUTH_LOGIN}>{t('newPassword.backToLogin')}</Link>
           </div>
         </div>
       </Form>
@@ -173,7 +174,7 @@ function NewPassword() {
           label: t('newPassword.goToLogin'),
           onPress: () => {
             setSuccessModalOpen(false);
-            navigate('/login');
+            navigate(APP_ROUTE_PATH.AUTH_LOGIN);
           },
         }}
       >

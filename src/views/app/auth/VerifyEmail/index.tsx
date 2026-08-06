@@ -6,6 +6,7 @@ import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
 import type { ConfirmEmailVerifyRequest } from '@/domains/User';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
@@ -51,7 +52,7 @@ function VerifyEmail() {
     setSuccessModalOpen(false);
     const queryRedirectPath = readOptionalRedirectParam(window.location.search);
     const continuation = consumeActiveAuthContinuation();
-    navigate(queryRedirectPath ?? continuation?.redirectPath ?? '/app/profile/account', {
+    navigate(queryRedirectPath ?? continuation?.redirectPath ?? APP_ROUTE_PATH.PROFILE_ACCOUNT, {
       replace: true,
       state: { fromVerify: true },
     });

@@ -4,6 +4,7 @@ import type { UserMessage } from '@/domains/Message';
 import { parseErrorMessage } from '@/utils/error';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
+import { buildNotificationPath } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import clsx from 'clsx';
@@ -47,7 +48,7 @@ function NotificationsPage() {
   );
 
   const handleSelectMessage = async (message: UserMessage) => {
-    navigate(`/app/notifications/${encodeURIComponent(message.messageId)}`);
+    navigate(buildNotificationPath(message.messageId));
     if (message.read) return;
     try {
       await readMessage(message.messageId);
@@ -59,7 +60,7 @@ function NotificationsPage() {
 
   const handleToggleMessage = async (message: UserMessage) => {
     if (message.messageId === selectedMessageId) {
-      navigate('/app/notifications');
+      navigate(buildNotificationPath());
       return;
     }
     await handleSelectMessage(message);

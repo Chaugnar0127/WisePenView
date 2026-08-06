@@ -1,24 +1,23 @@
 import { useKeyPress } from 'ahooks';
-import { useState } from 'react';
-import { NavigationType, Outlet, useNavigate, useNavigationType } from 'react-router-dom';
+import { useState, useSyncExternalStore } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { AppNavigationContext, type AppNavigationContextValue } from './AppNavigationContext';
 import CommandPalette from './CommandPalette';
 
-const readHistoryIndex = (): number | null => {
-  const index = window.history.state?.idx;
-  return typeof index === 'number' ? index : null;
+const HISTORY_BACK = 1;
+const HISTORY_FORWARD = 2;
+
+const subscribeHistory = (listener: () => void): (() => void) =>
+  window.desktop?.onNavigationStateChange(listener) ?? (() => undefined);
+
+const getHistorySnapshot = (): number => {
+  const state = window.desktop?.getNavigationState();
+  return (state?.canGoBack ? HISTORY_BACK : 0) | (state?.canGoForward ? HISTORY_FORWARD : 0);
 };
 
 function AppNavigationLayout() {
   const navigate = useNavigate();
-  const navigationType = useNavigationType();
-  const currentIndex = readHistoryIndex();
-  const [firstIndex] = useState(currentIndex);
-  const [historyState, setHistoryState] = useState(() => ({
-    observedIndex: currentIndex,
-    observedNavigationType: navigationType,
-    furthestIndex: currentIndex,
-  }));
+  const historySnapshot = useSyncExternalStore(subscribeHistory, getHistorySnapshot, () => 0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   useKeyPress(
@@ -30,37 +29,25 @@ function AppNavigationLayout() {
     { exactMatch: true }
   );
 
-  let furthestIndex = historyState.furthestIndex;
-  if (
-    historyState.observedIndex !== currentIndex ||
-    historyState.observedNavigationType !== navigationType
-  ) {
-    if (currentIndex != null) {
-      furthestIndex =
-        navigationType === NavigationType.Push ||
-        furthestIndex == null ||
-        currentIndex > furthestIndex
-          ? currentIndex
-          : furthestIndex;
-    }
-    // 新跳转会截断浏览器的前进分支；POP 则保留已到达过的最远位置。
-    setHistoryState({
-      observedIndex: currentIndex,
-      observedNavigationType: navigationType,
-      furthestIndex,
-    });
-  }
-
-  const effectiveFurthestIndex =
-    navigationType === NavigationType.Push ? currentIndex : historyState.furthestIndex;
+  const canGoBack = (historySnapshot & HISTORY_BACK) !== 0;
+  const canGoForward = (historySnapshot & HISTORY_FORWARD) !== 0;
   const value: AppNavigationContextValue = {
-    canGoBack: currentIndex != null && firstIndex != null && currentIndex > firstIndex,
-    canGoForward:
-      currentIndex != null &&
-      effectiveFurthestIndex != null &&
-      currentIndex < effectiveFurthestIndex,
-    goBack: () => navigate(-1),
-    goForward: () => navigate(1),
+    canGoBack,
+    canGoForward,
+    goBack: () => {
+      if (window.desktop) {
+        void window.desktop.navigationBack();
+        return;
+      }
+      void navigate(-1);
+    },
+    goForward: () => {
+      if (window.desktop) {
+        void window.desktop.navigationForward();
+        return;
+      }
+      void navigate(1);
+    },
     openCommandPalette: () => setCommandPaletteOpen(true),
   };
 

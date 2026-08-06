@@ -1,15 +1,23 @@
-.emptyState {
-  padding: 60px 0;
-  text-align: center;
+.pageHeaderWithActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
-.filterTabsList {
-  width: auto;
+.pageTitle {
+  margin: 0 0 var(--space-xs);
+  font-size: calc(var(--font-size-heading-3) + 4px);
 }
 
-.filterTab {
-  flex: 0 0 auto;
-  width: auto;
+.pageSubtitle {
+  color: var(--muted);
+}
+
+.actionsRow {
+  display: flex;
+  gap: var(--space-sm);
 }
 
 .listControls {
@@ -26,18 +34,18 @@
   flex: 0 0 auto;
 }
 
-.groupGrid {
+.grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
   margin-top: var(--space-xl);
 }
 
-.groupGridItem {
+.gridItem {
   min-width: 0;
 }
 
-.groupLoading {
+.loading {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,25 +54,19 @@
   margin-top: var(--space-xl);
 }
 
-.paginationWrap {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: auto;
-  padding: 32px 0;
+.emptyState {
+  padding: 60px 0;
+  text-align: center;
 }
 
 @media (max-width: 768px) {
-  .groupGrid {
+  .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .paginationWrap {
-    justify-content: flex-start;
   }
 }
 
 @media (max-width: 520px) {
+  .pageHeaderWithActions,
   .listControls {
     align-items: stretch;
     flex-direction: column;
@@ -74,7 +76,7 @@
     width: 100%;
   }
 
-  .groupGrid {
+  .grid {
     grid-template-columns: 1fr;
   }
 }

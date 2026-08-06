@@ -2,18 +2,17 @@ import {
   getDriveNodeLabel,
   getDriveScopeGroupId,
 } from '@/components/Drive/common/driveComponentModel';
+import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { useDriveService, useGroupService } from '@/domains';
 import { buildDrivePath } from '@/utils/navigation/driveRoute';
 import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { useWorkspaceNavigationStore } from './_store/useWorkspaceNavigationStore';
 
 export function useWorkspaceResourceBreadcrumb(resourceId?: string) {
   const { t } = useTranslation('workspace');
   const driveService = useDriveService();
   const groupService = useGroupService();
-  const navigate = useNavigate();
   const location = useWorkspaceNavigationStore((state) => state.location);
   const resourceLocation = location.resource;
   const hasMatchingLocation = Boolean(resourceId && resourceLocation?.resourceId === resourceId);
@@ -34,13 +33,14 @@ export function useWorkspaceResourceBreadcrumb(resourceId?: string) {
         resourceId: activeResourceLocation.resourceId,
         parentNodeId: activeResourceLocation.parentNodeId,
         scopeRootId: location.scope.rootId,
-        items: pathNodes.map((node, index) => ({
-          nodeId: node.id,
+        items: pathNodes.map<AppBreadcrumbItem>((node, index) => ({
+          key: node.id,
           label:
             index === 0
               ? group?.groupName ||
                 (groupId ? t('breadcrumb.unnamedGroup') : t('breadcrumb.personalDrive'))
               : getDriveNodeLabel(node),
+          to: buildDrivePath({ scope: location.scope, nodeId: node.id }),
         })),
       };
     },
@@ -65,9 +65,5 @@ export function useWorkspaceResourceBreadcrumb(resourceId?: string) {
       ? data.items
       : [];
 
-  const navigateToNode = (nodeId: string) => {
-    navigate(buildDrivePath({ scope: location.scope, nodeId }));
-  };
-
-  return { items, navigateToNode };
+  return items;
 }

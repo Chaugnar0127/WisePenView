@@ -1,9 +1,7 @@
-import {
-  buildLoginPathForCurrentLocation,
-  buildRegisterPathForCurrentLocation,
-} from '@/bootstrap/authContinuation';
+import { buildLoginPathForCurrentLocation } from '@/bootstrap/authContinuation';
 import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
 import { resetSessionStores } from '@/store/lifecycle';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
 type AuthSessionEventType = 'login' | 'logout' | 'unauthorized';
 
@@ -44,14 +42,8 @@ const resetSessionState = (): void => {
 };
 
 const redirectToLogin = (): void => {
-  if (window.location.pathname !== '/login') {
+  if (window.location.pathname !== APP_ROUTE_PATH.AUTH_LOGIN) {
     window.location.replace(buildLoginPathForCurrentLocation());
-  }
-};
-
-const redirectToRegister = (): void => {
-  if (window.location.pathname !== '/register') {
-    window.location.replace(buildRegisterPathForCurrentLocation());
   }
 };
 
@@ -65,10 +57,6 @@ const applySessionEvent = (type: AuthSessionEventType): void => {
   if (!sessionEnded) {
     sessionEnded = true;
     resetSessionState();
-  }
-  if (type === 'unauthorized') {
-    redirectToRegister();
-    return;
   }
   redirectToLogin();
 };
@@ -89,10 +77,6 @@ const broadcastSessionEvent = (type: AuthSessionEventType): void => {
 
 const coordinateSessionEvent = (type: AuthSessionEventType): void => {
   if ((type === 'logout' || type === 'unauthorized') && sessionEnded) {
-    if (type === 'unauthorized') {
-      redirectToRegister();
-      return;
-    }
     redirectToLogin();
     return;
   }

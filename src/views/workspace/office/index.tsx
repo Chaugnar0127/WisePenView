@@ -3,6 +3,7 @@ import { ResultState, Spin } from '@/components/Feedback';
 import { useDocumentService, useInteractService } from '@/domains';
 import type { ResourceItem } from '@/domains/Resource';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import {
   isOfficeResourceType,
   RESOURCE_KIND,
@@ -201,7 +202,7 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
               status="warning"
               title={t('office.cannotOpen')}
               extra={
-                <Link to="/app/drive/personal">
+                <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                   <Button variant="secondary">{t('viewer.backToDrive')}</Button>
                 </Link>
               }
@@ -222,7 +223,7 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
               title={t('office.loadFailed')}
               subTitle={parseErrorMessage(error)}
               extra={
-                <Link to="/app/drive/personal">
+                <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                   <Button variant="secondary">{t('viewer.backToDrive')}</Button>
                 </Link>
               }

@@ -1,4 +1,10 @@
 import { COURSE_ROLE } from '@/domains/Course';
+import {
+  APP_ROUTE_PATH,
+  buildCourseAssignmentPath,
+  buildCourseLearningPath,
+  buildCoursePath,
+} from '@/utils/navigation/appRoute';
 import { Button } from '@heroui/react';
 import {
   ArrowLeft,
@@ -19,32 +25,46 @@ function CourseNavigationSidebar() {
   const { t } = useTranslation('course');
   const { course } = useCourseContext();
   const navigate = useNavigate();
-  const basePath = `/app/course/${course.courseId}`;
   const navItems = [
-    { key: 'home', label: t('nav.home'), icon: Home, to: `${basePath}/home` },
-    { key: 'learning', label: t('nav.learning'), icon: BookOpen, to: `${basePath}/learning` },
+    { key: 'home', label: t('nav.home'), icon: Home, to: buildCoursePath(course.courseId, 'home') },
+    {
+      key: 'learning',
+      label: t('nav.learning'),
+      icon: BookOpen,
+      to: buildCourseLearningPath(course.courseId),
+    },
     {
       key: 'assignments',
       label: t('nav.assignments'),
       icon: ClipboardCheck,
-      to: `${basePath}/assignments`,
+      to: buildCourseAssignmentPath(course.courseId),
       badge: course.pendingAssignmentCount,
     },
-    { key: 'materials', label: t('nav.materials'), icon: FolderOpen, to: `${basePath}/materials` },
+    {
+      key: 'materials',
+      label: t('nav.materials'),
+      icon: FolderOpen,
+      to: buildCoursePath(course.courseId, 'materials'),
+    },
     {
       key: 'announcements',
       label: t('nav.announcements'),
       icon: Bell,
-      to: `${basePath}/announcements`,
+      to: buildCoursePath(course.courseId, 'announcements'),
     },
-    { key: 'members', label: t('nav.members'), icon: UsersRound, to: `${basePath}/members` },
+    {
+      key: 'members',
+      label: t('nav.members'),
+      icon: UsersRound,
+      to: buildCoursePath(course.courseId, 'members'),
+    },
     ...(course.myRole === COURSE_ROLE.TEACHER
       ? [
           {
-            key: 'edit',
+            key: 'settings',
             label: t('nav.edit'),
             icon: Settings,
-            to: `${basePath}/edit`,
+            to: buildCoursePath(course.courseId, 'settings'),
           },
         ]
       : []),
@@ -57,7 +77,7 @@ function CourseNavigationSidebar() {
           variant="ghost"
           size="sm"
           className={styles.backLink}
-          onPress={() => navigate('/app/collaboration?section=courseGroups')}
+          onPress={() => navigate(APP_ROUTE_PATH.COURSES)}
         >
           <ArrowLeft size={16} aria-hidden />
           {t('common.backToCourseGroups')}

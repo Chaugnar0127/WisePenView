@@ -5,6 +5,7 @@ import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
 import type { User } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Dropdown } from '@heroui/react';
 import { useMount } from 'ahooks';
 import clsx from 'clsx';
@@ -56,22 +57,19 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
   const handleMenuAction = (key: React.Key) => {
     switch (key) {
       case 'enter-admin':
-        navigate('/admin/users');
+        navigate(APP_ROUTE_PATH.ADMIN_USERS);
         break;
       case 'back-app':
-        navigate('/app');
-        break;
-      case 'subscription':
-        navigate('/app/profile/subscription');
+        navigate(APP_ROUTE_PATH.APP);
         break;
       case 'usage':
-        navigate('/app/profile/usage');
+        navigate(APP_ROUTE_PATH.PROFILE_USAGE);
         break;
       case 'account':
-        navigate('/app/profile/account');
+        navigate(APP_ROUTE_PATH.PROFILE_ACCOUNT);
         break;
       case 'appearance':
-        navigate('/app/profile/appearance');
+        navigate(APP_ROUTE_PATH.PROFILE_APPEARANCE);
         break;
       case 'feedback':
         setFeedbackModalOpen(true);

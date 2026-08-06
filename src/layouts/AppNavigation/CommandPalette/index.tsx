@@ -14,6 +14,7 @@ import { useDriveService, useNoteService } from '@/domains';
 import type { RootNode } from '@/domains/Drive';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
 import { useDebounce, useRequest } from 'ahooks';
@@ -197,28 +198,28 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
       label: t('navigation.newChat', { ns: 'shell' }),
       keywords: ['chat', '对话', '聊天'],
       icon: MessageSquarePlus,
-      onSelect: () => handleNavigate('/app/chat', true),
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.CHAT, true),
     },
     {
       id: 'personal-drive',
       label: t('page.tabs.drive', { ns: 'drive' }),
       keywords: ['drive', '云盘', '文档'],
       icon: HardDrive,
-      onSelect: () => handleNavigate('/app/drive/personal'),
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.DRIVE_PERSONAL),
     },
     {
       id: 'groups',
       label: t('navigation.groups', { ns: 'shell' }),
       keywords: ['group', '团队', '小组'],
       icon: Users,
-      onSelect: () => handleNavigate('/app/collaboration'),
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.GROUPS),
     },
     {
       id: 'favorites',
       label: t('page.tabs.favorites', { ns: 'drive' }),
       keywords: ['favorite', '收藏'],
       icon: FolderHeart,
-      onSelect: () => handleNavigate('/app/drive/favorites'),
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.DRIVE_FAVORITES),
     },
   ].filter((item) => matchesQuery(query, item.label, ...item.keywords));
 
@@ -228,21 +229,21 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
       label: t('account.title', { ns: 'profile' }),
       keywords: ['account', '账号'],
       icon: UserRound,
-      onSelect: () => handleNavigate('/app/profile/account'),
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.PROFILE_ACCOUNT),
     },
     {
       id: 'appearance',
       label: t('appearance.title', { ns: 'profile' }),
       keywords: ['appearance', 'theme', '外观', '主题'],
       icon: Palette,
-      onSelect: () => handleNavigate('/app/profile/appearance'),
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.PROFILE_APPEARANCE),
     },
     {
       id: 'usage',
       label: t('usage.title', { ns: 'profile' }),
       keywords: ['usage', 'balance', '用量', '余额'],
       icon: Gauge,
-      onSelect: () => handleNavigate('/app/profile/usage'),
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.PROFILE_USAGE),
     },
   ].filter((item) => matchesQuery(query, item.label, ...item.keywords));
 

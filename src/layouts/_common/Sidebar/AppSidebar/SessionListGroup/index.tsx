@@ -3,6 +3,7 @@ import { useNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChat
 import { useChatService } from '@/domains';
 import type { ChatSession } from '@/domains/Chat';
 import { parseErrorMessage } from '@/utils/error';
+import { buildChatPath } from '@/utils/navigation/appRoute';
 import { Button, ListBox, ListBoxItem, ListBoxSection, toast } from '@heroui/react';
 import { useMemoizedFn, useRequest } from 'ahooks';
 import clsx from 'clsx';
@@ -80,7 +81,7 @@ const useSessionListGroup = () => {
 
   const selectSession = (session: ChatSession) => {
     setCurrentSession({ id: session.id, title: session.title });
-    navigate(`/app/chat/${session.id}`);
+    navigate(buildChatPath(session.id));
   };
 
   const loadMoreSessions = () => {

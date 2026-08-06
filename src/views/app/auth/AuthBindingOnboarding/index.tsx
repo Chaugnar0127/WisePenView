@@ -1,4 +1,4 @@
-import { getAuthRedirectPath } from '@/bootstrap/authContinuation';
+import { readRedirectParam } from '@/bootstrap/authContinuation';
 import { Spin } from '@/components/Feedback';
 import { useUserService } from '@/domains';
 import type { UserAccountProfile } from '@/domains/User';
@@ -20,7 +20,7 @@ function AuthBindingOnboarding() {
   const userService = useUserService();
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectPath = getAuthRedirectPath(location.search);
+  const redirectPath = readRedirectParam(location.search);
   const [user, setUser] = useState<UserAccountProfile | null>(null);
 
   const { loading, runAsync: reloadUserInfo } = useRequest(() => userService.getFullUserInfo(), {

@@ -66,7 +66,6 @@ function CourseLearningLayout() {
       resource={{
         ...registeredResourceHeader.resource,
         breadcrumbItems: [],
-        onBreadcrumbNavigate: () => {},
         chatPanelCollapsed: chatDock.collapsed,
         onToggleChatPanel: chatDock.toggle,
       }}

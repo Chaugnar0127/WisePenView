@@ -1,3 +1,4 @@
+import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import type {
   ResourceAction,
   ResourceIconType,
@@ -34,11 +35,6 @@ export interface ResourceHeaderMoreMenu {
   onInlineCommentHistory?: () => void;
 }
 
-export interface ResourceHeaderBreadcrumbItem {
-  nodeId: string;
-  label: string;
-}
-
 export interface ResourceHeaderConfig {
   resourceId?: string;
   resourceName: string;
@@ -59,8 +55,7 @@ export interface ResourceHeaderConfig {
 }
 
 export interface ResourceHeaderProps extends ResourceHeaderConfig {
-  breadcrumbItems: ResourceHeaderBreadcrumbItem[];
-  onBreadcrumbNavigate: (nodeId: string) => void;
+  breadcrumbItems: AppBreadcrumbItem[];
   trailingActions?: ReactNode;
   chatPanelCollapsed?: boolean;
   onToggleChatPanel?: () => void;

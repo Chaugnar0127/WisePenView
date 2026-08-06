@@ -1,22 +1,9 @@
-import { buildDriveNodeScope, type DriveNodeScope } from '@/domains/Drive';
+import type { DriveNodeScope } from '@/domains/Drive';
+import { APP_ROUTE_PATH, buildGroupFilesPath } from './appRoute';
 
-const APP_DRIVE_PATH = '/app/drive';
-const PERSONAL_DRIVE_PATH = `${APP_DRIVE_PATH}/personal`;
-const GROUP_DRIVE_PATH = `${APP_DRIVE_PATH}/group`;
-
-export const DRIVE_UPLOAD_QUEUE_PATH = `${APP_DRIVE_PATH}/upload-queue`;
-export const DRIVE_FAVORITES_PATH = `${APP_DRIVE_PATH}/favorites`;
-export const DRIVE_TRASH_PATH = `${APP_DRIVE_PATH}/trash`;
-
-export interface DriveRouteLocation {
-  scope: DriveNodeScope;
-  initialNodeId?: string;
-}
-
-export interface DriveRouteParams {
-  groupId?: string;
-  folderId?: string;
-}
+export const DRIVE_UPLOAD_QUEUE_PATH = APP_ROUTE_PATH.DRIVE_UPLOAD_QUEUE;
+export const DRIVE_FAVORITES_PATH = APP_ROUTE_PATH.DRIVE_FAVORITES;
+export const DRIVE_TRASH_PATH = APP_ROUTE_PATH.DRIVE_TRASH;
 
 export const buildDrivePath = ({
   scope,
@@ -25,12 +12,15 @@ export const buildDrivePath = ({
   scope: DriveNodeScope;
   nodeId?: string;
 }): string => {
-  const folderPath =
-    nodeId && nodeId !== scope.rootId ? `/folder/${encodeURIComponent(nodeId)}` : '';
   if (scope.type === 'group') {
-    return `${GROUP_DRIVE_PATH}/${encodeURIComponent(scope.groupId)}${folderPath}`;
+    return buildGroupFilesPath(
+      scope.groupId,
+      nodeId && nodeId !== scope.rootId ? nodeId : undefined
+    );
   }
-  return `${PERSONAL_DRIVE_PATH}${folderPath}`;
+  return nodeId && nodeId !== scope.rootId
+    ? `${APP_ROUTE_PATH.DRIVE_PERSONAL}/folder/${encodeURIComponent(nodeId)}`
+    : APP_ROUTE_PATH.DRIVE_PERSONAL;
 };
 
 export const buildDriveSystemFolderPath = ({
@@ -41,21 +31,4 @@ export const buildDriveSystemFolderPath = ({
   nodeId?: string;
 }): string => {
   return nodeId ? `${DRIVE_TRASH_PATH}/folder/${encodeURIComponent(nodeId)}` : DRIVE_TRASH_PATH;
-};
-
-export const parseDriveInitialNodeId = (search: string): string | undefined => {
-  return new URLSearchParams(search).get('folder')?.trim() || undefined;
-};
-
-export const parseDriveRouteLocation = ({
-  groupId,
-  folderId,
-}: DriveRouteParams): DriveRouteLocation => {
-  const normalizedGroupId = groupId?.trim() || undefined;
-  const initialNodeId = folderId?.trim() || undefined;
-
-  return {
-    scope: buildDriveNodeScope(normalizedGroupId),
-    ...(initialNodeId ? { initialNodeId } : {}),
-  };
 };

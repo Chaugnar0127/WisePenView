@@ -1,13 +1,13 @@
 import { usePdfPreviewProgressStore } from '@/components/PdfViewer/_store/usePdfPreviewProgressStore';
 import { buildDriveNodeScope, type DriveNodeScope } from '@/domains/Drive';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
+import { buildResourcePath } from '@/utils/navigation/appRoute';
 import {
   RESOURCE_VIEWER,
   resolveResourceKind,
   resolveResourceViewer,
   type ResourceViewer,
 } from '@/utils/navigation/resourceTarget';
-import { buildWorkspaceResourcePath } from '@/utils/navigation/workspaceRoute';
 import { useMemoizedFn } from 'ahooks';
 import { startTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -75,7 +75,7 @@ export const useOpenInWorkspace = (): OpenInWorkspaceFn => {
       resourceType: target.resourceType ?? resourceType,
       viewer: target.viewer,
     });
-    const basePath = buildWorkspaceResourcePath({ resourceType, resourceId, viewer });
+    const basePath = buildResourcePath({ resourceType, resourceId, viewer });
     const path = appendPdfPreviewProgress(basePath, resourceId, viewer);
 
     startTransition(() => {

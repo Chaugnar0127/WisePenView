@@ -3,6 +3,7 @@ import { useGroupService } from '@/domains';
 import type { Group, GroupResConfig } from '@/domains/Group';
 import { GroupContext, type GroupCurrentUserRole } from '@/layouts/Group/GroupContext';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Button } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { ArrowLeft } from 'lucide-react';
@@ -50,7 +51,7 @@ function GroupRoute() {
           subTitle={error ? parseErrorMessage(error) : t('detail.notFound')}
           extra={
             <div className={styles.resultActions}>
-              <Button variant="ghost" onPress={() => navigate('/app/collaboration')}>
+              <Button variant="ghost" onPress={() => navigate(APP_ROUTE_PATH.GROUPS)}>
                 <ArrowLeft size={16} aria-hidden />
                 {t('detail.backToGroups')}
               </Button>

@@ -1,9 +1,11 @@
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+
 const AUTH_CONTINUATION_ACTIVE_KEY = 'wisepen:auth-continuation:active';
 const AUTH_CONTINUATION_PREFIX = 'wisepen:auth-continuation:';
 const AUTH_CONTINUATION_TTL_MS = 30 * 60_000;
 
-export const DEFAULT_AUTH_REDIRECT_PATH = '/app/chat';
-export const AUTH_ONBOARDING_BIND_PATH = '/auth/onboarding/bind';
+export const DEFAULT_AUTH_REDIRECT_PATH = APP_ROUTE_PATH.CHAT;
+export const AUTH_ONBOARDING_BIND_PATH = APP_ROUTE_PATH.AUTH_ONBOARDING_BIND;
 
 export type AuthContinuationKind = 'auth' | 'registerOnboarding' | 'verifyEmail' | 'uisVerify';
 
@@ -51,7 +53,7 @@ export const sanitizeOptionalRedirectPath = (raw: string | null | undefined): st
   if (!raw) return null;
   const value = raw.trim();
   if (!value.startsWith('/') || value.startsWith('//')) return null;
-  if (value.startsWith('/login') || value.startsWith('/register')) return null;
+  if (value === APP_ROUTE_PATH.AUTH || value.startsWith(`${APP_ROUTE_PATH.AUTH}/`)) return null;
   return value;
 };
 
@@ -112,23 +114,13 @@ export const consumeActiveAuthContinuation = (): AuthContinuation | null => {
   }
 };
 
-export const getAuthRedirectPath = (search: string): string => {
-  return readRedirectParam(search);
-};
-
 export const getCurrentRedirectPath = (): string =>
   sanitizeRedirectPath(toPathWithSearch(window.location));
 
 export const buildLoginPathForCurrentLocation = (): string => {
   const redirectPath = getCurrentRedirectPath();
   saveAuthContinuation('auth', redirectPath);
-  return appendRedirectParam('/login', redirectPath);
-};
-
-export const buildRegisterPathForCurrentLocation = (): string => {
-  const redirectPath = getCurrentRedirectPath();
-  saveAuthContinuation('auth', redirectPath);
-  return appendRedirectParam('/register', redirectPath);
+  return appendRedirectParam(APP_ROUTE_PATH.AUTH_LOGIN, redirectPath);
 };
 
 export const buildRegisterOnboardingPath = (redirectPath: string): string => {

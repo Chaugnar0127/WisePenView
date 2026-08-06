@@ -1,5 +1,6 @@
 import TableDrive from '@/components/Drive/TableDrive';
 import { useDriveService } from '@/domains';
+import { buildDriveNodeScope } from '@/domains/Drive';
 import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import {
@@ -8,7 +9,6 @@ import {
   DRIVE_FAVORITES_PATH,
   DRIVE_TRASH_PATH,
   DRIVE_UPLOAD_QUEUE_PATH,
-  parseDriveRouteLocation,
 } from '@/utils/navigation/driveRoute';
 import { Tabs, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -29,9 +29,9 @@ interface DriveProps {
 function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   const { t } = useTranslation('drive');
   const navigate = useNavigate();
-  const { folderId, groupId } = useParams();
+  const { folderId } = useParams();
   const driveService = useDriveService();
-  const driveLocation = parseDriveRouteLocation({ groupId, folderId });
+  const driveScope = buildDriveNodeScope();
   const workspaceScope = useWorkspaceNavigationStore((state) => state.location.scope);
 
   /**
@@ -43,7 +43,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   useEffect(() => {
     if (viewMode === 'uploadQueue' || viewMode === 'favorites') return;
 
-    const nextScope = parseDriveRouteLocation({ groupId }).scope;
+    const nextScope = buildDriveNodeScope();
     const currentScope = useWorkspaceNavigationStore.getState().location.scope;
     const currentGroupId = currentScope.type === 'group' ? currentScope.groupId : undefined;
     const nextGroupId = nextScope.type === 'group' ? nextScope.groupId : undefined;
@@ -51,22 +51,21 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
       return;
     }
     useWorkspaceNavigationStore.getState().navigateToScope(nextScope);
-  }, [groupId, viewMode]);
+  }, [viewMode]);
 
   const isTrashView = viewMode === 'trash';
-  const handleTrashError = (error: unknown) => {
+  const handleTrashRootError = (error: unknown) => {
     toast.danger(parseErrorMessage(error));
-    navigate(buildDrivePath({ scope: driveLocation.scope }));
   };
 
   const { data: trashFolderNodeId } = useRequest(() => driveService.getTrashFolderNodeId(), {
     ready: isTrashView && !folderId,
     refreshDeps: [viewMode, folderId],
-    onError: handleTrashError,
+    onError: handleTrashRootError,
   });
 
   const handleCurrentNodeChange = (nodeId: string) => {
-    navigate(buildDrivePath({ scope: driveLocation.scope, nodeId }));
+    navigate(buildDrivePath({ scope: driveScope, nodeId }));
   };
 
   const handleViewModeChange = (nextViewMode: DriveViewMode) => {
@@ -98,14 +97,14 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
     }
   };
 
-  const initialNodeId = folderId ?? trashFolderNodeId ?? driveLocation.initialNodeId;
+  const initialNodeId = folderId ?? trashFolderNodeId;
   const isTrashPending = Boolean(isTrashView && !folderId && !trashFolderNodeId);
-  const tableDriveLocationKey = `${driveLocation.scope.rootId}\u0000${initialNodeId ?? driveLocation.scope.rootId}`;
+  const tableDriveLocationKey = `${driveScope.rootId}\u0000${initialNodeId ?? driveScope.rootId}`;
 
   const handleTrashNodeChange = (nodeId: string) => {
     if (viewMode !== 'trash') return;
-    if (nodeId === driveLocation.scope.rootId) {
-      navigate(buildDrivePath({ scope: driveLocation.scope }));
+    if (nodeId === driveScope.rootId) {
+      navigate(buildDrivePath({ scope: driveScope }));
       return;
     }
     navigate(buildDriveSystemFolderPath({ view: viewMode, nodeId }));
@@ -145,8 +144,8 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
         {viewMode === 'tableDrive' && (
           <TableDrive
             key={tableDriveLocationKey}
-            scope={driveLocation.scope}
-            initialNodeId={driveLocation.initialNodeId}
+            scope={driveScope}
+            initialNodeId={folderId}
             onCurrentNodeChange={handleCurrentNodeChange}
           />
         )}
@@ -155,11 +154,14 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
         {isTrashView ? (
           <TableDrive
             key={tableDriveLocationKey}
-            scope={driveLocation.scope}
+            scope={driveScope}
             initialNodeId={initialNodeId}
             loading={isTrashPending}
             onCurrentNodeChange={handleTrashNodeChange}
-            onPathError={handleTrashError}
+            onPathError={(error) => {
+              toast.danger(parseErrorMessage(error));
+              navigate(DRIVE_TRASH_PATH, { replace: true });
+            }}
           />
         ) : null}
       </div>

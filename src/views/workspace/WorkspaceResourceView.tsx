@@ -1,9 +1,9 @@
+import { APP_ROUTE_PATH, buildResourcePathWithSearch } from '@/utils/navigation/appRoute';
 import {
   normalizeResourceKind,
   normalizeResourceViewer,
   type ResourceTarget,
 } from '@/utils/navigation/resourceTarget';
-import { buildWorkspaceResourcePathWithSearch } from '@/utils/navigation/workspaceRoute';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useResourceHostContext } from './ResourceHostContext';
 import ResourceRenderer from './ResourceRenderer';
@@ -27,12 +27,13 @@ function WorkspaceResourceView() {
 
   const handleTargetChange = (nextTarget: ResourceTarget) => {
     const resourceType = normalizeResourceKind(nextTarget.resourceType);
-    if (!resourceType) return;
+    const nextResourceId = nextTarget.resourceId?.trim();
+    if (!resourceType || !nextResourceId) return;
     navigate(
-      buildWorkspaceResourcePathWithSearch(
+      buildResourcePathWithSearch(
         {
           resourceType,
-          resourceId: nextTarget.resourceId,
+          resourceId: nextResourceId,
           viewer: normalizeResourceViewer(nextTarget.viewer),
         },
         location.search
@@ -42,7 +43,7 @@ function WorkspaceResourceView() {
   };
 
   const handleClose = () => {
-    navigate('/app/drive/personal');
+    navigate(APP_ROUTE_PATH.DRIVE_PERSONAL);
   };
 
   const sidePanelConfig =

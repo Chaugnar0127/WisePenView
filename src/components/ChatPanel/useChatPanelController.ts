@@ -15,6 +15,7 @@ import {
   type CreateSessionRequest,
 } from '@/domains/Chat';
 import { parseErrorMessage } from '@/utils/error';
+import { buildChatPath } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
 import { useLatest, useRequest } from 'ahooks';
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from 'ai';
@@ -149,7 +150,7 @@ export function useChatPanelController({
     requestChatSessionHistoryRefresh();
     setChatPanelDraftOpen(false);
     if (fullWidth) {
-      navigate(`/app/chat/${createdSession.id}`, { replace: true });
+      navigate(buildChatPath(createdSession.id), { replace: true });
     }
     return createdSession.id;
   };
@@ -292,7 +293,7 @@ export function useChatPanelController({
     setChatPanelDraftOpen(false);
     setSessionBarOpen(false);
     if (fullWidth) {
-      navigate(`/app/chat/${session.id}`, { replace: true });
+      navigate(buildChatPath(session.id), { replace: true });
     }
   };
 

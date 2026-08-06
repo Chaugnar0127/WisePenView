@@ -1,6 +1,8 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { FolderTable, type FolderTableBreadcrumbItem } from '@/components/Table';
-import type { DriveNode } from '@/domains/Drive';
+import AppBreadcrumb, { type AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
+import { FolderTable } from '@/components/Table';
+import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
+import { buildDrivePath } from '@/utils/navigation/driveRoute';
 import {
   DndContext,
   DragOverlay,
@@ -9,7 +11,7 @@ import {
   type Modifiers,
 } from '@dnd-kit/core';
 import { Button } from '@heroui/react';
-import { PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { HardDrive, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -76,14 +78,20 @@ const attachDriveDragOverlayToCursor: Modifier = ({
 
 const driveDragOverlayModifiers: Modifiers = [attachDriveDragOverlayToCursor];
 
-function toBreadcrumbItems(pathNodes: DriveNode[]): FolderTableBreadcrumbItem[] {
-  return pathNodes
-    .filter((node) => node.type !== 'loading')
-    .map((node, index) => ({
-      id: node.id,
-      label: getDriveNodeLabel(node),
-      isRoot: index === 0,
-    }));
+function toBreadcrumbItems(pathNodes: DriveNode[], scope: DriveNodeScope): AppBreadcrumbItem[] {
+  const visibleNodes = pathNodes.filter((node) => node.type !== 'loading');
+  return visibleNodes.map((node, index) => ({
+    key: node.id,
+    label: (
+      <>
+        {index === 0 ? <HardDrive size={14} aria-hidden="true" /> : null}
+        {getDriveNodeLabel(node)}
+      </>
+    ),
+    ...(index < visibleNodes.length - 1
+      ? { to: buildDrivePath({ scope, nodeId: node.id }) }
+      : { current: true }),
+  }));
 }
 
 function TableDrive({
@@ -213,16 +221,16 @@ function TableDrive({
   );
 
   const breadcrumb = (() => {
-    const items = toBreadcrumbItems(navigation.pathNodes);
+    const items = toBreadcrumbItems(navigation.pathNodes, resolvedScope.scope);
     return (
       <>
-        <FolderTable.Breadcrumb
+        <AppBreadcrumb
           items={items}
-          onJump={handleEnterFolder}
+          ariaLabel={t('aria.folderPath', { ns: 'table' })}
           renderItem={(content, item) => (
             <ExternalFileDroppableBreadcrumb
-              nodeId={item.id}
-              isActive={externalDnd.activeBreadcrumbNodeId === item.id}
+              nodeId={item.key}
+              isActive={externalDnd.activeBreadcrumbNodeId === item.key}
               handlers={externalDnd.breadcrumbDragHandlers}
             >
               {dnd.renderBreadcrumbItem(content, item)}

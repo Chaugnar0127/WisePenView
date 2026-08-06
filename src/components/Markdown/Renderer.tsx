@@ -5,6 +5,7 @@ import 'katex/dist/katex.min.css';
 import { CornerUpLeft } from 'lucide-react';
 import { createContext, Fragment, memo, useContext, type MouseEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CodeBlock from './CodeBlock';
 import MermaidBlock from './MermaidBlock';
 import { isMermaidLanguage } from './MermaidBlock/language';
@@ -262,19 +263,46 @@ function MarkdownImage({
   return <img src={src} alt={alt} title={title} loading="lazy" />;
 }
 
-function handleFootnoteNavigation(event: MouseEvent<HTMLAnchorElement>) {
-  const { hash } = event.currentTarget;
-  const target = document.getElementById(hash.slice(1));
-  if (!target) return;
+interface FootnoteNavigationLinkProps {
+  id?: string;
+  href: string;
+  ariaLabel?: string;
+  className?: string;
+  children: ReactNode;
+}
 
-  event.preventDefault();
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  target.scrollIntoView({
-    behavior: reducedMotion ? 'auto' : 'smooth',
-    block: 'center',
-    inline: 'nearest',
-  });
-  window.history.pushState(null, '', hash);
+function FootnoteNavigationLink({
+  id,
+  href,
+  ariaLabel,
+  className,
+  children,
+}: FootnoteNavigationLinkProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    const target = document.getElementById(href.slice(1));
+    if (!target) return;
+
+    event.preventDefault();
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({
+      behavior: reducedMotion ? 'auto' : 'smooth',
+      block: 'center',
+      inline: 'nearest',
+    });
+    void navigate(
+      { pathname: location.pathname, search: location.search, hash: href },
+      { preventScrollReset: true }
+    );
+  };
+
+  return (
+    <a id={id} href={href} aria-label={ariaLabel} onClick={handleClick} className={className}>
+      {children}
+    </a>
+  );
 }
 
 function resolveDefinition(
@@ -388,13 +416,9 @@ function renderInlineNode(
       const fragmentId = encodeURIComponent(node.identifier);
       return (
         <sup key={key} className={styles.footnoteReference}>
-          <a
-            id={`fnref-${fragmentId}`}
-            href={`#fn-${fragmentId}`}
-            onClick={handleFootnoteNavigation}
-          >
+          <FootnoteNavigationLink id={`fnref-${fragmentId}`} href={`#fn-${fragmentId}`}>
             {node.identifier}
-          </a>
+          </FootnoteNavigationLink>
         </sup>
       );
     }
@@ -644,14 +668,13 @@ function MarkdownFootnotes({
                   linkMode
                 )
               )}
-              <a
+              <FootnoteNavigationLink
                 href={`#fnref-${fragmentId}`}
-                aria-label={t('markdown.footnoteBack')}
-                onClick={handleFootnoteNavigation}
+                ariaLabel={t('markdown.footnoteBack')}
                 className={styles.footnoteBackLink}
               >
                 <CornerUpLeft size={12} aria-hidden="true" />
-              </a>
+              </FootnoteNavigationLink>
             </li>
           );
         })}

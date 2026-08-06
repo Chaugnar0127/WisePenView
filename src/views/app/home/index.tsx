@@ -6,6 +6,7 @@ import nodeSvg from '@/assets/images/backgrounds/node.svg';
 import polylineSvg from '@/assets/images/backgrounds/polyline-edit.svg';
 import relationSvg from '@/assets/images/backgrounds/relation.svg';
 import searchSvg from '@/assets/images/backgrounds/search.svg';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import styles from './style.module.less';
 
 function Home() {
@@ -28,11 +29,14 @@ function Home() {
                 <Button
                   variant="primary"
                   className={styles.heroCta}
-                  onPress={() => navigate('/register')}
+                  onPress={() => navigate(APP_ROUTE_PATH.AUTH_REGISTER)}
                 >
                   {t('home.nav.register')}
                 </Button>
-                <Button className={styles.heroCta} onPress={() => navigate('/login')}>
+                <Button
+                  className={styles.heroCta}
+                  onPress={() => navigate(APP_ROUTE_PATH.AUTH_LOGIN)}
+                >
                   {t('home.nav.login')}
                 </Button>
               </div>

@@ -1,7 +1,6 @@
 import DataTableComponent from './DataTable';
 import DataTableTabs from './DataTable/parts/UnderlineTabs';
 import FolderTableComponent from './FolderTable';
-import FolderBreadcrumb from './FolderTable/parts/FolderBreadcrumb';
 import ManageTableComponent from './ManageTable';
 import TableMemberCell from './shared/cells/MemberCell';
 import TableTextCell from './shared/cells/TextCell';
@@ -21,9 +20,7 @@ export const DataTable = Object.assign(DataTableComponent, {
   cellStyles: tableCellStyles,
 });
 
-export const FolderTable = Object.assign(FolderTableComponent, {
-  Breadcrumb: FolderBreadcrumb,
-});
+export const FolderTable = FolderTableComponent;
 
 /** ManageTable — 可编辑表格 */
 export type {
@@ -50,8 +47,6 @@ export type {
 
 /** FolderTable — 文件夹列表 */
 export type {
-  FolderTableBreadcrumbItem,
-  FolderTableBreadcrumbProps,
   FolderTableCheckboxSelection,
   FolderTableColumn,
   FolderTableLoadMore,

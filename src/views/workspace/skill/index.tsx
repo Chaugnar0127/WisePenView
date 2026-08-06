@@ -8,6 +8,7 @@ import type { DataNode } from '@/components/Tree';
 import VersionDropdown from '@/components/VersionDropdown';
 import { SkillServicesMap } from '@/domains/Skill';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import type { ResourceHostLayoutConfig } from '@/views/workspace/ResourceHostContext';
 import { Button, Tabs, toast } from '@heroui/react';
@@ -283,7 +284,7 @@ function SkillView({ resourceId }: SkillViewProps) {
             title={t('page.openFailed')}
             subTitle={parseErrorMessage(resource.error)}
             extra={
-              <Link to="/app/drive/personal">
+              <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                 <Button variant="secondary">{t('page.backToDrive')}</Button>
               </Link>
             }

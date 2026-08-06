@@ -2,10 +2,11 @@ import { Spin } from '@/components/Feedback';
 import Tree, { type TreeDataNode } from '@/components/Tree';
 import { useCourseService } from '@/domains';
 import type { CourseSummary } from '@/domains/Course';
+import { buildCourseLearningPath } from '@/utils/navigation/appRoute';
 import { useRequest } from 'ahooks';
 import { BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
 
 function toCourseTreeData(courses: CourseSummary[]): TreeDataNode[] {
@@ -27,16 +28,11 @@ function toCourseTreeData(courses: CourseSummary[]): TreeDataNode[] {
   }));
 }
 
-function resolveSelectedKey(pathname: string): string[] {
-  const courseMatch = pathname.match(/^\/app\/course\/([^/]+)/);
-  return courseMatch ? [`course:${courseMatch[1]}`] : [];
-}
-
 function SidebarCourse() {
   const { t } = useTranslation('course');
   const courseService = useCourseService();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { courseId } = useParams<{ courseId?: string }>();
 
   const { data, loading } = useRequest(() => courseService.listMyCourses({ page: 1, size: 50 }));
 
@@ -58,11 +54,11 @@ function SidebarCourse() {
           selectable
           className={styles.tree}
           treeData={treeData}
-          selectedKeys={resolveSelectedKey(location.pathname)}
+          selectedKeys={courseId ? [`course:${courseId}`] : []}
           onSelect={(_keys, info) => {
             const key = String(info.node.key);
             if (key.startsWith('course:')) {
-              navigate(`/app/course/${key.slice('course:'.length)}/learning`);
+              navigate(buildCourseLearningPath(key.slice('course:'.length)));
             }
           }}
         />

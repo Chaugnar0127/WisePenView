@@ -2,6 +2,7 @@ import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { useGroupService } from '@/domains';
 import type { DeleteGroupRequest } from '@/domains/Group';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +31,7 @@ function DissolveGroupModal({
         toast.success(t('dissolve.success'));
         onSuccess?.();
         onOpenChange(false);
-        navigate('/app/collaboration');
+        navigate(APP_ROUTE_PATH.GROUPS);
       },
       onError: (err) => {
         toast.danger(parseErrorMessage(err));

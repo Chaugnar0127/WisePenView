@@ -1,5 +1,6 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import EntryIcon from '@/components/Icons/EntryIcon';
+import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { AppPopover } from '@/components/Overlay';
 import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import { useUserService } from '@/domains';
@@ -28,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link as RouterLink } from 'react-router-dom';
 import ResourceHeaderOperations, {
   type ResourceHeaderOperationHandlers,
 } from './ResourceHeaderOperations';
@@ -279,7 +281,6 @@ function ResourceHeader({
   isDisabled,
   titleMeta,
   breadcrumbItems,
-  onBreadcrumbNavigate,
   leadingActions,
   actions,
   moreMenu,
@@ -299,6 +300,22 @@ function ResourceHeader({
   const canManagePermission = Boolean(
     resourceId && normalizedOwnerId && currentUser?.id === normalizedOwnerId
   );
+  const currentBreadcrumbItem: AppBreadcrumbItem = {
+    key: `resource:${resourceId ?? resourceName}`,
+    current: true,
+    label: (
+      <>
+        <span className={styles.titleIcon} aria-hidden="true">
+          <EntryIcon
+            entryType="resource"
+            resourceType={resourceType}
+            resourceIconType={resourceIconType}
+          />
+        </span>
+        <span className={styles.titleText}>{resourceName}</span>
+      </>
+    ),
+  };
   return (
     <>
       <div className={styles.root}>
@@ -306,46 +323,32 @@ function ResourceHeader({
           {!hideBreadcrumb ? (
             <nav className={styles.breadcrumb} aria-label={t('header.breadcrumbAria')}>
               {breadcrumbItems.map((item, index) => (
-                <span key={item.nodeId} className={styles.breadcrumbSegment}>
-                  <button
-                    type="button"
-                    className={styles.breadcrumbButton}
-                    onClick={() => onBreadcrumbNavigate(item.nodeId)}
-                  >
-                    {index === 0 ? (
-                      <HardDrive
-                        className={styles.breadcrumbIcon}
-                        size={14}
-                        aria-hidden
-                        color="var(--accent)"
-                      />
-                    ) : null}
-                    {item.label}
-                  </button>
+                <span key={item.key} className={styles.breadcrumbSegment}>
+                  {item.to ? (
+                    <RouterLink className={styles.breadcrumbButton} to={item.to}>
+                      {index === 0 ? (
+                        <HardDrive
+                          className={styles.breadcrumbIcon}
+                          size={14}
+                          aria-hidden
+                          color="var(--accent)"
+                        />
+                      ) : null}
+                      {item.label}
+                    </RouterLink>
+                  ) : (
+                    <span className={styles.breadcrumbButton}>{item.label}</span>
+                  )}
                   <ChevronRight className={styles.breadcrumbSeparator} size={14} aria-hidden />
                 </span>
               ))}
               <span className={styles.breadcrumbCurrent} aria-current="page">
-                <span className={styles.titleIcon} aria-hidden="true">
-                  <EntryIcon
-                    entryType="resource"
-                    resourceType={resourceType}
-                    resourceIconType={resourceIconType}
-                  />
-                </span>
-                <span className={styles.titleText}>{resourceName}</span>
+                {currentBreadcrumbItem.label}
               </span>
             </nav>
           ) : (
             <span className={styles.breadcrumbCurrent} aria-current="page">
-              <span className={styles.titleIcon} aria-hidden="true">
-                <EntryIcon
-                  entryType="resource"
-                  resourceType={resourceType}
-                  resourceIconType={resourceIconType}
-                />
-              </span>
-              <span className={styles.titleText}>{resourceName}</span>
+              {currentBreadcrumbItem.label}
             </span>
           )}
           {titleMeta ? <span className={styles.titleMeta}>{titleMeta}</span> : null}

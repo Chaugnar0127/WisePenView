@@ -221,8 +221,39 @@ const requireManualMemoJSDocRule = {
   },
 };
 
+const noHardcodedFrontendRouteRule = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: '禁止 UI、布局和 Hook 直接硬编码前端路由',
+    },
+    schema: [],
+    messages: {
+      hardcoded:
+        '禁止直接硬编码 /app、/auth 或 /admin 前端路径；请使用 APP_ROUTE_PATH 或领域 route builder。',
+    },
+  },
+  create(context) {
+    const isFrontendRoute = (value) =>
+      typeof value === 'string' && /^\/(?:app|auth|admin)(?:\/|$)/.test(value);
+    const reportIfRoute = (node, value) => {
+      if (isFrontendRoute(value)) context.report({ node, messageId: 'hardcoded' });
+    };
+
+    return {
+      Literal(node) {
+        reportIfRoute(node, node.value);
+      },
+      TemplateElement(node) {
+        reportIfRoute(node, node.value.raw);
+      },
+    };
+  },
+};
+
 const wisePenPlugin = {
   rules: {
+    'no-hardcoded-frontend-route': noHardcodedFrontendRouteRule,
     'require-manual-effect-jsdoc': requireManualEffectJSDocRule,
     'require-manual-memo-jsdoc': requireManualMemoJSDocRule,
   },
@@ -313,6 +344,19 @@ export default defineConfig([
       'no-restricted-syntax': ['error', ...projectRestrictedSyntaxRules],
       'wisepen/require-manual-effect-jsdoc': 'error',
       'wisepen/require-manual-memo-jsdoc': 'error',
+    },
+  },
+  {
+    // 前端路由只能由 route contract 暴露；管理端公告跳转自由文本本轮明确不纳入治理。
+    files: [
+      'src/components/**/*.{ts,tsx}',
+      'src/hooks/**/*.{ts,tsx}',
+      'src/layouts/**/*.{ts,tsx}',
+      'src/views/**/*.{ts,tsx}',
+    ],
+    ignores: ['src/views/admin/AnnouncementManagement/**/*.{ts,tsx}'],
+    rules: {
+      'wisepen/no-hardcoded-frontend-route': 'error',
     },
   },
   {

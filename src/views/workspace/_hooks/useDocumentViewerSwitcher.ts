@@ -1,5 +1,5 @@
+import { buildResourcePathWithSearch } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND, type ResourceViewer } from '@/utils/navigation/resourceTarget';
-import { buildWorkspaceResourcePathWithSearch } from '@/utils/navigation/workspaceRoute';
 import { useMemoizedFn } from 'ahooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ export function useDocumentViewerSwitcher(resourceId?: string) {
     if (!resourceId) return;
 
     navigate(
-      buildWorkspaceResourcePathWithSearch(
+      buildResourcePathWithSearch(
         {
           resourceId,
           resourceType: RESOURCE_KIND.FILE,

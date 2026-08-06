@@ -70,6 +70,13 @@ const zhCNGroup = {
     invalidCode: '请输入 8 位邀请码',
     hint: '请输入 8 位邀请码，将自动转为大写并分段显示。',
   },
+  invite: {
+    title: '接受邀请',
+    success: '加入成功',
+    inviteCode: '邀请码',
+    invalidCode: '请输入 8 位邀请码',
+    hint: '请输入 8 位邀请码，将自动转为大写并分段显示。',
+  },
   dissolve: {
     title: '解散小组',
     success: '已解散小组',

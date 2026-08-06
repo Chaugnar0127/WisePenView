@@ -1,5 +1,6 @@
 import { ResultState, Spin } from '@/components/Feedback';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Button } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -25,7 +26,7 @@ export default function AgentView({ resourceId }: AgentViewProps) {
             title={t('agent:page.openFailed')}
             subTitle={parseErrorMessage(version.error)}
             extra={
-              <Link to="/app/drive/personal">
+              <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                 <Button variant="secondary">{t('agent:page.backToDrive')}</Button>
               </Link>
             }

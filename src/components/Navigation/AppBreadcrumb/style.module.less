@@ -1,4 +1,4 @@
-@import '../../../shared/styles/table.module.less';
+@import '../../Table/shared/styles/table.module.less';
 
 .breadcrumb {
   display: flex;
@@ -30,7 +30,8 @@
   line-height: @table-line-height-meta;
 }
 
-.item,
+.link,
+.label,
 .current {
   display: inline-flex;
   align-items: center;
@@ -43,6 +44,7 @@
   font-family: @table-font-family;
   font-size: @table-font-size-meta;
   line-height: @table-line-height-meta;
+  text-decoration: none;
   cursor: pointer;
 
   @media (hover: hover) {

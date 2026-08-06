@@ -3,6 +3,7 @@ import PdfViewer from '@/components/PdfViewer/index';
 import { useDocumentService, useInteractService } from '@/domains';
 import type { ResourceItem } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import {
   isOfficeResourceType,
   RESOURCE_KIND,
@@ -126,7 +127,7 @@ function PdfView({ resourceId }: PdfViewProps = {}) {
               status="warning"
               title={t('pdf.cannotOpen')}
               extra={
-                <Link to="/app/drive/personal">
+                <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                   <Button variant="secondary">{t('viewer.backToDrive')}</Button>
                 </Link>
               }
@@ -147,7 +148,7 @@ function PdfView({ resourceId }: PdfViewProps = {}) {
               title={t('pdf.cannotOpen')}
               subTitle={parseErrorMessage(docInfoError)}
               extra={
-                <Link to="/app/drive/personal">
+                <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                   <Button variant="secondary">{t('viewer.backToDrive')}</Button>
                 </Link>
               }
@@ -182,7 +183,7 @@ function PdfView({ resourceId }: PdfViewProps = {}) {
               title={t('pdf.cannotOpen')}
               subTitle={t('pdf.emptyInfo')}
               extra={
-                <Link to="/app/drive/personal">
+                <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
                   <Button variant="secondary">{t('viewer.backToDrive')}</Button>
                 </Link>
               }

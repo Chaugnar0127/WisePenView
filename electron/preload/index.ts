@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { DESKTOP_CHANNEL } from '../shared/channels';
+import { DESKTOP_CHANNEL, type DesktopNavigationState } from '../shared/channels';
 
 const nodePlatform = process.platform;
 const platform =
@@ -10,6 +10,14 @@ let fullScreen = false;
 let maximized = false;
 const fullScreenListeners = new Set<(value: boolean) => void>();
 const maximizedListeners = new Set<(value: boolean) => void>();
+const navigationStateListeners = new Set<() => void>();
+let navigationState: DesktopNavigationState = { canGoBack: false, canGoForward: false };
+
+const isNavigationState = (value: unknown): value is DesktopNavigationState => {
+  if (!value || typeof value !== 'object') return false;
+  const state = value as Partial<DesktopNavigationState>;
+  return typeof state.canGoBack === 'boolean' && typeof state.canGoForward === 'boolean';
+};
 
 ipcRenderer.on(DESKTOP_CHANNEL.fullScreenChanged, (_event, value: unknown) => {
   if (typeof value !== 'boolean') return;
@@ -21,6 +29,12 @@ ipcRenderer.on(DESKTOP_CHANNEL.maximizedChanged, (_event, value: unknown) => {
   if (typeof value !== 'boolean') return;
   maximized = value;
   maximizedListeners.forEach((listener) => listener(value));
+});
+
+ipcRenderer.on(DESKTOP_CHANNEL.navigationStateChanged, (_event, value: unknown) => {
+  if (!isNavigationState(value)) return;
+  navigationState = value;
+  navigationStateListeners.forEach((listener) => listener());
 });
 
 const desktopBridge = Object.freeze({
@@ -35,6 +49,13 @@ const desktopBridge = Object.freeze({
     maximizedListeners.add(listener);
     return () => maximizedListeners.delete(listener);
   },
+  getNavigationState: (): DesktopNavigationState => navigationState,
+  onNavigationStateChange: (listener: () => void): (() => void) => {
+    navigationStateListeners.add(listener);
+    return () => navigationStateListeners.delete(listener);
+  },
+  navigationBack: (): Promise<boolean> => ipcRenderer.invoke(DESKTOP_CHANNEL.navigationBack),
+  navigationForward: (): Promise<boolean> => ipcRenderer.invoke(DESKTOP_CHANNEL.navigationForward),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(DESKTOP_CHANNEL.getAppVersion),
   openExternal: (url: string): Promise<boolean> =>
     ipcRenderer.invoke(DESKTOP_CHANNEL.openExternal, url),

@@ -70,6 +70,13 @@ const enUSGroup = {
     invalidCode: 'Enter an 8-character invitation code',
     hint: 'Enter the 8-character invitation code. It will be capitalized and grouped automatically.',
   },
+  invite: {
+    title: 'Accept invitation',
+    success: 'Joined successfully',
+    inviteCode: 'Invitation code',
+    invalidCode: 'Enter an 8-character invitation code',
+    hint: 'Enter the 8-character invitation code. It will be capitalized and grouped automatically.',
+  },
   dissolve: {
     title: 'Dissolve group',
     success: 'Group dissolved',

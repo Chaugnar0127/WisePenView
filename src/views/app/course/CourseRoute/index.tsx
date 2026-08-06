@@ -2,6 +2,7 @@ import { ResultState, Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
 import { CourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Button } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { ArrowLeft } from 'lucide-react';
@@ -36,10 +37,7 @@ function CourseRoute() {
           subTitle={error ? parseErrorMessage(error) : t('common.notFound')}
           extra={
             <div className={styles.resultActions}>
-              <Button
-                variant="ghost"
-                onPress={() => navigate('/app/collaboration?section=courseGroups')}
-              >
+              <Button variant="ghost" onPress={() => navigate(APP_ROUTE_PATH.COURSES)}>
                 <ArrowLeft size={16} aria-hidden />
                 {t('common.backToCourseGroups')}
               </Button>

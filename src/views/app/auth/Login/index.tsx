@@ -1,8 +1,9 @@
-import { appendRedirectParam, getAuthRedirectPath } from '@/bootstrap/authContinuation';
+import { appendRedirectParam, readRedirectParam } from '@/bootstrap/authContinuation';
 import { FormField, Input, PasswordInput } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { LoginRequest } from '@/domains/Auth';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
 import { Button, Form, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -28,7 +29,7 @@ function Login() {
   const [formErrors, setFormErrors] = useState<FieldErrors<LoginField>>({});
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectPath = getAuthRedirectPath(location.search);
+  const redirectPath = readRedirectParam(location.search);
 
   const { loading, run: submitLogin } = useRequest(
     (values: LoginRequest) => authService.login(values),
@@ -116,8 +117,10 @@ function Login() {
             {t('login.submit')}
           </Button>
           <div className={auth.rightLinks}>
-            <Link to={appendRedirectParam('/register', redirectPath)}>{t('login.register')}</Link>
-            <Link to="/reset-pwd">{t('login.forgotPassword')}</Link>
+            <Link to={appendRedirectParam(APP_ROUTE_PATH.AUTH_REGISTER, redirectPath)}>
+              {t('login.register')}
+            </Link>
+            <Link to={APP_ROUTE_PATH.AUTH_PASSWORD_FORGOT}>{t('login.forgotPassword')}</Link>
           </div>
         </div>
       </Form>

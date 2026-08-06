@@ -1,6 +1,7 @@
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { useCourseService } from '@/domains';
 import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Trash2 } from 'lucide-react';
@@ -24,7 +25,7 @@ function CourseDangerSection({ courseId, courseName }: CourseDangerSectionProps)
     onSuccess: () => {
       toast.success(t('editor.danger.success'));
       setDeleteDialogOpen(false);
-      navigate('/app/my-group?section=courseGroups');
+      navigate(APP_ROUTE_PATH.COURSES);
     },
     onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
   });

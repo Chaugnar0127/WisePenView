@@ -57,8 +57,8 @@
   position: relative;
   width: 100%;
   flex-shrink: 0;
-  /* 落地页深色页脚：跟 accent 色温，仍保持夜间底 */
-  background-color: color-mix(in oklab, var(--accent) 32%, #0c0a18);
+  /* 落地页页脚保持高对比，并随当前主题 accent 调整色温。 */
+  background-color: color-mix(in oklab, var(--accent) 32%, var(--background-inverse));
   padding: clamp(28px, 4vh, 48px) @landing-inline clamp(20px, 3vh, 32px);
   display: flex;
   flex-direction: column;

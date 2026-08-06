@@ -1,5 +1,6 @@
 import { Table } from '@heroui/react';
 import type { ReactNode } from 'react';
+import { joinClassNames } from '../TableBase/cellAlign';
 import styles from './style.module.less';
 
 export interface TableSummaryFooterProps {
@@ -13,7 +14,7 @@ function TableSummaryFooter({ summary, className }: TableSummaryFooterProps) {
   }
 
   return (
-    <Table.Footer className={className ?? styles.footer}>
+    <Table.Footer className={joinClassNames(styles.footer, className)}>
       <div className={styles.summary}>{summary}</div>
     </Table.Footer>
   );

@@ -1,14 +1,10 @@
 @landing-inline: clamp(16px, 4vw, 40px);
 @content-max: 1160px;
-@accent: #5790c8;
-@title-deep: #324f6a;
-@text-strong: rgba(0, 0, 0, 0.88);
-@shadow-card:
-  0 1px 2px rgba(23, 19, 71, 0.04),
-  0 8px 24px rgba(23, 19, 71, 0.06);
-@shadow-card-hover:
-  0 4px 12px rgba(23, 19, 71, 0.08),
-  0 16px 48px rgba(87, 144, 200, 0.12);
+@accent: var(--accent);
+@title-deep: var(--foreground);
+@text-strong: var(--foreground);
+@shadow-card: var(--surface-shadow);
+@shadow-card-hover: var(--card-shadow);
 
 .landingPage {
   width: 100%;
@@ -116,8 +112,8 @@
   max-height: min(540px, 62vh);
   object-fit: contain;
   object-position: center right;
-  filter: drop-shadow(0 22px 44px rgba(87, 144, 200, 0.15))
-    drop-shadow(0 6px 16px rgba(23, 19, 71, 0.07));
+  filter: drop-shadow(0 22px 44px color-mix(in srgb, var(--accent) 15%, transparent))
+    drop-shadow(0 6px 16px color-mix(in srgb, var(--foreground) 7%, transparent));
 }
 
 .features {
@@ -176,7 +172,7 @@
 .featureCard:hover {
   transform: translateY(-4px);
   box-shadow: @shadow-card-hover;
-  border-color: rgba(87, 144, 200, 0.35) !important;
+  border-color: var(--accent-border) !important;
 }
 
 .cardBody {
@@ -258,7 +254,7 @@
   .heroArtImg {
     max-height: min(360px, 52vh);
     object-position: center;
-    filter: drop-shadow(0 14px 32px rgba(87, 144, 200, 0.13))
-      drop-shadow(0 3px 10px rgba(23, 19, 71, 0.055));
+    filter: drop-shadow(0 14px 32px color-mix(in srgb, var(--accent) 13%, transparent))
+      drop-shadow(0 3px 10px color-mix(in srgb, var(--foreground) 5.5%, transparent));
   }
 }

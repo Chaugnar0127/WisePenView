@@ -41,8 +41,8 @@
   min-height: 0;
   flex-direction: column;
   padding: var(--space-md) var(--space-sm);
-  border-right: 1px solid var(--border-light);
-  background: var(--surface-secondary);
+  border-right: 1px solid var(--table-inner-border);
+  background: var(--accent-softer);
 }
 
 .collectionPanelHeader {
@@ -80,13 +80,18 @@
   border-radius: var(--radius-sm);
 }
 
+.collectionListItem:hover:not([data-selected='true']),
+.collectionListItem[data-hovered='true']:not([data-selected='true']) {
+  background: var(--accent-soft);
+}
+
 .collectionListItem[data-selected='true'] {
-  background: var(--accent-softer);
+  background: var(--accent-soft-hover);
 }
 
 .collectionListItem[data-selected='true']:hover,
 .collectionListItem[data-selected='true'][data-hovered='true'] {
-  background: var(--accent-soft);
+  background: var(--accent-selected);
 }
 
 .collectionListItemContent {
@@ -221,7 +226,7 @@
   .collectionPanel {
     max-height: 220px;
     border-right: 0;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--table-inner-border);
   }
 
   .resourceTablePanel {

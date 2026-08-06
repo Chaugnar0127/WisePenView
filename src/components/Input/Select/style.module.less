@@ -14,24 +14,12 @@
     var(--surface-tertiary) 35%,
     var(--surface) 65%
   );
-  --app-select-trigger-border: color-mix(
-    in oklab,
-    var(--border) 82%,
-    var(--surface) 18%
-  );
-  --app-select-trigger-border-hover: color-mix(
-    in oklab,
-    var(--border) 90%,
-    var(--surface) 10%
-  );
-  --app-select-trigger-border-focus: color-mix(in srgb, var(--accent) 100%, transparent);
+  --app-select-trigger-border: var(--field-border);
+  --app-select-trigger-border-hover: var(--field-border-hover);
+  --app-select-trigger-border-focus: var(--field-border-focus);
   --app-select-trigger-border-width: 1px;
   --app-select-trigger-focus-ring-width: 1px;
-  --app-select-trigger-focus-ring-color: color-mix(
-    in srgb,
-    var(--app-select-trigger-border-focus) 100%,
-    transparent
-  );
+  --app-select-trigger-focus-ring-color: var(--focus);
   --app-select-trigger-focus-ring: 0 0 0 var(--app-select-trigger-focus-ring-width)
     var(--app-select-trigger-focus-ring-color);
   --app-select-trigger-danger-ring: 0 0 0 var(--app-select-trigger-focus-ring-width)
@@ -40,9 +28,6 @@
   --select-trigger-bg-hover: var(--app-select-trigger-bg-hover);
   --select-trigger-bg-focus: var(--app-select-trigger-bg-focus);
   --field-background: var(--app-select-trigger-bg);
-  --field-border: var(--app-select-trigger-border);
-  --field-border-hover: var(--app-select-trigger-border-hover);
-  --field-border-focus: var(--app-select-trigger-border-focus);
   --field-focus: var(--app-select-trigger-bg-focus);
   --field-shadow: none;
 
@@ -81,12 +66,8 @@
 
 .select:global(.select)[data-invalid='true'] .selectTrigger:global(.select__trigger),
 .select:global(.select)[aria-invalid='true'] .selectTrigger:global(.select__trigger) {
-  border-color: var(--danger-border, var(--danger));
-  background-color: color-mix(
-    in srgb,
-    var(--danger-soft, rgba(239, 68, 68, 0.12)) 36%,
-    var(--app-select-trigger-bg-focus) 64%
-  );
+  border-color: var(--danger-border);
+  background-color: var(--danger-soft);
 }
 
 .select:global(.select)[data-invalid='true'] .selectTrigger:global(.select__trigger):focus,

@@ -1,5 +1,6 @@
 import { Pagination, Table } from '@heroui/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { joinClassNames } from '../TableBase/cellAlign';
 import type { TablePaginationFooterProps } from './index.type';
 import styles from './style.module.less';
 
@@ -91,7 +92,7 @@ function TablePaginationFooter({
   });
 
   return (
-    <Table.Footer className={className ?? styles.footer}>
+    <Table.Footer className={joinClassNames(styles.footer, className)}>
       <div className={styles.footerInner}>
         {summary ? (
           <div className={styles.summary}>{summary}</div>

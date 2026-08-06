@@ -387,8 +387,8 @@ function Appearance() {
         <Card.Content className={styles.body}>
           <LanguageSection />
           <Separator className={styles.divider} />
-          {/* <ThemeModeSection value={theme} onChange={setTheme} />
-          <Separator className={styles.divider} /> */}
+          <ThemeModeSection value={theme} onChange={setTheme} />
+          <Separator className={styles.divider} />
           <ColorSchemeSection value={colorScheme} onChange={setColorScheme} />
           <Separator className={styles.divider} />
           <ThemeShapeSection

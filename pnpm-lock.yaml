@@ -66,6 +66,9 @@ importers:
       '@onlyoffice/document-editor-react':
         specifier: ^2.2.0
         version: 2.2.0(@onlyoffice/doceditor-types@9.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@radix-ui/colors':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@tiptap/pm':
         specifier: 3.20.1
         version: 3.20.1
@@ -1510,6 +1513,9 @@ packages:
   '@peculiar/webcrypto@1.7.1':
     resolution: {integrity: sha512-ODOov0sGMJMf3jPonOkgGqPknTsu+DdQ7kD++gz8aI+aFMOMHFbWAA2taqXXVTdP+OTOQR/znGvSpmkeI0WTYQ==}
     engines: {node: '>=14.18.0'}
+
+  '@radix-ui/colors@3.0.0':
+    resolution: {integrity: sha512-FUOsGBkHrYJwCSEtWRCIfQbZG7q1e6DgxCIOe1SUQzDe/7rXXeA47s8yCn6fuTNQAj1Zq4oTFi9Yjp3wzElcxg==}
 
   '@radix-ui/primitive@1.1.7':
     resolution: {integrity: sha512-rqWnm76nYT8HoNNqEjpgJ7Pw/DrBj5iBTrmEPo6HTX5+VJyBNOqTdv4g89G63HuR5g0AaENoAcH7Is5fF2kZ8Q==}
@@ -7173,6 +7179,8 @@ snapshots:
       '@peculiar/utils': 2.0.3
       tslib: 2.8.1
       webcrypto-core: 1.9.2
+
+  '@radix-ui/colors@3.0.0': {}
 
   '@radix-ui/primitive@1.1.7': {}
 

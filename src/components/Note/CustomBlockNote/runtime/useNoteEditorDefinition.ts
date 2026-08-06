@@ -166,7 +166,7 @@ export function useNoteEditorDefinition({
       dictionary: buildNoteDictionary(i18n.resolvedLanguage),
       trailingBlock: true,
       dropCursor: {
-        color: 'var(--primary)',
+        color: 'var(--accent)',
         width: 2,
       },
       disableExtensions: ['history', 'yUndo'],

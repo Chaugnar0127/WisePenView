@@ -14,28 +14,12 @@
     var(--surface-tertiary) 38%,
     var(--surface) 62%
   );
-  --app-textarea-border: color-mix(
-    in oklab,
-    var(--border) 82%,
-    var(--surface) 18%
-  );
-  --app-textarea-border-hover: color-mix(
-    in oklab,
-    var(--border) 90%,
-    var(--surface) 10%
-  );
-  --app-textarea-border-focus: color-mix(
-    in srgb,
-    var(--accent) 100%,
-    transparent
-  );
+  --app-textarea-border: var(--field-border);
+  --app-textarea-border-hover: var(--field-border-hover);
+  --app-textarea-border-focus: var(--field-border-focus);
   --app-textarea-border-width: 1px;
   --app-textarea-focus-ring-width: 1px;
-  --app-textarea-focus-ring-color: color-mix(
-    in srgb,
-    var(--app-textarea-border-focus) 100%,
-    transparent
-  );
+  --app-textarea-focus-ring-color: var(--focus);
   --app-textarea-focus-ring: 0 0 0 var(--app-textarea-focus-ring-width)
     var(--app-textarea-focus-ring-color);
   --app-textarea-danger-ring: 0 0 0 var(--app-textarea-focus-ring-width)
@@ -44,9 +28,6 @@
   --textarea-bg-hover: var(--app-textarea-bg-hover);
   --textarea-bg-focus: var(--app-textarea-bg-focus);
   --field-background: var(--app-textarea-bg);
-  --field-border: var(--app-textarea-border);
-  --field-border-hover: var(--app-textarea-border-hover);
-  --field-border-focus: var(--app-textarea-border-focus);
   --field-focus: var(--app-textarea-bg-focus);
   --field-shadow: none;
 
@@ -86,12 +67,8 @@
 }
 
 .textarea:global(.textarea)[data-invalid='true'] {
-  border-color: var(--danger-border, var(--danger));
-  background-color: color-mix(
-    in srgb,
-    var(--danger-soft, rgba(239, 68, 68, 0.12)) 36%,
-    var(--app-textarea-bg-focus) 64%
-  );
+  border-color: var(--danger-border);
+  background-color: var(--danger-soft);
 }
 
 .textarea:global(.textarea)[data-invalid='true']:focus,

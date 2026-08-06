@@ -20,7 +20,7 @@
     @table-control-min-height + @table-toolbar-padding-block + @table-toolbar-padding-block
   );
   padding: @table-toolbar-padding-block @table-shell-padding-inline;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--table-inner-border);
   background: var(--surface);
 }
 
@@ -74,7 +74,7 @@
     max-height: @table-row-height;
     padding: @row-cell-padding-block @row-cell-padding-inline;
     overflow: hidden;
-    border-bottom: 1px solid var(--separator);
+    border-bottom: 1px solid var(--table-inner-border);
     border-inline: 0;
     background: var(--surface);
     color: var(--foreground);
@@ -90,19 +90,19 @@
   }
 
   :global(.table__row .table__cell) {
-    border-bottom-color: var(--separator);
+    border-bottom-color: var(--table-inner-border);
     background: var(--surface);
   }
 
   @media (hover: hover) {
     :global(.table__row:hover .table__cell),
     :global(.table__row[data-hovered='true'] .table__cell) {
-      background: var(--surface-hover);
+      background: var(--table-row-hover-bg);
     }
   }
 
   :global(.table__row:last-child .table__cell) {
-    border-bottom: 1px solid var(--separator);
+    border-bottom: 1px solid var(--table-inner-border);
   }
 }
 
@@ -171,7 +171,7 @@
 
 .selectedRow:global(.table__row) {
   :global(.table__cell) {
-    background: var(--accent-softer);
+    background: var(--table-row-selected-bg);
   }
 }
 
@@ -192,7 +192,7 @@
 
   .selectedRow:global(.table__row:hover) {
     :global(.table__cell) {
-      background: var(--accent-soft);
+      background: var(--table-row-selected-hover-bg);
     }
   }
 }
@@ -220,7 +220,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--accent);
+  color: var(--accent-text);
   font-family: @table-font-family;
   font-size: @table-font-size-body;
   line-height: @table-line-height-body;

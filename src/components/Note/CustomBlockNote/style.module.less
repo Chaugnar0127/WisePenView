@@ -119,13 +119,12 @@
     --mantine-primary-color-light-color: var(--accent);
   }
 
-  /* Text selection: theme soft (not browser #ACCEF7 blue) */
+  /* 文本选区使用主题柔和色，不跟随浏览器默认蓝色。 */
   :global(.bn-editor .ProseMirror::selection),
   :global(.bn-editor .ProseMirror *::selection),
   :global(.bn-editor .ProseMirror::-moz-selection),
   :global(.bn-editor .ProseMirror *::-moz-selection) {
-    background-color: var(--accent-soft);
-    color: var(--foreground);
+    background-color: var(--selection);
   }
 
   :global(.bn-editor .wise-note-collaboration-cursor) {
@@ -187,7 +186,7 @@
   }
 
   :global(.bn-table-drop-cursor) {
-    background-color: var(--primary);
+    background-color: var(--accent);
   }
 
   :global([data-show-selection]) {
@@ -336,7 +335,7 @@
   }
 
   :global(.bn-editor .bn-block-content[data-content-type='numberedListItem']::before) {
-    color: var(--primary);
+    color: var(--accent-text);
     font-weight: var(--font-weight-bold);
   }
 
@@ -665,7 +664,7 @@
     .bn-editor .bn-block-content[data-content-type='codeBlock'] .wise-code-block-languageCheck
   ) {
     flex: 0 0 auto;
-    color: var(--accent);
+    color: var(--accent-text);
   }
 
   :global(.bn-editor .bn-block-content[data-content-type='codeBlock'] .wise-code-block-actions) {
@@ -1161,7 +1160,7 @@
   .bn-drag-preview .bn-block-content[data-content-type='codeBlock'] .wise-code-block-languageCheck
 ) {
   flex: 0 0 auto;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 :global(

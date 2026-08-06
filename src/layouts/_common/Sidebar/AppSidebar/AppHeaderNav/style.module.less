@@ -35,7 +35,7 @@
   right: 8px;
   height: 40px;
   border-radius: var(--radius-md);
-  background: var(--accent-soft);
+  background: var(--sidebar-item-selected);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
   will-change: transform;
   pointer-events: none;
@@ -74,7 +74,7 @@
   &[data-hovered]:not([data-nav-active='true']),
   &[data-focused]:not([data-nav-active='true']) {
     color: var(--foreground);
-    background: var(--accent-soft);
+    background: var(--sidebar-item-hover);
     transition:
       color 0.15s ease,
       background 0.15s ease;
@@ -85,6 +85,21 @@
     cursor: not-allowed;
     background: transparent;
   }
+}
+
+.menuItem:is([data-selected='true'], [aria-selected='true']) {
+  color: var(--accent-text-strong);
+  background: var(--sidebar-item-selected);
+  font-weight: var(--font-weight-semibold);
+}
+
+.menuItem:is([data-selected='true'], [aria-selected='true']):hover,
+.menuItem:is([data-selected='true'], [aria-selected='true'])[data-hovered],
+.menuItem:is([data-selected='true'], [aria-selected='true'])[data-focused],
+.menuItem:is([data-selected='true'], [aria-selected='true'])[data-focus-visible] {
+  color: var(--accent-text-strong);
+  background: var(--sidebar-item-selected-hover);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* 路由选中态，与 ListBox selection 解耦 */
@@ -98,7 +113,7 @@
 .menuItem[data-nav-active='true'][data-hovered],
 .menuItem[data-nav-active='true'][data-focused],
 .menuItem[data-nav-active='true'][data-focus-visible] {
-  color: var(--foreground);
+  color: var(--accent-text-strong);
   font-weight: var(--font-weight-semibold);
 }
 

@@ -26,8 +26,8 @@
   width: 100%;
   min-width: 0;
   min-height: 0;
-  /* 侧栏 = 抬升层，相对外壳 --background，主区仍用 --surface 纸面 */
-  background: var(--surface-secondary);
+  /* 侧栏从 accent 2 起步，与 hover / selected 形成连续色阶 */
+  background: var(--sidebar-surface);
   overflow: hidden;
 }
 
@@ -66,7 +66,7 @@
 }
 
 .webCollapsedSider {
-  background: var(--surface);
+  background: var(--background);
 }
 
 .middleLayout {
@@ -86,7 +86,7 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
-  background: var(--surface);
+  background: var(--background);
   overflow-x: auto;
   overflow-y: auto;
   position: relative;
@@ -150,4 +150,3 @@
   padding-right: @desktop-titlebar-end-reserve;
   .desktopTitleBarEndNoDragHole();
 }
-

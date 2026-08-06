@@ -21,22 +21,8 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
-  }
-
-  &:disabled,
-  &[aria-disabled='true'],
-  &[data-disabled] {
-    color: var(--text-disabled);
-    background: var(--surface-tertiary);
-    opacity: 1;
-    cursor: not-allowed;
-
-    &:hover {
-      color: var(--text-disabled);
-      background: var(--surface-tertiary);
-    }
   }
 
   svg {
@@ -55,123 +41,77 @@
 }
 
 .primary {
-  color: var(--primary-foreground);
-  background: var(--primary);
+  color: var(--accent-foreground);
+  background: var(--accent);
 
   &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
-    color: var(--primary-foreground);
-    background: var(--primary-hover);
+    color: var(--accent-foreground);
+    background: var(--accent-hover);
   }
 
-  &:disabled,
-  &[aria-disabled='true'],
-  &[data-disabled] {
-    color: var(--primary-foreground);
-    background: color-mix(in srgb, var(--primary) 38%, var(--surface));
-    opacity: 1;
-    cursor: not-allowed;
-
-    &:hover {
-      color: var(--primary-foreground);
-      background: color-mix(in srgb, var(--primary) 38%, var(--surface));
-    }
-  }
 }
 
 .danger {
-  color: var(--danger);
+  color: var(--danger-text);
   background: transparent;
 
   &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
-    color: var(--danger);
+    color: var(--danger-text);
     background: var(--danger-soft);
   }
 
-  &:disabled,
-  &[aria-disabled='true'],
-  &[data-disabled] {
-    color: color-mix(in srgb, var(--danger) 35%, var(--text-disabled));
-    background: var(--surface-tertiary);
-    opacity: 1;
-    cursor: not-allowed;
-
-    &:hover {
-      color: color-mix(in srgb, var(--danger) 35%, var(--text-disabled));
-      background: var(--surface-tertiary);
-    }
-  }
 }
 
 .active {
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--accent-soft);
 
   &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
-    color: var(--accent);
+    color: var(--accent-text);
     background: var(--accent-soft-hover);
   }
 
-  &:disabled,
-  &[aria-disabled='true'],
-  &[data-disabled] {
-    color: var(--text-disabled);
-    background: var(--surface-tertiary);
-    opacity: 1;
-    cursor: not-allowed;
-
-    &:hover {
-      color: var(--text-disabled);
-      background: var(--surface-tertiary);
-    }
-  }
 }
 
 .danger.active {
-  color: var(--danger);
+  color: var(--danger-text);
   background: var(--danger-soft);
 
   &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
-    color: var(--danger);
+    color: var(--danger-text);
     background: var(--danger-soft-hover);
   }
 
-  &:disabled,
-  &[aria-disabled='true'],
-  &[data-disabled] {
-    color: color-mix(in srgb, var(--danger) 35%, var(--text-disabled));
-    background: var(--surface-tertiary);
-    opacity: 1;
-    cursor: not-allowed;
-
-    &:hover {
-      color: color-mix(in srgb, var(--danger) 35%, var(--text-disabled));
-      background: var(--surface-tertiary);
-    }
-  }
-}
-
-.disabledGhost {
-  &:disabled,
-  &[aria-disabled='true'],
-  &[data-disabled] {
-    color: var(--text-disabled);
-    background: transparent;
-    opacity: 1;
-    cursor: not-allowed;
-
-    &:hover {
-      color: var(--text-disabled);
-      background: transparent;
-    }
-  }
 }
 
 .root[data-selected] {
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--accent-soft);
 
   &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
-    color: var(--accent);
+    color: var(--accent-text);
     background: var(--accent-soft-hover);
+  }
+}
+
+.root:is(:disabled, [aria-disabled='true'], [data-disabled]) {
+  color: var(--control-disabled-filled-fg);
+  background: var(--control-disabled-bg);
+  opacity: 1;
+  cursor: not-allowed;
+
+  &:hover {
+    color: var(--control-disabled-filled-fg);
+    background: var(--control-disabled-bg);
+  }
+}
+
+.root.disabledGhost:is(:disabled, [aria-disabled='true'], [data-disabled]) {
+  color: var(--control-disabled-fg);
+  background: transparent;
+
+  &:hover {
+    color: var(--control-disabled-fg);
+    background: transparent;
   }
 }

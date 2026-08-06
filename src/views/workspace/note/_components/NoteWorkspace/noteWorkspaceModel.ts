@@ -5,9 +5,9 @@ import type { NoteTitleSaveStatus } from '../NoteTitle';
 
 const NOTE_COLLABORATION_PRIMARY_COLORS = [
   '#127abb',
-  '#bb455c',
-  '#2ea9ae',
-  '#d17155',
+  '#be435a',
+  '#248286',
+  '#b85d43',
   '#2f8a64',
   '#835ec7',
 ] as const;

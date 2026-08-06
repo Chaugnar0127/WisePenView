@@ -83,7 +83,7 @@
     max-height: @table-row-height;
     padding: @row-cell-padding-block @row-cell-padding-inline;
     overflow: hidden;
-    border-bottom: 1px solid var(--separator);
+    border-bottom: 1px solid var(--table-inner-border);
     border-inline: 0;
     background: var(--surface);
     color: var(--foreground);
@@ -100,7 +100,7 @@
   }
 
   :global(.table-root--secondary .table__row .table__cell) {
-    border-bottom-color: var(--separator);
+    border-bottom-color: var(--table-inner-border);
     background: var(--surface);
   }
 
@@ -112,7 +112,7 @@
   }
 
   :global(.table__row:last-child .table__cell) {
-    border-bottom: 1px solid var(--separator);
+    border-bottom: 1px solid var(--table-inner-border);
   }
 }
 

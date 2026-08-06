@@ -36,7 +36,7 @@
     &:hover,
     &:focus-within {
       color: var(--foreground);
-      background: var(--accent-soft);
+      background: var(--sidebar-item-hover);
     }
   }
 
@@ -56,14 +56,14 @@
   }
 
   :global(.wisepen-tree__item[aria-selected='true']) {
-    color: var(--accent);
-    background: var(--accent-soft);
+    color: var(--accent-text-strong);
+    background: var(--sidebar-item-selected);
     font-weight: var(--font-weight-semibold);
 
     &:hover,
     &:focus-within {
-      color: var(--accent);
-      background: var(--accent-soft-hover);
+      color: var(--accent-text-strong);
+      background: var(--sidebar-item-selected-hover);
     }
   }
 
@@ -115,7 +115,7 @@
   height: 16px;
   align-items: center;
   justify-content: center;
-  color: var(--warning);
+  color: var(--warning-text);
   line-height: 0;
 }
 

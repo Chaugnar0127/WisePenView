@@ -10,6 +10,6 @@ export interface EntryIconProps {
   /** 图标展示用资源细分类型 */
   resourceIconType?: ResourceIconType;
   size?: number;
-  /** 覆盖默认颜色；folder 默认 warning，其余默认 text-secondary */
+  /** 覆盖默认颜色；默认颜色来自资源图标语义 token */
   color?: string;
 }

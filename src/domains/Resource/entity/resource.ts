@@ -7,7 +7,18 @@ export type ResourceAccessRole =
   'OWNER' | 'OWNER_SPECIFIED' | 'GROUP_ADMIN' | 'GROUP_MEMBER' | 'NONE';
 
 export type ResourceIconType =
-  'file' | 'doc' | 'ppt' | 'xls' | 'pdf' | 'md' | 'note' | 'drawio' | 'skill' | 'agent';
+  | 'file'
+  | 'doc'
+  | 'ppt'
+  | 'xls'
+  | 'pdf'
+  | 'md'
+  | 'image'
+  | 'video'
+  | 'note'
+  | 'drawio'
+  | 'skill'
+  | 'agent';
 
 export interface ResourceTagInfo {
   tagName?: string;

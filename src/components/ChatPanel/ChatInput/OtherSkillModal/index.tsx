@@ -61,7 +61,7 @@ function OtherSkillModalContent() {
         key: group.key,
         title: (
           <span className={styles.nodeTitle}>
-            <Folder size={14} color="var(--warning)" />
+            <Folder size={14} color="var(--resource-icon-folder)" />
             <span>{groupLabel}</span>
           </span>
         ),

@@ -8,23 +8,33 @@ import {
   FileType,
   Folder,
   HardDrive,
+  Image,
   Link,
   LoaderCircle,
   NotebookPen,
   Presentation,
+  Video,
   Workflow,
   Wrench,
 } from 'lucide-react';
 import type { EntryIconProps } from './index.type';
 
-const COLOR_SECONDARY = 'var(--muted)';
-const COLOR_FOLDER = 'var(--warning)';
-const COLOR_DOC = 'var(--accent)';
-const COLOR_PDF = 'var(--danger)';
-const COLOR_PPT = 'var(--warning)';
-const COLOR_XLS = 'var(--success)';
-const COLOR_CREATIVE = 'var(--accent)';
-const COLOR_AI = 'var(--accent)';
+const COLOR_ROOT = 'var(--resource-icon-root)';
+const COLOR_FOLDER = 'var(--resource-icon-folder)';
+const COLOR_NOTE = 'var(--resource-icon-note)';
+const COLOR_DRAWIO = 'var(--resource-icon-drawio)';
+const COLOR_SKILL = 'var(--resource-icon-skill)';
+const COLOR_AGENT = 'var(--resource-icon-agent)';
+const COLOR_DOC = 'var(--resource-icon-doc)';
+const COLOR_PDF = 'var(--resource-icon-pdf)';
+const COLOR_PPT = 'var(--resource-icon-ppt)';
+const COLOR_XLS = 'var(--resource-icon-xls)';
+const COLOR_IMAGE = 'var(--resource-icon-image)';
+const COLOR_VIDEO = 'var(--resource-icon-video)';
+const COLOR_CODE = 'var(--resource-icon-code)';
+const COLOR_FILE = 'var(--resource-icon-file)';
+const COLOR_LINK = 'var(--resource-icon-link)';
+const COLOR_LOADING = 'var(--resource-icon-loading)';
 
 function renderResourceIcon(
   resourceType?: string,
@@ -36,13 +46,13 @@ function renderResourceIcon(
 
   switch (iconType) {
     case 'note':
-      return <NotebookPen size={size} color={color ?? COLOR_CREATIVE} />;
+      return <NotebookPen size={size} color={color ?? COLOR_NOTE} />;
     case 'drawio':
-      return <Workflow size={size} color={color ?? COLOR_CREATIVE} />;
+      return <Workflow size={size} color={color ?? COLOR_DRAWIO} />;
     case 'skill':
-      return <Wrench size={size} color={color ?? COLOR_AI} />;
+      return <Wrench size={size} color={color ?? COLOR_SKILL} />;
     case 'agent':
-      return <Bot size={size} color={color ?? COLOR_AI} />;
+      return <Bot size={size} color={color ?? COLOR_AGENT} />;
     case 'pdf':
       return <FileText size={size} color={color ?? COLOR_PDF} />;
     case 'doc':
@@ -51,10 +61,14 @@ function renderResourceIcon(
       return <Presentation size={size} color={color ?? COLOR_PPT} />;
     case 'xls':
       return <FileSpreadsheet size={size} color={color ?? COLOR_XLS} />;
+    case 'image':
+      return <Image size={size} color={color ?? COLOR_IMAGE} />;
+    case 'video':
+      return <Video size={size} color={color ?? COLOR_VIDEO} />;
     case 'md':
-      return <FileCode size={size} color={color ?? COLOR_SECONDARY} />;
+      return <FileCode size={size} color={color ?? COLOR_CODE} />;
     case 'file':
-      return <File size={size} color={color ?? COLOR_SECONDARY} />;
+      return <File size={size} color={color ?? COLOR_FILE} />;
   }
 }
 
@@ -68,15 +82,15 @@ function EntryIcon({
 }: EntryIconProps) {
   switch (entryType) {
     case 'root':
-      return <HardDrive size={size} color={color ?? COLOR_CREATIVE} />;
+      return <HardDrive size={size} color={color ?? COLOR_ROOT} />;
     case 'folder':
       return <Folder size={size} color={color ?? COLOR_FOLDER} />;
     case 'resource':
       return renderResourceIcon(resourceType, resourceIconType, size, color);
     case 'link':
-      return <Link size={size} color={color ?? COLOR_SECONDARY} />;
+      return <Link size={size} color={color ?? COLOR_LINK} />;
     case 'loading':
-      return <LoaderCircle size={size} color={color ?? COLOR_SECONDARY} />;
+      return <LoaderCircle size={size} color={color ?? COLOR_LOADING} />;
   }
 }
 

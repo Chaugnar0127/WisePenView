@@ -29,11 +29,11 @@ function buildTreeData(nodes: SkillFileNode[], opts: BuildTreeOptions): DataNode
           <span className={styles.nodeTitle}>
             <span className={styles.nodeIcon} aria-hidden="true">
               {isFolder ? (
-                <Folder size={14} color="var(--warning)" />
+                <Folder size={14} color="var(--resource-icon-folder)" />
               ) : node.language === 'python' ? (
-                <FileCode2 size={14} color="var(--muted)" />
+                <FileCode2 size={14} color="var(--resource-icon-code)" />
               ) : (
-                <FileText size={14} color="var(--muted)" />
+                <FileText size={14} color="var(--resource-icon-file)" />
               )}
             </span>
             <span
@@ -95,9 +95,9 @@ function buildPendingNode(
     title: (
       <span className={styles.inlineInput}>
         {isFolder ? (
-          <Folder size={14} color="var(--warning)" />
+          <Folder size={14} color="var(--resource-icon-folder)" />
         ) : (
-          <FileText size={14} color="var(--muted)" />
+          <FileText size={14} color="var(--resource-icon-file)" />
         )}
         <input
           className={styles.inlineInputField}

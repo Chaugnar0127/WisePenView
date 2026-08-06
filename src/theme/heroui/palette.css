@@ -95,6 +95,7 @@
     var(--palette-neutral-12) var(--palette-accent-neutral-mix)
   );
   --palette-accent-contrast: var(--wisepen-default-contrast);
+  --resource-icon-theme: var(--wisepen-default-11);
 }
 
 html[data-color-scheme='floral'] {
@@ -180,6 +181,7 @@ html[data-color-scheme='floral'] {
     var(--palette-neutral-12) var(--palette-accent-neutral-mix)
   );
   --palette-accent-contrast: var(--wisepen-floral-contrast);
+  --resource-icon-theme: var(--wisepen-floral-11);
 }
 
 html[data-color-scheme='aqua'] {
@@ -265,6 +267,7 @@ html[data-color-scheme='aqua'] {
     var(--palette-neutral-12) var(--palette-accent-neutral-mix)
   );
   --palette-accent-contrast: var(--wisepen-aqua-contrast);
+  --resource-icon-theme: var(--wisepen-aqua-11);
 }
 
 html[data-color-scheme='sunset'] {
@@ -350,6 +353,7 @@ html[data-color-scheme='sunset'] {
     var(--palette-neutral-12) var(--palette-accent-neutral-mix)
   );
   --palette-accent-contrast: var(--wisepen-sunset-contrast);
+  --resource-icon-theme: var(--wisepen-sunset-11);
 }
 
 html[data-color-scheme='emerald'] {
@@ -435,6 +439,7 @@ html[data-color-scheme='emerald'] {
     var(--palette-neutral-12) var(--palette-accent-neutral-mix)
   );
   --palette-accent-contrast: var(--wisepen-emerald-contrast);
+  --resource-icon-theme: var(--wisepen-emerald-11);
 }
 
 html[data-color-scheme='lavender'] {
@@ -520,6 +525,7 @@ html[data-color-scheme='lavender'] {
     var(--palette-neutral-12) var(--palette-accent-neutral-mix)
   );
   --palette-accent-contrast: var(--wisepen-lavender-contrast);
+  --resource-icon-theme: var(--wisepen-lavender-11);
 }
 
 :root,
@@ -609,6 +615,23 @@ html[data-color-scheme='lavender'] {
   --focus: var(--palette-accent-9);
   --selection: var(--palette-accent-a5);
   --link: var(--accent-text);
+
+  --resource-icon-folder: var(--resource-icon-theme);
+  --resource-icon-root: var(--resource-icon-theme);
+  --resource-icon-note: var(--resource-icon-theme);
+  --resource-icon-agent: var(--resource-icon-theme);
+  --resource-icon-drawio: var(--teal-11);
+  --resource-icon-skill: var(--iris-11);
+  --resource-icon-pdf: var(--red-11);
+  --resource-icon-doc: var(--blue-11);
+  --resource-icon-ppt: var(--orange-11);
+  --resource-icon-xls: var(--green-11);
+  --resource-icon-image: var(--cyan-11);
+  --resource-icon-video: var(--orange-11);
+  --resource-icon-code: var(--muted);
+  --resource-icon-file: var(--muted);
+  --resource-icon-link: var(--muted);
+  --resource-icon-loading: var(--muted);
 
   --sidebar-surface: var(--palette-accent-2);
   --sidebar-item-hover: var(--palette-accent-3);
@@ -747,6 +770,23 @@ html[data-color-scheme] :is(.light, .dark, .default):not(html):not(:root) {
   --accent-hover: inherit;
   --accent-selected: inherit;
   --accent-text-strong: inherit;
+  --resource-icon-theme: inherit;
+  --resource-icon-folder: inherit;
+  --resource-icon-root: inherit;
+  --resource-icon-note: inherit;
+  --resource-icon-agent: inherit;
+  --resource-icon-drawio: inherit;
+  --resource-icon-skill: inherit;
+  --resource-icon-pdf: inherit;
+  --resource-icon-doc: inherit;
+  --resource-icon-ppt: inherit;
+  --resource-icon-xls: inherit;
+  --resource-icon-image: inherit;
+  --resource-icon-video: inherit;
+  --resource-icon-code: inherit;
+  --resource-icon-file: inherit;
+  --resource-icon-link: inherit;
+  --resource-icon-loading: inherit;
   --sidebar-surface: inherit;
   --sidebar-item-hover: inherit;
   --sidebar-item-selected: inherit;

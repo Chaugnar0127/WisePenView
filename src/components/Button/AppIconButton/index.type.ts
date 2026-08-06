@@ -24,7 +24,7 @@ export interface AppIconButtonProps extends Omit<
   onClick?: MouseEventHandler<HTMLButtonElement>;
   onPress?: () => void;
   overlayTrigger?: ReactElement;
-  size?: 'sm' | 'md';
+  size?: 'xs' | 'sm' | 'md';
   toggleId?: string;
   tooltip?: AppIconButtonTooltipOptions;
   variant?: 'danger' | 'ghost' | 'primary';

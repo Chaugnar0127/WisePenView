@@ -16,6 +16,8 @@ import {
 } from '@/constants/layoutScale';
 import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
+import { focusVisibleSidebarToggle } from '@/layouts/_common/a11y/sidebarToggle';
+import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
 import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
 import {
   clampSidebarWidth,
@@ -79,6 +81,7 @@ function WorkspaceLayout() {
   const rightDockPanelRef = useRef<PanelImperativeHandle | null>(null);
   const pendingLeftSidebarWidthRef = useRef<number | null>(null);
   const pendingRightDockWidthRef = useRef<number | null>(null);
+  const pendingFocusSidebarToggleRef = useRef(false);
   const leftSidebarWidth = clampSidebarWidth(storedLeftSidebarWidth);
   const chatPanelCollapsed = useChatPanelStore((state) => state.chatPanelCollapsed);
   const chatPanelDraftOpen = useChatPanelStore((state) => state.chatPanelDraftOpen);
@@ -100,6 +103,7 @@ function WorkspaceLayout() {
     minSize: sidebarMinSize,
     maxSize: sidebarMaxSize,
     isAnimating: isSidebarAnimating,
+    notifyAnimationComplete: notifySidebarAnimationComplete,
   } = useSidebarCollapseMotion({
     collapsed: sidebarCollapsed,
     expandedWidth: leftSidebarWidth,
@@ -110,6 +114,7 @@ function WorkspaceLayout() {
     panelSize: rightDockPanelSize,
     maxSize: rightDockMaxSize,
     isAnimating: isChatPanelAnimating,
+    notifyAnimationComplete: notifyChatPanelAnimationComplete,
   } = useSidebarCollapseMotion({
     collapsed: !chatPanelOpen,
     expandedWidth: normalizedChatPanelWidth,
@@ -184,6 +189,7 @@ function WorkspaceLayout() {
     size: sidebarPanelSize,
     animate: true,
     durationMs: SIDEBAR_COLLAPSE_DURATION_MS,
+    onComplete: notifySidebarAnimationComplete,
   });
 
   useResizablePanelSize({
@@ -193,6 +199,7 @@ function WorkspaceLayout() {
     durationMs: SIDEBAR_COLLAPSE_DURATION_MS,
     /* 与 resize 动画同帧写顶栏留白，不再另开 rAF 轮询 */
     onSizePixels: onDockWidthPixels,
+    onComplete: notifyChatPanelAnimationComplete,
   });
 
   /**
@@ -239,6 +246,18 @@ function WorkspaceLayout() {
 
   /**
    * @wisepen-manual-effect
+   * 执行时机：侧栏折叠态变化后，归还焦点到可见的展开/收起按钮。
+   * 不可替代原因：收起后原按钮进入 inert/卸载，须等 Header chrome 挂载后再 focus。
+   * cleanup：无。
+   */
+  useEffect(() => {
+    if (!pendingFocusSidebarToggleRef.current) return;
+    pendingFocusSidebarToggleRef.current = false;
+    focusVisibleSidebarToggle();
+  }, [sidebarCollapsed]);
+
+  /**
+   * @wisepen-manual-effect
    * 执行时机：资源页向工作区 Chat 发布上下文后，展开面板。
    * 不可替代原因：资源上下文与聊天面板分属独立 store。
    * cleanup：无。
@@ -252,6 +271,7 @@ function WorkspaceLayout() {
   }, [hasSessionId, setChatPanelCollapsed, setChatPanelDraftOpen, workspaceChatContext]);
 
   const handleSidebarToggle = () => {
+    pendingFocusSidebarToggleRef.current = true;
     markSidebarUserOverride();
     setSidebarCollapsed((collapsed) => {
       if (!collapsed) {
@@ -372,148 +392,157 @@ function WorkspaceLayout() {
   };
 
   return (
-    <SystemResizablePanelGroup
-      orientation="horizontal"
-      className={styles.root}
-      data-layout-density={density}
-      resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
-      onLayoutChanged={handleWorkspaceShellLayoutChanged}
-    >
-      <SystemResizablePanel
-        id="workspace-left-sidebar"
-        panelRef={leftSidebarPanelRef}
-        defaultSize={sidebarPanelSize}
-        /* min=0 允许收起/展开插值；展开态下限由 clampSidebarWidth 在拖拽落定后保证 */
-        minSize={sidebarMinSize}
-        maxSize={sidebarMaxSize}
-        groupResizeBehavior="preserve-pixel-size"
-        className={styles.leftSider}
-        aria-label={t('shell.appSidebar')}
-        aria-hidden={sidebarCollapsed ? true : undefined}
-        onResize={handleLeftSidebarResize}
+    <>
+      <SkipToMainLink />
+      <SystemResizablePanelGroup
+        orientation="horizontal"
+        className={styles.root}
+        data-layout-density={density}
+        resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
+        onLayoutChanged={handleWorkspaceShellLayoutChanged}
       >
-        <div className={styles.sidebarSlideHost}>
-          <div
-            className={clsx(
-              styles.sidebarSlideFrame,
-              anchorSidebarSlide && styles.sidebarSlideFrameAnchored
-            )}
-            style={
-              anchorSidebarSlide
-                ? ({
-                    '--sidebar-slide-width': `${leftSidebarWidth}px`,
-                  } as CSSProperties)
-                : undefined
-            }
-          >
-            <AppSidebar
-              canGoBack={appNavigation.canGoBack}
-              canGoForward={appNavigation.canGoForward}
-              onGoBack={appNavigation.goBack}
-              onGoForward={appNavigation.goForward}
-              onToggle={handleSidebarToggle}
-            />
-          </div>
-        </div>
-      </SystemResizablePanel>
-
-      <SystemResizableHandle
-        className={clsx(styles.resizeHandle, sidebarCollapsed && styles.resizeHandleCollapsed)}
-        disabled={sidebarCollapsed}
-      />
-
-      <SystemResizablePanel
-        id="workspace-area"
-        /* 外层只占侧栏剩余空间；主区+Chat 的下限由内层 Panel 约束，避免双重叠加撑破 */
-        minSize={MAIN_SCROLL_MIN_WIDTH}
-        className={styles.workspaceArea}
-      >
-        <SystemResizablePanelGroup
-          orientation="horizontal"
-          className={clsx(
-            styles.workspaceInnerGroup,
-            applyChatOpenLayoutConstraints &&
-              (resourceSidePanelOpen
-                ? styles.workspaceInnerGroupChatAndSideOpen
-                : styles.workspaceInnerGroupChatOpen)
-          )}
-          resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
-          onLayoutChanged={handleWorkspaceContentLayoutChanged}
+        <SystemResizablePanel
+          id="workspace-left-sidebar"
+          panelRef={leftSidebarPanelRef}
+          defaultSize={sidebarPanelSize}
+          /* min=0 允许收起/展开插值；展开态下限由 clampSidebarWidth 在拖拽落定后保证 */
+          minSize={sidebarMinSize}
+          maxSize={sidebarMaxSize}
+          groupResizeBehavior="preserve-pixel-size"
+          className={styles.leftSider}
+          aria-label={t('shell.appSidebar')}
+          aria-hidden={sidebarCollapsed ? true : undefined}
+          onResize={handleLeftSidebarResize}
         >
-          <SystemResizablePanel
-            id="workspace-main"
-            minSize={workspaceMainMinWidth}
-            className={styles.middleLayout}
-          >
-            <main className={`${styles.middleContent} ${styles.workspaceContent}`}>
-              <ResourceHostContext value={resourceHostContext}>
-                <WorkspaceFrame
-                  className={layoutConfig.className}
-                  bodyClassName={layoutConfig.bodyClassName}
-                  header={renderHeader()}
-                >
-                  <Outlet />
-                </WorkspaceFrame>
-              </ResourceHostContext>
-            </main>
-          </SystemResizablePanel>
+          <div className={styles.sidebarSlideHost} inert={sidebarCollapsed || undefined}>
+            <div
+              className={clsx(
+                styles.sidebarSlideFrame,
+                anchorSidebarSlide && styles.sidebarSlideFrameAnchored
+              )}
+              style={
+                anchorSidebarSlide
+                  ? ({
+                      '--sidebar-slide-width': `${leftSidebarWidth}px`,
+                    } as CSSProperties)
+                  : undefined
+              }
+            >
+              <AppSidebar
+                canGoBack={appNavigation.canGoBack}
+                canGoForward={appNavigation.canGoForward}
+                onGoBack={appNavigation.goBack}
+                onGoForward={appNavigation.goForward}
+                onToggle={handleSidebarToggle}
+              />
+            </div>
+          </div>
+        </SystemResizablePanel>
 
-          <SystemResizableHandle
+        <SystemResizableHandle
+          className={clsx(styles.resizeHandle, sidebarCollapsed && styles.resizeHandleCollapsed)}
+          disabled={sidebarCollapsed}
+          aria-label={t('shell.resizeSidebar')}
+        />
+
+        <SystemResizablePanel
+          id="workspace-area"
+          /* 外层只占侧栏剩余空间；主区+Chat 的下限由内层 Panel 约束，避免双重叠加撑破 */
+          minSize={MAIN_SCROLL_MIN_WIDTH}
+          className={styles.workspaceArea}
+        >
+          <SystemResizablePanelGroup
+            orientation="horizontal"
             className={clsx(
-              styles.resizeHandle,
-              !applyChatOpenLayoutConstraints && styles.resizeHandleCollapsed
+              styles.workspaceInnerGroup,
+              applyChatOpenLayoutConstraints &&
+                (resourceSidePanelOpen
+                  ? styles.workspaceInnerGroupChatAndSideOpen
+                  : styles.workspaceInnerGroupChatOpen)
             )}
-            disabled={!applyChatOpenLayoutConstraints}
-          />
-
-          <SystemResizablePanel
-            id="workspace-right-dock"
-            panelRef={rightDockPanelRef}
-            defaultSize={rightDockPanelSize}
-            /*
-             * 动效期间 min=0 才能从 0 插值；静止展开后锁最小宽。
-             * 与 isAnimating 同帧切换可能触发布局复核，保持尺寸已到位时再锁。
-             */
-            minSize={chatPanelOpen && !isChatPanelAnimating ? CHAT_PANEL_MIN_WIDTH : 0}
-            maxSize={rightDockMaxSize}
-            groupResizeBehavior="preserve-pixel-size"
-            className={styles.rightSider}
-            aria-label={t('shell.chatPanel')}
-            aria-hidden={!chatPanelOpen ? true : undefined}
-            onResize={handleRightDockResize}
+            resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
+            onLayoutChanged={handleWorkspaceContentLayoutChanged}
           >
-            {shouldRenderChatPanel ? (
-              <div className={styles.chatPanelSlideHost}>
-                <div
-                  className={clsx(
-                    styles.chatPanelSlideFrame,
-                    isChatPanelAnimating && styles.chatPanelSlideFrameAnchored
-                  )}
-                  style={
-                    isChatPanelAnimating
-                      ? ({
-                          '--chat-panel-slide-width': `${chatSlideWidthPx}px`,
-                        } as CSSProperties)
-                      : undefined
-                  }
-                >
-                  <ChatPanel
-                    showCollapseButton={false}
-                    onNewChat={handleNewChat}
-                    resourceChat={{
-                      provider: workspaceChatStateProvider,
-                      context: workspaceChatContext,
-                      clearContext: clearWorkspaceChatContext,
-                    }}
-                    agentDebug={layoutConfig.chatAgentDebug}
-                  />
+            <SystemResizablePanel
+              id="workspace-main"
+              minSize={workspaceMainMinWidth}
+              className={styles.middleLayout}
+            >
+              <main
+                id={MAIN_CONTENT_ID}
+                tabIndex={-1}
+                className={`${styles.middleContent} ${styles.workspaceContent}`}
+              >
+                <ResourceHostContext value={resourceHostContext}>
+                  <WorkspaceFrame
+                    className={layoutConfig.className}
+                    bodyClassName={layoutConfig.bodyClassName}
+                    header={renderHeader()}
+                  >
+                    <Outlet />
+                  </WorkspaceFrame>
+                </ResourceHostContext>
+              </main>
+            </SystemResizablePanel>
+
+            <SystemResizableHandle
+              className={clsx(
+                styles.resizeHandle,
+                !applyChatOpenLayoutConstraints && styles.resizeHandleCollapsed
+              )}
+              disabled={!applyChatOpenLayoutConstraints}
+              aria-label={t('shell.resizeChatPanel')}
+            />
+
+            <SystemResizablePanel
+              id="workspace-right-dock"
+              panelRef={rightDockPanelRef}
+              defaultSize={rightDockPanelSize}
+              /*
+               * 动效期间 min=0 才能从 0 插值；静止展开后锁最小宽。
+               * 与 isAnimating 同帧切换可能触发布局复核，保持尺寸已到位时再锁。
+               */
+              minSize={chatPanelOpen && !isChatPanelAnimating ? CHAT_PANEL_MIN_WIDTH : 0}
+              maxSize={rightDockMaxSize}
+              groupResizeBehavior="preserve-pixel-size"
+              className={styles.rightSider}
+              aria-label={t('shell.chatPanel')}
+              aria-hidden={!chatPanelOpen ? true : undefined}
+              onResize={handleRightDockResize}
+            >
+              {shouldRenderChatPanel ? (
+                <div className={styles.chatPanelSlideHost} inert={!chatPanelOpen || undefined}>
+                  <div
+                    className={clsx(
+                      styles.chatPanelSlideFrame,
+                      isChatPanelAnimating && styles.chatPanelSlideFrameAnchored
+                    )}
+                    style={
+                      isChatPanelAnimating
+                        ? ({
+                            '--chat-panel-slide-width': `${chatSlideWidthPx}px`,
+                          } as CSSProperties)
+                        : undefined
+                    }
+                  >
+                    <ChatPanel
+                      showCollapseButton={false}
+                      onNewChat={handleNewChat}
+                      resourceChat={{
+                        provider: workspaceChatStateProvider,
+                        context: workspaceChatContext,
+                        clearContext: clearWorkspaceChatContext,
+                      }}
+                      agentDebug={layoutConfig.chatAgentDebug}
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : null}
-          </SystemResizablePanel>
-        </SystemResizablePanelGroup>
-      </SystemResizablePanel>
-    </SystemResizablePanelGroup>
+              ) : null}
+            </SystemResizablePanel>
+          </SystemResizablePanelGroup>
+        </SystemResizablePanel>
+      </SystemResizablePanelGroup>
+    </>
   );
 }
 

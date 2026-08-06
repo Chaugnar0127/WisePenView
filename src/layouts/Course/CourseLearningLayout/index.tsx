@@ -180,6 +180,7 @@ function CourseLearningLayout() {
       <SystemResizableHandle
         className={clsx(styles.resizeHandle, !chatDock.open && styles.resizeHandleCollapsed)}
         disabled={!chatDock.open}
+        aria-label={t('learning.resizeChat')}
       />
       <SystemResizablePanel
         id="course-learning-chat"

@@ -6,6 +6,8 @@ import {
   SIDEBAR_MIN_WIDTH,
 } from '@/constants/layoutScale';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
+import { focusVisibleSidebarToggle } from '@/layouts/_common/a11y/sidebarToggle';
+import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
 import AdminSidebar from '@/layouts/_common/Sidebar/AdminSidebar';
 import {
   SystemResizableHandle,
@@ -14,7 +16,7 @@ import {
 } from '@/layouts/_common/SystemResizable';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import clsx from 'clsx';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -32,6 +34,7 @@ function AdminLayout() {
   const setSidebarWidth = useSystemLayoutStore((state) => state.setAdminSidebarWidth);
   const sidebarPanelRef = useRef<PanelImperativeHandle | null>(null);
   const pendingSidebarWidthRef = useRef<number | null>(null);
+  const pendingFocusSidebarToggleRef = useRef(false);
   const sidebarWidth = clampSidebarWidth(storedSidebarWidth);
   const sidebarPanelSize = sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : sidebarWidth;
 
@@ -40,7 +43,20 @@ function AdminLayout() {
     size: sidebarPanelSize,
   });
 
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：管理端侧栏折叠态变化后，归还焦点到切换按钮。
+   * 不可替代原因：折叠后 DOM 结构可能变化，须等提交后再 focus。
+   * cleanup：无。
+   */
+  useEffect(() => {
+    if (!pendingFocusSidebarToggleRef.current) return;
+    pendingFocusSidebarToggleRef.current = false;
+    focusVisibleSidebarToggle();
+  }, [sidebarCollapsed]);
+
   const handleSidebarToggle = () => {
+    pendingFocusSidebarToggleRef.current = true;
     setSidebarCollapsed((collapsed) => {
       if (!collapsed) {
         const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
@@ -68,40 +84,44 @@ function AdminLayout() {
   };
 
   return (
-    <SystemResizablePanelGroup
-      orientation="horizontal"
-      className={styles.root}
-      onLayoutChanged={handleLayoutChanged}
-    >
-      <SystemResizablePanel
-        id="admin-sidebar"
-        panelRef={sidebarPanelRef}
-        defaultSize={sidebarPanelSize}
-        minSize={sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MIN_WIDTH}
-        maxSize={sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MAX_WIDTH}
-        groupResizeBehavior="preserve-pixel-size"
-        className={styles.leftSider}
-        aria-label={t('navigation.adminSidebar')}
-        onResize={handleSidebarResize}
+    <>
+      <SkipToMainLink />
+      <SystemResizablePanelGroup
+        orientation="horizontal"
+        className={styles.root}
+        onLayoutChanged={handleLayoutChanged}
       >
-        <AdminSidebar collapsed={sidebarCollapsed} onToggle={handleSidebarToggle} />
-      </SystemResizablePanel>
+        <SystemResizablePanel
+          id="admin-sidebar"
+          panelRef={sidebarPanelRef}
+          defaultSize={sidebarPanelSize}
+          minSize={sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MIN_WIDTH}
+          maxSize={sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MAX_WIDTH}
+          groupResizeBehavior="preserve-pixel-size"
+          className={styles.leftSider}
+          aria-label={t('navigation.adminSidebar')}
+          onResize={handleSidebarResize}
+        >
+          <AdminSidebar collapsed={sidebarCollapsed} onToggle={handleSidebarToggle} />
+        </SystemResizablePanel>
 
-      <SystemResizableHandle
-        className={clsx(styles.resizeHandle, sidebarCollapsed && styles.resizeHandleCollapsed)}
-        disabled={sidebarCollapsed}
-      />
+        <SystemResizableHandle
+          className={clsx(styles.resizeHandle, sidebarCollapsed && styles.resizeHandleCollapsed)}
+          disabled={sidebarCollapsed}
+          aria-label={t('navigation.resizeSidebar')}
+        />
 
-      <SystemResizablePanel
-        id="admin-main"
-        minSize={MAIN_MIN_WIDTH}
-        className={styles.middleLayout}
-      >
-        <main className={styles.middleContent}>
-          <Outlet />
-        </main>
-      </SystemResizablePanel>
-    </SystemResizablePanelGroup>
+        <SystemResizablePanel
+          id="admin-main"
+          minSize={MAIN_MIN_WIDTH}
+          className={styles.middleLayout}
+        >
+          <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.middleContent}>
+            <Outlet />
+          </main>
+        </SystemResizablePanel>
+      </SystemResizablePanelGroup>
+    </>
   );
 }
 

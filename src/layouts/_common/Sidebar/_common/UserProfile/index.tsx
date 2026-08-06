@@ -1,5 +1,4 @@
 import AppAvatar from '@/components/Avatar';
-import AppIconButton from '@/components/Button/AppIconButton';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
 import type { User } from '@/domains/User';
@@ -217,13 +216,12 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
               <span className={styles.tag}>{identityLabel}</span>
             </div>
             <Dropdown>
-              <AppIconButton
-                icon={<Settings size={16} aria-hidden="true" />}
-                label={t('userMenu.openSettingsAria')}
-                size="sm"
+              <Dropdown.Trigger
+                aria-label={t('userMenu.openSettingsAria')}
                 className={styles.menuTrigger}
-                overlayTrigger={<Dropdown.Trigger />}
-              />
+              >
+                <Settings size={16} aria-hidden="true" />
+              </Dropdown.Trigger>
               {userMenu}
             </Dropdown>
           </>

@@ -1,3 +1,4 @@
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { ToggleButton, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
 import { cloneElement, type ComponentProps } from 'react';
@@ -37,7 +38,7 @@ function AppIconButton({
       ref={ref}
       id={toggleId}
       variant="ghost"
-      size={size}
+      size={size === 'xs' ? 'sm' : size}
       isIconOnly
       isDisabled={isDisabled}
       className={classNames}
@@ -75,7 +76,12 @@ function AppIconButton({
 
   return (
     <Tooltip delay={tooltip.delay} closeDelay={tooltip.closeDelay}>
-      <Tooltip.Trigger className={tooltip.triggerClassName}>{trigger}</Tooltip.Trigger>
+      <Tooltip.Trigger
+        className={clsx(styles.tooltipTrigger, tooltip.triggerClassName)}
+        {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}
+      >
+        {trigger}
+      </Tooltip.Trigger>
       <Tooltip.Content
         placement={tooltip.placement}
         offset={tooltip.offset}

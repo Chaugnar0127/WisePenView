@@ -156,6 +156,10 @@ html[data-theme-form-radius='extra-large'] {
   );
   --app-radius-interactive: var(--app-radius-sidebar-item);
   --app-radius-scrollbar: var(--scrollbar-radius);
+  /* 业务页统一内边距（profile / drive / group / course / notifications） */
+  --app-page-padding-block-start: var(--space-2xl);
+  --app-page-padding-block-end: var(--space-lg);
+  --app-page-padding-inline: var(--space-xl);
   --table-row-height: 52px;
   --row-height-comfortable: var(--table-row-height);
   --row-height-compact: var(--table-row-height);

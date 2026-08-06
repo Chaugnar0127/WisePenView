@@ -1,3 +1,5 @@
+@import '@/layouts/_common/a11y/focusRing.less';
+
 @height: 60px;
 
 @font-weight-medium: var(--font-weight-medium);
@@ -51,9 +53,10 @@
 }
 
 .profileMenuItem[data-hovered],
-.profileMenuItem[data-focused],
+.profileMenuItem[data-focus-visible],
 .profileMenu :global(.menu-item[data-hovered]),
-.profileMenu :global(.menu-item[data-focused]) {
+.profileMenu :global(.menu-item[data-focus-visible]) {
+  .clearHeroFocusRing();
   color: var(--foreground);
   background: var(--surface-tertiary) !important;
 }
@@ -63,9 +66,10 @@
 }
 
 .profileMenuItem:global(.menu-item--danger)[data-hovered],
-.profileMenuItem:global(.menu-item--danger)[data-focused],
+.profileMenuItem:global(.menu-item--danger)[data-focus-visible],
 .profileMenu :global(.menu-item--danger[data-hovered]),
-.profileMenu :global(.menu-item--danger[data-focused]) {
+.profileMenu :global(.menu-item--danger[data-focus-visible]) {
+  .clearHeroFocusRing();
   color: var(--danger-text);
   background: var(--danger-soft) !important;
 }
@@ -123,14 +127,30 @@
   border-radius: var(--radius-sm, 4px);
   outline: none;
 
-  &:focus-visible {
-    box-shadow: 0 0 0 2px var(--focus);
+  &:focus-visible,
+  &:focus-visible:not(:focus),
+  &[data-focus-visible] {
+    .appFocusRing();
   }
 }
 
 .avatarTrigger {
   width: 34px;
   height: 34px;
+}
+
+.menuTrigger {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  color: var(--muted);
+  border-radius: var(--radius-md);
+
+  &:hover,
+  &[data-hovered] {
+    color: var(--foreground);
+    background: var(--surface-tertiary);
+  }
 }
 
 .info {
@@ -158,8 +178,4 @@
   color: var(--muted);
   margin-top: -2px;
   text-align: left;
-}
-
-.menuTrigger {
-  margin-left: auto;
 }

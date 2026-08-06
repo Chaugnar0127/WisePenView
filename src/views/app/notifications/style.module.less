@@ -5,10 +5,9 @@
   height: 100%;
   width: 100%;
   max-width: var(--app-page-max-width);
-  /* 页面下限；窄于此时由 AppLayout.middleContent 横向滚动 */
-  min-width: var(--layout-drive-page-min-width, 956px);
   margin: 0 auto;
-  padding: var(--space-lg) var(--space-xl);
+  padding: var(--app-page-padding-block-start) var(--app-page-padding-inline)
+    var(--app-page-padding-block-end);
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -46,12 +45,19 @@
 
 .pageTitle {
   margin: 0 0 var(--space-xs) 0;
+  color: var(--foreground);
   font-size: calc(var(--font-size-heading-3) + 4px);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
   letter-spacing: 0;
 }
 
 .pageSubtitle {
+  margin: 0;
   color: var(--muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-sm);
 }
 
 .messageList {
@@ -62,28 +68,42 @@
   overflow: auto;
 }
 
+/* 飞书/邮件：连续列表行；行本身不加框，展开只给正文阅读区 */
 .messageItem {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
   background: transparent;
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--transition-fast, 0.15s ease);
+}
+
+.messageItem:hover {
+  background: var(--surface-secondary);
 }
 
 .messageItemSelected {
+  background: transparent;
+}
+
+.messageItemSelected:hover {
   background: var(--surface-secondary);
 }
 
 .messageSummary {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  gap: var(--space-lg);
+  column-gap: var(--space-sm);
   width: 100%;
-  padding: var(--space-sm);
+  min-width: 0;
+  padding: var(--space-md) var(--space-sm);
+  box-sizing: border-box;
 }
 
 .messageOpenButton {
   display: flex;
+  flex: 1;
   min-width: 0;
+  flex-direction: column;
+  gap: var(--space-2xs);
   padding: 0;
   border: 0;
   background: transparent;
@@ -97,17 +117,6 @@
   color: var(--accent-text);
 }
 
-.messageItem:hover {
-  background: var(--surface-tertiary);
-}
-
-.messageInfo {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 6px;
-}
-
 .messageStatusLine {
   display: flex;
   min-width: 0;
@@ -119,83 +128,143 @@
 }
 
 .statusDot {
+  flex: none;
   width: 8px;
   height: 8px;
-  flex: none;
   border-radius: 999px;
   background: var(--accent);
 }
 
 .statusDotRead {
-  background: var(--success);
+  background: color-mix(in srgb, var(--muted) 55%, transparent);
+}
+
+.readLabel {
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
 }
 
 .messageTitle {
+  min-width: 0;
   color: var(--foreground);
   font-size: 17px;
-  line-height: 1.45;
   font-weight: var(--font-weight-semibold);
+  line-height: 1.45;
 }
 
 .messagePreview {
+  min-width: 0;
   overflow: hidden;
-  color: var(--muted);
+  /* 收起：更淡的摘要色，和展开正文拉开差 */
+  color: color-mix(in srgb, var(--muted) 72%, transparent);
   font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
   line-height: 1.5;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.toggleDetail {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  width: fit-content;
-  color: var(--accent-text);
-  font-size: var(--font-size-sm);
-  line-height: 1.4;
-  font: inherit;
-  cursor: pointer;
-}
-
-.toggleDetail:hover {
-  text-decoration: underline;
+/* 右栏：时间对齐状态行，箭头对齐标题行 */
+.messageAside {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2xs);
 }
 
 .sentAt {
   color: var(--muted);
   font-size: var(--font-size-sm);
-  line-height: 1.5;
+  line-height: 1.4;
   text-align: right;
   white-space: nowrap;
 }
 
-.messageSide {
-  display: flex;
-  align-items: flex-end;
-  flex-direction: column;
-  gap: var(--space-xs);
+.toggleDetail {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  margin: 0;
+  /* 与标题行高大致居中；默认隐藏，悬停/聚焦/展开时出现 */
+  margin-block: calc((1.45em - var(--control-height-sm)) / 2);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  cursor: pointer;
+  appearance: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast, 0.15s ease);
 }
 
+.messageItem:hover .toggleDetail,
+.messageItem:focus-within .toggleDetail,
+.messageItemSelected .toggleDetail,
+.toggleDetail:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toggleDetail:hover {
+  color: var(--foreground);
+  background: var(--surface-tertiary);
+}
+
+.toggleDetail:focus,
+.toggleDetail:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.toggleDetail:focus-visible {
+  color: var(--foreground);
+  background: var(--surface-tertiary);
+}
+
+/* 仅正文阅读区：白纸面 + 细描边；与行左右内边距对齐并撑满 */
 .messageBody {
-  margin: 0 var(--space-sm) var(--space-sm) calc(var(--space-sm) + 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: 0 var(--space-sm) var(--space-md);
   padding: var(--space-md);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
   background: var(--surface);
+  box-sizing: border-box;
+}
+
+.absoluteSentAt {
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.4;
 }
 
 .messageContent {
   margin: 0;
-  color: var(--muted);
+  /* 展开：实色正文，像读信 */
+  color: var(--foreground);
   font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
   line-height: 1.75;
   white-space: pre-wrap;
 }
 
 .messageActions {
   display: flex;
-  margin-top: var(--space-md);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
 }
 
 .emptyState {
-  width: min(100%, var(--note-editor-max-width, 900px));
+  width: min(100%, 36rem);
 }

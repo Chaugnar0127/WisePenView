@@ -1,4 +1,5 @@
 import AppIconButton from '@/components/Button/AppIconButton';
+import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/layouts/_common/a11y/sidebarToggle';
 import { ArrowLeft, ArrowRight, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from './AppNavigationControls.module.less';
@@ -6,18 +7,18 @@ import styles from './AppNavigationControls.module.less';
 interface AppNavigationControlsProps {
   sidebarCollapsed: boolean;
   showHistory?: boolean;
-  canGoBack: boolean;
-  canGoForward: boolean;
-  onGoBack: () => void;
-  onGoForward: () => void;
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  onGoBack?: () => void;
+  onGoForward?: () => void;
   onToggleSidebar: () => void;
 }
 
 function AppNavigationControls({
   sidebarCollapsed,
   showHistory = true,
-  canGoBack,
-  canGoForward,
+  canGoBack = false,
+  canGoForward = false,
   onGoBack,
   onGoForward,
   onToggleSidebar,
@@ -39,6 +40,7 @@ function AppNavigationControls({
         }
         label={sidebarLabel}
         onPress={onToggleSidebar}
+        {...SIDEBAR_TOGGLE_BUTTON_PROPS}
       />
       {showHistory ? (
         <>

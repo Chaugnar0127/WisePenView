@@ -1,9 +1,32 @@
 .profileMeta {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-2xl);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: var(--space-xs);
+}
+
+.metaLabel {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+.metaValue {
+  min-width: 0;
   color: var(--foreground);
   font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.5;
 }
 
 .profileLayout {
@@ -38,14 +61,16 @@
     margin-bottom: var(--space-2xs);
     color: var(--muted);
     font-size: var(--font-size-sm);
-    line-height: var(--line-height-md);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
   }
 
   dd {
     margin: 0;
     color: var(--foreground);
     font-size: var(--font-size-base);
-    line-height: 1.6;
+    font-weight: var(--font-weight-regular);
+    line-height: 1.5;
     overflow-wrap: anywhere;
   }
 }
@@ -58,10 +83,10 @@
 }
 
 .coverLabel {
-  color: var(--foreground);
+  color: var(--muted);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-md);
+  line-height: 1.5;
 }
 
 .coverButton,

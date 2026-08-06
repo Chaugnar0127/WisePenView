@@ -9,6 +9,8 @@ const zhCNShell = {
     forward: '前进',
     expandSidebar: '展开侧边栏',
     collapseSidebar: '收起侧边栏',
+    resizeSidebar: '调整侧边栏宽度',
+    skipToMain: '跳到主内容',
     appSidebar: '应用侧边栏',
     adminSidebar: '管理侧边栏',
   },

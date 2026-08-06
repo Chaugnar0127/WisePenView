@@ -9,6 +9,8 @@ const enUSShell = {
     forward: 'Forward',
     expandSidebar: 'Expand sidebar',
     collapseSidebar: 'Collapse sidebar',
+    resizeSidebar: 'Resize sidebar',
+    skipToMain: 'Skip to main content',
     appSidebar: 'Application sidebar',
     adminSidebar: 'Admin sidebar',
   },

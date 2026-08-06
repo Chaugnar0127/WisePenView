@@ -2,13 +2,13 @@ import { EmptyState, ResultState, Spin } from '@/components/Feedback';
 import { useMessageService } from '@/domains';
 import type { UserMessage } from '@/domains/Message';
 import { parseErrorMessage } from '@/utils/error';
-import { formatTimestampToDateTime } from '@/utils/format/formatTime';
+import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
+import { Button, Heading, Paragraph, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import clsx from 'clsx';
-import { CheckCheck, ExternalLink, RotateCw } from 'lucide-react';
+import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
@@ -27,11 +27,12 @@ const resolveMessageTypeLabel = (
 };
 
 function NotificationsPage() {
-  const { t } = useTranslation('message');
+  const { t, i18n } = useTranslation('message');
   const messageService = useMessageService();
   const navigate = useNavigate();
   const { messageId: routeMessageId } = useParams<{ messageId: string }>();
   const selectedMessageId = routeMessageId ? decodeURIComponent(routeMessageId) : undefined;
+  const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
 
   const messagesRequest = useRequest(() =>
     messageService.listUserMessages({ page: 1, size: MESSAGE_PAGE_SIZE })
@@ -94,14 +95,16 @@ function NotificationsPage() {
       <section className={styles.notificationCenter} aria-labelledby="notifications-title">
         <div className={styles.pageHeader}>
           <div>
-            <h1 id="notifications-title" className={styles.pageTitle}>
+            <Heading level={1} id="notifications-title" className={styles.pageTitle}>
               {t('page.title')}
-            </h1>
-            <p className={styles.pageSubtitle}>{t('page.subtitle')}</p>
+            </Heading>
+            <Paragraph size="sm" color="muted" className={styles.pageSubtitle}>
+              {t('page.subtitle')}
+            </Paragraph>
           </div>
           <Button
             size="sm"
-            variant="primary"
+            variant="secondary"
             isDisabled={!hasUnreadMessages}
             onPress={handleMarkAllAsRead}
           >
@@ -149,11 +152,20 @@ function NotificationsPage() {
             <div className={styles.messageList}>
               {messages.map((message) => {
                 const isSelected = message.messageId === selectedMessageId;
+                const isUnread = !message.read;
                 const title = message.title || t('page.untitled');
                 const preview = extractMarkdownPlainText(message.content);
                 const content = extractMarkdownPlainText(message.content, {
                   preserveLineBreaks: true,
                 });
+                const absoluteTime = formatTimestampToDateTime(message.createTime);
+                const absoluteTimeShort = absoluteTime.replace(/:\d{2}$/, '');
+                const relativeTime =
+                  formatRelativeTimestamp(message.createTime, locale) || absoluteTimeShort;
+                const typeLabel = resolveMessageTypeLabel(message, t);
+                const createTimeIso = message.createTime
+                  ? new Date(message.createTime).toISOString()
+                  : undefined;
 
                 return (
                   <article
@@ -165,55 +177,65 @@ function NotificationsPage() {
                         type="button"
                         className={styles.messageOpenButton}
                         aria-expanded={isSelected}
-                        onClick={() => void handleSelectMessage(message)}
+                        onClick={() => void handleToggleMessage(message)}
                       >
-                        <span className={styles.messageInfo}>
-                          <span className={styles.messageStatusLine}>
-                            <span
-                              className={clsx(
-                                styles.statusDot,
-                                message.read && styles.statusDotRead
-                              )}
-                              aria-hidden="true"
-                            />
-                            <span>{resolveMessageTypeLabel(message, t)}</span>
-                            {message.read ? <span>{t('page.readStatus.read')}</span> : null}
-                          </span>
-                          <strong className={styles.messageTitle}>{title}</strong>
-                          {!isSelected ? (
-                            <span className={styles.messagePreview}>{preview}</span>
+                        <span className={styles.messageStatusLine}>
+                          <span
+                            className={clsx(styles.statusDot, !isUnread && styles.statusDotRead)}
+                            aria-hidden="true"
+                          />
+                          <span>{typeLabel}</span>
+                          {!isUnread ? (
+                            <span className={styles.readLabel}>{t('page.readStatus.read')}</span>
                           ) : null}
                         </span>
+                        <strong className={styles.messageTitle}>{title}</strong>
+                        {!isSelected && preview ? (
+                          <span className={styles.messagePreview}>{preview}</span>
+                        ) : null}
                       </button>
-                      <span className={styles.messageSide}>
+
+                      <div className={styles.messageAside}>
                         <time
                           className={styles.sentAt}
-                          dateTime={
-                            message.createTime
-                              ? new Date(message.createTime).toISOString()
-                              : undefined
-                          }
+                          dateTime={createTimeIso}
+                          title={absoluteTime || undefined}
                         >
-                          {formatTimestampToDateTime(message.createTime)}
+                          {relativeTime}
                         </time>
                         <button
                           type="button"
                           className={styles.toggleDetail}
+                          aria-expanded={isSelected}
+                          aria-label={isSelected ? t('page.hideMessage') : t('page.showMessage')}
                           onClick={() => void handleToggleMessage(message)}
                         >
-                          {isSelected ? t('page.hideMessage') : t('page.showMessage')}
+                          {isSelected ? (
+                            <ChevronUp size={16} aria-hidden />
+                          ) : (
+                            <ChevronDown size={16} aria-hidden />
+                          )}
                         </button>
-                      </span>
+                      </div>
                     </div>
 
                     {isSelected ? (
                       <div className={styles.messageBody}>
+                        {absoluteTimeShort ? (
+                          <time
+                            className={styles.absoluteSentAt}
+                            dateTime={createTimeIso}
+                            title={absoluteTime || undefined}
+                          >
+                            {absoluteTimeShort}
+                          </time>
+                        ) : null}
                         <p className={styles.messageContent}>{content}</p>
                         {message.jumpUrl ? (
                           <div className={styles.messageActions}>
                             <Button
                               size="sm"
-                              variant="outline"
+                              variant="secondary"
                               onPress={() => handleOpenJumpUrl(message)}
                             >
                               <ExternalLink size={16} />

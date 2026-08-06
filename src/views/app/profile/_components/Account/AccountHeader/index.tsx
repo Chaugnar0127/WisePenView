@@ -4,6 +4,7 @@ import AppModal from '@/components/Overlay/AppModal';
 import { useImageService, useUserService } from '@/domains';
 import { assertImageProxyUploadLimit } from '@/domains/Image';
 import { IDENTITY, USER_STATUS } from '@/domains/User';
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { parseErrorMessage } from '@/utils/error';
 import { IMAGE_UPLOAD_MAX_SIZE_LABEL } from '@/utils/image/uploadLimit';
 import { Button, toast, Tooltip } from '@heroui/react';
@@ -122,7 +123,7 @@ function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {
     <>
       <header className={styles.accountHeader}>
         <Tooltip>
-          <Tooltip.Trigger>
+          <Tooltip.Trigger {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
             <span
               className={styles.avatarWrap}
               role="button"

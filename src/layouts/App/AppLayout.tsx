@@ -6,6 +6,8 @@ import {
 } from '@/constants/layoutScale';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
+import { focusVisibleSidebarToggle } from '@/layouts/_common/a11y/sidebarToggle';
+import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
 import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
 import {
   clampSidebarWidth,
@@ -26,7 +28,7 @@ import {
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
-import { useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -49,6 +51,7 @@ function AppLayout() {
   const setSidebarWidth = useSystemLayoutStore((state) => state.setAppSidebarWidth);
   const sidebarPanelRef = useRef<PanelImperativeHandle | null>(null);
   const pendingSidebarWidthRef = useRef<number | null>(null);
+  const pendingFocusSidebarToggleRef = useRef(false);
   const sidebarWidth = clampSidebarWidth(storedSidebarWidth);
   const desktopWindow = useDesktopWindowState();
   const collapsedSidebarWidth = desktopWindow.isDesktop
@@ -58,14 +61,17 @@ function AppLayout() {
     panelSize: sidebarPanelSize,
     minSize: sidebarMinSize,
     maxSize: sidebarMaxSize,
-    showCollapsedChrome,
+    showCollapsedChrome: showWebCollapsedChrome,
     isAnimating: isSidebarAnimating,
+    notifyAnimationComplete: notifySidebarAnimationComplete,
   } = useSidebarCollapseMotion({
     collapsed: sidebarCollapsed,
     expandedWidth: sidebarWidth,
     collapsedWidth: collapsedSidebarWidth,
   });
   const anchorSidebarSlide = isSidebarAnimating || sidebarCollapsed;
+  /* Desktop 收起控件在主顶栏：收起一开始就挂上，避免动画结束再挂载导致末帧卡顿 */
+  const showDesktopCollapsedChrome = sidebarCollapsed;
 
   const persistSidebarWidthFromPanel = () => {
     const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
@@ -87,9 +93,24 @@ function AppLayout() {
     size: sidebarPanelSize,
     animate: true,
     durationMs: SIDEBAR_COLLAPSE_DURATION_MS,
+    onComplete: notifySidebarAnimationComplete,
   });
 
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：侧栏折叠态或 Web 收起 chrome 就绪后，归还焦点到可见切换按钮。
+   * 不可替代原因：Web 收起 chrome 在动画结束后才挂载，不能在 toggle 当时同步 focus。
+   * cleanup：无。
+   */
+  useEffect(() => {
+    if (!pendingFocusSidebarToggleRef.current) return;
+    if (sidebarCollapsed && !desktopWindow.isDesktop && !showWebCollapsedChrome) return;
+    pendingFocusSidebarToggleRef.current = false;
+    focusVisibleSidebarToggle();
+  }, [sidebarCollapsed, showWebCollapsedChrome, desktopWindow.isDesktop]);
+
   const handleSidebarToggle = () => {
+    pendingFocusSidebarToggleRef.current = true;
     markSidebarUserOverride();
     setSidebarCollapsed((collapsed) => {
       if (!collapsed) {
@@ -113,6 +134,7 @@ function AppLayout() {
 
   return (
     <div className={styles.root} data-layout-density={density}>
+      <SkipToMainLink />
       <SystemResizablePanelGroup
         orientation="horizontal"
         className={styles.panelGroup}
@@ -134,7 +156,7 @@ function AppLayout() {
           aria-hidden={sidebarCollapsed && desktopWindow.isDesktop ? true : undefined}
           onResize={handleSidebarResize}
         >
-          {showCollapsedChrome && !desktopWindow.isDesktop ? (
+          {showWebCollapsedChrome && !desktopWindow.isDesktop ? (
             <header className={styles.webCollapsedSidebar}>
               <AppNavigationControls
                 sidebarCollapsed
@@ -150,8 +172,9 @@ function AppLayout() {
           <div
             className={clsx(
               styles.sidebarSlideHost,
-              showCollapsedChrome && styles.sidebarSlideHostHidden
+              showWebCollapsedChrome && styles.sidebarSlideHostHidden
             )}
+            inert={sidebarCollapsed || undefined}
           >
             <div
               className={clsx(
@@ -180,6 +203,7 @@ function AppLayout() {
         <SystemResizableHandle
           className={clsx(styles.resizeHandle, sidebarCollapsed && styles.resizeHandleCollapsed)}
           disabled={sidebarCollapsed}
+          aria-label={t('navigation.resizeSidebar')}
         />
 
         <SystemResizablePanel
@@ -199,7 +223,7 @@ function AppLayout() {
                   styles.titleBarInsetEnd
               )}
             >
-              {showCollapsedChrome ? (
+              {showDesktopCollapsedChrome ? (
                 <div className={styles.collapsedHeaderControls}>
                   <AppNavigationControls
                     sidebarCollapsed
@@ -214,7 +238,7 @@ function AppLayout() {
               ) : null}
             </header>
           ) : null}
-          <main className={styles.middleContent}>
+          <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.middleContent}>
             <Outlet />
           </main>
         </SystemResizablePanel>

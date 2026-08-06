@@ -100,11 +100,11 @@
 }
 
 .item:global(.list-box-item) {
-  min-height: var(--control-height);
+  min-height: calc(var(--control-height) + var(--space-sm));
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  padding: 0 var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
   border-radius: var(--app-radius-popover-item, var(--radius-xl));
   color: var(--overlay-foreground);
   line-height: var(--line-height-sm);

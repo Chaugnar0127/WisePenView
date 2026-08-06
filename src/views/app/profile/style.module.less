@@ -5,7 +5,8 @@
   height: 100%;
   max-width: var(--app-page-max-width);
   margin: 0 auto;
-  padding: var(--space-lg) var(--space-xl);
+  padding: var(--app-page-padding-block-start) var(--app-page-padding-inline)
+    var(--app-page-padding-block-end);
   box-sizing: border-box;
 }
 
@@ -14,13 +15,20 @@
 }
 
 .pageTitle {
-  font-size: calc(var(--font-size-heading-3) + 4px);
   margin: 0 0 var(--space-xs) 0;
   color: var(--foreground);
+  font-size: calc(var(--font-size-heading-3) + 4px);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+  letter-spacing: 0;
 }
 
 .pageSubtitle {
+  margin: 0;
   color: var(--muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-sm);
 }
 
 .sectionDivider {
@@ -37,17 +45,23 @@
   box-shadow: none;
 }
 
+.usagePanel {
+  flex: 1;
+  min-width: 0;
+}
+
 .usageContent {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
-  gap: 24px;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
 }
 
 .sectionTitle {
-  margin: 0 0 24px 0;
-  font-size: 20px;
+  margin: 0 0 var(--space-lg) 0;
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);
   color: var(--foreground);
 }

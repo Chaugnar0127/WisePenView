@@ -2,6 +2,8 @@ const zhCNWorkspace = {
   shell: {
     appSidebar: '应用侧边栏',
     chatPanel: '聊天面板',
+    resizeSidebar: '调整侧边栏宽度',
+    resizeChatPanel: '调整聊天面板宽度',
     enterZen: '进入 Zen Mode',
     exitZen: '退出 Zen Mode',
   },

@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .fixedPage {
   height: 100%;
   min-height: 0;
@@ -9,23 +11,69 @@
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .tabContent {
   min-height: 0;
 }
 
+.descriptionPage .tabContent {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  .appSubtleScrollbar();
+  /* 默认隐藏滑块，悬停内容区再露出中性灰条 */
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    background-clip: content-box;
+  }
+
+  &:hover {
+    scrollbar-color: var(--border) transparent;
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--border);
+      background-clip: content-box;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+      background-clip: content-box;
+    }
+  }
+}
+
+/* 返回行部分占用页顶 padding；略留出一点，避免贴顶 */
 .detailHeader {
-  padding-top: var(--space-xl);
+  flex: none;
+  align-items: flex-start;
+  margin-top: calc(
+    -1 * (var(--control-height-sm) + var(--space-xs) - var(--space-sm))
+  );
 }
 
 .titleStack {
   display: grid;
   min-width: 0;
   justify-items: start;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
+}
+
+.backButton {
+  justify-self: start;
+  min-width: 0;
+  height: auto;
+  min-height: var(--control-height-sm);
+  /* 保留水平内边距，保证 hover 背景盖住整段文案 */
+  padding-block: var(--space-2xs);
+  padding-inline: var(--space-xs);
+  /* 抵消左侧 padding，让箭头与主标题左缘对齐 */
+  margin-inline-start: calc(-1 * var(--space-xs));
+  gap: var(--space-2xs);
 }
 
 .contextLink {

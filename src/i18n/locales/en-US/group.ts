@@ -33,6 +33,7 @@ const enUSGroup = {
     aria: 'Group details',
     creator: 'Created by:',
     createdAt: 'Created at: {{date}}',
+    createdAtLabel: 'Created at:',
     noDate: 'Unavailable',
     tabs: {
       files: 'Files',

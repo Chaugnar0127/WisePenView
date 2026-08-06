@@ -1,0 +1,22 @@
+@import '@/layouts/_common/a11y/focusRing.less';
+
+.skipLink {
+  position: absolute;
+  z-index: 1000;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
+  border-radius: var(--ant-border-radius);
+  background: var(--ant-color-bg-elevated, var(--surface));
+  color: var(--ant-color-text, var(--foreground));
+  font-size: var(--ant-font-size);
+  text-decoration: none;
+  box-shadow: var(--ant-box-shadow-secondary, 0 1px 4px rgb(0 0 0 / 12%));
+  transform: translateY(-200%);
+}
+
+.skipLink:focus,
+.skipLink:focus-visible {
+  transform: translateY(0);
+  .appFocusRing();
+}

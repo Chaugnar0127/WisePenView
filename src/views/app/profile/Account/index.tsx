@@ -3,7 +3,7 @@ import { useUserService } from '@/domains';
 import type { UserAccountProfile } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
 import { parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
+import { Heading, Paragraph, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -62,10 +62,14 @@ function Account() {
 
   return (
     <div className={layout.pageContainer}>
-      <div className={layout.pageHeader}>
-        <h1 className={layout.pageTitle}>{t('account.title')}</h1>
-        <span className={layout.pageSubtitle}>{t('account.subtitle')}</span>
-      </div>
+      <header className={layout.pageHeader}>
+        <Heading level={1} className={layout.pageTitle}>
+          {t('account.title')}
+        </Heading>
+        <Paragraph size="sm" color="muted" className={layout.pageSubtitle}>
+          {t('account.subtitle')}
+        </Paragraph>
+      </header>
       <AccountVerification user={user} onUserInfoReload={reloadUserInfo} />
       <Spin spinning={loading}>
         <div className={styles.identitySlot}>

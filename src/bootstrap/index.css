@@ -252,7 +252,8 @@
 
   .menu-item--danger:hover,
   .menu-item--danger[data-hovered],
-  .menu-item--danger[data-focused],
+  .menu-item--danger[data-focus-visible],
+  .menu-item--danger[data-focus-visible='true'],
   .menu-item--danger[data-pressed] {
     color: var(--danger-text);
     background: var(--danger-soft);
@@ -276,6 +277,20 @@
 
   .tooltip {
     z-index: var(--app-z-index-tooltip);
+  }
+
+  /* Tooltip 穿透壳：见 TOOLTIP_FOCUS_PASSTHROUGH_PROPS */
+  .tooltip__trigger[data-focus-passthrough],
+  .tabs__tab .tooltip__trigger {
+    &:focus,
+    &:focus-visible,
+    &:focus-visible:not(:focus),
+    &[data-focus-visible] {
+      outline: none;
+      box-shadow: none;
+      --tw-ring-shadow: 0 0 #0000;
+      --tw-ring-offset-shadow: 0 0 #0000;
+    }
   }
 
   .modal__backdrop {

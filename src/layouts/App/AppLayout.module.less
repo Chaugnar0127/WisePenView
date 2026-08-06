@@ -22,6 +22,7 @@
 }
 
 .leftSider {
+  position: relative;
   height: 100%;
   width: 100%;
   min-width: 0;
@@ -61,8 +62,6 @@
 .sidebarSlideHostHidden {
   visibility: hidden;
   pointer-events: none;
-  position: absolute;
-  inset: 0;
 }
 
 .webCollapsedSider {
@@ -128,12 +127,19 @@
 }
 
 .webCollapsedSidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
   box-sizing: border-box;
   height: 64px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   padding-block: var(--space-sm);
+  padding-inline: var(--space-sm);
+  background: var(--surface);
 }
 
 /* Mac：折叠后主区顶栏避开红绿灯 */

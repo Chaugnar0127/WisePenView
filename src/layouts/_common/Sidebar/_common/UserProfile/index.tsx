@@ -1,4 +1,3 @@
-import logoImg from '@/assets/images/logo-icon.png';
 import AppAvatar from '@/components/Avatar';
 import AppIconButton from '@/components/Button/AppIconButton';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
@@ -25,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuthService } from '@/domains';
+import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
 import UserFeedbackModal from '../UserFeedbackModal';
 import styles from './style.module.less';
 
@@ -37,6 +37,7 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
   const { t } = useTranslation(['shell', 'common']);
   const navigate = useNavigate();
   const userService = useUserService();
+  const { colorScheme } = useColorScheme();
   const [user, setUser] = useState<User | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
@@ -236,7 +237,7 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
         closeText={t('actions.close', { ns: 'common' })}
       >
         <div className={styles.aboutContent}>
-          <img className={styles.aboutLogo} src={logoImg} alt="" />
+          <img className={styles.aboutLogo} src={COLOR_SCHEME_ICON_SRC[colorScheme]} alt="" />
           <div className={styles.aboutProductName}>WisePen</div>
           <div className={styles.aboutVersion}>
             {t('userMenu.version', { version: __APP_VERSION__ })}

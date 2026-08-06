@@ -15,6 +15,7 @@ declare global {
     onNavigationStateChange(listener: () => void): () => void;
     navigationBack(): Promise<boolean>;
     navigationForward(): Promise<boolean>;
+    setColorScheme?(scheme: string): Promise<void>;
     getAppVersion(): Promise<string>;
     openExternal(url: string): Promise<boolean>;
     windowMinimize?(): Promise<void>;

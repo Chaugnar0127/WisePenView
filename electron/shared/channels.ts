@@ -9,6 +9,7 @@ export const DESKTOP_CHANNEL = {
   savePdfFromHtml: 'desktop:save-pdf-from-html',
   fullScreenChanged: 'desktop:full-screen-changed',
   maximizedChanged: 'desktop:maximized-changed',
+  setColorScheme: 'desktop:set-color-scheme',
   windowMinimize: 'desktop:window-minimize',
   windowMaximizeToggle: 'desktop:window-maximize-toggle',
   windowClose: 'desktop:window-close',

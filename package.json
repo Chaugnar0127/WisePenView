@@ -13,6 +13,7 @@
     "build": "tsc -b && vite build",
     "build:dev": "tsc -b && vite build --mode development",
     "build:electron": "node scripts/build-electron.mjs",
+    "build:desktop-icons": "node scripts/build-desktop-icons.mjs",
     "package:desktop": "pnpm build && pnpm build:electron && electron-builder",
     "package:desktop:unsigned": "pnpm build && pnpm build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg",
     "package:desktop:unsigned:dev": "pnpm build:dev && pnpm build:electron && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg",
@@ -110,6 +111,7 @@
     },
     "files": [
       ".electron/**/*",
+      "electron/assets/**/*",
       "dist/**/*",
       "package.json",
       "!node_modules/**/*"

@@ -4,6 +4,7 @@ import {
   dialog,
   ipcMain,
   Menu,
+  nativeImage,
   net,
   protocol,
   shell,
@@ -19,6 +20,7 @@ import {
   WINDOW_MIN_HEIGHT,
   WINDOW_MIN_WIDTH,
 } from '../../src/constants/layoutScale';
+import { COLOR_SCHEME, DEFAULT_COLOR_SCHEME, type ColorScheme } from '../../src/theme/constants';
 import { APP_ROUTE_PATH } from '../../src/utils/navigation/appRoute';
 import { DESKTOP_CHANNEL, type DesktopNavigationState } from '../shared/channels';
 
@@ -29,6 +31,18 @@ const DEV_RENDERER_URL = process.env.ELECTRON_RENDERER_URL;
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const preloadPath = join(currentDirectory, '../preload/index.cjs');
 const PDF_EXPORT_TIMEOUT_MS = 30_000;
+const DESKTOP_ICON_DIRECTORY = join('electron', 'assets', 'app-icons');
+const DESKTOP_ICON_FILENAMES: Record<ColorScheme, string> = {
+  default: 'default.png',
+  floral: 'floral.png',
+  aqua: 'aqua.png',
+  sunset: 'sunset.png',
+  emerald: 'emerald.png',
+  lavender: 'lavender.png',
+};
+const COLOR_SCHEME_VALUES = new Set<ColorScheme>(Object.values(COLOR_SCHEME));
+
+let currentColorScheme: ColorScheme = DEFAULT_COLOR_SCHEME;
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -66,6 +80,34 @@ function resolveRendererAsset(url: string): string {
   }
 
   return join(rendererDirectory, 'index.html');
+}
+
+function isColorScheme(value: unknown): value is ColorScheme {
+  return typeof value === 'string' && COLOR_SCHEME_VALUES.has(value as ColorScheme);
+}
+
+function getDesktopIconPath(colorScheme: ColorScheme): string {
+  return join(app.getAppPath(), DESKTOP_ICON_DIRECTORY, DESKTOP_ICON_FILENAMES[colorScheme]);
+}
+
+function loadDesktopIcon(colorScheme: ColorScheme) {
+  const iconPath = getDesktopIconPath(colorScheme);
+  const fallbackPath = getDesktopIconPath(DEFAULT_COLOR_SCHEME);
+  return nativeImage.createFromPath(existsSync(iconPath) ? iconPath : fallbackPath);
+}
+
+function applyDesktopIcon(colorScheme: ColorScheme): void {
+  currentColorScheme = colorScheme;
+  const desktopIcon = loadDesktopIcon(colorScheme);
+  if (desktopIcon.isEmpty()) return;
+
+  if (process.platform === 'darwin') {
+    app.dock?.setIcon(desktopIcon);
+  }
+
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.setIcon(desktopIcon);
+  }
 }
 
 function isExternalUrl(url: string): boolean {
@@ -221,6 +263,7 @@ function createMainWindow(): BrowserWindow {
     minHeight: WINDOW_MIN_HEIGHT,
     width: WINDOW_DEFAULT_WIDTH,
     height: WINDOW_DEFAULT_HEIGHT,
+    icon: getDesktopIconPath(currentColorScheme),
     backgroundColor: '#F8FAFB',
     ...(isMac
       ? {
@@ -275,6 +318,10 @@ function registerDesktopIpcHandlers(): void {
     if (typeof url !== 'string' || !isExternalUrl(url)) return false;
     await shell.openExternal(url);
     return true;
+  });
+  ipcMain.handle(DESKTOP_CHANNEL.setColorScheme, (_event, scheme: unknown) => {
+    if (!isColorScheme(scheme)) return;
+    applyDesktopIcon(scheme);
   });
   ipcMain.handle(DESKTOP_CHANNEL.windowMinimize, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize();
@@ -334,6 +381,7 @@ app.whenReady().then(() => {
   });
   registerDesktopIpcHandlers();
   createMainWindow();
+  applyDesktopIcon(currentColorScheme);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();

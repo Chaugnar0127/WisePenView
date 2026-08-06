@@ -56,6 +56,8 @@ const desktopBridge = Object.freeze({
   },
   navigationBack: (): Promise<boolean> => ipcRenderer.invoke(DESKTOP_CHANNEL.navigationBack),
   navigationForward: (): Promise<boolean> => ipcRenderer.invoke(DESKTOP_CHANNEL.navigationForward),
+  setColorScheme: (scheme: string): Promise<void> =>
+    ipcRenderer.invoke(DESKTOP_CHANNEL.setColorScheme, scheme),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(DESKTOP_CHANNEL.getAppVersion),
   openExternal: (url: string): Promise<boolean> =>
     ipcRenderer.invoke(DESKTOP_CHANNEL.openExternal, url),

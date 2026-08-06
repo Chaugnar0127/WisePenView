@@ -1,5 +1,5 @@
-import logoImg from '@/assets/images/logo-icon.png';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
+import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ function LandingNavbar({ activeKey }: LandingNavbarProps) {
   const { t } = useTranslation('shell');
   const navigate = useNavigate();
   const desktopWindow = useDesktopWindowState();
+  const { colorScheme } = useColorScheme();
   const navItems = [
     { key: '1', label: t('home.nav.home'), path: APP_ROUTE_PATH.HOME },
     { key: '2', label: t('home.nav.register'), path: APP_ROUTE_PATH.AUTH_REGISTER },
@@ -20,7 +21,7 @@ function LandingNavbar({ activeKey }: LandingNavbarProps) {
   return (
     <div className={clsx(styles.bar, desktopWindow.isDesktop && styles.desktopBar)}>
       <div className={styles.brand}>
-        <img src={logoImg} alt="WisePen" className={styles.logo} />
+        <img src={COLOR_SCHEME_ICON_SRC[colorScheme]} alt="WisePen" className={styles.logo} />
         <span className={styles.brandText}>WisePen</span>
       </div>
       <div className={styles.navWrap} aria-label={t('home.navAria')}>

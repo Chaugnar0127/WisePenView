@@ -1,26 +1,17 @@
 import {
-  Button,
-  Card,
-  Dropdown,
   Heading,
-  Label,
   Paragraph,
-  ProgressBar,
   Separator,
   Tabs,
-  TextField,
   ToggleButton,
   ToggleButtonGroup,
 } from '@heroui/react';
-import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Input } from '@/components/Input';
 import { changeAppLanguage } from '@/i18n';
 import type { SupportedLanguage } from '@/i18n/resources';
 import {
   COLOR_SCHEME_OPTIONS,
-  THEME_FORM_RADIUS_OPTIONS,
   THEME_MODE_OPTIONS,
   THEME_RADIUS_OPTIONS,
   useAppTheme,
@@ -28,8 +19,6 @@ import {
   useThemeShape,
   type ColorScheme,
   type ColorSchemeOption,
-  type ThemeFormRadius,
-  type ThemeFormRadiusOption,
   type ThemeMode,
   type ThemeRadius,
   type ThemeRadiusOption,
@@ -108,17 +97,10 @@ function ColorSchemeSection({ value, onChange }: ColorSchemeSectionProps) {
 
 type ThemeShapeSectionProps = {
   radius: ThemeRadius;
-  formRadius: ThemeFormRadius;
   onRadiusChange: (radius: ThemeRadius) => void;
-  onFormRadiusChange: (radius: ThemeFormRadius) => void;
 };
 
-function ThemeShapeSection({
-  radius,
-  formRadius,
-  onRadiusChange,
-  onFormRadiusChange,
-}: ThemeShapeSectionProps) {
+function ThemeShapeSection({ radius, onRadiusChange }: ThemeShapeSectionProps) {
   const { t } = useTranslation('profile');
 
   return (
@@ -131,13 +113,7 @@ function ThemeShapeSection({
           label="Radius"
           value={radius}
           options={THEME_RADIUS_OPTIONS}
-          onChange={(next) => onRadiusChange(next as ThemeRadius)}
-        />
-        <ShapeOptionGroup
-          label="Radius Form"
-          value={formRadius}
-          options={THEME_FORM_RADIUS_OPTIONS}
-          onChange={(next) => onFormRadiusChange(next as ThemeFormRadius)}
+          onChange={onRadiusChange}
         />
       </div>
     </section>
@@ -146,29 +122,28 @@ function ThemeShapeSection({
 
 type ShapeOptionGroupProps = {
   label: string;
-  value: ThemeRadius | ThemeFormRadius;
-  options: Array<ThemeRadiusOption | ThemeFormRadiusOption>;
-  onChange: (radius: ThemeRadius | ThemeFormRadius) => void;
+  value: ThemeRadius;
+  options: ThemeRadiusOption[];
+  onChange: (radius: ThemeRadius) => void;
 };
 
 function ShapeOptionGroup({ label, value, options, onChange }: ShapeOptionGroupProps) {
   return (
     <div className={styles.shapeGroupBlock}>
-      <span className={styles.shapeGroupLabel}>{label}</span>
       <ToggleButtonGroup
         aria-label={label}
         selectionMode="single"
         selectedKeys={new Set([value])}
         onSelectionChange={(keys) => {
           const [key] = [...keys];
-          if (key != null) onChange(String(key) as ThemeRadius | ThemeFormRadius);
+          if (key != null) onChange(String(key) as ThemeRadius);
         }}
         className={styles.shapeGroup}
         orientation="horizontal"
         isDetached
       >
         {options.map((option) => {
-          const pxLabel = option.description === '0' ? '0px' : option.description;
+          const pxLabel = option.description;
           return (
             <ToggleButton
               key={option.id}
@@ -207,125 +182,6 @@ function SchemeOption({ option }: SchemeOptionProps) {
       <span className={styles.schemeLabel}>{t(option.labelKey)}</span>
       <span className={styles.schemeDescription}>{t(option.descriptionKey)}</span>
     </ToggleButton>
-  );
-}
-
-function ThemeVariantPreview() {
-  const { t } = useTranslation('profile');
-
-  return (
-    <div className={styles.variantPreview}>
-      <span className={styles.variantPreviewTitle}>{t('appearance.preview.buttonVariants')}</span>
-      <div className={styles.variantRow}>
-        <span className={styles.variantRowLabel}>{t('appearance.preview.accent')}</span>
-        <div className={styles.variantRowActions}>
-          <Button size="sm" variant="primary">
-            {t('appearance.preview.solid')}
-          </Button>
-          <Button size="sm" variant="secondary" className={styles.variantSoftAccent}>
-            {t('appearance.preview.soft')}
-          </Button>
-          <Button size="sm" variant="outline">
-            {t('appearance.preview.outline')}
-          </Button>
-          <Button size="sm" variant="ghost">
-            {t('appearance.preview.ghost')}
-          </Button>
-        </div>
-      </div>
-      <div className={styles.variantRow}>
-        <span className={styles.variantRowLabel}>{t('appearance.preview.gray')}</span>
-        <div className={styles.variantRowActions}>
-          <Button size="sm" variant="secondary">
-            {t('appearance.preview.solid')}
-          </Button>
-          <Button size="sm" variant="tertiary">
-            {t('appearance.preview.soft')}
-          </Button>
-          <Button size="sm" variant="outline" className={styles.variantOutlineGray}>
-            {t('appearance.preview.outline')}
-          </Button>
-          <Button size="sm" variant="ghost" className={styles.variantGhostGray}>
-            {t('appearance.preview.ghost')}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ThemePreviewSection() {
-  const { t } = useTranslation(['profile', 'common']);
-
-  return (
-    <section className={styles.section}>
-      <Heading level={3} className={layout.sectionTitle}>
-        {t('appearance.preview.title')}
-      </Heading>
-      <div className={styles.previewGrid}>
-        <Card className={styles.previewCard}>
-          <Card.Content className={styles.previewBody}>
-            <ThemeVariantPreview />
-            <div className={styles.previewActions}>
-              <Button variant="primary">{t('appearance.preview.primary')}</Button>
-              <Button variant="secondary">{t('appearance.preview.secondary')}</Button>
-              <Dropdown>
-                <Dropdown.Trigger>
-                  <Button variant="tertiary">
-                    {t('appearance.preview.menu')}
-                    <ChevronDown size={14} />
-                  </Button>
-                </Dropdown.Trigger>
-                <Dropdown.Popover>
-                  <Dropdown.Menu aria-label={t('appearance.preview.menuAria')}>
-                    <Dropdown.Item key="edit">{t('actions.edit', { ns: 'common' })}</Dropdown.Item>
-                    <Dropdown.Item key="copy">{t('actions.copy', { ns: 'common' })}</Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown.Popover>
-              </Dropdown>
-            </div>
-            <TextField
-              aria-label={t('appearance.preview.inputAria')}
-              className={styles.previewField}
-            >
-              <Label>{t('appearance.preview.inputLabel')}</Label>
-              <Input placeholder={t('appearance.preview.inputPlaceholder')} />
-            </TextField>
-            <ProgressBar
-              aria-label={t('appearance.preview.progressAria')}
-              value={64}
-              valueLabel="64%"
-              className={styles.previewProgress}
-            >
-              <ProgressBar.Track>
-                <ProgressBar.Fill />
-              </ProgressBar.Track>
-              <ProgressBar.Output />
-            </ProgressBar>
-          </Card.Content>
-        </Card>
-
-        <div className={styles.previewDialog}>
-          <div className={styles.previewDialogHeader}>
-            <span>{t('appearance.preview.shell')}</span>
-          </div>
-          <div className={styles.previewTable}>
-            <div className={styles.previewTableRow}>
-              <span>{t('appearance.preview.button')}</span>
-              <span>--radius-3xl</span>
-            </div>
-            <div className={styles.previewTableRow}>
-              <span>{t('appearance.preview.input')}</span>
-              <span>--radius-field</span>
-            </div>
-            <div className={styles.previewTableRow}>
-              <span>{t('appearance.preview.table')}</span>
-              <span>--table-shell-radius</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -378,7 +234,7 @@ function LanguageSection() {
 function Appearance() {
   const { theme, setTheme } = useAppTheme();
   const { colorScheme, setColorScheme } = useColorScheme();
-  const { radius, formRadius, setRadius, setFormRadius } = useThemeShape();
+  const { radius, setRadius } = useThemeShape();
 
   return (
     <div className={layout.pageContainer}>
@@ -390,14 +246,7 @@ function Appearance() {
         <Separator className={styles.divider} />
         <ColorSchemeSection value={colorScheme} onChange={setColorScheme} />
         <Separator className={styles.divider} />
-        <ThemeShapeSection
-          radius={radius}
-          formRadius={formRadius}
-          onRadiusChange={setRadius}
-          onFormRadiusChange={setFormRadius}
-        />
-        <Separator className={styles.divider} />
-        <ThemePreviewSection />
+        <ThemeShapeSection radius={radius} onRadiusChange={setRadius} />
       </div>
     </div>
   );

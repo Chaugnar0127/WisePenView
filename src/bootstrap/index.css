@@ -80,7 +80,7 @@
   --color-field-foreground: var(--field-foreground, var(--foreground));
   --color-field-placeholder: var(--field-placeholder, var(--muted));
   --color-field-border: var(--field-border, var(--border));
-  --radius-field: var(--field-radius, calc(var(--radius) * 1.5));
+  --radius-field: var(--radius);
   --border-width-field: var(--field-border-width, var(--border-width));
 
   --color-background-secondary: var(--background-secondary);

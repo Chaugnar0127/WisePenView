@@ -11,14 +11,9 @@
   --scrollbar-size: 8px;
   --scrollbar-radius: 999px;
   --radius: 0.5rem;
-  --field-radius: 0.75rem;
 }
 
 /* HeroUI 主题页 Radius */
-html[data-theme-radius='none'] {
-  --radius: 0;
-}
-
 html[data-theme-radius='extra-small'] {
   --radius: 0.125rem;
 }
@@ -33,31 +28,6 @@ html[data-theme-radius='medium'] {
 
 html[data-theme-radius='large'] {
   --radius: 0.75rem;
-}
-
-/* HeroUI 主题页 Radius Form */
-html[data-theme-form-radius='none'] {
-  --field-radius: 0;
-}
-
-html[data-theme-form-radius='extra-small'] {
-  --field-radius: 0.125rem;
-}
-
-html[data-theme-form-radius='small'] {
-  --field-radius: 0.25rem;
-}
-
-html[data-theme-form-radius='medium'] {
-  --field-radius: 0.5rem;
-}
-
-html[data-theme-form-radius='large'] {
-  --field-radius: 0.75rem;
-}
-
-html[data-theme-form-radius='extra-large'] {
-  --field-radius: 1rem;
 }
 
 /* WisePen 桌面端排版：正文 14px、辅助文本 12px，重点层级使用 16px 以上字号。 */
@@ -140,7 +110,7 @@ html[data-theme-form-radius='extra-large'] {
   --radius-3xl: calc(var(--radius) * 3);
   --radius-4xl: calc(var(--radius) * 4);
   --radius-full: 999px;
-  --radius-field: var(--field-radius);
+  --radius-field: var(--radius);
   --app-popover-content-padding: var(--space-xs);
   --app-popover-item-inset: calc(var(--app-popover-content-padding) + var(--space-2xs));
   --app-radius-sidebar-item: var(--radius-2xl);

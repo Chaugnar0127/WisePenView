@@ -77,6 +77,7 @@ export function useNoteEditorRuntimeCoordinator({
     undoManager: collaboration.undoManager,
     resourceId,
     collaborationReady: collaborationBinding.ready,
+    canWrite: !readOnly && !blockLocalDocWrites,
     aiDiffPreview,
     scheduleBodyContentHashRefresh: document.scheduleBodyContentHashRefresh,
   });

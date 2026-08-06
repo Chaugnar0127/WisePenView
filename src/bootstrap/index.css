@@ -210,7 +210,7 @@
   }
 
   .tabs:not(.tabs--secondary) > .tabs__list-container > .tabs__list {
-    background: var(--accent-softer);
+    background: color-mix(in oklab, var(--accent-soft) 33%, var(--accent-softer));
   }
 
   .tabs:not(.tabs--secondary) > .tabs__list-container .tabs__indicator {

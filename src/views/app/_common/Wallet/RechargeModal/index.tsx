@@ -28,6 +28,7 @@ const OTP_GROUPS = [
   [8, 9, 10, 11],
   [12, 13, 14, 15],
 ];
+const OTP_ROWS = [OTP_GROUPS.slice(0, 2), OTP_GROUPS.slice(2)];
 
 function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeModalProps) {
   const { t } = useTranslation('wallet');
@@ -127,15 +128,23 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
           pushPasswordManagerStrategy="none"
           textAlign="center"
         >
-          {OTP_GROUPS.map((group, groupIndex) => (
-            <React.Fragment key={group.join('-')}>
-              {groupIndex > 0 ? <InputOTP.Separator className={styles.codeSeparator} /> : null}
-              <InputOTP.Group className={styles.codeGroup}>
-                {group.map((slotIndex) => (
-                  <InputOTP.Slot key={slotIndex} className={styles.codeSlot} index={slotIndex} />
-                ))}
-              </InputOTP.Group>
-            </React.Fragment>
+          {OTP_ROWS.map((row) => (
+            <div key={row[0]?.[0]} className={styles.codeRow}>
+              {row.map((group, groupIndex) => (
+                <React.Fragment key={group.join('-')}>
+                  {groupIndex > 0 ? <InputOTP.Separator className={styles.codeSeparator} /> : null}
+                  <InputOTP.Group className={styles.codeGroup}>
+                    {group.map((slotIndex) => (
+                      <InputOTP.Slot
+                        key={slotIndex}
+                        className={styles.codeSlot}
+                        index={slotIndex}
+                      />
+                    ))}
+                  </InputOTP.Group>
+                </React.Fragment>
+              ))}
+            </div>
           ))}
         </InputOTP>
         <p id="recharge-code-hint" className={styles.hint}>

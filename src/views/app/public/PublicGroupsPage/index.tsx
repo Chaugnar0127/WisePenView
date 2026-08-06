@@ -2,6 +2,7 @@ import { Empty, Spin } from '@/components/Feedback';
 import Select from '@/components/Input/Select';
 import { useGroupService } from '@/domains';
 import { GROUP_ROLE_FILTER_MAP, GROUP_TYPE } from '@/domains/Group';
+import PageHeader from '@/layouts/_common/PageHeader';
 import {
   buildGroupFilesPath,
   buildGroupListPath,
@@ -80,22 +81,22 @@ function PublicGroupsPage() {
 
   return (
     <>
-      <div className={styles.pageHeaderWithActions}>
-        <div>
-          <h1 className={styles.pageTitle}>{t('list.title')}</h1>
-          <span className={styles.pageSubtitle}>{t('list.subtitle')}</span>
-        </div>
-        <div className={styles.actionsRow}>
-          <Button variant="secondary" onPress={() => setCreateModalOpen(true)}>
-            <Plus size={16} aria-hidden />
-            {t('list.create')}
-          </Button>
-          <Button variant="primary" onPress={() => setJoinModalOpen(true)}>
-            <UserPlus size={16} aria-hidden />
-            {t('list.join')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('list.title')}
+        subtitle={t('list.subtitle')}
+        actions={
+          <div className={styles.actionsRow}>
+            <Button variant="secondary" onPress={() => setCreateModalOpen(true)}>
+              <Plus size={16} aria-hidden />
+              {t('list.create')}
+            </Button>
+            <Button variant="primary" onPress={() => setJoinModalOpen(true)}>
+              <UserPlus size={16} aria-hidden />
+              {t('list.join')}
+            </Button>
+          </div>
+        }
+      />
 
       <div className={styles.listControls}>
         <PublicSectionTabs selectedKey="groups" />

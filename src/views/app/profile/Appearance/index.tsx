@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 
 import { changeAppLanguage } from '@/i18n';
 import type { SupportedLanguage } from '@/i18n/resources';
+import PageHeader from '@/layouts/_common/PageHeader';
 import {
   COLOR_SCHEME_OPTIONS,
   THEME_MODE_OPTIONS,
@@ -222,16 +223,7 @@ function SchemeOption({ option }: SchemeOptionProps) {
 function AppearanceHeader() {
   const { t } = useTranslation('profile');
 
-  return (
-    <header className={layout.pageHeader}>
-      <Heading level={1} className={layout.pageTitle}>
-        {t('appearance.title')}
-      </Heading>
-      <Paragraph size="sm" color="muted" className={layout.pageSubtitle}>
-        {t('appearance.subtitle')}
-      </Paragraph>
-    </header>
-  );
+  return <PageHeader title={t('appearance.title')} subtitle={t('appearance.subtitle')} />;
 }
 
 function LanguageSection() {

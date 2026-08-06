@@ -2,6 +2,7 @@ import CourseCard from '@/components/Course/CourseCard';
 import { Empty, Spin } from '@/components/Feedback';
 import { useCourseService, useUserService } from '@/domains';
 import { IDENTITY } from '@/domains/User';
+import PageHeader from '@/layouts/_common/PageHeader';
 import {
   buildCourseListPath,
   buildCoursePath,
@@ -62,31 +63,31 @@ function PublicCoursesPage() {
 
   return (
     <>
-      <div className={styles.pageHeaderWithActions}>
-        <div>
-          <h1 className={styles.pageTitle}>{t('list.title')}</h1>
-          <span className={styles.pageSubtitle}>{t('list.subtitle')}</span>
-        </div>
-        {canCreateCourse || canJoinCourse ? (
-          <div className={styles.actionsRow}>
-            {canCreateCourse ? (
-              <Button
-                variant={canJoinCourse ? 'secondary' : 'primary'}
-                onPress={() => setCreateModalOpen(true)}
-              >
-                <Plus size={16} aria-hidden />
-                {t('list.create')}
-              </Button>
-            ) : null}
-            {canJoinCourse ? (
-              <Button variant="primary" onPress={() => setJoinModalOpen(true)}>
-                <UserPlus size={16} aria-hidden />
-                {t('list.join')}
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
+      <PageHeader
+        title={t('list.title')}
+        subtitle={t('list.subtitle')}
+        actions={
+          canCreateCourse || canJoinCourse ? (
+            <div className={styles.actionsRow}>
+              {canCreateCourse ? (
+                <Button
+                  variant={canJoinCourse ? 'secondary' : 'primary'}
+                  onPress={() => setCreateModalOpen(true)}
+                >
+                  <Plus size={16} aria-hidden />
+                  {t('list.create')}
+                </Button>
+              ) : null}
+              {canJoinCourse ? (
+                <Button variant="primary" onPress={() => setJoinModalOpen(true)}>
+                  <UserPlus size={16} aria-hidden />
+                  {t('list.join')}
+                </Button>
+              ) : null}
+            </div>
+          ) : null
+        }
+      />
 
       <div className={styles.listControls}>
         <PublicSectionTabs selectedKey="courses" />

@@ -1,4 +1,19 @@
+import ChatPanel from '@/components/ChatPanel';
+import { useChatPanelStore } from '@/components/ChatPanel/_store/useChatPanelStore';
+import { createResourceChatStateProvider } from '@/components/ChatPanel/ResourceChatProtocol';
+import {
+  APP_MAIN_MIN_WIDTH,
+  CHAT_PANEL_MIN_WIDTH,
+  WORKSPACE_CHAT_PANEL_MAX_WIDTH,
+  clampWorkspaceChatPanelWidth,
+} from '@/constants/layoutScale';
 import { useOpenResource } from '@/hooks/useOpenResource';
+import {
+  SystemResizableHandle,
+  SystemResizablePanel,
+  SystemResizablePanelGroup,
+} from '@/layouts/_common/SystemResizable';
+import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import { useResourceChatProtocolStore } from '@/layouts/Resource/_store/useResourceChatProtocolStore';
 import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
 import ResourceFrame from '@/layouts/Resource/ResourceFrame';
@@ -13,15 +28,35 @@ import {
   type ResourceHostContextValue,
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
-import { useState, type ReactNode } from 'react';
+import clsx from 'clsx';
+import { useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import type {
+  Layout,
+  LayoutChangedMeta,
+  PanelImperativeHandle,
+  PanelSize,
+} from 'react-resizable-panels';
 import { useLocation, useParams } from 'react-router-dom';
+import styles from './AppResourceShell.module.less';
+
+const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
 
 interface AppResourceShellProps {
   children: ReactNode;
 }
 
 function AppResourceShell({ children }: AppResourceShellProps) {
+  const { t } = useTranslation('workspace');
   const [layoutConfig, setLayoutConfigState] = useState<ResourceHostLayoutConfig>({});
+  const chatPanelRef = useRef<PanelImperativeHandle | null>(null);
+  const pendingChatWidthRef = useRef<number | null>(null);
+  const chatPanelCollapsed = useChatPanelStore((state) => state.chatPanelCollapsed);
+  const chatPanelWidth = useChatPanelStore((state) => state.chatPanelWidth);
+  const setChatPanelCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
+  const setChatPanelWidth = useChatPanelStore((state) => state.setChatPanelWidth);
+  const clearResourceChatContext = useResourceChatProtocolStore((state) => state.clearContext);
+  const resourceChatContext = useResourceChatProtocolStore((state) => state.context);
   const openResource = useOpenResource();
   const location = useLocation();
   const resourceRouteParams = useParams<{ resourceType?: string; resourceId?: string }>();
@@ -45,6 +80,10 @@ function AppResourceShell({ children }: AppResourceShellProps) {
     };
   })();
   const resourceBreadcrumbItems = useResourceBreadcrumb(routeContext.resourceId);
+  const chatPanelOpen = !chatPanelCollapsed;
+  const chatPanelSize = chatPanelOpen ? clampWorkspaceChatPanelWidth(chatPanelWidth) : 0;
+
+  useResizablePanelSize({ panelRef: chatPanelRef, size: chatPanelSize });
 
   const resetLayoutConfig = () => {
     setLayoutConfigState({});
@@ -74,6 +113,8 @@ function AppResourceShell({ children }: AppResourceShellProps) {
       ? {
           ...headerConfig.resource,
           breadcrumbItems: resourceBreadcrumbItems,
+          chatPanelCollapsed,
+          onToggleChatPanel: () => setChatPanelCollapsed(!chatPanelCollapsed),
         }
       : undefined;
 
@@ -95,15 +136,78 @@ function AppResourceShell({ children }: AppResourceShellProps) {
     );
   };
 
+  const chatStateProvider =
+    layoutConfig.chatStateProvider ??
+    (routeContext.resourceId && routeContext.resourceType
+      ? createResourceChatStateProvider({
+          resourceId: routeContext.resourceId,
+          resourceType: routeContext.resourceType,
+          viewer: routeContext.viewer,
+        })
+      : undefined);
+
+  const handleChatResize = (size: PanelSize) => {
+    if (chatPanelOpen) {
+      pendingChatWidthRef.current = clampWorkspaceChatPanelWidth(size.inPixels);
+    }
+  };
+
+  const handleLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
+    const pendingChatWidth = pendingChatWidthRef.current;
+    pendingChatWidthRef.current = null;
+    if (meta.isUserInteraction && chatPanelOpen && pendingChatWidth != null) {
+      setChatPanelWidth(pendingChatWidth);
+    }
+  };
+
   return (
     <ResourceHostContext value={resourceHostContext}>
-      <ResourceFrame
-        className={layoutConfig.className}
-        bodyClassName={layoutConfig.bodyClassName}
-        header={renderHeader()}
+      <SystemResizablePanelGroup
+        orientation="horizontal"
+        className={styles.root}
+        resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
+        onLayoutChanged={handleLayoutChanged}
       >
-        {children}
-      </ResourceFrame>
+        <SystemResizablePanel minSize={APP_MAIN_MIN_WIDTH} className={styles.resourcePanel}>
+          <ResourceFrame
+            className={layoutConfig.className}
+            bodyClassName={layoutConfig.bodyClassName}
+            header={renderHeader()}
+          >
+            {children}
+          </ResourceFrame>
+        </SystemResizablePanel>
+
+        <SystemResizableHandle
+          className={clsx(styles.resizeHandle, !chatPanelOpen && styles.resizeHandleCollapsed)}
+          disabled={!chatPanelOpen}
+          aria-label={t('shell.resizeChatPanel')}
+        />
+        <SystemResizablePanel
+          id="app-resource-chat"
+          panelRef={chatPanelRef}
+          defaultSize={chatPanelSize}
+          minSize={chatPanelOpen ? CHAT_PANEL_MIN_WIDTH : 0}
+          maxSize={chatPanelOpen ? WORKSPACE_CHAT_PANEL_MAX_WIDTH : 0}
+          groupResizeBehavior="preserve-pixel-size"
+          className={styles.chatDock}
+          aria-label={t('shell.chatPanel')}
+          aria-hidden={!chatPanelOpen ? true : undefined}
+          onResize={handleChatResize}
+        >
+          {chatPanelOpen ? (
+            <ChatPanel
+              showCollapseButton={false}
+              resourceChat={{
+                provider: chatStateProvider,
+                context: resourceChatContext,
+                clearContext: clearResourceChatContext,
+              }}
+              agentDebug={layoutConfig.chatAgentDebug}
+            />
+          ) : null}
+        </SystemResizablePanel>
+      </SystemResizablePanelGroup>
     </ResourceHostContext>
   );
 }

@@ -58,7 +58,6 @@ function CourseCard({ course, onClick }: CourseCardProps) {
         />
       </div>
       <div className={styles.body}>
-        <span className={styles.roleBadge}>{t(`role.${course.myRole}`)}</span>
         <Card.Header className={styles.header}>
           <Card.Title className={styles.title}>{course.name}</Card.Title>
         </Card.Header>

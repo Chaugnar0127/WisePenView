@@ -7,6 +7,7 @@ export const APP_ROUTE_PATH = {
   AUTH_PASSWORD_FORGOT: '/auth/password/forgot',
   AUTH_PASSWORD_RESET: '/auth/password/reset',
   AUTH_EMAIL_VERIFY: '/auth/email/verify',
+  PUBLIC_CHAT: '/chat',
   APP: '/app',
   CHAT: '/app/chat',
   NOTIFICATIONS: '/app/notifications',

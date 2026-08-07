@@ -3,18 +3,17 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { APP_HEADER_NAV_KEY, appRouteHandle } from '@/bootstrap/routeMeta';
 import AdminLayout from '@/layouts/Admin/AdminLayout';
+import { AppAuthProvider } from '@/layouts/App/AppAuthProvider';
 import AppLayout from '@/layouts/App/AppLayout';
 import AppNavigationLayout from '@/layouts/AppNavigation/AppNavigationLayout';
 import AuthLayout from '@/layouts/Auth/AuthLayout';
 import CourseLayout from '@/layouts/Course/CourseLayout';
 import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
-import HomeLayout from '@/layouts/Home/HomeLayout';
 import PublicLayout from '@/layouts/Public/PublicLayout';
 import WorkspaceLayout from '@/layouts/Workspace/WorkspaceLayout';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
 import AppError from '@/views/app/error/AppError';
-import ResourceNotFound from '@/views/app/error/ResourceNotFound';
 import RouteError from '@/views/app/error/RouteError';
 import ScopedRouteNotFound from '@/views/app/error/ScopedRouteNotFound';
 import AuthenticatedRouteGuard from '@/views/app/guard/AuthenticatedRouteGuard';
@@ -28,7 +27,6 @@ const PermissionManagement = lazy(() => import('@/views/admin/PermissionManageme
 const SystemSettings = lazy(() => import('@/views/admin/SystemSettings'));
 const LogAudit = lazy(() => import('@/views/admin/LogAudit'));
 const TaskCenter = lazy(() => import('@/views/admin/TaskCenter'));
-const Home = lazy(() => import('@/views/app/home'));
 const Drive = lazy(() => import('@/views/app/drive/Drive'));
 const PublicGroupsPage = lazy(() => import('@/views/app/public/PublicGroupsPage'));
 const PublicCoursesPage = lazy(() => import('@/views/app/public/PublicCoursesPage'));
@@ -122,12 +120,7 @@ const profileHandle = appRouteHandle({
 const router = createBrowserRouter([
   {
     path: APP_ROUTE_PATH.HOME,
-    element: <HomeLayout />,
-    errorElement: <AppError />,
-    children: [
-      { index: true, element: <Home /> },
-      { path: '*', element: <ResourceNotFound /> },
-    ],
+    element: <Navigate to={APP_ROUTE_PATH.PUBLIC_CHAT} replace />,
   },
   {
     path: APP_ROUTE_PATH.AUTH,
@@ -144,12 +137,43 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: APP_ROUTE_PATH.PUBLIC_CHAT,
+    element: (
+      <AppAuthProvider mode="anonymous">
+        <AppNavigationLayout />
+      </AppAuthProvider>
+    ),
+    errorElement: <AppError />,
+    children: [
+      {
+        element: <AppLayout />,
+        errorElement: <RouteError />,
+        children: [
+          {
+            index: true,
+            element: <ChatPage />,
+            handle: chatHandle,
+          },
+          {
+            path: '*',
+            element: <Navigate to={APP_ROUTE_PATH.PUBLIC_CHAT} replace />,
+            handle: chatHandle,
+          },
+        ],
+      },
+    ],
+  },
+  {
     path: APP_ROUTE_PATH.APP,
     element: <AuthenticatedRouteGuard />,
     errorElement: <AppError />,
     children: [
       {
-        element: <AppNavigationLayout />,
+        element: (
+          <AppAuthProvider mode="authenticated">
+            <AppNavigationLayout />
+          </AppAuthProvider>
+        ),
         children: [
           {
             element: <AppLayout />,

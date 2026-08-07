@@ -3,14 +3,16 @@ import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
 import type { User } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
+import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Dropdown } from '@heroui/react';
+import { Button, Dropdown } from '@heroui/react';
 import { useMount } from 'ahooks';
 import clsx from 'clsx';
 import {
   ChartPie,
   Home,
   Info,
+  LogIn,
   LogOut,
   MessageSquare,
   Palette,
@@ -35,6 +37,7 @@ interface UserProfileProps {
 function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
   const { t } = useTranslation(['shell', 'common']);
   const navigate = useNavigate();
+  const appAuth = useAppAuth();
   const userService = useUserService();
   const { colorScheme } = useColorScheme();
   const [user, setUser] = useState<User | null>(null);
@@ -43,6 +46,7 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
   const authService = useAuthService();
 
   useMount(() => {
+    if (!appAuth.isAuthenticated) return;
     void userService.getUserInfo().then(setUser);
   });
 
@@ -53,6 +57,43 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
     ? t(`role.${identityKey}`)
     : t('placeholder.dash', { ns: 'common' });
   const isAdmin = user?.identityType === IDENTITY.ADMIN;
+
+  if (!appAuth.isAuthenticated) {
+    const handleLogin = () => navigate(appAuth.loginPath);
+
+    return (
+      <div className={clsx(styles.profile, !collapsed && styles.expanded)}>
+        {collapsed ? (
+          <button
+            type="button"
+            className={styles.avatarTrigger}
+            aria-label={t('anonymous.login')}
+            onClick={handleLogin}
+          >
+            <LogIn size={18} aria-hidden="true" />
+          </button>
+        ) : (
+          <>
+            <AppAvatar size="sm" className={styles.avatar}>
+              <AppAvatar.Fallback>{t('anonymous.avatar')}</AppAvatar.Fallback>
+            </AppAvatar>
+            <div className={styles.info}>
+              <span className={styles.username}>{t('anonymous.title')}</span>
+              <span className={styles.tag}>{t('anonymous.subtitle')}</span>
+            </div>
+            <Button
+              size="sm"
+              variant="primary"
+              className={styles.loginButton}
+              onPress={handleLogin}
+            >
+              {t('anonymous.login')}
+            </Button>
+          </>
+        )}
+      </div>
+    );
+  }
 
   const handleMenuAction = (key: React.Key) => {
     switch (key) {

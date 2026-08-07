@@ -5,7 +5,6 @@ import { isRouteErrorResponse, useLocation, useNavigate, useRouteError } from 'r
 
 import AppIconButton from '@/components/Button/AppIconButton';
 import { ResultState } from '@/components/Feedback';
-import LandingNavbar from '@/layouts/Home/_components/LandingNavbar';
 import { copyText } from '@/utils/browser/copyText';
 import { getErrorReportId } from '@/utils/error';
 import ResourceNotFound from '@/views/app/error/ResourceNotFound';
@@ -41,10 +40,6 @@ function AppError() {
 
   return (
     <div className={styles.root}>
-      <div className={styles.navShell}>
-        <LandingNavbar />
-      </div>
-
       <main className={styles.main}>
         <ResultState
           className={styles.result}

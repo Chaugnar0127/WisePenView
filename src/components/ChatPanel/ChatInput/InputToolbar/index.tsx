@@ -1,6 +1,6 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import clsx from 'clsx';
-import { ArrowUp, Square } from 'lucide-react';
+import { ArrowUp, Bot, Mic, Plus, Settings, SlidersHorizontal, Square } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AgentPicker from '../AgentPicker';
 import ModelPicker from '../ModelPicker';
@@ -17,11 +17,17 @@ function InputToolbar({
   injectedAgents,
   preferredAgent,
   modelIconOnly,
+  isAuthenticated,
+  onRequireLogin,
   onSend,
   onStop,
 }: InputToolbarProps) {
   const { t } = useTranslation('chat');
   function handlePrimaryAction(): void {
+    if (!isAuthenticated) {
+      onRequireLogin?.();
+      return;
+    }
     if (sending) {
       onStop?.();
       return;
@@ -32,9 +38,31 @@ function InputToolbar({
   return (
     <div className={styles.actionToolbar}>
       <div className={styles.toolbarLeft}>
-        <UploadMenu />
-        <AgentPicker injectedAgents={injectedAgents} preferredAgent={preferredAgent} />
-        <SkillMenu />
+        {isAuthenticated ? (
+          <>
+            <UploadMenu />
+            <AgentPicker injectedAgents={injectedAgents} preferredAgent={preferredAgent} />
+            <SkillMenu />
+          </>
+        ) : (
+          <>
+            <AppIconButton
+              icon={<Plus size={18} aria-hidden="true" />}
+              label={t('input.uploadMenu.trigger')}
+              onPress={onRequireLogin}
+            />
+            <AppIconButton
+              icon={<Bot size={17} aria-hidden="true" />}
+              label={t('input.agentPicker.trigger')}
+              onPress={onRequireLogin}
+            />
+            <AppIconButton
+              icon={<Settings size={17} aria-hidden="true" />}
+              label={t('input.skillMenu.configure')}
+              onPress={onRequireLogin}
+            />
+          </>
+        )}
       </div>
 
       <div className={styles.toolsRight}>
@@ -44,9 +72,25 @@ function InputToolbar({
             modelIconOnly && styles.modelSelectorShellIcon
           )}
         >
-          <ModelPicker iconOnly={modelIconOnly} />
+          {isAuthenticated ? (
+            <ModelPicker iconOnly={modelIconOnly} />
+          ) : (
+            <AppIconButton
+              icon={<SlidersHorizontal size={17} aria-hidden="true" />}
+              label={t('modelSelector.select')}
+              onPress={onRequireLogin}
+            />
+          )}
         </div>
-        <VoiceInput {...voiceInputProps} />
+        {isAuthenticated ? (
+          <VoiceInput {...voiceInputProps} />
+        ) : (
+          <AppIconButton
+            icon={<Mic size={17} aria-hidden="true" />}
+            label={t('input.voice.idle')}
+            onPress={onRequireLogin}
+          />
+        )}
         <AppIconButton
           icon={
             sending ? (

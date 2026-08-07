@@ -1,3 +1,4 @@
+import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { useKeyPress } from 'ahooks';
 import { useState, useSyncExternalStore } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -17,6 +18,7 @@ const getHistorySnapshot = (): number => {
 
 function AppNavigationLayout() {
   const navigate = useNavigate();
+  const appAuth = useAppAuth();
   const historySnapshot = useSyncExternalStore(subscribeHistory, getHistorySnapshot, () => 0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
@@ -24,6 +26,10 @@ function AppNavigationLayout() {
     ['ctrl.k', 'meta.k'],
     (event) => {
       event.preventDefault();
+      if (!appAuth.isAuthenticated) {
+        appAuth.requireLogin();
+        return;
+      }
       setCommandPaletteOpen((open) => !open);
     },
     { exactMatch: true }
@@ -48,13 +54,21 @@ function AppNavigationLayout() {
       }
       void navigate(1);
     },
-    openCommandPalette: () => setCommandPaletteOpen(true),
+    openCommandPalette: () => {
+      if (!appAuth.isAuthenticated) {
+        appAuth.requireLogin();
+        return;
+      }
+      setCommandPaletteOpen(true);
+    },
   };
 
   return (
     <AppNavigationContext.Provider value={value}>
       <Outlet />
-      <CommandPalette isOpen={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+      {appAuth.isAuthenticated ? (
+        <CommandPalette isOpen={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+      ) : null}
     </AppNavigationContext.Provider>
   );
 }

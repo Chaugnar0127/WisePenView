@@ -14,7 +14,8 @@ import {
   type ChatSession,
   type CreateSessionRequest,
 } from '@/domains/Chat';
-import { parseErrorMessage } from '@/utils/error';
+import { useAppAuth } from '@/layouts/App/AppAuthContext';
+import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { buildChatPath } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
 import { useLatest, useRequest } from 'ahooks';
@@ -43,6 +44,7 @@ export function useChatPanelController({
 }: UseChatPanelControllerOptions) {
   const { t } = useTranslation(['chat', 'common']);
   const navigate = useNavigate();
+  const appAuth = useAppAuth();
   const chatService = useChatService();
   const setChatPanelCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
   const setChatPanelDraftOpen = useChatPanelStore((state) => state.setChatPanelDraftOpen);
@@ -123,6 +125,12 @@ export function useChatPanelController({
   const panelTitle = currentSessionTitle || t('panel.newChat');
 
   const ensureChatSession = async (agentParams?: CreateSessionRequest): Promise<string> => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
+        reason: t('input.loginRequired'),
+      });
+    }
     const existingSessionId =
       useCurrentChatSessionStore.getState().currentSessionId ?? currentSessionId;
     if (existingSessionId) {
@@ -166,6 +174,10 @@ export function useChatPanelController({
   const historyActionsLatest = useLatest({ clearConversation, loadHistoryMessages });
 
   const loadMoreHistoryMessages = async () => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      return;
+    }
     try {
       await prependHistory();
     } catch (error) {
@@ -174,6 +186,10 @@ export function useChatPanelController({
   };
 
   const sendImmediately = async (text: string, opts?: SendOptions): Promise<boolean> => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      return false;
+    }
     const targetModel = opts?.model ?? currentModel;
     if (!targetModel) return false;
     const sendBlockedReason = resourceStateProvider?.getBlockedReason?.();
@@ -232,6 +248,10 @@ export function useChatPanelController({
   };
 
   const handleSend = async (text: string, opts?: SendOptions): Promise<boolean> => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      return false;
+    }
     if (agentDebug?.isDirty && opts?.selectedAgent?.agentId === agentDebug.agent.agentId) {
       return new Promise<boolean>((resolve) => {
         setPendingDebugSend({ text, opts, resolve });
@@ -278,6 +298,10 @@ export function useChatPanelController({
   };
 
   const handleToggleSessionBar = () => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      return;
+    }
     setSessionBarOpen((open) => !open);
   };
 
@@ -286,6 +310,10 @@ export function useChatPanelController({
   };
 
   const handleSelectSession = (session: ChatSession) => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      return;
+    }
     void stop();
     clearResourceChatContext?.();
     setCurrentSession(session);
@@ -298,6 +326,10 @@ export function useChatPanelController({
   };
 
   const handleNewChat = () => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      return;
+    }
     void stop();
     clearResourceChatContext?.();
     setSessionBarOpen(false);
@@ -317,13 +349,17 @@ export function useChatPanelController({
    * cleanup：请求竞态由 useChatHistory 管理，本层没有额外订阅需要清理。
    */
   useEffect(() => {
+    if (!appAuth.isAuthenticated) {
+      historyActionsLatest.current.clearConversation();
+      return;
+    }
     if (!currentSessionId) {
       historyActionsLatest.current.clearConversation();
       return;
     }
     if (useNewChatSessionStore.getState().newChatSessionId === currentSessionId) return;
     void historyActionsLatest.current.loadHistoryMessages(currentSessionId);
-  }, [currentSessionId, historyActionsLatest]);
+  }, [appAuth.isAuthenticated, currentSessionId, historyActionsLatest]);
 
   return {
     canLoadMoreHistory,
@@ -337,6 +373,7 @@ export function useChatPanelController({
     handleSelectSession,
     handleSend,
     handleToggleSessionBar,
+    isAuthenticated: appAuth.isAuthenticated,
     isDebugSaveDialogOpen: pendingDebugSend != null,
     loadMoreHistoryMessages,
     loadingInitialHistory,
@@ -349,6 +386,7 @@ export function useChatPanelController({
     sessionBarOpen,
     status,
     stop,
+    requireLogin: appAuth.requireLogin,
     ensureChatSession,
   };
 }

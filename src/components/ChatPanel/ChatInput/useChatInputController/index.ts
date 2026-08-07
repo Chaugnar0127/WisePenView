@@ -22,10 +22,18 @@ import { useVoiceInput } from '../VoiceInput/useVoiceInput';
 interface UseChatInputControllerOptions {
   onSend: ChatInputProps['onSend'];
   onStop?: ChatInputProps['onStop'];
+  onRequireLogin?: ChatInputProps['onRequireLogin'];
+  isAuthenticated: boolean;
   sending: boolean;
 }
 
-export function useChatInputController({ onSend, onStop, sending }: UseChatInputControllerOptions) {
+export function useChatInputController({
+  onSend,
+  onStop,
+  onRequireLogin,
+  isAuthenticated,
+  sending,
+}: UseChatInputControllerOptions) {
   const { t } = useTranslation('chat');
   const store = useChatInputStoreApi();
   const dragCounterRef = useRef(0);
@@ -45,11 +53,18 @@ export function useChatInputController({ onSend, onStop, sending }: UseChatInput
   const completionState = useChatInputStore(useShallow(selectChatInputCompletionState));
   const { clearAfterSend, setIsComposing, setIsDragOver, setValue } = store.getState();
 
-  const sendDisabled = !value.trim() || !selectedModel || voiceInputProps.isActive;
+  const sendDisabled = isAuthenticated
+    ? !value.trim() || !selectedModel || voiceInputProps.isActive
+    : !value.trim() || voiceInputProps.isActive;
 
   async function handleSend(): Promise<void> {
     const text = completionState.value.trim();
-    if (!text || sending || !selectedModel) return;
+    if (!text || sending) return;
+    if (!isAuthenticated) {
+      onRequireLogin?.();
+      return;
+    }
+    if (!selectedModel) return;
     if (pendingAttachmentUploads.some((upload) => upload.status === 'uploading')) {
       toast.warning(t('input.attachmentUploading'));
       return;
@@ -110,6 +125,10 @@ export function useChatInputController({ onSend, onStop, sending }: UseChatInput
     dragCounterRef.current = 0;
     setIsDragOver(false);
     if (e.dataTransfer.files.length > 0) {
+      if (!isAuthenticated) {
+        onRequireLogin?.();
+        return;
+      }
       void routeFiles(e.dataTransfer.files);
     }
   }
@@ -120,6 +139,10 @@ export function useChatInputController({ onSend, onStop, sending }: UseChatInput
     for (const item of Array.from(items)) {
       if (item.type.startsWith('image/')) {
         e.preventDefault();
+        if (!isAuthenticated) {
+          onRequireLogin?.();
+          return;
+        }
         const file = item.getAsFile();
         if (file) void routeFiles([file]);
         return;
@@ -148,6 +171,8 @@ export function useChatInputController({ onSend, onStop, sending }: UseChatInput
       sendDisabled,
       sending,
       voiceInputProps,
+      isAuthenticated,
+      onRequireLogin,
       onSend: () => void handleSend(),
       onStop,
     },

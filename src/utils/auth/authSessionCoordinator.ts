@@ -1,4 +1,3 @@
-import { buildLoginPathForCurrentLocation } from '@/bootstrap/authContinuation';
 import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
 import { resetSessionStores } from '@/store/lifecycle';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
@@ -41,9 +40,15 @@ const resetSessionState = (): void => {
   resetSessionStores();
 };
 
+const redirectToPublicChat = (): void => {
+  if (window.location.pathname !== APP_ROUTE_PATH.PUBLIC_CHAT) {
+    window.location.replace(APP_ROUTE_PATH.PUBLIC_CHAT);
+  }
+};
+
 const redirectToLogin = (): void => {
   if (window.location.pathname !== APP_ROUTE_PATH.AUTH_LOGIN) {
-    window.location.replace(buildLoginPathForCurrentLocation());
+    window.location.replace(APP_ROUTE_PATH.AUTH_LOGIN);
   }
 };
 
@@ -58,7 +63,11 @@ const applySessionEvent = (type: AuthSessionEventType): void => {
     sessionEnded = true;
     resetSessionState();
   }
-  redirectToLogin();
+  if (type === 'logout') {
+    redirectToLogin();
+    return;
+  }
+  redirectToPublicChat();
 };
 
 const broadcastSessionEvent = (type: AuthSessionEventType): void => {
@@ -77,7 +86,11 @@ const broadcastSessionEvent = (type: AuthSessionEventType): void => {
 
 const coordinateSessionEvent = (type: AuthSessionEventType): void => {
   if ((type === 'logout' || type === 'unauthorized') && sessionEnded) {
-    redirectToLogin();
+    if (type === 'logout') {
+      redirectToLogin();
+      return;
+    }
+    redirectToPublicChat();
     return;
   }
 

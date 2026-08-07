@@ -2,6 +2,7 @@ import { APP_HEADER_NAV_KEY, type AppHeaderNavKey } from '@/bootstrap/routeMeta'
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
 import { clearNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
 import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
+import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_HEADER_NAV_ITEMS } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import { ListBox, ListBoxItem } from '@heroui/react';
 import clsx from 'clsx';
@@ -13,11 +14,16 @@ import styles from './style.module.less';
 function AppHeaderNav() {
   const { t } = useTranslation('shell');
   const navigate = useNavigate();
+  const appAuth = useAppAuth();
   const routeMeta = useAppRouteMeta();
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
   const selectedKey = routeMeta?.headerNav;
 
   const handleNavItemPress = (navKey: AppHeaderNavKey) => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      return;
+    }
     const navItem = APP_HEADER_NAV_ITEMS.find((item) => item.key === navKey);
     if (!navItem) return;
     if (navKey === APP_HEADER_NAV_KEY.CHAT) {

@@ -1,4 +1,4 @@
-import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
+import { useOpenResource } from '@/hooks/useOpenResource';
 import type { ResourceViewer } from '@/utils/navigation/resourceTarget';
 import type { DriveTableRow } from '../TableDrive/index.type';
 
@@ -13,7 +13,7 @@ export interface UseClickNodeParams {
  * - resource / link：交由 navigateResource 处理跳转与 scope 写入
  */
 export const useClickNode = ({ enterFolder }: UseClickNodeParams) => {
-  const openInWorkspace = useOpenInWorkspace();
+  const openResource = useOpenResource();
 
   return (row: DriveTableRow, viewer?: ResourceViewer) => {
     const node = row.node;
@@ -25,7 +25,7 @@ export const useClickNode = ({ enterFolder }: UseClickNodeParams) => {
       return;
     }
     if (!node.resourceId) return;
-    openInWorkspace({
+    openResource({
       resourceId: node.resourceId,
       resourceType: node.resourceType,
       resourceName: node.title,

@@ -2,7 +2,7 @@ import TableDrive from '@/components/Drive/TableDrive';
 import { useDriveService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
 import PageHeader from '@/layouts/_common/PageHeader';
-import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
+import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import {
   buildDrivePath,
@@ -34,7 +34,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   const { folderId } = useParams();
   const driveService = useDriveService();
   const driveScope = buildDriveNodeScope();
-  const workspaceScope = useWorkspaceNavigationStore((state) => state.location.scope);
+  const workspaceScope = useResourceNavigationStore((state) => state.location.scope);
 
   /**
    * @wisepen-manual-effect
@@ -46,13 +46,13 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
     if (viewMode === 'uploadQueue' || viewMode === 'favorites') return;
 
     const nextScope = buildDriveNodeScope();
-    const currentScope = useWorkspaceNavigationStore.getState().location.scope;
+    const currentScope = useResourceNavigationStore.getState().location.scope;
     const currentGroupId = currentScope.type === 'group' ? currentScope.groupId : undefined;
     const nextGroupId = nextScope.type === 'group' ? nextScope.groupId : undefined;
     if (currentScope.rootId === nextScope.rootId && currentGroupId === nextGroupId) {
       return;
     }
-    useWorkspaceNavigationStore.getState().navigateToScope(nextScope);
+    useResourceNavigationStore.getState().navigateToScope(nextScope);
   }, [viewMode]);
 
   const isTrashView = viewMode === 'trash';
@@ -113,7 +113,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   };
 
   return (
-    <div className={styles.pageContainer}>
+    <>
       <PageHeader title={t('page.title')} subtitle={t('page.subtitle')} />
 
       <Tabs
@@ -164,7 +164,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
           />
         ) : null}
       </div>
-    </div>
+    </>
   );
 }
 

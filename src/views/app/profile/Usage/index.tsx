@@ -14,7 +14,7 @@ function Usage() {
   const { t } = useTranslation('profile');
 
   return (
-    <div className={layout.pageContainer}>
+    <>
       <PageHeader title={t('usage.title')} subtitle={t('usage.subtitle')} />
       <Card className={layout.usagePanel}>
         <Card.Content className={layout.usageContent}>
@@ -26,7 +26,7 @@ function Usage() {
           />
         </Card.Content>
       </Card>
-    </div>
+    </>
   );
 }
 

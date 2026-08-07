@@ -23,7 +23,7 @@ import {
 } from '@/components/Note/useMarkdownNoteImport';
 import { useDriveService, useNoteService } from '@/domains';
 import type { DriveNodeScope } from '@/domains/Drive';
-import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
+import { useOpenResource } from '@/hooks/useOpenResource';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
@@ -91,7 +91,7 @@ export function useTableDriveActionsController({
   onNodeActionSuccess,
 }: UseTableDriveActionsControllerParams): UseTableDriveActionsControllerReturn {
   const { t } = useTranslation('drive');
-  const openInWorkspace = useOpenInWorkspace();
+  const openResource = useOpenResource();
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
   const noteService = useNoteService();
   const driveService = useDriveService();
@@ -136,7 +136,7 @@ export function useTableDriveActionsController({
     getPathTagId: () => mountTagId,
     onSuccess: ({ resourceId, title }) => {
       refresh();
-      openInWorkspace({
+      openResource({
         resourceId,
         resourceType: RESOURCE_KIND.NOTE,
         resourceName: title,
@@ -163,7 +163,7 @@ export function useTableDriveActionsController({
       onSuccess: (resourceId) => {
         useNewNoteStore.getState().setNewNoteResourceId(resourceId);
         refresh();
-        openInWorkspace({
+        openResource({
           resourceId,
           resourceType: RESOURCE_KIND.NOTE,
           driveLocation: { scope, parentNodeId: currentNodeId },
@@ -183,7 +183,7 @@ export function useTableDriveActionsController({
     }
     setDriveCreateType(null);
     refresh();
-    openInWorkspace({
+    openResource({
       resourceId: createdId,
       resourceType: type,
       driveLocation: { scope, parentNodeId: currentNodeId },
@@ -330,7 +330,7 @@ export function useTableDriveActionsController({
     if (creatingNote) return;
     const pendingNewNoteId = useNewNoteStore.getState().newNoteResourceId;
     if (!groupId && pendingNewNoteId) {
-      openInWorkspace({
+      openResource({
         resourceId: pendingNewNoteId,
         resourceType: RESOURCE_KIND.NOTE,
         driveLocation: { scope, parentNodeId: currentNodeId },

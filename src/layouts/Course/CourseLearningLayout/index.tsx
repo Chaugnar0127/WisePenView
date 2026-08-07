@@ -10,8 +10,8 @@ import {
   SystemResizablePanel,
   SystemResizablePanelGroup,
 } from '@/layouts/_common/SystemResizable';
-import WorkspaceHeader from '@/layouts/Workspace/_common/WorkspaceHeader';
-import type { ResourceHostLayoutConfig } from '@/views/workspace/ResourceHostContext';
+import ResourceShellHeader from '@/layouts/Resource/ResourceShellHeader';
+import type { ResourceHostLayoutConfig } from '@/views/resource/ResourceHostContext';
 import clsx from 'clsx';
 import { PanelRightClose, PanelRightOpen, Video } from 'lucide-react';
 import { useState } from 'react';
@@ -61,7 +61,7 @@ function CourseLearningLayout() {
   };
 
   const workspaceHeader = registeredResourceHeader?.resource ? (
-    <WorkspaceHeader
+    <ResourceShellHeader
       {...registeredResourceHeader}
       resource={{
         ...registeredResourceHeader.resource,
@@ -71,7 +71,7 @@ function CourseLearningLayout() {
       }}
     />
   ) : (
-    <WorkspaceHeader
+    <ResourceShellHeader
       inlineTitle={
         <span className={styles.workspaceTitle}>
           {selectedNode ? <CourseResourceIcon node={selectedNode} size={18} /> : null}

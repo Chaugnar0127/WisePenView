@@ -1,5 +1,5 @@
 import type { FavoriteItem } from '@/domains/Interact';
-import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
+import { useOpenResource } from '@/hooks/useOpenResource';
 import { useState } from 'react';
 import { useFavoriteResources } from './useFavoriteResources';
 
@@ -12,14 +12,14 @@ export function useFavoriteResourceTableController({
   collectionId,
   onCollectionChanged,
 }: UseFavoriteResourceTableControllerOptions) {
-  const openInWorkspace = useOpenInWorkspace();
+  const navigateResource = useOpenResource();
   const { list, total, loading, loadingMore, hasMore, loadMore, refresh } =
     useFavoriteResources(collectionId);
   const [unfavoriteItem, setUnfavoriteItem] = useState<FavoriteItem>();
   const [manageFavoriteItem, setManageFavoriteItem] = useState<FavoriteItem>();
-  const openResource = (item: FavoriteItem) => {
+  const openFavoriteResource = (item: FavoriteItem) => {
     if (!item.resourceInfo) return;
-    openInWorkspace({
+    navigateResource({
       resourceId: item.resourceId,
       resourceType: item.resourceInfo.resourceType,
       resourceName: item.resourceInfo.resourceName,
@@ -28,7 +28,7 @@ export function useFavoriteResourceTableController({
 
   const handleRowAction = (item: FavoriteItem, key: string) => {
     if (key === 'open') {
-      openResource(item);
+      openFavoriteResource(item);
       return;
     }
     if (key === 'manage') {
@@ -54,7 +54,7 @@ export function useFavoriteResourceTableController({
     loadMore,
     unfavoriteItem,
     manageFavoriteItem,
-    onOpenResource: openResource,
+    onOpenResource: openFavoriteResource,
     onRowAction: handleRowAction,
     onCloseUnfavorite: () => setUnfavoriteItem(undefined),
     onUnfavoriteSuccess: () => {

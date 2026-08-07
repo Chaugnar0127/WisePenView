@@ -12,7 +12,7 @@ import { DriveCreateModal, type DriveCreateType } from '@/components/Drive/Modal
 import { Spin } from '@/components/Feedback';
 import { useDriveService, useNoteService } from '@/domains';
 import type { RootNode } from '@/domains/Drive';
-import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
+import { useOpenResource } from '@/hooks/useOpenResource';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
@@ -86,7 +86,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
   const navigate = useNavigate();
   const driveService = useDriveService();
   const noteService = useNoteService();
-  const openInWorkspace = useOpenInWorkspace();
+  const openResource = useOpenResource();
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
   const [query, setQuery] = useState('');
   const [preparingType, setPreparingType] = useState<CreateResourceType>();
@@ -170,7 +170,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
           setCreateModalTarget({ type: result.type, root: result.root });
           return;
         }
-        openInWorkspace({
+        openResource({
           resourceId: result.resourceId,
           resourceType: RESOURCE_KIND.NOTE,
           resourceName: result.title,
@@ -374,7 +374,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
           onSuccess={(createdId, type) => {
             const root = createModalTarget.root;
             setCreateModalTarget(null);
-            openInWorkspace({
+            openResource({
               resourceId: createdId,
               resourceType: type,
               driveLocation: { scope: root.scope, parentNodeId: root.id },

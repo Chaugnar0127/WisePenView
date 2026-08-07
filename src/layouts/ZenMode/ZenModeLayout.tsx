@@ -30,8 +30,8 @@ import {
   type OpenResourceTarget,
   type ResourceHostContextValue,
   type ResourceHostLayoutConfig,
-} from '@/views/workspace/ResourceHostContext';
-import ResourceRenderer from '@/views/workspace/ResourceRenderer';
+} from '@/views/resource/ResourceHostContext';
+import ResourceRenderer from '@/views/resource/ResourceRenderer';
 import { Button } from '@heroui/react';
 import clsx from 'clsx';
 import { FolderOpen, PanelsTopLeft, X } from 'lucide-react';

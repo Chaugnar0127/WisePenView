@@ -16,7 +16,6 @@ import {
 } from '../_components/Account';
 import type { ProfileFieldKey } from '../profile.config';
 import { getProfileFieldConfig } from '../profile.config';
-import layout from '../style.module.less';
 import styles from './style.module.less';
 
 function toDisplayValue(raw: string | null | undefined, emptyLabel: string, pending?: boolean) {
@@ -62,7 +61,7 @@ function Account() {
   ];
 
   return (
-    <div className={layout.pageContainer}>
+    <>
       <PageHeader title={t('account.title')} subtitle={t('account.subtitle')} />
       <AccountVerification user={user} onUserInfoReload={reloadUserInfo} />
       <Spin spinning={loading}>
@@ -89,7 +88,7 @@ function Account() {
           ) : null}
         </div>
       </Spin>
-    </div>
+    </>
   );
 }
 

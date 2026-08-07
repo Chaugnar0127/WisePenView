@@ -4,7 +4,6 @@ import type { DataNode } from '@/components/Tree';
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { useSidebarDriveExpansionStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveExpansionStore';
-import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -32,12 +31,6 @@ interface UseSidebarDriveTreeControllerOptions {
   onOpenResource: (node: Extract<DriveNode, { type: 'resource' | 'link' }>) => void;
 }
 
-function isSameDriveScope(left: DriveNodeScope, right: DriveNodeScope): boolean {
-  if (left.rootId !== right.rootId || left.type !== right.type) return false;
-  if (left.type === 'group' && right.type === 'group') return left.groupId === right.groupId;
-  return true;
-}
-
 export function useSidebarDriveTreeController({
   scope,
   rootDisplayName,
@@ -45,7 +38,6 @@ export function useSidebarDriveTreeController({
   onOpenResource,
 }: UseSidebarDriveTreeControllerOptions) {
   const driveService = useDriveService();
-  const navigationLocation = useWorkspaceNavigationStore((state) => state.location);
   const expansionScopeKey = scope.rootId;
   const groupId = getDriveScopeGroupId(scope);
   const [nodeMap, setNodeMap] = useState<Map<string, DriveNode>>(new Map());
@@ -158,31 +150,6 @@ export function useSidebarDriveTreeController({
       void handleLoadData(info.node);
     }
   };
-  const currentResourceLocation = isSameDriveScope(navigationLocation.scope, scope)
-    ? navigationLocation.resource
-    : undefined;
-  const currentResourceNodeId = (() => {
-    if (!currentResourceLocation) return undefined;
-    if (currentResourceLocation.nodeId && nodeMap.has(currentResourceLocation.nodeId)) {
-      return currentResourceLocation.nodeId;
-    }
-    for (const node of nodeMap.values()) {
-      if (
-        isSidebarResourceNode(node) &&
-        node.resourceId === currentResourceLocation.resourceId &&
-        node.parentId === currentResourceLocation.parentNodeId
-      ) {
-        return node.id;
-      }
-    }
-    return undefined;
-  })();
-  const displaySelectedKeys =
-    currentResourceLocation && !currentResourceNodeId
-      ? []
-      : currentResourceNodeId
-        ? [currentResourceNodeId]
-        : selectedKeys;
   return {
     expandedKeys,
     handleCollapseAll,
@@ -191,7 +158,7 @@ export function useSidebarDriveTreeController({
     handleSelect,
     nodeMap,
     refreshTree,
-    selectedKeys: displaySelectedKeys,
+    selectedKeys,
     treeData,
     treeLoading,
   };

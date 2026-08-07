@@ -92,6 +92,34 @@
   padding: 0;
 }
 
+.middleContentContained {
+  overflow: hidden;
+}
+
+.middleContentResource {
+  overflow: hidden;
+}
+
+.appPageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  max-width: var(--app-page-max-width);
+  margin: 0 auto;
+  padding: var(--app-page-padding-block-start) var(--app-page-padding-inline)
+    var(--app-page-padding-block-end);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.appPageContainerDrive {
+  min-width: var(--layout-drive-page-min-width, 956px);
+  overflow: hidden;
+}
+
 .resizeHandle {
   z-index: 20;
 }

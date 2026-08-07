@@ -5,7 +5,6 @@ import { SkillApi } from '@/domains/Skill/apis/SkillApi';
 import type { TagTreeNode } from '@/domains/Tag';
 import { TagApi } from '@/domains/Tag/apis/TagApi';
 import { TagServicesMap } from '@/domains/Tag/mapper/TagServices.map';
-import type { IUserService, UserSearchUser } from '@/domains/User';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { type ResourceAction } from '../enum';
 import { ResourceServicesMap } from '../mapper/ResourceServices.map';
@@ -14,12 +13,10 @@ import type {
   ResourcePermissionGroupInfo,
   ResourcePermissionHydration,
   ResourcePermissionOverview,
-  ResourcePermissionUserInfo,
 } from './index.type';
 
 export interface ResourcePermissionOverviewDeps {
   groupService: IGroupService;
-  userService: IUserService;
 }
 
 const getPermissionResourceInfo = async (params: GetResourcePermissionOverviewRequest) => {
@@ -42,72 +39,6 @@ const getPermissionResourceInfo = async (params: GetResourcePermissionOverviewRe
     case 'agent':
       throw createClientError(FRONTEND_CLIENT_ERROR.RESOURCE_AGENT_PERMISSION_UNSUPPORTED);
   }
-};
-
-const mapPermissionUserInfo = (user: UserSearchUser): ResourcePermissionUserInfo => ({
-  userId: user.userId,
-  username: user.username,
-  nickname: user.nickname,
-  realName: user.realName,
-  avatar: user.avatar,
-});
-
-const loadPermissionUserInfo = async (
-  overview: ResourcePermissionOverview,
-  userService: IUserService
-): Promise<ReadonlyMap<string, ResourcePermissionUserInfo>> => {
-  const userSubjects = overview.subjects.filter(
-    (subject) => subject.userId && subject.kind !== 'group'
-  );
-  if (userSubjects.length === 0) return new Map();
-
-  const userInfoById = new Map<string, ResourcePermissionUserInfo>();
-  const ownerIds = new Set(
-    userSubjects
-      .filter((subject) => subject.source === 'owner')
-      .map((subject) => subject.userId)
-      .filter((userId): userId is string => Boolean(userId))
-  );
-
-  if (ownerIds.size > 0) {
-    const currentUser = await userService.getUserInfo().catch(() => undefined);
-    if (currentUser && ownerIds.has(currentUser.id)) {
-      userInfoById.set(currentUser.id, {
-        userId: currentUser.id,
-        username: currentUser.username,
-        nickname: currentUser.nickname,
-        realName: currentUser.realName,
-        avatar: currentUser.avatar,
-      });
-    }
-  }
-
-  const subjectByUserId = new Map<string, (typeof userSubjects)[number]>();
-  userSubjects.forEach((subject) => {
-    if (subject.userId && subject.source !== 'owner' && !subjectByUserId.has(subject.userId)) {
-      subjectByUserId.set(subject.userId, subject);
-    }
-  });
-
-  await Promise.all(
-    Array.from(subjectByUserId.entries()).map(async ([userId, subject]) => {
-      const keywords = Array.from(
-        new Set([userId, subject.name].map((keyword) => keyword.trim()).filter(Boolean))
-      );
-      for (const keyword of keywords) {
-        const candidates = await userService
-          .queryUserSearchCandidates({ keyword, size: 6 })
-          .catch(() => []);
-        const matchedUser = candidates.find((user) => user.userId === userId);
-        if (matchedUser) {
-          userInfoById.set(userId, mapPermissionUserInfo(matchedUser));
-          return;
-        }
-      }
-    })
-  );
-
-  return userInfoById;
 };
 
 const loadPermissionGroupInfo = async (
@@ -189,11 +120,11 @@ const enrichResourcePermissionOverview = async (
   overview: ResourcePermissionOverview,
   deps: ResourcePermissionOverviewDeps
 ): Promise<ResourcePermissionOverview> => {
-  const [userInfoById, groupInfoById, inheritedActionsBySubjectId] = await Promise.all([
-    loadPermissionUserInfo(overview, deps.userService),
+  const [groupInfoById, inheritedActionsBySubjectId] = await Promise.all([
     loadPermissionGroupInfo(overview, deps.groupService),
     loadPermissionInheritedActions(overview),
   ]);
+  const userInfoById: ResourcePermissionHydration['userInfoById'] = new Map();
   const hydration: ResourcePermissionHydration = {
     userInfoById,
     groupInfoById,

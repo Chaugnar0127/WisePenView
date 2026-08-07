@@ -50,7 +50,6 @@ const walletService = createWalletServices();
 // Level 1：依赖 Level 0
 const resourceService = createResourceServices({
   groupService: groupService,
-  userService: userService,
 });
 const agentService = createAgentServices({ userService: userService });
 

@@ -5,6 +5,12 @@ import { getSlashMenuItemKey } from './buildSlashMenuItems';
 const SLASH_MENU_GROUP_ORDER = ['basic', 'common', 'advanced', 'ai', 'other'] as const;
 type SlashMenuGroup = (typeof SLASH_MENU_GROUP_ORDER)[number];
 
+interface SlashMenuItemMeta {
+  group: SlashMenuGroup;
+  order: number;
+  titleKey: string;
+}
+
 const SLASH_MENU_GROUP_LABEL_MAP: Record<string, SlashMenuGroup> = {
   标题: 'basic',
   基础: 'basic',
@@ -25,82 +31,41 @@ const SLASH_MENU_GROUP_LABEL_MAP: Record<string, SlashMenuGroup> = {
   其他: 'other',
 };
 
-const SLASH_MENU_GROUP_BY_KEY: Record<string, SlashMenuGroup> = {
-  paragraph: 'basic',
-  heading: 'basic',
-  heading_2: 'basic',
-  heading_3: 'basic',
-  heading_4: 'basic',
-  heading_5: 'basic',
-  heading_6: 'basic',
-  numbered_list: 'basic',
-  bullet_list: 'basic',
-  check_list: 'common',
-  code_block: 'basic',
-  quote: 'basic',
-  divider: 'basic',
-  link: 'basic',
-  image: 'common',
-  table: 'common',
-  toggle_list: 'common',
-  toggle_heading: 'common',
-  toggle_heading_2: 'common',
-  toggle_heading_3: 'common',
-  emoji: 'common',
-};
+const SLASH_MENU_ITEM_META = {
+  paragraph: { group: 'basic', order: 0, titleKey: 'slashMenu.item.paragraph' },
+  heading: { group: 'basic', order: 1, titleKey: 'slashMenu.item.heading1' },
+  heading_2: { group: 'basic', order: 2, titleKey: 'slashMenu.item.heading2' },
+  heading_3: { group: 'basic', order: 3, titleKey: 'slashMenu.item.heading3' },
+  heading_4: { group: 'basic', order: 4, titleKey: 'slashMenu.item.heading4' },
+  heading_5: { group: 'basic', order: 5, titleKey: 'slashMenu.item.heading5' },
+  heading_6: { group: 'basic', order: 6, titleKey: 'slashMenu.item.heading6' },
+  numbered_list: { group: 'basic', order: 7, titleKey: 'slashMenu.item.numberedList' },
+  bullet_list: { group: 'basic', order: 8, titleKey: 'slashMenu.item.bulletList' },
+  code_block: { group: 'basic', order: 9, titleKey: 'slashMenu.item.codeBlock' },
+  quote: { group: 'basic', order: 10, titleKey: 'slashMenu.item.quote' },
+  divider: { group: 'basic', order: 11, titleKey: 'slashMenu.item.divider' },
+  link: { group: 'basic', order: 12, titleKey: 'slashMenu.item.link' },
+  check_list: { group: 'common', order: 13, titleKey: 'slashMenu.item.checkList' },
+  image: { group: 'common', order: 14, titleKey: 'slashMenu.item.image' },
+  table: { group: 'common', order: 15, titleKey: 'slashMenu.item.table' },
+  toggle_list: { group: 'common', order: 16, titleKey: 'slashMenu.item.toggleList' },
+  toggle_heading: { group: 'common', order: 17, titleKey: 'slashMenu.item.toggleHeading1' },
+  toggle_heading_2: { group: 'common', order: 18, titleKey: 'slashMenu.item.toggleHeading2' },
+  toggle_heading_3: { group: 'common', order: 19, titleKey: 'slashMenu.item.toggleHeading3' },
+  emoji: { group: 'common', order: 20, titleKey: 'slashMenu.item.emoji' },
+} as const satisfies Record<string, SlashMenuItemMeta>;
 
-const SLASH_MENU_TITLE_BY_KEY: Record<string, string> = {
-  paragraph: 'slashMenu.item.paragraph',
-  heading: 'slashMenu.item.heading1',
-  heading_2: 'slashMenu.item.heading2',
-  heading_3: 'slashMenu.item.heading3',
-  heading_4: 'slashMenu.item.heading4',
-  heading_5: 'slashMenu.item.heading5',
-  heading_6: 'slashMenu.item.heading6',
-  numbered_list: 'slashMenu.item.numberedList',
-  bullet_list: 'slashMenu.item.bulletList',
-  check_list: 'slashMenu.item.checkList',
-  code_block: 'slashMenu.item.codeBlock',
-  quote: 'slashMenu.item.quote',
-  divider: 'slashMenu.item.divider',
-  link: 'slashMenu.item.link',
-  image: 'slashMenu.item.image',
-  table: 'slashMenu.item.table',
-  toggle_list: 'slashMenu.item.toggleList',
-  toggle_heading: 'slashMenu.item.toggleHeading1',
-  toggle_heading_2: 'slashMenu.item.toggleHeading2',
-  toggle_heading_3: 'slashMenu.item.toggleHeading3',
-  emoji: 'slashMenu.item.emoji',
-};
+type SlashMenuItemKey = keyof typeof SLASH_MENU_ITEM_META;
 
-const SLASH_MENU_ITEM_ORDER = [
-  'paragraph',
-  'heading',
-  'heading_2',
-  'heading_3',
-  'heading_4',
-  'heading_5',
-  'heading_6',
-  'numbered_list',
-  'bullet_list',
-  'check_list',
-  'code_block',
-  'quote',
-  'divider',
-  'link',
-  'image',
-  'table',
-  'toggle_list',
-  'toggle_heading',
-  'toggle_heading_2',
-  'toggle_heading_3',
-  'emoji',
-] as const;
+function getSlashMenuItemMeta(key: string | undefined): SlashMenuItemMeta | undefined {
+  if (!key || !(key in SLASH_MENU_ITEM_META)) return undefined;
+  return SLASH_MENU_ITEM_META[key as SlashMenuItemKey];
+}
 
 export function resolveSlashMenuGroup(item: DefaultReactSuggestionItem): string {
-  const key = getSlashMenuItemKey(item);
-  if (key && SLASH_MENU_GROUP_BY_KEY[key]) {
-    return SLASH_MENU_GROUP_BY_KEY[key];
+  const meta = getSlashMenuItemMeta(getSlashMenuItemKey(item));
+  if (meta) {
+    return meta.group;
   }
   const rawGroup = typeof item.group === 'string' ? item.group : '';
   return SLASH_MENU_GROUP_LABEL_MAP[rawGroup] ?? (rawGroup || 'other');
@@ -113,27 +78,33 @@ export function resolveSlashMenuGroupLabel(group: string): string {
 }
 
 export function resolveSlashMenuTitle(item: DefaultReactSuggestionItem) {
-  const key = getSlashMenuItemKey(item);
-  const titleKey = key ? SLASH_MENU_TITLE_BY_KEY[key] : undefined;
-  return titleKey ? i18n.t(titleKey, { ns: 'note' }) : item.title;
+  const meta = getSlashMenuItemMeta(getSlashMenuItemKey(item));
+  return meta ? i18n.t(meta.titleKey, { ns: 'note' }) : item.title;
 }
 
 function compareSlashMenuItems(a: DefaultReactSuggestionItem, b: DefaultReactSuggestionItem) {
-  const aKey = getSlashMenuItemKey(a);
-  const bKey = getSlashMenuItemKey(b);
-  const aIndex = aKey
-    ? SLASH_MENU_ITEM_ORDER.indexOf(aKey as (typeof SLASH_MENU_ITEM_ORDER)[number])
-    : -1;
-  const bIndex = bKey
-    ? SLASH_MENU_ITEM_ORDER.indexOf(bKey as (typeof SLASH_MENU_ITEM_ORDER)[number])
-    : -1;
-  if (aIndex !== -1 || bIndex !== -1) {
-    return (
-      (aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex) -
-      (bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex)
-    );
+  const aGroup = resolveSlashMenuGroup(a);
+  const bGroup = resolveSlashMenuGroup(b);
+  const aGroupIndex = getSlashMenuGroupOrderIndex(aGroup);
+  const bGroupIndex = getSlashMenuGroupOrderIndex(bGroup);
+  if (aGroupIndex !== bGroupIndex) {
+    return aGroupIndex - bGroupIndex;
+  }
+  if (aGroupIndex === Number.MAX_SAFE_INTEGER && aGroup !== bGroup) {
+    return aGroup.localeCompare(bGroup, i18n.language);
+  }
+
+  const aOrder = getSlashMenuItemMeta(getSlashMenuItemKey(a))?.order ?? Number.MAX_SAFE_INTEGER;
+  const bOrder = getSlashMenuItemMeta(getSlashMenuItemKey(b))?.order ?? Number.MAX_SAFE_INTEGER;
+  if (aOrder !== Number.MAX_SAFE_INTEGER || bOrder !== Number.MAX_SAFE_INTEGER) {
+    return aOrder - bOrder;
   }
   return resolveSlashMenuTitle(a).localeCompare(resolveSlashMenuTitle(b), i18n.language);
+}
+
+function getSlashMenuGroupOrderIndex(group: string) {
+  const index = SLASH_MENU_GROUP_ORDER.indexOf(group as SlashMenuGroup);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
 export function sortSuggestionItemsForDisplay(items: DefaultReactSuggestionItem[]) {
@@ -153,19 +124,8 @@ export function groupSortedSuggestionItems(items: DefaultReactSuggestionItem[]) 
     }
   }
 
-  const sortedGroups = [...groupMap.entries()].sort(([a], [b]) => {
-    const aIndex = SLASH_MENU_GROUP_ORDER.indexOf(a as (typeof SLASH_MENU_GROUP_ORDER)[number]);
-    const bIndex = SLASH_MENU_GROUP_ORDER.indexOf(b as (typeof SLASH_MENU_GROUP_ORDER)[number]);
-    if (aIndex === -1 && bIndex === -1) {
-      return a.localeCompare(b, i18n.language);
-    }
-    if (aIndex === -1) return 1;
-    if (bIndex === -1) return -1;
-    return aIndex - bIndex;
-  });
-
   let currentOffset = 0;
-  return sortedGroups.map(([group, groupItems]) => {
+  return [...groupMap.entries()].map(([group, groupItems]) => {
     const groupWithOffset = [group, groupItems, currentOffset] as const;
     currentOffset += groupItems.length;
     return groupWithOffset;

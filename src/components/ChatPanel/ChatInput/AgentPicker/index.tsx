@@ -7,7 +7,7 @@ import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from
 import type { Group } from '@/domains/Group';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, ListBox, ListBoxItem, Skeleton, toast } from '@heroui/react';
-import { useLatest, useRequest } from 'ahooks';
+import { useInfiniteScroll, useLatest } from 'ahooks';
 import { Bot, Check, Folder } from 'lucide-react';
 import type { Key } from 'react';
 import { useEffect, useState } from 'react';
@@ -32,6 +32,10 @@ interface AgentGroupState {
   items: ChatAgentOption[];
   page: number;
   totalPage: number;
+}
+
+interface AgentPageState extends PageResult<ChatAgentOption> {
+  list: ChatAgentOption[];
 }
 
 function mergeAgentOptions(
@@ -74,54 +78,58 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   const selectedAgent = useChatInputStore((state) => state.selectedAgent);
   const { setSelectedAgent } = store.getState();
   const [open, setOpen] = useState(false);
-  const [personalAgents, setPersonalAgents] = useState<ChatAgentOption[]>([]);
-  const [personalPage, setPersonalPage] = useState<PageResult<ChatAgentOption> | null>(null);
-  const [loadingMorePersonal, setLoadingMorePersonal] = useState(false);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [groupPage, setGroupPage] = useState<PageResult<Group> | null>(null);
-  const [loadingMoreGroups, setLoadingMoreGroups] = useState(false);
   const [groupStateMap, setGroupStateMap] = useState<Record<string, AgentGroupState>>({});
-  const { loading } = useRequest(
-    () =>
+  const {
+    data: personalPage,
+    loading: loadingPersonal,
+    loadingMore: loadingMorePersonal,
+    noMore: noMorePersonal,
+    loadMore: loadMorePersonal,
+  } = useInfiniteScroll<AgentPageState>(
+    async (current) =>
       chatService.listChatInputAgents({
         scope: 'PERSONAL',
-        page: 1,
+        page: Math.floor((current?.list.length ?? 0) / AGENT_PAGE_SIZE) + 1,
         size: AGENT_PAGE_SIZE,
       }),
     {
-      ready: open,
-      refreshDeps: [open],
-      onSuccess: (page) => {
-        setPersonalAgents(page.list);
-        setPersonalPage(page);
-      },
+      manual: !open,
+      reloadDeps: [open],
+      isNoMore: (page) => Boolean(page && (page.total === 0 || page.list.length >= page.total)),
       onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
-  const { loading: loadingGroups } = useRequest(
-    () => chatService.listChatInputGroups({ page: 1, size: GROUP_PAGE_SIZE }),
+  const {
+    data: groupPage,
+    loading: loadingGroups,
+    loadingMore: loadingMoreGroups,
+    noMore: noMoreGroups,
+    loadMore: loadMoreGroups,
+  } = useInfiniteScroll<PageResult<Group>>(
+    async (current) =>
+      chatService.listChatInputGroups({
+        page: Math.floor((current?.list.length ?? 0) / GROUP_PAGE_SIZE) + 1,
+        size: GROUP_PAGE_SIZE,
+      }),
     {
-      ready: open,
-      refreshDeps: [open],
-      onBefore: () => {
-        setGroups([]);
-        setGroupPage(null);
+      manual: !open,
+      reloadDeps: [open],
+      isNoMore: (page) => Boolean(page && (page.total === 0 || page.list.length >= page.total)),
+      onSuccess: () => {
         setGroupStateMap({});
       },
-      onSuccess: (page) => {
-        setGroups(page.list);
-        setGroupPage(page);
-      },
       onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
-  const showSkeleton = personalPage == null && loading;
+  const showSkeleton = personalPage == null && loadingPersonal;
+  const personalAgents = personalPage?.list ?? [];
+  const groups = groupPage?.list ?? [];
   const displayAgents = mergeAgentOptions(
     [buildDefaultPersonalAgent(), selectedAgent, ...personalAgents],
     injectedAgents
   );
-  const hasMorePersonalAgents = personalPage != null && personalPage.page < personalPage.totalPage;
-  const hasMoreGroups = groupPage != null && groupPage.page < groupPage.totalPage;
+  const hasMorePersonalAgents = Boolean(personalPage) && !noMorePersonal;
+  const hasMoreGroups = Boolean(groupPage) && !noMoreGroups;
   const injectedAgentKey = JSON.stringify(injectedAgents ?? []);
   const preferredAgentKey = JSON.stringify(preferredAgent ?? null);
   const injectedAgentsLatest = useLatest(injectedAgents);
@@ -239,41 +247,6 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
     setOpen(false);
   };
 
-  const handleLoadMorePersonal = async () => {
-    if (!personalPage || loadingMorePersonal) return;
-    setLoadingMorePersonal(true);
-    try {
-      const page = await chatService.listChatInputAgents({
-        scope: 'PERSONAL',
-        page: personalPage.page + 1,
-        size: personalPage.size,
-      });
-      setPersonalAgents((prev) => [...prev, ...page.list]);
-      setPersonalPage(page);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-    } finally {
-      setLoadingMorePersonal(false);
-    }
-  };
-
-  const handleLoadMoreGroups = async () => {
-    if (!groupPage || loadingMoreGroups) return;
-    setLoadingMoreGroups(true);
-    try {
-      const page = await chatService.listChatInputGroups({
-        page: groupPage.page + 1,
-        size: groupPage.size,
-      });
-      setGroups((prev) => [...prev, ...page.list]);
-      setGroupPage(page);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-    } finally {
-      setLoadingMoreGroups(false);
-    }
-  };
-
   const handleGroupTreeLoadData = async (node: TreeDataNode) => {
     const key = String(node.key);
     if (!key.startsWith(GROUP_NODE_PREFIX)) return;
@@ -370,7 +343,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
                     variant="ghost"
                     className={styles.popoverLoadMore}
                     isDisabled={loadingMorePersonal}
-                    onPress={handleLoadMorePersonal}
+                    onPress={loadMorePersonal}
                   >
                     {t('session.loadMore')}
                   </Button>
@@ -392,7 +365,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
                         variant="ghost"
                         className={styles.popoverLoadMore}
                         isDisabled={loadingMoreGroups}
-                        onPress={handleLoadMoreGroups}
+                        onPress={loadMoreGroups}
                       >
                         {t('session.loadMore')}
                       </Button>

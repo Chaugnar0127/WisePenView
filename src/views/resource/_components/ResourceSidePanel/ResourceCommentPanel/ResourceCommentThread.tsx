@@ -2,9 +2,9 @@ import { useInteractService } from '@/domains';
 import type { ResourceComment } from '@/domains/Interact';
 import { parseErrorMessage } from '@/utils/error';
 import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useInfiniteScroll } from 'ahooks';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CommentComposer from './CommentComposer';
 import ResourceCommentItem from './ResourceCommentItem';
@@ -12,6 +12,12 @@ import styles from './style.module.less';
 import { updateCommentLikeCount } from './utils';
 
 const REPLY_PAGE_SIZE = 10;
+
+interface ReplyListPage {
+  list: ResourceComment[];
+  total: number;
+  totalPage: number;
+}
 
 interface ResourceCommentThreadProps {
   resourceId: string;
@@ -41,28 +47,47 @@ function ResourceCommentThread({
   const { t } = useTranslation('resource');
   const interactService = useInteractService();
   const [expanded, setExpanded] = useState(false);
-  const [replies, setReplies] = useState<ResourceComment[]>([]);
-  const [replyPage, setReplyPage] = useState(1);
   const [replyTarget, setReplyTarget] = useState<ResourceComment>();
 
   const {
     data: replyPageData,
     error: repliesError,
     loading: repliesLoading,
-    runAsync: loadReplies,
-  } = useRequest(
-    async (page: number, append: boolean) => {
+    loadingMore: repliesLoadingMore,
+    noMore: repliesNoMore,
+    loadMore: loadMoreReplies,
+    reload: reloadReplies,
+    reloadAsync: reloadRepliesAsync,
+    mutate: mutateReplies,
+  } = useInfiniteScroll<ReplyListPage>(
+    async (current) => {
+      const nextPage = Math.floor((current?.list.length ?? 0) / REPLY_PAGE_SIZE) + 1;
       const data = await interactService.listReplies({
         rootCommentId: rootComment.commentId,
-        page,
+        page: nextPage,
         size: REPLY_PAGE_SIZE,
       });
-      setReplies((current) => (append ? [...current, ...data.items] : data.items));
-      setReplyPage(page);
-      return data;
+      return {
+        list: data.items,
+        total: data.total,
+        totalPage: data.totalPage,
+      };
     },
-    { manual: true }
+    {
+      manual: true,
+      isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
+    }
   );
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：根评论变化时清空回复缓存，避免复用组件时显示旧线程回复。
+   * 不可替代原因：useInfiniteScroll 不会根据业务主键自动丢弃已累积列表。
+   * cleanup：没有持续订阅或延迟任务，无需清理。
+   */
+  useEffect(() => {
+    mutateReplies(undefined);
+  }, [rootComment.commentId, mutateReplies]);
 
   const handleToggleReplies = () => {
     if (expanded) {
@@ -70,14 +95,21 @@ function ResourceCommentThread({
       return;
     }
     setExpanded(true);
-    if (replies.length === 0) void loadReplies(1, false);
+    if (!replyPageData?.list.length) reloadReplies();
   };
 
   const handleReplyLike = async (reply: ResourceComment) => {
     const wasLiked = likedCommentIds.has(reply.commentId);
     const liked = await onLike(reply);
     if (liked !== wasLiked) {
-      setReplies((current) => updateCommentLikeCount(current, reply.commentId, liked));
+      mutateReplies((current) =>
+        current
+          ? {
+              ...current,
+              list: updateCommentLikeCount(current.list, reply.commentId, liked),
+            }
+          : current
+      );
     }
     return liked;
   };
@@ -92,7 +124,7 @@ function ResourceCommentThread({
     });
     setReplyTarget(undefined);
     setExpanded(true);
-    await loadReplies(1, false);
+    await reloadRepliesAsync();
     await onCommentsChanged();
   };
 
@@ -126,10 +158,10 @@ function ResourceCommentThread({
 
       {expanded ? (
         <div className={styles.replyList}>
-          {repliesLoading && replies.length === 0 ? (
+          {repliesLoading && !replyPageData?.list.length ? (
             <p className={styles.mutedText}>{t('comment.loadingReplies')}</p>
           ) : null}
-          {replies.map((reply) => (
+          {(replyPageData?.list ?? []).map((reply) => (
             <ResourceCommentItem
               key={reply.commentId}
               comment={reply}
@@ -141,7 +173,7 @@ function ResourceCommentThread({
               onLike={handleReplyLike}
               onDelete={(comment) =>
                 onDelete(comment, async () => {
-                  await loadReplies(1, false);
+                  await reloadRepliesAsync();
                 })
               }
               onPreviewImage={onPreviewImage}
@@ -150,15 +182,15 @@ function ResourceCommentThread({
           {repliesError ? (
             <p className={styles.errorText}>{parseErrorMessage(repliesError)}</p>
           ) : null}
-          {replyPageData && replyPage < replyPageData.totalPage ? (
+          {replyPageData && !repliesNoMore ? (
             <Button
               variant="ghost"
               size="sm"
               className={styles.loadMoreButton}
-              isDisabled={repliesLoading}
-              onPress={() => void loadReplies(replyPage + 1, true)}
+              isDisabled={repliesLoadingMore}
+              onPress={loadMoreReplies}
             >
-              {repliesLoading ? t('comment.loadingShort') : t('comment.moreReplies')}
+              {repliesLoadingMore ? t('comment.loadingShort') : t('comment.moreReplies')}
             </Button>
           ) : null}
         </div>

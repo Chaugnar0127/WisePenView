@@ -5,8 +5,8 @@ import type { CommentSortBy, ResourceComment } from '@/domains/Interact';
 import type { ResourceItem } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, Tabs, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
-import { useState, type Key } from 'react';
+import { useInfiniteScroll, useRequest } from 'ahooks';
+import { useEffect, useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import ResourceFavoriteAction from '../../ResourceFavoriteAction';
 import CommentComposer from './CommentComposer';
@@ -17,6 +17,12 @@ import { updateCommentLikeCount } from './utils';
 
 const COMMENT_PAGE_SIZE = 10;
 const EMPTY_LIKED_COMMENT_IDS = new Set<string>();
+
+interface CommentListPage {
+  list: ResourceComment[];
+  total: number;
+  totalPage: number;
+}
 
 interface ResourceCommentPanelProps {
   resource: ResourceItem;
@@ -44,8 +50,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   const [optimisticLike, setOptimisticLike] = useState<OptimisticLikeState>();
   const [commentLikeIds, setCommentLikeIds] = useState<ReadonlySet<string>>();
   const [pendingLikeIds, setPendingLikeIds] = useState<ReadonlySet<string>>(new Set());
-  const [comments, setComments] = useState<ResourceComment[]>([]);
-  const [commentPage, setCommentPage] = useState(1);
   const [sortBy, setSortBy] = useState<CommentSortBy>('CREATE_TIME');
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion>();
   const [previewImageUrl, setPreviewImageUrl] = useState<string>();
@@ -85,27 +89,45 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     data: commentPageData,
     error: commentsError,
     loading: commentsLoading,
-    runAsync: loadComments,
-  } = useRequest(
-    async (page: number, append: boolean, nextSortBy: CommentSortBy) => {
+    loadingMore: commentsLoadingMore,
+    noMore: commentsNoMore,
+    loadMore: loadMoreComments,
+    reloadAsync: reloadComments,
+    mutate: mutateComments,
+  } = useInfiniteScroll<CommentListPage>(
+    async (current) => {
+      const nextPage = Math.floor((current?.list.length ?? 0) / COMMENT_PAGE_SIZE) + 1;
       const data = await interactService.listComments({
         resourceId,
-        sortBy: nextSortBy,
-        page,
+        sortBy,
+        page: nextPage,
         size: COMMENT_PAGE_SIZE,
       });
-      setComments((current) => (append ? [...current, ...data.items] : data.items));
-      setCommentPage(page);
-      return data;
+      return {
+        list: data.items,
+        total: data.total,
+        totalPage: data.totalPage,
+      };
     },
     {
-      defaultParams: [1, false, 'CREATE_TIME'],
-      refreshDeps: [resourceId],
+      reloadDeps: [resourceId, sortBy],
+      isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
+      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：资源或排序切换时先清空评论缓存，避免短暂显示旧资源的评论。
+   * 不可替代原因：useInfiniteScroll 的 reloadDeps 只负责重新拉取，不会自动清理已累积列表。
+   * cleanup：没有订阅或延迟任务，无需清理。
+   */
+  useEffect(() => {
+    mutateComments(undefined);
+  }, [resourceId, sortBy, mutateComments]);
+
   const refreshComments = async () => {
-    await loadComments(1, false, sortBy);
+    await reloadComments();
     notifyResourceChanged();
   };
 
@@ -128,7 +150,14 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
         return next;
       });
       if (liked !== wasLiked) {
-        setComments((current) => updateCommentLikeCount(current, comment.commentId, liked));
+        mutateComments((current) =>
+          current
+            ? {
+                ...current,
+                list: updateCommentLikeCount(current.list, comment.commentId, liked),
+              }
+            : current
+        );
       }
       return liked;
     } catch (error) {
@@ -166,7 +195,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     optimisticLike?.resourceId === resourceId && optimisticLike.baseCount === resourceLikeCount
       ? optimisticLike
       : undefined;
-  const hasMoreComments = Boolean(commentPageData && commentPage < commentPageData.totalPage);
   const commentSortOptions: Array<{ key: CommentSortBy; label: string }> = [
     { key: 'CREATE_TIME', label: t('resource:comment.sort.latest') },
     { key: 'LIKE_COUNT', label: t('resource:comment.sort.hottest') },
@@ -185,7 +213,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
 
   const handleSortChange = (nextSortBy: CommentSortBy) => {
     setSortBy(nextSortBy);
-    void loadComments(1, false, nextSortBy);
   };
 
   const handleSortSelectionChange = (key: Key) => {
@@ -243,15 +270,15 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
           {commentsError ? (
             <p className={styles.errorText}>{parseErrorMessage(commentsError)}</p>
           ) : null}
-          {commentsLoading && comments.length === 0 ? (
+          {commentsLoading && !commentPageData?.list.length ? (
             <p className={styles.mutedText}>{t('resource:comment.loading')}</p>
           ) : null}
-          {!commentsLoading && comments.length === 0 ? (
+          {!commentsLoading && !commentPageData?.list.length ? (
             <p className={styles.emptyText}>{t('resource:comment.empty')}</p>
           ) : null}
 
           <div className={styles.commentList}>
-            {comments.map((comment) => (
+            {(commentPageData?.list ?? []).map((comment) => (
               <ResourceCommentThread
                 key={comment.commentId}
                 resourceId={resourceId}
@@ -268,15 +295,15 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
             ))}
           </div>
 
-          {hasMoreComments ? (
+          {commentPageData && !commentsNoMore ? (
             <Button
               variant="ghost"
               size="sm"
               className={styles.loadMoreButton}
-              isDisabled={commentsLoading}
-              onPress={() => void loadComments(commentPage + 1, true, sortBy)}
+              isDisabled={commentsLoadingMore}
+              onPress={loadMoreComments}
             >
-              {commentsLoading
+              {commentsLoadingMore
                 ? t('resource:comment.loadingShort')
                 : t('resource:comment.loadMore')}
             </Button>

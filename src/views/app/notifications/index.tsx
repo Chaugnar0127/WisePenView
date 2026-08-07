@@ -7,15 +7,32 @@ import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/form
 import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useInfiniteScroll, useRequest } from 'ahooks';
 import clsx from 'clsx';
 import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
 
 const MESSAGE_PAGE_SIZE = 100;
+
+interface UserMessageInfinitePage {
+  list: UserMessage[];
+  total: number;
+  page: number;
+  size: number;
+  totalPage: number;
+}
+
+interface UserMessagePagePayload extends Omit<UserMessageInfinitePage, 'list'> {
+  messages: UserMessage[];
+}
+
+const toUserMessageInfinitePage = (data: UserMessagePagePayload): UserMessageInfinitePage => {
+  const { messages, ...page } = data;
+  return { ...page, list: messages };
+};
 
 const resolveMessageTypeLabel = (
   message: UserMessage,
@@ -35,60 +52,32 @@ function NotificationsPage() {
   const { messageId: routeMessageId } = useParams<{ messageId: string }>();
   const selectedMessageId = routeMessageId ? decodeURIComponent(routeMessageId) : undefined;
   const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
-  const [loadedMessages, setLoadedMessages] = useState<UserMessage[]>([]);
-  const [lastLoadedPage, setLastLoadedPage] = useState(1);
-  const loadGenerationRef = useRef(0);
+  const messageListRef = useRef<HTMLDivElement>(null);
 
-  const messagesRequest = useRequest(
-    () => messageService.listUserMessages({ page: 1, size: MESSAGE_PAGE_SIZE }),
+  const messagesRequest = useInfiniteScroll<UserMessageInfinitePage>(
+    async (current) => {
+      const nextPage = Math.floor((current?.list.length ?? 0) / MESSAGE_PAGE_SIZE) + 1;
+      const data = await messageService.listUserMessages({
+        page: nextPage,
+        size: MESSAGE_PAGE_SIZE,
+      });
+      return toUserMessageInfinitePage(data);
+    },
     {
-      onSuccess: () => {
-        setLoadedMessages([]);
-        setLastLoadedPage(1);
-      },
+      target: messageListRef,
+      isNoMore: (data) => Boolean(data && data.page >= data.totalPage),
+      onError: (error) => toast.warning(parseErrorMessage(error)),
     }
   );
 
-  const messages = [...(messagesRequest.data?.messages ?? []), ...loadedMessages];
+  const messages = messagesRequest.data?.list ?? [];
   const selectedMessage = messages.find((message) => message.messageId === selectedMessageId);
   const isInitialLoading = messagesRequest.loading && messagesRequest.data == null;
-  const hasMoreMessages = Boolean(
-    messagesRequest.data && lastLoadedPage < messagesRequest.data.totalPage
-  );
+  const hasMoreMessages = !messagesRequest.noMore;
 
   const { runAsync: readMessage } = useRequest(
     (messageId: string) => messageService.readMessage({ messageId }),
     { manual: true }
-  );
-
-  const { loading: loadingMore, run: loadMoreMessages } = useRequest(
-    async () => {
-      const currentPageData = messagesRequest.data;
-      if (!currentPageData || lastLoadedPage >= currentPageData.totalPage) return;
-
-      const loadGeneration = loadGenerationRef.current;
-      const nextPage = lastLoadedPage + 1;
-      const nextPageData = await messageService.listUserMessages({
-        page: nextPage,
-        size: MESSAGE_PAGE_SIZE,
-      });
-      if (loadGeneration !== loadGenerationRef.current) return;
-
-      setLoadedMessages((items) => {
-        const knownIds = new Set(
-          [...currentPageData.messages, ...items].map((message) => message.messageId)
-        );
-        return [
-          ...items,
-          ...nextPageData.messages.filter((message) => !knownIds.has(message.messageId)),
-        ];
-      });
-      setLastLoadedPage(nextPageData.page || nextPage);
-    },
-    {
-      manual: true,
-      onError: (error) => toast.warning(parseErrorMessage(error)),
-    }
   );
 
   const markLoadedMessageAsRead = (messageId: string) => {
@@ -96,16 +85,11 @@ function NotificationsPage() {
       data
         ? {
             ...data,
-            messages: data.messages.map((message) =>
+            list: data.list.map((message) =>
               message.messageId === messageId ? { ...message, read: true } : message
             ),
           }
         : data
-    );
-    setLoadedMessages((items) =>
-      items.map((message) =>
-        message.messageId === messageId ? { ...message, read: true } : message
-      )
     );
   };
 
@@ -114,18 +98,14 @@ function NotificationsPage() {
       data
         ? {
             ...data,
-            messages: data.messages.map((message) => ({ ...message, read: true })),
+            list: data.list.map((message) => ({ ...message, read: true })),
           }
         : data
     );
-    setLoadedMessages((items) => items.map((message) => ({ ...message, read: true })));
   };
 
   const handleRefreshMessages = () => {
-    loadGenerationRef.current += 1;
-    setLoadedMessages([]);
-    setLastLoadedPage(1);
-    messagesRequest.refresh();
+    messagesRequest.reload();
   };
 
   const handleSelectMessage = async (message: UserMessage) => {
@@ -148,7 +128,7 @@ function NotificationsPage() {
   };
 
   const handleMarkAllAsRead = async () => {
-    const unreadMessages = messagesRequest.data?.messages.filter((message) => !message.read) ?? [];
+    const unreadMessages = messages.filter((message) => !message.read);
     if (unreadMessages.length === 0) return;
     try {
       await Promise.all(unreadMessages.map((message) => readMessage(message.messageId)));
@@ -224,7 +204,7 @@ function NotificationsPage() {
             />
           </div>
         ) : (
-          <div className={styles.messageList}>
+          <div className={styles.messageList} ref={messageListRef}>
             {messages.map((message) => {
               const isSelected = message.messageId === selectedMessageId;
               const isUnread = !message.read;
@@ -329,10 +309,10 @@ function NotificationsPage() {
                   variant="ghost"
                   size="sm"
                   className={styles.loadMoreButton}
-                  isDisabled={loadingMore}
-                  onPress={() => loadMoreMessages()}
+                  isDisabled={messagesRequest.loadingMore}
+                  onPress={messagesRequest.loadMore}
                 >
-                  {loadingMore ? t('page.loadingMore') : t('page.loadMore')}
+                  {messagesRequest.loadingMore ? t('page.loadingMore') : t('page.loadMore')}
                 </Button>
               </div>
             ) : null}

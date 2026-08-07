@@ -21,6 +21,7 @@ import type {
 import { scrollNoteEditorTargetIntoView } from '../../runtime/noteEditorScrollTarget';
 import type { NoteAiDiffActionRequest } from './action';
 import { resolveNoteAiDiffBlock, stableStringify } from './contentState';
+import { cleanupAiDiffDomTree } from './domCleanup';
 import {
   createAiDiffReviewWidget,
   type AiDiffReviewNavigation,
@@ -497,7 +498,7 @@ function buildDecorations(params: {
             aiDiff,
             registry,
           }),
-        { key: widgetKey, side: 1, stopEvent: () => true }
+        { key: widgetKey, side: 1, stopEvent: () => true, destroy: cleanupAiDiffDomTree }
       )
     );
   });

@@ -1,4 +1,5 @@
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+import { addAiDiffDomListener } from '../../engines/aiDiff/domCleanup';
 import type { NotePluginRegistry } from '../../registry/types';
 import styles from './style.module.less';
 
@@ -107,7 +108,7 @@ function makeTableReadOnly(root: HTMLElement): HTMLElement {
       element.setAttribute('aria-disabled', 'true');
     }
   });
-  root.addEventListener('click', (event) => {
+  addAiDiffDomListener(root, 'click', (event) => {
     const target = event.target;
     if (!(target instanceof Element) || !target.closest(TABLE_INTERACTIVE_SELECTOR)) return;
     event.preventDefault();
@@ -116,7 +117,7 @@ function makeTableReadOnly(root: HTMLElement): HTMLElement {
   // 不拦截 mousedown/pointerdown：父级 review 需用其做「选中」；仅挡会触发编辑的移动类事件
   TABLE_EDITOR_EVENTS.forEach((eventName) => {
     if (eventName === 'mousedown' || eventName === 'pointerdown') return;
-    root.addEventListener(eventName, (event) => event.stopPropagation());
+    addAiDiffDomListener(root, eventName, (event) => event.stopPropagation());
   });
   return root;
 }

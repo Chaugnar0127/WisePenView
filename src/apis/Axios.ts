@@ -5,15 +5,34 @@ import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
 import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
 import { WisePenError } from '@/utils/error';
 import { FRONTEND_NETWORK_ERROR } from '@/utils/error/codes';
-import axios, { AxiosHeaders, type AxiosError } from 'axios';
+import axios, { AxiosHeaders, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    retry?: number | false;
+    retryDelayMs?: number;
+  }
+}
 
 const Axios = axios.create({
   timeout: 5000,
   withCredentials: true,
 });
 
+const DEFAULT_RETRY_COUNT = 2;
+const DEFAULT_RETRY_DELAY_MS = 300;
+
+type RetryableAxiosConfig = InternalAxiosRequestConfig & {
+  __wisePenRetryCount?: number;
+};
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
+
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
 
 const readApiErrorBody = (data: unknown): ApiErrorBody | undefined => {
   if (!isRecord(data)) return undefined;
@@ -49,6 +68,40 @@ const mapHttpCode = (status: number): number => {
     return FRONTEND_NETWORK_ERROR.SERVER;
   }
   return FRONTEND_NETWORK_ERROR.HTTP;
+};
+
+const getRetryLimit = (config: RetryableAxiosConfig): number => {
+  if (config.retry === false) return 0;
+  if (typeof config.retry === 'number') return Math.max(0, config.retry);
+  return DEFAULT_RETRY_COUNT;
+};
+
+const isRetryableAxiosError = (error: AxiosError): boolean => {
+  if (error.code === 'ERR_CANCELED') return false;
+
+  const status = error.response?.status;
+  if (typeof status === 'number') {
+    return status >= 500 && status < 600;
+  }
+
+  return true;
+};
+
+const retryAxiosRequest = (error: AxiosError): Promise<unknown> | undefined => {
+  const config = error.config as RetryableAxiosConfig | undefined;
+  if (!config || !isRetryableAxiosError(error)) {
+    return undefined;
+  }
+
+  const retryCount = config.__wisePenRetryCount ?? 0;
+  const retryLimit = getRetryLimit(config);
+  if (retryCount >= retryLimit) {
+    return undefined;
+  }
+
+  config.__wisePenRetryCount = retryCount + 1;
+  const delayBase = config.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
+  return delay(delayBase * 2 ** retryCount).then(() => Axios.request(config));
 };
 
 const mapAxiosErrorToWisePenError = (error: AxiosError): WisePenError => {
@@ -100,7 +153,12 @@ Axios.interceptors.request.use((config) => {
 
 Axios.interceptors.response.use(
   (response) => response.data,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const retryRequest = retryAxiosRequest(error);
+    if (retryRequest) {
+      return retryRequest;
+    }
+
     if (error.response?.status === 401) {
       authSessionCoordinator.unauthorized();
     }

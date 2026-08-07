@@ -92,12 +92,12 @@ const chatSessionHandle = appRouteHandle({
 const notificationHandle = appRouteHandle({
   pageKey: 'notifications',
   headerNav: APP_HEADER_NAV_KEY.NOTIFICATIONS,
-  contentContainer: 'standard',
+  contentContainer: 'scrollable',
 });
 const driveHandle = appRouteHandle({
   pageKey: 'drive',
   headerNav: APP_HEADER_NAV_KEY.DRIVE,
-  contentContainer: 'drive',
+  contentContainer: 'fixed',
 });
 const groupHandle = (pageKey: string, contentContainer?: AppRouteContentContainer) =>
   appRouteHandle({
@@ -114,7 +114,7 @@ const courseHandle = (pageKey: string, contentContainer?: AppRouteContentContain
 const publicInviteHandle = appRouteHandle({
   pageKey: 'invite',
   headerNav: APP_HEADER_NAV_KEY.PUBLIC,
-  contentContainer: 'standard',
+  contentContainer: 'scrollable',
 });
 const resourceHandle = appRouteHandle({
   pageKey: 'resource',
@@ -122,7 +122,7 @@ const resourceHandle = appRouteHandle({
 });
 const profileHandle = appRouteHandle({
   pageKey: 'profile',
-  contentContainer: 'standard',
+  contentContainer: 'scrollable',
 });
 
 const router = createHashRouter([
@@ -241,7 +241,7 @@ const router = createHashRouter([
               {
                 path: 'groups',
                 element: <PublicGroupsPage />,
-                handle: groupHandle('groups.list', 'standard'),
+                handle: groupHandle('groups.list', 'scrollable'),
               },
               {
                 path: 'groups/:groupId',
@@ -296,7 +296,7 @@ const router = createHashRouter([
               {
                 path: 'courses',
                 element: <PublicCoursesPage />,
-                handle: courseHandle('courses.list', 'standard'),
+                handle: courseHandle('courses.list', 'scrollable'),
               },
               {
                 path: 'courses/:courseId',

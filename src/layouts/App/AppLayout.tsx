@@ -264,7 +264,7 @@ function AppLayout() {
               <div
                 className={clsx(
                   styles.appPageContainer,
-                  contentContainer === 'drive' && styles.appPageContainerDrive
+                  contentContainer === 'fixed' && styles.appPageContainerFixed
                 )}
               >
                 {content}

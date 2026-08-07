@@ -7,7 +7,7 @@ export const APP_HEADER_NAV_KEY = {
 
 export type AppHeaderNavKey = (typeof APP_HEADER_NAV_KEY)[keyof typeof APP_HEADER_NAV_KEY];
 
-export type AppRouteContentContainer = 'standard' | 'drive';
+export type AppRouteContentContainer = 'scrollable' | 'fixed';
 
 export interface AppRouteMeta {
   pageKey: string;

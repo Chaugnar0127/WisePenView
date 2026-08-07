@@ -367,16 +367,16 @@ const router = createBrowserRouter([
               { path: 'profile/usage', element: <Usage />, handle: profileHandle },
               { path: 'profile/account', element: <Account />, handle: profileHandle },
               { path: 'profile/appearance', element: <Appearance />, handle: profileHandle },
-              {
-                path: '*',
-                element: (
-                  <ScopedRouteNotFound homePath={APP_ROUTE_PATH.APP} homeLabelKey="page.backApp" />
-                ),
-                handle: appRouteHandle({
-                  pageKey: 'app.notFound',
-                }),
-              },
             ],
+          },
+          {
+            path: '*',
+            element: (
+              <ScopedRouteNotFound homePath={APP_ROUTE_PATH.APP} homeLabelKey="page.backApp" />
+            ),
+            handle: appRouteHandle({
+              pageKey: 'app.notFound',
+            }),
           },
           {
             element: <WorkspaceLayout />,
@@ -412,16 +412,16 @@ const router = createBrowserRouter([
           { path: 'settings', element: <SystemSettings /> },
           { path: 'logs', element: <LogAudit /> },
           { path: 'tasks', element: <TaskCenter /> },
-          {
-            path: '*',
-            element: (
-              <ScopedRouteNotFound
-                homePath={APP_ROUTE_PATH.ADMIN_USERS}
-                homeLabelKey="page.backAdmin"
-              />
-            ),
-          },
         ],
+      },
+      {
+        path: '*',
+        element: (
+          <ScopedRouteNotFound
+            homePath={APP_ROUTE_PATH.ADMIN_USERS}
+            homeLabelKey="page.backAdmin"
+          />
+        ),
       },
     ],
   },

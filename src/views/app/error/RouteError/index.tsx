@@ -4,6 +4,8 @@ import { useLocation, useNavigate, useRouteError } from 'react-router-dom';
 
 import { ResultState } from '@/components/Feedback';
 import { getErrorReportId } from '@/utils/error';
+import ErrorPageShell from '@/views/app/error/_components/ErrorPageShell';
+import shellStyles from '../_components/ErrorPageShell/style.module.less';
 import { buildAppErrorInfo } from '../errorInfo';
 import styles from './style.module.less';
 
@@ -16,14 +18,13 @@ function RouteError() {
   const errorId = getErrorReportId(error);
 
   return (
-    <main className={styles.root}>
+    <ErrorPageShell size="md">
       <ResultState
-        className={styles.result}
         status={errorInfo.status}
         title={errorInfo.title}
         subTitle={errorInfo.subTitle}
         extra={
-          <div className={styles.actions}>
+          <div className={shellStyles.actions}>
             <Button variant="primary" onPress={() => window.location.reload()}>
               {t('page.reload')}
             </Button>
@@ -35,7 +36,7 @@ function RouteError() {
           {t('page.errorIdWithPage', { errorId, pathname: location.pathname })}
         </p>
       </ResultState>
-    </main>
+    </ErrorPageShell>
   );
 }
 

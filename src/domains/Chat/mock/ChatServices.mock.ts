@@ -419,7 +419,7 @@ const getWorkspace: IChatService['getWorkspace'] = async () => {
       {
         agentId: 'agent-custom-writing',
         agentType: 'PERSONAL' as const,
-        label: '写作Agent',
+        label: '内容助手Agent',
         source: 'RESOURCE' as const,
         resourceId: 'custom-writing',
         agentVersion: 1,

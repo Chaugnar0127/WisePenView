@@ -7,8 +7,10 @@ import AppIconButton from '@/components/Button/AppIconButton';
 import { ResultState } from '@/components/Feedback';
 import { copyText } from '@/utils/browser/copyText';
 import { getErrorReportId } from '@/utils/error';
+import ErrorPageShell from '@/views/app/error/_components/ErrorPageShell';
 import ResourceNotFound from '@/views/app/error/ResourceNotFound';
 import { Button, toast } from '@heroui/react';
+import shellStyles from '../_components/ErrorPageShell/style.module.less';
 import { buildAppErrorInfo } from '../errorInfo';
 import { buildErrorDetail } from './errorDetail';
 import styles from './style.module.less';
@@ -39,55 +41,50 @@ function AppError() {
   };
 
   return (
-    <div className={styles.root}>
-      <main className={styles.main}>
-        <ResultState
-          className={styles.result}
-          status={errorInfo.status}
-          title={errorInfo.title}
-          subTitle={errorInfo.subTitle}
-          extra={
-            <div className={styles.actionGroup}>
-              <Button variant="primary" size="lg" onPress={() => window.location.reload()}>
-                {t('page.refresh')}
-              </Button>
-              <Button size="lg" onPress={() => navigate(-1)}>
-                {t('page.backPrevious')}
-              </Button>
-            </div>
-          }
-        >
-          <p className={styles.errorId}>{t('page.errorId', { errorId })}</p>
-          <div className={styles.errorCollapse}>
-            <div className={styles.errorCollapseHeader}>
-              <button
-                type="button"
-                className={styles.errorCollapseToggle}
-                aria-expanded={detailOpen}
-                onClick={() => setDetailOpen((open) => !open)}
-              >
-                {t('page.detail')}
-              </button>
-              <AppIconButton
-                icon={<Copy aria-hidden="true" />}
-                label={t('page.copyDetail')}
-                size="sm"
-                onPress={() => void handleCopyDetail()}
-                onClick={(event) => event.stopPropagation()}
-              />
-            </div>
-            {detailOpen ? (
-              <div className={styles.errorDetailPanel}>
-                <pre className={styles.errorDetail}>{errorDetail}</pre>
-                <span className={styles.contactTip}>{t('page.contactTip')}</span>
-              </div>
-            ) : null}
+    <ErrorPageShell size="md">
+      <ResultState
+        status={errorInfo.status}
+        title={errorInfo.title}
+        subTitle={errorInfo.subTitle}
+        extra={
+          <div className={shellStyles.actions}>
+            <Button variant="primary" size="lg" onPress={() => window.location.reload()}>
+              {t('page.refresh')}
+            </Button>
+            <Button size="lg" onPress={() => navigate(-1)}>
+              {t('page.backPrevious')}
+            </Button>
           </div>
-        </ResultState>
-      </main>
-
-      <footer className={styles.footerMini}>{t('page.footer')}</footer>
-    </div>
+        }
+      >
+        <p className={styles.errorId}>{t('page.errorId', { errorId })}</p>
+        <div className={styles.errorCollapse}>
+          <div className={styles.errorCollapseHeader}>
+            <button
+              type="button"
+              className={styles.errorCollapseToggle}
+              aria-expanded={detailOpen}
+              onClick={() => setDetailOpen((open) => !open)}
+            >
+              {t('page.detail')}
+            </button>
+            <AppIconButton
+              icon={<Copy aria-hidden="true" />}
+              label={t('page.copyDetail')}
+              size="sm"
+              onPress={() => void handleCopyDetail()}
+              onClick={(event) => event.stopPropagation()}
+            />
+          </div>
+          {detailOpen ? (
+            <div className={styles.errorDetailPanel}>
+              <pre className={styles.errorDetail}>{errorDetail}</pre>
+              <span className={styles.contactTip}>{t('page.contactTip')}</span>
+            </div>
+          ) : null}
+        </div>
+      </ResultState>
+    </ErrorPageShell>
   );
 }
 

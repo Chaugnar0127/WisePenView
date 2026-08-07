@@ -61,6 +61,7 @@ function SkillMenu() {
   const { data: skillMenuOptions, loading } = useRequest(
     () => chatService.getChatInputCapabilityOptions({ agent: selectedAgent }),
     {
+      ready: skillMenuOpen,
       refreshDeps: [selectedAgent.agentId],
       onError: (error) => toast.danger(parseErrorMessage(error)),
     }
@@ -72,7 +73,7 @@ function SkillMenu() {
     selectedTools,
     toolOptions: skillMenuOptions?.tools ?? [],
     advancedMode: true,
-    otherSkillGroups: skillMenuOptions?.otherSkillGroups ?? [],
+    otherSkillGroups: [],
   });
   const primarySection = sections.find((section) => section.key === 'primary-skills');
   const externalSection = sections.find((section) => section.key === 'external-skills');

@@ -3,6 +3,7 @@ import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCur
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import SidebarCourse from '@/layouts/_common/Sidebar/CourseSidebar';
 import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive';
+import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import CommandPaletteTrigger from '@/layouts/AppNavigation/CommandPaletteTrigger';
 import { Tabs, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
@@ -47,10 +48,56 @@ function SidebarViewTab({ id, label, icon: Icon, selected }: SidebarViewTabProps
 
 function AppSidebarTabs() {
   const { t } = useTranslation('shell');
+  const appAuth = useAppAuth();
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
   const [selectedTab, setSelectedTab] = useState<SidebarViewTabKey>(SIDEBAR_VIEW_TAB.DRIVE);
   const selectedKeys = currentSessionId ? [`session-${currentSessionId}`] : [];
+
+  if (!appAuth.isAuthenticated) {
+    return (
+      <div className={styles.menuContainer}>
+        <Tabs
+          className={styles.tabs}
+          selectedKey={SIDEBAR_VIEW_TAB.SESSIONS}
+          onSelectionChange={() => appAuth.requireLogin()}
+        >
+          <Tabs.ListContainer className={styles.tabListContainer}>
+            <div className={styles.tabToolbar}>
+              <Tabs.List className={styles.tabList} aria-label={t('sidebar.contentAria')}>
+                <SidebarViewTab
+                  id={SIDEBAR_VIEW_TAB.SESSIONS}
+                  label={t('sidebar.sessions')}
+                  icon={MessageSquare}
+                  selected
+                />
+                <SidebarViewTab
+                  id={SIDEBAR_VIEW_TAB.DRIVE}
+                  label={t('sidebar.drive')}
+                  icon={FolderOpen}
+                  selected={false}
+                />
+                <SidebarViewTab
+                  id={SIDEBAR_VIEW_TAB.COURSES}
+                  label={t('sidebar.courses')}
+                  icon={BookOpen}
+                  selected={false}
+                />
+              </Tabs.List>
+              <span className={styles.tabSearch}>
+                <CommandPaletteTrigger />
+              </span>
+            </div>
+          </Tabs.ListContainer>
+
+          <button type="button" className={styles.anonymousPanel} onClick={appAuth.requireLogin}>
+            <div className={styles.anonymousTitle}>{t('anonymous.sidebarTitle')}</div>
+            <div className={styles.anonymousHint}>{t('anonymous.sidebarHint')}</div>
+          </button>
+        </Tabs>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.menuContainer}>

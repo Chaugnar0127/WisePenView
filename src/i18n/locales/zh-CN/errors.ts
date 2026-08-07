@@ -233,7 +233,7 @@ const zhCNErrors = {
     copySuccess: '错误详情已复制',
     copyFailed: '复制失败，请手动复制',
     contactTip: '如问题持续，请复制错误详情并联系开发者',
-    footer: 'WisePen · 学术英语写作平台',
+    footer: 'WisePen',
   },
   detail: {
     errorId: '错误编号',

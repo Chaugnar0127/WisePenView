@@ -11,20 +11,21 @@
 - UI、layout 和 hook 禁止直接写 `/app`、`/auth`、`/admin` 路径字面量。路由契约、路由树和领域 API endpoint 不受此限制。
 - 本次废弃路径没有 redirect、alias、wrapper 或其它兼容入口。
 
-## 门户与认证
+## 入口与认证
 
-| 路径                          | 参数与行为               |
-| ----------------------------- | ------------------------ |
-| `/`                           | 门户首页                 |
-| `/auth`                       | replace 到 `/auth/login` |
-| `/auth/login`                 | 登录；可带 `redirect`    |
-| `/auth/register`              | 注册；可带 `redirect`    |
-| `/auth/onboarding/bind`       | 注册后的账号绑定         |
-| `/auth/password/forgot`       | 发起密码重置             |
-| `/auth/password/reset?token=` | 设置新密码               |
-| `/auth/email/verify?token=`   | 验证邮箱                 |
+| 路径                          | 参数与行为                   |
+| ----------------------------- | ---------------------------- |
+| `/`                           | replace 到 `/chat`           |
+| `/auth`                       | replace 到 `/auth/login`     |
+| `/auth/login`                 | 登录；可带 `redirect`        |
+| `/auth/register`              | 注册；可带 `redirect`        |
+| `/auth/onboarding/bind`       | 注册后的账号绑定             |
+| `/auth/password/forgot`       | 发起密码重置                 |
+| `/auth/password/reset?token=` | 设置新密码                   |
+| `/auth/email/verify?token=`   | 验证邮箱                     |
+| `/chat`                       | 匿名聊天假页；自动校验登录态 |
 
-已登录用户仍可访问全部 `/auth/*` 页面。任意 Axios 401 清理会话后进入 `/auth/login?redirect=`，其中 `redirect` 保存完整 pathname、query 和 hash。
+门户已拆分到独立项目，本仓库不再承载门户页面。已登录用户仍可访问全部 `/auth/*` 页面。`/chat` 挂载后会主动调用 `userService.getUserInfo({ forceRefresh: true })`：成功 replace 到 `/app/chat`，失败停留在匿名假页并提示“登录已过期”。匿名用户在 `/chat` 的左侧栏和聊天操作仅提示登录；左下角登录按钮进入 `/auth/login?redirect=/app/chat`。任意 Axios 401 清理会话后进入 `/chat`；用户主动退出登录后进入 `/auth/login`。
 
 ## 应用基础
 
@@ -36,7 +37,7 @@
 | `/app/profile`                              | replace 到 account     |
 | `/app/profile/{account\|usage\|appearance}` | 个人设置页面           |
 
-`/app` 统一由登录守卫保护。`userService.getUserInfo()` 是会话真相；加载时展示 Spin，非 401 错误保留当前 URL 并提供重试。
+`/app` 统一由登录守卫保护。`userService.getUserInfo()` 是会话真相；加载时展示 Spin，非 401 错误保留当前 URL 并提供重试。登录成功后的默认入口是 `/app/chat`，匿名入口 `/chat` 不承载真实会话路由。桌面端生产启动 URL 为 `/chat`。
 
 ## 云盘与资源
 

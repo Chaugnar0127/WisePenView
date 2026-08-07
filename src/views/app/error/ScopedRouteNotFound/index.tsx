@@ -1,8 +1,9 @@
 import { ResultState } from '@/components/Feedback';
+import ErrorPageShell from '@/views/app/error/_components/ErrorPageShell';
 import { Button } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import styles from './style.module.less';
+import shellStyles from '../_components/ErrorPageShell/style.module.less';
 
 export interface ScopedRouteNotFoundProps {
   homePath: string;
@@ -14,13 +15,13 @@ function ScopedRouteNotFound({ homePath, homeLabelKey }: ScopedRouteNotFoundProp
   const navigate = useNavigate();
 
   return (
-    <main className={styles.root}>
+    <ErrorPageShell size="sm">
       <ResultState
         status="404"
         title={t('page.notFoundTitle')}
         subTitle={t('page.notFoundDescription')}
         extra={
-          <div className={styles.actions}>
+          <div className={shellStyles.actions}>
             <Button variant="primary" onPress={() => navigate(homePath)}>
               {t(homeLabelKey)}
             </Button>
@@ -28,7 +29,7 @@ function ScopedRouteNotFound({ homePath, homeLabelKey }: ScopedRouteNotFoundProp
           </div>
         }
       />
-    </main>
+    </ErrorPageShell>
   );
 }
 

@@ -24,6 +24,7 @@ const zhCNChat = {
   },
   input: {
     placeholder: '输入消息...',
+    loginRequired: '请先登录后使用聊天',
     disclaimer: 'AI 内容仅供参考，请仔细甄别',
     removeContext: '移除上下文',
     send: '发送消息',

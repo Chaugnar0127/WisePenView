@@ -24,6 +24,8 @@ function ChatInputContent({
   injectedAgents,
   preferredAgent,
   fullWidth,
+  isAuthenticated = true,
+  onRequireLogin,
 }: ChatInputProps) {
   const { t } = useTranslation('chat');
   const inputCardRef = useRef<HTMLDivElement>(null);
@@ -31,6 +33,8 @@ function ChatInputContent({
   const { containerProps, isDragOver, textAreaProps, toolbarProps } = useChatInputController({
     onSend,
     onStop,
+    onRequireLogin,
+    isAuthenticated,
     sending,
   });
 
@@ -109,9 +113,9 @@ function ChatInputContent({
         <DropOverlay visible={isDragOver} />
       </div>
 
-      <OtherSkillModal />
+      {isAuthenticated ? <OtherSkillModal /> : null}
 
-      <DocumentPickerModal />
+      {isAuthenticated ? <DocumentPickerModal /> : null}
 
       <div className={styles.footerTip}>{t('input.disclaimer')}</div>
     </div>

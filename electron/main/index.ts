@@ -152,6 +152,11 @@ function sendAppNavigationState(contents: WebContents): void {
   contents.send(DESKTOP_CHANNEL.navigationStateChanged, getAppNavigationState(contents));
 }
 
+function buildRendererEntryUrl(): string {
+  const baseUrl = DEV_RENDERER_URL ?? APP_ORIGIN;
+  return new URL(APP_ROUTE_PATH.PUBLIC_CHAT, baseUrl).toString();
+}
+
 function protectWindowNavigation(contents: WebContents): void {
   contents.setWindowOpenHandler(({ url }) => {
     if (isExternalUrl(url)) {
@@ -303,11 +308,7 @@ function createMainWindow(): BrowserWindow {
   window.on('maximize', notifyMaximizedChanged);
   window.on('unmaximize', notifyMaximizedChanged);
 
-  if (DEV_RENDERER_URL) {
-    void window.loadURL(DEV_RENDERER_URL);
-  } else {
-    void window.loadURL(`${APP_ORIGIN}/`);
-  }
+  void window.loadURL(buildRendererEntryUrl());
 
   return window;
 }

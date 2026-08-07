@@ -192,7 +192,12 @@ function TableDrive({
 
   const handleRowSelect = (row: DriveTableRow) => {
     if (row.node.type !== 'loading') {
-      interaction.setSelectedRowId(row.id);
+      if (interaction.selectedRow?.id === row.id) {
+        // 已选中状态，单击打开（checkbox 未生效时的策略）
+        handleClickNode(row);
+      } else {
+        interaction.setSelectedRowId(row.id);
+      }
     }
   };
 

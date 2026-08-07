@@ -31,6 +31,16 @@ const zhCNShell = {
     notificationsLoadFailed: '通知加载失败',
     notificationsReadFailed: '通知已打开，但已读上报失败',
   },
+  anonymous: {
+    avatar: '未',
+    title: '未登录',
+    subtitle: '登录后使用完整功能',
+    login: '去登录',
+    loginRequired: '请先登录后使用该功能',
+    sessionExpired: '登录已过期',
+    sidebarTitle: '未登录',
+    sidebarHint: '登录后可查看会话历史、云盘和课程内容。',
+  },
   commandPalette: {
     open: '打开命令面板',
     tooltip: '命令与搜索',
@@ -86,29 +96,6 @@ const zhCNShell = {
       CONSULTATION: '使用咨询',
       COMPLAINT: '服务投诉',
       OTHER: '其他',
-    },
-  },
-  home: {
-    navAria: '首页导航',
-    nav: { home: '首页', register: '注册', login: '登录' },
-    eyebrow: '学术英语 · AI 赋能',
-    subtitle: '学术英语写作 AI + 教学平台',
-    lead: '专为高校教学与科研团队打造。集成智能写作辅助、AI Agent 工作流与深度文稿评估，赋能师生智慧教学与应用。',
-    capabilities: '产品能力',
-    modulesTitle: '三大核心模块',
-    modulesLead:
-      '从构思到成稿、从互动到反馈，覆盖学术写作关键链路；可按教学与课题组场景灵活组合使用。',
-    writing: {
-      title: '论文写作',
-      description: '结构化辅助与素材组织，贴合学术论文写作流程。',
-    },
-    chat: {
-      title: 'AI 对话',
-      description: '针对术语、句式与逻辑的多轮对话，即时澄清写作疑点。',
-    },
-    evaluation: {
-      title: '写作质量评估',
-      description: '从清晰度、一致性与学术规范等维度给出可操作的改进建议。',
     },
   },
 };

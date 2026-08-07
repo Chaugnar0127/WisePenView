@@ -55,6 +55,8 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
               getUploadSessionId={ensureChatSession}
               sending={sending}
               onStop={stop}
+              isAuthenticated={controller.isAuthenticated}
+              onRequireLogin={controller.requireLogin}
               contextPreview={resourceChatContext?.preview}
               onClearContext={clearResourceChatContext}
               injectedAgents={agentDebug ? [agentDebug.agent] : undefined}

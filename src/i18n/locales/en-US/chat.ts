@@ -25,6 +25,7 @@ const enUSChat = {
   },
   input: {
     placeholder: 'Type a message...',
+    loginRequired: 'Sign in to use chat',
     disclaimer: 'AI-generated content may be inaccurate. Please verify important information.',
     removeContext: 'Remove context',
     send: 'Send message',

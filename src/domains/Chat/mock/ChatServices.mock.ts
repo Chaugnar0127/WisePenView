@@ -1,7 +1,11 @@
 import type {
+  ChatAgentOption,
   ChatMessageMetadata,
   ChatSession,
   IChatService,
+  ListChatInputAgentsRequest,
+  ListChatInputGroupsRequest,
+  ListChatInputSkillsRequest,
   ListHistoryMessagesRequest,
   ListSessionsRequest,
   PageResult,
@@ -10,12 +14,7 @@ import type {
   UploadAttachmentResult,
   WisePenUIMessage,
 } from '@/domains/Chat';
-import {
-  buildAdvancedSkillTreeGroups,
-  buildDefaultPersonalAgent,
-  getPrimarySkillsForAgent,
-  MODEL_TYPE,
-} from '@/domains/Chat';
+import { MODEL_TYPE } from '@/domains/Chat';
 import type { Group } from '@/domains/Group';
 
 type MockModelSeed = {
@@ -323,7 +322,7 @@ const listHistoryMessages: IChatService['listHistoryMessages'] = async (
   };
 };
 
-const getWorkspace: IChatService['getWorkspace'] = async () => {
+const getMockWorkspace = async () => {
   return {
     groups: [
       {
@@ -419,7 +418,7 @@ const getWorkspace: IChatService['getWorkspace'] = async () => {
       {
         agentId: 'agent-custom-writing',
         agentType: 'PERSONAL' as const,
-        label: '写作Agent',
+        label: '内容助手Agent',
         source: 'RESOURCE' as const,
         resourceId: 'custom-writing',
         agentVersion: 1,
@@ -444,9 +443,76 @@ const getWorkspace: IChatService['getWorkspace'] = async () => {
   };
 };
 
-const getChatInputAgents: IChatService['getChatInputAgents'] = async () => {
-  const workspace = await getWorkspace();
-  return [buildDefaultPersonalAgent(), ...workspace.personalAgents, ...workspace.groupAgents];
+const buildPageResult = <T>(
+  list: T[],
+  page: number,
+  size: number,
+  total: number
+): PageResult<T> => ({
+  list,
+  total,
+  page,
+  size,
+  totalPage: size > 0 ? Math.max(1, Math.ceil(total / size)) : 1,
+});
+
+const listChatInputGroups: IChatService['listChatInputGroups'] = async ({
+  page,
+  size,
+}: ListChatInputGroupsRequest) => {
+  const workspace = await getMockWorkspace();
+  const start = (page - 1) * size;
+  return buildPageResult(
+    workspace.groups.slice(start, start + size),
+    page,
+    size,
+    workspace.groups.length
+  );
+};
+
+const listChatInputAgents: IChatService['listChatInputAgents'] = async ({
+  scope,
+  groupId,
+  groupName,
+  page,
+  size,
+}: ListChatInputAgentsRequest) => {
+  const workspace = await getMockWorkspace();
+  const source =
+    scope === 'GROUP'
+      ? workspace.groupAgents.filter((agent) => agent.groupId === groupId)
+      : workspace.personalAgents;
+  const start = (page - 1) * size;
+  const list = source.slice(start, start + size).map((agent) => {
+    if (scope !== 'GROUP') return agent;
+    const groupAgent = agent as ChatAgentOption & { groupName?: string };
+    return { ...groupAgent, groupName: groupName ?? groupAgent.groupName };
+  });
+  return buildPageResult(list, page, size, source.length);
+};
+
+const listChatInputSkills: IChatService['listChatInputSkills'] = async ({
+  scope,
+  groupId,
+  groupName,
+  page,
+  size,
+}: ListChatInputSkillsRequest) => {
+  const workspace = await getMockWorkspace();
+  const source = workspace.skills.filter((skill) =>
+    scope === 'GROUP'
+      ? skill.scopeType === 'GROUP' && skill.groupId === groupId
+      : skill.scopeType !== 'GROUP'
+  );
+  const start = (page - 1) * size;
+  const list = source.slice(start, start + size).map((skill) => {
+    if (scope !== 'GROUP') return skill;
+    return {
+      ...skill,
+      groupName: groupName ?? skill.groupName,
+    };
+  });
+  return buildPageResult(list, page, size, source.length);
 };
 
 const getTools = async (): Promise<ToolOption[]> => {
@@ -473,24 +539,19 @@ const getTools = async (): Promise<ToolOption[]> => {
 const getChatInputCapabilityOptions: IChatService['getChatInputCapabilityOptions'] = async ({
   agent,
 }) => {
-  const [workspace, tools] = await Promise.all([getWorkspace(), getTools()]);
-  const primarySkills = getPrimarySkillsForAgent(workspace.skills, agent);
-  const primaryIds = new Set(primarySkills.map((skill) => skill.skillId));
-  const otherSkillGroups = buildAdvancedSkillTreeGroups(
-    workspace.skills,
-    workspace.groups,
-    agent,
-    primarySkills
-  )
-    .map((group) => ({
-      ...group,
-      skills: group.skills.filter((skill) => !primaryIds.has(skill.skillId)),
-    }))
-    .filter((group) => group.skills.length > 0);
+  const [skillsPage, tools] = await Promise.all([
+    listChatInputSkills({
+      scope: agent?.agentType === 'GROUP' && agent.groupId ? 'GROUP' : 'PERSONAL',
+      groupId: agent?.groupId,
+      groupName: agent?.groupName,
+      page: 1,
+      size: 100,
+    }),
+    getTools(),
+  ]);
 
   return {
-    primarySkills,
-    otherSkillGroups,
+    primarySkills: skillsPage.list,
     tools,
   };
 };
@@ -508,9 +569,10 @@ const uploadAttachment = async ({
   });
 };
 export const createChatServicesMock = (): IChatService => ({
-  getWorkspace,
   getModels,
-  getChatInputAgents,
+  listChatInputGroups,
+  listChatInputAgents,
+  listChatInputSkills,
   getChatInputCapabilityOptions,
   createSession,
   setSessionAgent,

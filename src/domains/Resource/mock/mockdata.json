@@ -129,7 +129,7 @@
       },
       {
         "resourceId": "agent-custom-writing",
-        "resourceName": "写作Agent",
+        "resourceName": "内容助手Agent",
         "resourceType": "AGENT",
         "ownerId": "1",
         "path": "/",

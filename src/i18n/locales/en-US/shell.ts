@@ -31,6 +31,16 @@ const enUSShell = {
     notificationsLoadFailed: 'Failed to load notifications',
     notificationsReadFailed: 'Notification opened, but read status was not reported',
   },
+  anonymous: {
+    avatar: 'G',
+    title: 'Not signed in',
+    subtitle: 'Sign in for full access',
+    login: 'Sign in',
+    loginRequired: 'Sign in to use this feature',
+    sessionExpired: 'Sign-in expired',
+    sidebarTitle: 'Not signed in',
+    sidebarHint: 'Sign in to view chat history, Drive, and courses.',
+  },
   commandPalette: {
     open: 'Open command palette',
     tooltip: 'Commands and search',
@@ -86,31 +96,6 @@ const enUSShell = {
       CONSULTATION: 'How-to question',
       COMPLAINT: 'Complaint',
       OTHER: 'Other',
-    },
-  },
-  home: {
-    navAria: 'Home navigation',
-    nav: { home: 'Home', register: 'Register', login: 'Sign in' },
-    eyebrow: 'Academic English · Powered by AI',
-    subtitle: 'AI-powered academic writing and teaching platform',
-    lead: 'Built for university teaching and research teams, with intelligent writing support, AI Agent workflows, and in-depth manuscript assessment.',
-    capabilities: 'Capabilities',
-    modulesTitle: 'Three core modules',
-    modulesLead:
-      'Support the academic writing journey from ideas to drafts and from interaction to feedback, adaptable to courses and research groups.',
-    writing: {
-      title: 'Academic writing',
-      description:
-        'Structured guidance and source organization tailored to academic writing workflows.',
-    },
-    chat: {
-      title: 'AI chat',
-      description:
-        'Multi-turn guidance on terminology, phrasing, and logic to resolve writing questions quickly.',
-    },
-    evaluation: {
-      title: 'Writing assessment',
-      description: 'Actionable suggestions across clarity, consistency, and academic conventions.',
     },
   },
 };

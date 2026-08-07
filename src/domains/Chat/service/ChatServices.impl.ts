@@ -1,28 +1,28 @@
 import type { Group } from '@/domains/Group';
-import type { ResourceItem } from '@/domains/Resource';
+import type { ResourceSkillSummary } from '@/domains/Resource';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { computeFileMd5 } from '@/utils/oss/computeFileMd5';
 import { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';
 import { parseExtension } from '@/utils/parser/extensionParser';
 import { ChatApi, ChatSessionApi } from '../apis/ChatApi';
+import type { ChatAgentOption } from '../entity/agent';
 import type { WisePenUIMessage } from '../entity/message';
-import { buildAgentFromResourceItem, buildDefaultPersonalAgent } from '../mapper/agent.mapper';
+import { buildAgentFromResourceItem } from '../mapper/agent.mapper';
 import { ChatServicesMap } from '../mapper/ChatServices.map';
-import {
-  buildAdvancedSkillTreeGroups,
-  getPrimarySkillsForAgent,
-} from '../mapper/skillScope.mapper';
+import { getPrimarySkillsForAgent } from '../mapper/skillScope.mapper';
 import { mapResourceItemToResourceSkillSummary } from '../mapper/workspace.mapper';
 import type {
   ChatInputCapabilityOptions,
   ChatModel,
   ChatServiceDeps,
   ChatSession,
-  ChatWorkspace,
   CreateSessionRequest,
   DeleteSessionRequest,
   GetChatInputCapabilityOptionsParams,
   IChatService,
+  ListChatInputAgentsRequest,
+  ListChatInputGroupsRequest,
+  ListChatInputSkillsRequest,
   ListHistoryMessagesRequest,
   ListSessionsRequest,
   PageResult,
@@ -33,141 +33,142 @@ import type {
   UploadAttachmentResult,
 } from './index.type';
 
-interface GroupResourceBatch {
-  group: Group;
-  list: ResourceItem[];
-}
+const CHAT_RESOURCE_PAGE_SIZE = 100;
 
 const getModels = async (): Promise<ChatModel[]> => {
   const data = await ChatApi.listModels();
   return ChatServicesMap.mapGetModelsFromApi(data);
 };
 
-const fetchAllSkills = async (
+const buildPageResult = <T>(
+  list: T[],
+  page: number,
+  size: number,
+  total: number
+): PageResult<T> => ({
+  list,
+  total,
+  page,
+  size,
+  totalPage: size > 0 ? Math.max(1, Math.ceil(total / size)) : 1,
+});
+
+const listChatInputGroups = async (
   deps: ChatServiceDeps,
-  groups: Group[]
-): Promise<ChatWorkspace['skills']> => {
-  const requests = [
-    deps.resourceService.getUserResources({
-      page: 1,
-      size: 200,
-      sortBy: 'NAME',
-      sortDir: 'ASC',
-      resourceType: 'SKILL',
-    }),
-    ...groups.map((group) =>
-      deps.resourceService.getGroupResources({
-        groupId: group.groupId,
-        page: 1,
-        size: 200,
-        sortBy: 'NAME',
-        sortDir: 'ASC',
-        resourceType: 'SKILL',
-      })
-    ),
-  ];
-
-  const results = await Promise.all(requests);
-  const [personalResult, ...groupResults] = results;
-
-  return [
-    ...(personalResult?.list ?? []).map((item) => mapResourceItemToResourceSkillSummary(item)),
-    ...groups.flatMap((group, i) =>
-      (groupResults[i]?.list ?? []).map((item) =>
-        mapResourceItemToResourceSkillSummary(item, {
-          groupId: group.groupId,
-          groupName: group.groupName,
-        })
-      )
-    ),
-  ];
+  params: ListChatInputGroupsRequest
+): Promise<PageResult<Group>> => {
+  const query = {
+    groupRoleFilter: 'ALL' as const,
+    page: params.page,
+    size: params.size,
+  };
+  const payload = await deps.groupService.fetchGroupList(query);
+  return buildPageResult(payload.groups, params.page, params.size, payload.total);
 };
 
-const fetchAllAgents = async (
+const listChatInputAgents = async (
   deps: ChatServiceDeps,
-  groups: Group[]
-): Promise<Pick<ChatWorkspace, 'personalAgents' | 'groupAgents'>> => {
-  const requests: Array<Promise<ResourceItem[] | GroupResourceBatch>> = [
-    deps.resourceService
-      .getUserResources({
-        page: 1,
-        size: 200,
-        sortBy: 'NAME',
-        sortDir: 'ASC',
-        resourceType: 'AGENT',
-      })
-      .then((res) => res.list),
-    ...groups.map((group) =>
-      deps.resourceService
-        .getGroupResources({
-          groupId: group.groupId,
-          page: 1,
-          size: 200,
-          sortBy: 'NAME',
-          sortDir: 'ASC',
-          resourceType: 'AGENT',
-        })
-        .then((res): GroupResourceBatch => ({ list: res.list, group }))
-    ),
-  ];
+  params: ListChatInputAgentsRequest
+): Promise<PageResult<ChatAgentOption>> => {
+  const query = {
+    page: params.page,
+    size: params.size,
+    sortBy: 'NAME',
+    sortDir: 'ASC',
+    resourceType: 'AGENT',
+  } as const;
 
-  const results = await Promise.all(requests);
-  const [personalList, ...groupBatches] = results;
-
-  const personalAgents = ((personalList as ResourceItem[]) ?? []).map((item) =>
-    buildAgentFromResourceItem(item)
-  );
-
-  const groupAgents = (groupBatches as GroupResourceBatch[]).flatMap((batch) =>
-    (batch?.list ?? []).map((item) =>
+  if (params.scope === 'GROUP') {
+    if (!params.groupId) {
+      return buildPageResult([], params.page, params.size, 0);
+    }
+    const payload = await deps.resourceService.getGroupResources({
+      ...query,
+      groupId: params.groupId,
+    });
+    const list = payload.list.map((item) =>
       buildAgentFromResourceItem(item, {
-        groupId: batch.group.groupId,
-        groupName: batch.group.groupName,
+        groupId: params.groupId!,
+        groupName: params.groupName ?? '',
       })
-    )
+    );
+    return buildPageResult(list, payload.page, payload.size, payload.total);
+  }
+
+  const payload = await deps.resourceService.getUserResources(query);
+  return buildPageResult(
+    payload.list.map((item) => buildAgentFromResourceItem(item)),
+    payload.page,
+    payload.size,
+    payload.total
   );
-
-  return { personalAgents, groupAgents };
 };
 
-const getWorkspace = async (deps: ChatServiceDeps): Promise<ChatWorkspace> => {
-  const groups = await deps.groupService.fetchAllMyGroups();
-  const [skills, agentData] = await Promise.all([
-    fetchAllSkills(deps, groups),
-    fetchAllAgents(deps, groups),
-  ]);
-  return { groups, skills, ...agentData };
-};
+const listChatInputSkills = async (
+  deps: ChatServiceDeps,
+  params: ListChatInputSkillsRequest
+): Promise<PageResult<ResourceSkillSummary>> => {
+  const query = {
+    page: params.page,
+    size: params.size,
+    sortBy: 'NAME',
+    sortDir: 'ASC',
+    resourceType: 'SKILL',
+  } as const;
 
-const getChatInputAgents = async (
-  deps: ChatServiceDeps
-): Promise<ChatWorkspace['personalAgents']> => {
-  const workspace = await getWorkspace(deps);
-  return [buildDefaultPersonalAgent(), ...workspace.personalAgents, ...workspace.groupAgents];
+  if (params.scope === 'GROUP') {
+    if (!params.groupId) {
+      return buildPageResult([], params.page, params.size, 0);
+    }
+    const payload = await deps.resourceService.getGroupResources({
+      ...query,
+      groupId: params.groupId,
+    });
+    const list = payload.list.map((item) =>
+      mapResourceItemToResourceSkillSummary(item, {
+        groupId: params.groupId!,
+        groupName: params.groupName ?? '',
+      })
+    );
+    return buildPageResult(list, payload.page, payload.size, payload.total);
+  }
+
+  const payload = await deps.resourceService.getUserResources(query);
+  return buildPageResult(
+    payload.list.map((item) => mapResourceItemToResourceSkillSummary(item)),
+    payload.page,
+    payload.size,
+    payload.total
+  );
 };
 
 const getChatInputCapabilityOptions = async (
   deps: ChatServiceDeps,
   params: GetChatInputCapabilityOptionsParams
 ): Promise<ChatInputCapabilityOptions> => {
-  const [workspace, tools] = await Promise.all([getWorkspace(deps), getTools()]);
-  const primarySkills = getPrimarySkillsForAgent(workspace.skills, params.agent);
-  const primaryIds = new Set(primarySkills.map((skill) => skill.skillId));
-  const otherSkillGroups = buildAdvancedSkillTreeGroups(
-    workspace.skills,
-    workspace.groups,
-    params.agent,
-    primarySkills
-  )
-    .map((group) => ({
-      ...group,
-      skills: group.skills.filter((skill) => !primaryIds.has(skill.skillId)),
-    }))
-    .filter((group) => group.skills.length > 0);
+  const [skillsPage, tools] = await Promise.all([
+    listChatInputSkills(
+      deps,
+      params.agent?.agentType === 'GROUP' && params.agent.groupId
+        ? {
+            scope: 'GROUP',
+            groupId: params.agent.groupId,
+            groupName: params.agent.groupName,
+            page: 1,
+            size: CHAT_RESOURCE_PAGE_SIZE,
+          }
+        : {
+            scope: 'PERSONAL',
+            page: 1,
+            size: CHAT_RESOURCE_PAGE_SIZE,
+          }
+    ),
+    getTools(),
+  ]);
+  const primarySkills = getPrimarySkillsForAgent(skillsPage.list, params.agent);
 
   return {
     primarySkills,
-    otherSkillGroups,
     tools,
   };
 };
@@ -260,8 +261,9 @@ const uploadAttachment = async ({
 
 export const createChatServices = (deps: ChatServiceDeps): IChatService => ({
   getModels,
-  getWorkspace: () => getWorkspace(deps),
-  getChatInputAgents: () => getChatInputAgents(deps),
+  listChatInputGroups: (params) => listChatInputGroups(deps, params),
+  listChatInputAgents: (params) => listChatInputAgents(deps, params),
+  listChatInputSkills: (params) => listChatInputSkills(deps, params),
   getChatInputCapabilityOptions: (params) => getChatInputCapabilityOptions(deps, params),
   createSession,
   setSessionAgent,

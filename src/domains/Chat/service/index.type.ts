@@ -3,7 +3,6 @@ import type { IResourceService, ResourceSkillSummary } from '@/domains/Resource'
 import type { ChatAgentOption } from '../entity/agent';
 import type { WisePenUIMessage } from '../entity/message';
 import type { CapabilityToolOption } from '../mapper/capabilityPicker.mapper';
-import type { SkillScopeTreeGroup } from '../mapper/skillScope.mapper';
 
 export interface ToolOption {
   toolId: string;
@@ -71,28 +70,46 @@ export interface ChatServiceDeps {
   resourceService: IResourceService;
 }
 
-export interface ChatWorkspace {
-  groups: Group[];
-  skills: ResourceSkillSummary[];
-  personalAgents: ChatAgentOption[];
-  groupAgents: ChatAgentOption[];
-}
-
 export interface ChatInputCapabilityOptions {
   primarySkills: ResourceSkillSummary[];
-  otherSkillGroups: SkillScopeTreeGroup[];
   tools: CapabilityToolOption[];
 }
+
+export type ChatInputResourceScope = 'PERSONAL' | 'GROUP';
 
 export interface GetChatInputCapabilityOptionsParams {
   agent: ChatAgentOption | null;
 }
 
+export interface ListChatInputGroupsRequest {
+  page: number;
+  size: number;
+}
+
+export interface ListChatInputAgentsRequest {
+  scope: ChatInputResourceScope;
+  page: number;
+  size: number;
+  groupId?: string;
+  groupName?: string;
+}
+
+export interface ListChatInputSkillsRequest {
+  scope: ChatInputResourceScope;
+  page: number;
+  size: number;
+  groupId?: string;
+  groupName?: string;
+}
+
 /** ChatService 接口 */
 export interface IChatService {
   getModels(): Promise<ChatModel[]>;
-  getWorkspace(): Promise<ChatWorkspace>;
-  getChatInputAgents(): Promise<ChatAgentOption[]>;
+  listChatInputGroups(params: ListChatInputGroupsRequest): Promise<PageResult<Group>>;
+  listChatInputAgents(params: ListChatInputAgentsRequest): Promise<PageResult<ChatAgentOption>>;
+  listChatInputSkills(
+    params: ListChatInputSkillsRequest
+  ): Promise<PageResult<ResourceSkillSummary>>;
   getChatInputCapabilityOptions(
     params: GetChatInputCapabilityOptionsParams
   ): Promise<ChatInputCapabilityOptions>;

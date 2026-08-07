@@ -224,7 +224,7 @@ const enUSErrors = {
     copySuccess: 'Error details copied',
     copyFailed: 'Copy failed. Copy the details manually.',
     contactTip: 'If the problem continues, copy the error details and contact the developers.',
-    footer: 'WisePen · Academic Writing Platform',
+    footer: 'WisePen',
   },
   detail: {
     errorId: 'Error ID',

@@ -26,32 +26,3 @@ export const buildAgentFromResourceItem = (
     defaultSkillIds: raw.defaultSkillIds,
   };
 };
-
-export const buildAgentFromSkillTreeGroup = (
-  group: { key: string; label: string },
-  currentAgent: ChatAgentOption | null
-): ChatAgentOption | null => {
-  if (group.key === 'personal') {
-    return buildDefaultPersonalAgent();
-  }
-  const groupId = group.key.replace(/^group-/, '');
-  return {
-    agentId: currentAgent?.groupId === groupId ? currentAgent.agentId : `agent-group-${groupId}`,
-    agentType: 'GROUP',
-    label: group.label,
-    source: 'RESOURCE',
-    groupId,
-    groupName: group.label,
-  };
-};
-
-export const buildChatInputAgentOptions = (
-  agents: ChatAgentOption[],
-  currentAgent: ChatAgentOption
-): ChatAgentOption[] => (agents.length > 0 ? agents : [currentAgent]);
-
-export const resolveChatInputSelectedAgent = (
-  agents: ChatAgentOption[],
-  currentAgent: ChatAgentOption
-): ChatAgentOption =>
-  agents.find((agent) => agent.agentId === currentAgent.agentId) ?? agents[0] ?? currentAgent;

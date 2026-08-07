@@ -1,10 +1,8 @@
 import '@blocknote/mantine/style.css';
-import { useCreateBlockNote } from '@blocknote/react';
 import { useImperativeHandle, type Ref } from 'react';
 
 import type { CustomBlockNoteProps, NoteBodyEditorHandle } from './index.type';
 import { useNoteEditorRuntimeCoordinator } from './registry/useNoteEditorRuntimeCoordinator';
-import { useNoteEditorDefinition } from './runtime';
 import { NoteInteractionStoreProvider } from './runtime/NoteInteractionStoreProvider';
 import { NoteEditorSurface } from './ui/NoteEditorSurface';
 
@@ -23,16 +21,18 @@ function CustomBlockNoteRuntime({
   ref,
   ...props
 }: CustomBlockNoteProps & { ref?: Ref<NoteBodyEditorHandle> }) {
-  const definition = useNoteEditorDefinition(props);
-  const editor = useCreateBlockNote(definition.editorOptions);
-  const runtimeCoordinator = useNoteEditorRuntimeCoordinator({ editor, definition, props });
+  const runtimeCoordinator = useNoteEditorRuntimeCoordinator(props);
 
   useImperativeHandle(ref, () => runtimeCoordinator.editorHandle, [
     runtimeCoordinator.editorHandle,
   ]);
 
   return (
-    <NoteEditorSurface editor={editor} runtimeCoordinator={runtimeCoordinator} props={props} />
+    <NoteEditorSurface
+      editor={runtimeCoordinator.editor}
+      runtimeCoordinator={runtimeCoordinator}
+      props={props}
+    />
   );
 }
 

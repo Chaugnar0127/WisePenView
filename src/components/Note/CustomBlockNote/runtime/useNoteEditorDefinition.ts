@@ -1,10 +1,6 @@
-import { useImageService } from '@/domains';
-import { assertImageProxyUploadLimit } from '@/domains/Image';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import type { Dictionary } from '@blocknote/core';
 import { en, zh } from '@blocknote/core/locales';
 import type { useCreateBlockNote } from '@blocknote/react';
-import { toast } from '@heroui/react';
 import { useMemoizedFn } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +20,7 @@ import {
 type CreateBlockNoteOptions = NonNullable<Parameters<typeof useCreateBlockNote>[0]>;
 type BlockNoteCollaborationConfig = NonNullable<CreateBlockNoteOptions['collaboration']>;
 type NotePasteHandler = NonNullable<CreateBlockNoteOptions['pasteHandler']>;
+type NoteUploadFile = NonNullable<CreateBlockNoteOptions['uploadFile']>;
 
 const NOTE_EDITOR_PROPS = collectNoteEditorProps(notePluginRegistry);
 const STRUCTURED_CLIPBOARD_TYPES = new Set([
@@ -109,42 +106,24 @@ const handlePasteIntoNote: NotePasteHandler = ({ event, editor, defaultPasteHand
   return defaultPasteHandler();
 };
 
-export function useNoteEditorDefinition({
-  resourceId,
-  collaboration: { doc, provider, user: collaborationUser },
-  state: { readOnly, blockLocalDocWrites },
-  inlineComments,
-}: CustomBlockNoteProps) {
+export function useNoteEditorDefinition(
+  {
+    collaboration: { doc, provider, user: collaborationUser },
+    state: { blockLocalDocWrites },
+    inlineComments,
+  }: CustomBlockNoteProps,
+  {
+    uploadFile,
+  }: {
+    uploadFile: NoteUploadFile;
+  }
+) {
   const { i18n } = useTranslation('note');
-  const imageService = useImageService();
   const [pmWriteGuardReady, setPmWriteGuardReady] = useState(false);
   const shouldBlockLocalDocWrites = useMemoizedFn(() => blockLocalDocWrites && pmWriteGuardReady);
   const hasBlockLocalDocWritesProp = useMemoizedFn(() => blockLocalDocWrites);
   const noteFragment = useNoteYjsFragment(doc);
   const aiContentStore = getAiContentStore(doc);
-
-  const uploadFile = useMemoizedFn(async (file: File) => {
-    if (readOnly) {
-      const err = createClientError(FRONTEND_CLIENT_ERROR.NOTE_READ_ONLY_IMAGE_UPLOAD);
-      toast.danger(parseErrorMessage(err));
-      throw err;
-    }
-    if (!file.type.startsWith('image/')) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.IMAGE_ONLY);
-    }
-    try {
-      assertImageProxyUploadLimit(file);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-      throw error;
-    }
-    const { publicUrl } = await imageService.uploadImage({
-      file,
-      scene: 'PRIVATE_IMAGE_FOR_NOTE',
-      bizTag: `notes/${resourceId}`,
-    });
-    return publicUrl;
-  });
 
   const editorExtensions = [
     ...collectNoteEditorExtensions(notePluginRegistry),

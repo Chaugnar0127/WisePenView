@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 interface UseDriveTreeChildrenParams {
   groupId?: string;
   scope?: DriveNodeScope;
+  /** 限制每个目录返回的资源/link 数量，文件夹仍完整返回。 */
+  resourceLimit?: number;
 }
 
 interface UseDriveTreeChildrenReturn {
@@ -20,6 +22,7 @@ interface UseDriveTreeChildrenReturn {
 export function useDriveTreeChildren({
   groupId,
   scope,
+  resourceLimit,
 }: UseDriveTreeChildrenParams): UseDriveTreeChildrenReturn {
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
@@ -36,7 +39,7 @@ export function useDriveTreeChildren({
   const loadChildren = async (nodeId: string): Promise<DriveNode[]> => {
     setNodeChildren(nodeId, [buildLoadingNode(nodeId, t('node.loading'), scope)]);
     try {
-      const children = await driveService.listNodeChildren({ nodeId, groupId });
+      const children = await driveService.listNodeChildren({ nodeId, groupId, resourceLimit });
       setNodeChildren(nodeId, children);
       return children;
     } catch (err) {

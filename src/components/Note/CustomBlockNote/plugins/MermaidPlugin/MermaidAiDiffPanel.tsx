@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- AI Diff DOM 渲染器需要暴露 React 挂载函数 */
+import { SVG_HTML_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
 import { Tabs } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useId, useState } from 'react';
@@ -104,7 +105,9 @@ function MermaidAiDiffPanel({ source }: MermaidAiDiffPanelProps) {
           {shouldRender && result?.svg ? (
             <div
               className={styles.aiDiffDiagram}
-              dangerouslySetInnerHTML={{ __html: result.svg }}
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(result.svg, SVG_HTML_SANITIZE_CONFIG),
+              }}
             />
           ) : null}
         </div>

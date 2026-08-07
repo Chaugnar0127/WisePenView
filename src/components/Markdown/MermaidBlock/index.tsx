@@ -1,3 +1,4 @@
+import { SVG_HTML_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
 import { Tabs } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useId, useState } from 'react';
@@ -71,7 +72,12 @@ function MermaidBlock({ code, language, streaming }: MermaidBlockProps) {
       {shouldRender && result?.error ? <div className={styles.error}>{result.error}</div> : null}
       {shouldRender && result?.svg ? (
         <div className={styles.graph}>
-          <div className={styles.svg} dangerouslySetInnerHTML={{ __html: result.svg }} />
+          <div
+            className={styles.svg}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(result.svg, SVG_HTML_SANITIZE_CONFIG),
+            }}
+          />
         </div>
       ) : null}
     </CodeBlockFrame>

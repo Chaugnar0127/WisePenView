@@ -7,6 +7,7 @@ import { SEARCH_SCOPE } from '@/domains/Resource';
 import { useOpenResource } from '@/hooks/useOpenResource';
 import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
+import { SEARCH_HIGHLIGHT_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
 import { toast } from '@heroui/react';
 import { useInfiniteScroll } from 'ahooks';
 import { useEffect, type RefObject } from 'react';
@@ -35,14 +36,16 @@ const createEmptySearchResult = (query: string): CommandSearchResultPage => ({
 });
 
 const toPlainText = (markup: string): string => {
-  const element = document.createElement('span');
-  element.innerHTML = markup;
-  return element.textContent ?? '';
+  return new DOMParser().parseFromString(markup, 'text/html').body.textContent ?? '';
 };
 
 function ResourceResultItem({ item, onSelect }: { item: SearchHitItem; onSelect: () => void }) {
   const openResource = useOpenResource();
   const plainName = toPlainText(item.resourceName);
+  const sanitizedName = sanitizeHtml(item.resourceName, SEARCH_HIGHLIGHT_SANITIZE_CONFIG);
+  const sanitizedHighlightContent = item.highlightContent
+    ? sanitizeHtml(item.highlightContent, SEARCH_HIGHLIGHT_SANITIZE_CONFIG)
+    : null;
 
   const handleSelect = () => {
     onSelect();
@@ -71,12 +74,12 @@ function ResourceResultItem({ item, onSelect }: { item: SearchHitItem; onSelect:
       <span className={styles.resourceText}>
         <span
           className={styles.resourceTitle}
-          dangerouslySetInnerHTML={{ __html: item.resourceName }}
+          dangerouslySetInnerHTML={{ __html: sanitizedName }}
         />
-        {item.highlightContent ? (
+        {sanitizedHighlightContent ? (
           <span
             className={styles.resourceSnippet}
-            dangerouslySetInnerHTML={{ __html: item.highlightContent }}
+            dangerouslySetInnerHTML={{ __html: sanitizedHighlightContent }}
           />
         ) : null}
       </span>

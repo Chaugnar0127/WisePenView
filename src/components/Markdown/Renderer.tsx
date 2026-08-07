@@ -1,5 +1,6 @@
 import { Checkbox } from '@/components/Input';
 import type { ParsedBlock, RootContent } from '@incremark/core';
+import DOMPurify, { type Config as DOMPurifyConfig } from 'dompurify';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { CornerUpLeft } from 'lucide-react';
@@ -13,6 +14,10 @@ import { MARKDOWN_UNDERLINE_URL, type MarkdownRenderContext } from './runtime';
 import styles from './style.module.less';
 
 const SAFE_PROTOCOL = /^(https?|ircs?|mailto|xmpp)$/i;
+
+const MATH_HTML_SANITIZE_CONFIG: DOMPurifyConfig = {
+  USE_PROFILES: { html: true, mathMl: true },
+};
 
 type MarkdownDefinitions = MarkdownRenderContext['definitions'];
 
@@ -132,12 +137,13 @@ function readMathExpression(
 
 function renderMathHtml(expression: string, displayMode: boolean): string | null {
   try {
-    return katex.renderToString(expression, {
+    const html = katex.renderToString(expression, {
       displayMode,
       output: 'htmlAndMathml',
       throwOnError: false,
       trust: false,
     });
+    return DOMPurify.sanitize(html, MATH_HTML_SANITIZE_CONFIG);
   } catch {
     return null;
   }

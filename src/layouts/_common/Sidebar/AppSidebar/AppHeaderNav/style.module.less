@@ -1,6 +1,9 @@
 .navContainer {
+  --app-header-nav-item-height: 36px;
+  --app-header-nav-item-gap: 0.2px;
+
   position: relative;
-  padding-bottom: var(--space-sm);
+  padding-bottom: 6px;
 
   &::after {
     content: '';
@@ -16,13 +19,13 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2xs);
+  gap: var(--app-header-nav-item-gap);
   padding: 0 8px;
   background: transparent;
   outline: none;
   font-size: var(--font-size-base, 14px);
   font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-base, 22px);
+  line-height: var(--line-height-sm);
 }
 
 .headerMenuCollapsed {
@@ -33,7 +36,7 @@
   position: absolute;
   left: 8px;
   right: 8px;
-  height: 40px;
+  height: var(--app-header-nav-item-height, 36px);
   border-radius: var(--radius-md);
   background: var(--sidebar-item-selected);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
@@ -54,14 +57,16 @@
   }
 }
 
-.menuItem {
+.menuItem:global(.list-box-item) {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
   width: 100%;
-  min-height: 40px;
+  height: var(--app-header-nav-item-height);
+  min-height: var(--app-header-nav-item-height);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   border-radius: var(--radius-md);
   padding: 0 calc(var(--sidebar-content-inset, var(--space-lg)) - 8px);
   color: var(--muted);

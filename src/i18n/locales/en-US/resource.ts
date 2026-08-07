@@ -201,6 +201,8 @@ const enUSResource = {
     loadingAria: 'Loading permission settings',
     collaborator: 'Collaborators',
     collaboratorSources: 'Collaborator permission sources',
+    loadMoreGroups: 'Load more groups',
+    loadingMoreGroups: 'Loading...',
     removeCollaborator: 'Remove collaborator',
     userPlaceholder: 'Full username or email',
     userInputAria: 'Collaborator username or email',

@@ -21,7 +21,7 @@ import type { DataNode } from '@/components/Tree';
 import Tree from '@/components/Tree';
 import { useGroupService, useNoteService } from '@/domains';
 import type { DriveNode, FolderNode, RootNode } from '@/domains/Drive';
-import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
+import { useOpenResource } from '@/hooks/useOpenResource';
 import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
@@ -54,7 +54,7 @@ function SidebarDrive() {
   const noteService = useNoteService();
   const scope = useSidebarDriveScopeStore((state) => state.scope);
   const groupId = getDriveScopeGroupId(scope);
-  const openInWorkspace = useOpenInWorkspace();
+  const openResource = useOpenResource();
   const [noteTarget, setNoteTarget] = useState<RootNode | FolderNode | null>(null);
   const [uploadDocumentPathTagId, setUploadDocumentPathTagId] = useState<string>();
   const [driveCreateTarget, setDriveCreateTarget] = useState<SidebarDriveCreateTarget | null>(null);
@@ -101,7 +101,7 @@ function SidebarDrive() {
       const target = importTargetRef.current;
       importTargetRef.current = null;
       if (!target) return;
-      openInWorkspace({
+      openResource({
         resourceId,
         resourceType: RESOURCE_KIND.NOTE,
         resourceName: title,
@@ -189,7 +189,7 @@ function SidebarDrive() {
     rootDisplayName,
     buildTreeData: buildChildrenData,
     onOpenResource: (node) => {
-      openInWorkspace({
+      openResource({
         resourceId: node.resourceId,
         resourceType: node.resourceType,
         resourceName: node.title,
@@ -226,7 +226,7 @@ function SidebarDrive() {
       refreshDeps: [noteTarget],
       onSuccess: ({ resourceId, target }) => {
         setNoteTarget(null);
-        openInWorkspace({
+        openResource({
           resourceId,
           resourceType: RESOURCE_KIND.NOTE,
           driveLocation: { scope: target.scope, parentNodeId: target.id },
@@ -308,7 +308,7 @@ function SidebarDrive() {
               return;
             }
             setDriveCreateTarget(null);
-            openInWorkspace({
+            openResource({
               resourceId: createdId,
               resourceType: type,
               driveLocation: { scope: target.scope, parentNodeId: target.id },

@@ -263,7 +263,7 @@ function Appearance() {
   const { radius, setRadius } = useThemeShape();
 
   return (
-    <div className={layout.pageContainer}>
+    <>
       <AppearanceHeader />
       <div className={styles.body}>
         <LanguageSection />
@@ -276,7 +276,7 @@ function Appearance() {
         <Separator className={styles.divider} />
         <ThemeShapeSection radius={radius} onRadiusChange={setRadius} />
       </div>
-    </div>
+    </>
   );
 }
 

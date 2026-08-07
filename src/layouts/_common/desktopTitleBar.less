@@ -28,7 +28,7 @@
 
 /**
  * 加高顶栏 + 上方拖拽带。
- * Workspace / Chat / 窗口按钮共用同一套高度与垂直节奏，避免左右顶栏错位。
+ * Resource / Chat / 窗口按钮共用同一套高度与垂直节奏，避免左右顶栏错位。
  */
 .desktopTitleBarChrome() {
   box-sizing: border-box;
@@ -55,7 +55,7 @@
     top: 0;
     right: 0;
     /* Workspace 可按 dock 宽度动态收窄；未设置时回退固定窗控宽 */
-    width: var(--workspace-header-end-reserve, @desktop-titlebar-end-reserve);
+    width: var(--resource-header-end-reserve, @desktop-titlebar-end-reserve);
     height: 100%;
     .desktopTitleBarNoDrag();
     pointer-events: none;

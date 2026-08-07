@@ -42,7 +42,7 @@
 }
 
 .header {
-  padding: var(--space-md) calc(var(--space-md) + 64px) 0 var(--space-md);
+  padding: var(--space-md) var(--space-md) 0;
 }
 
 .title {
@@ -66,21 +66,4 @@
   margin-left: auto;
   color: var(--muted);
   font-size: var(--font-size-sm);
-}
-
-.roleBadge {
-  position: absolute;
-  z-index: 1;
-  top: var(--space-sm);
-  right: var(--space-md);
-  max-width: calc(100% - var(--space-lg));
-  padding: 2px var(--space-xs);
-  overflow: hidden;
-  border-radius: var(--radius-sm);
-  color: var(--accent-soft-foreground);
-  background: var(--accent-soft);
-  font-size: var(--font-size-sm);
-  line-height: 1.5;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }

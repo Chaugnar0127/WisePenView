@@ -8,18 +8,14 @@ import CommandPaletteTrigger from '@/layouts/AppNavigation/CommandPaletteTrigger
 import { Tabs, Tooltip } from '@heroui/react';
 import clsx from 'clsx';
 import { BookOpen, FolderOpen, MessageSquare, type LucideIcon } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  SIDEBAR_VIEW_TAB,
+  useSidebarViewTabStore,
+  type SidebarViewTabKey,
+} from '../_store/useSidebarViewTabStore';
 import SessionListGroup from '../SessionListGroup';
 import styles from './style.module.less';
-
-const SIDEBAR_VIEW_TAB = {
-  SESSIONS: 'session-history',
-  DRIVE: 'drive',
-  COURSES: 'courses',
-} as const;
-
-type SidebarViewTabKey = (typeof SIDEBAR_VIEW_TAB)[keyof typeof SIDEBAR_VIEW_TAB];
 
 interface SidebarViewTabProps {
   id: SidebarViewTabKey;
@@ -51,7 +47,8 @@ function AppSidebarTabs() {
   const appAuth = useAppAuth();
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
-  const [selectedTab, setSelectedTab] = useState<SidebarViewTabKey>(SIDEBAR_VIEW_TAB.DRIVE);
+  const selectedTab = useSidebarViewTabStore((state) => state.selectedTab);
+  const setSelectedTab = useSidebarViewTabStore((state) => state.setSelectedTab);
   const selectedKeys = currentSessionId ? [`session-${currentSessionId}`] : [];
 
   if (!appAuth.isAuthenticated) {

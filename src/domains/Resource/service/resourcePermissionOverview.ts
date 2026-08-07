@@ -5,7 +5,6 @@ import { SkillApi } from '@/domains/Skill/apis/SkillApi';
 import type { TagTreeNode } from '@/domains/Tag';
 import { TagApi } from '@/domains/Tag/apis/TagApi';
 import { TagServicesMap } from '@/domains/Tag/mapper/TagServices.map';
-import type { IUserService, UserSearchUser } from '@/domains/User';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { type ResourceAction } from '../enum';
 import { ResourceServicesMap } from '../mapper/ResourceServices.map';
@@ -14,13 +13,58 @@ import type {
   ResourcePermissionGroupInfo,
   ResourcePermissionHydration,
   ResourcePermissionOverview,
-  ResourcePermissionUserInfo,
 } from './index.type';
 
 export interface ResourcePermissionOverviewDeps {
   groupService: IGroupService;
-  userService: IUserService;
 }
+
+const PERMISSION_OVERVIEW_HYDRATION_CONCURRENCY = 10;
+
+const normalizePermissionGroupHydrationLimit = (value: number | undefined): number | undefined => {
+  if (value === undefined) return undefined;
+  return Math.max(0, Math.floor(value));
+};
+
+const runWithConcurrency = async <T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>
+): Promise<R[]> => {
+  const results = new Array<R>(items.length);
+  let cursor = 0;
+
+  const runNext = async (): Promise<void> => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await worker(items[index], index);
+    }
+  };
+
+  const workerCount = Math.min(Math.max(1, concurrency), items.length);
+  await Promise.all(Array.from({ length: workerCount }, () => runNext()));
+  return results;
+};
+
+const collectPermissionGroupIds = (
+  overview: ResourcePermissionOverview,
+  limit?: number
+): string[] => {
+  const groupIds: string[] = [];
+  const seenGroupIds = new Set<string>();
+  const normalizedLimit = normalizePermissionGroupHydrationLimit(limit);
+
+  for (const subject of overview.subjects) {
+    const groupId = subject.groupId;
+    if (!groupId || seenGroupIds.has(groupId)) continue;
+    groupIds.push(groupId);
+    seenGroupIds.add(groupId);
+    if (normalizedLimit !== undefined && groupIds.length >= normalizedLimit) break;
+  }
+
+  return groupIds;
+};
 
 const getPermissionResourceInfo = async (params: GetResourcePermissionOverviewRequest) => {
   switch (params.resourceType) {
@@ -44,87 +88,16 @@ const getPermissionResourceInfo = async (params: GetResourcePermissionOverviewRe
   }
 };
 
-const mapPermissionUserInfo = (user: UserSearchUser): ResourcePermissionUserInfo => ({
-  userId: user.userId,
-  username: user.username,
-  nickname: user.nickname,
-  realName: user.realName,
-  avatar: user.avatar,
-});
-
-const loadPermissionUserInfo = async (
-  overview: ResourcePermissionOverview,
-  userService: IUserService
-): Promise<ReadonlyMap<string, ResourcePermissionUserInfo>> => {
-  const userSubjects = overview.subjects.filter(
-    (subject) => subject.userId && subject.kind !== 'group'
-  );
-  if (userSubjects.length === 0) return new Map();
-
-  const userInfoById = new Map<string, ResourcePermissionUserInfo>();
-  const ownerIds = new Set(
-    userSubjects
-      .filter((subject) => subject.source === 'owner')
-      .map((subject) => subject.userId)
-      .filter((userId): userId is string => Boolean(userId))
-  );
-
-  if (ownerIds.size > 0) {
-    const currentUser = await userService.getUserInfo().catch(() => undefined);
-    if (currentUser && ownerIds.has(currentUser.id)) {
-      userInfoById.set(currentUser.id, {
-        userId: currentUser.id,
-        username: currentUser.username,
-        nickname: currentUser.nickname,
-        realName: currentUser.realName,
-        avatar: currentUser.avatar,
-      });
-    }
-  }
-
-  const subjectByUserId = new Map<string, (typeof userSubjects)[number]>();
-  userSubjects.forEach((subject) => {
-    if (subject.userId && subject.source !== 'owner' && !subjectByUserId.has(subject.userId)) {
-      subjectByUserId.set(subject.userId, subject);
-    }
-  });
-
-  await Promise.all(
-    Array.from(subjectByUserId.entries()).map(async ([userId, subject]) => {
-      const keywords = Array.from(
-        new Set([userId, subject.name].map((keyword) => keyword.trim()).filter(Boolean))
-      );
-      for (const keyword of keywords) {
-        const candidates = await userService
-          .queryUserSearchCandidates({ keyword, size: 6 })
-          .catch(() => []);
-        const matchedUser = candidates.find((user) => user.userId === userId);
-        if (matchedUser) {
-          userInfoById.set(userId, mapPermissionUserInfo(matchedUser));
-          return;
-        }
-      }
-    })
-  );
-
-  return userInfoById;
-};
-
 const loadPermissionGroupInfo = async (
-  overview: ResourcePermissionOverview,
+  groupIds: string[],
   groupService: IGroupService
 ): Promise<ReadonlyMap<string, ResourcePermissionGroupInfo>> => {
-  const groupIds = Array.from(
-    new Set(
-      overview.subjects
-        .map((subject) => subject.groupId)
-        .filter((groupId): groupId is string => Boolean(groupId))
-    )
-  );
   if (groupIds.length === 0) return new Map();
 
-  const groupInfos = await Promise.all(
-    groupIds.map((groupId) => groupService.fetchGroupBaseInfo(groupId).catch(() => undefined))
+  const groupInfos = await runWithConcurrency(
+    groupIds,
+    PERMISSION_OVERVIEW_HYDRATION_CONCURRENCY,
+    (groupId) => groupService.fetchGroupBaseInfo(groupId).catch(() => undefined)
   );
   return new Map(
     groupInfos
@@ -153,11 +126,13 @@ const buildTagFlatMap = (roots: TagTreeNode[]): Map<string, TagTreeNode> => {
 
 /** TagService 反向依赖 ResourceService，此处复用 Tag API 与 mapper 避免 registry 循环。 */
 const loadPermissionInheritedActions = async (
-  overview: ResourcePermissionOverview
+  overview: ResourcePermissionOverview,
+  groupIds: string[]
 ): Promise<ReadonlyMap<string, ResourceAction[]>> => {
+  const groupIdSet = new Set(groupIds);
   const subjectsByGroupId = new Map<string, ResourcePermissionOverview['subjects']>();
   overview.subjects.forEach((subject) => {
-    if (!subject.groupId || !subject.primaryTagId) return;
+    if (!subject.groupId || !subject.primaryTagId || !groupIdSet.has(subject.groupId)) return;
     const subjects = subjectsByGroupId.get(subject.groupId) ?? [];
     subjects.push(subject);
     subjectsByGroupId.set(subject.groupId, subjects);
@@ -165,8 +140,10 @@ const loadPermissionInheritedActions = async (
   if (subjectsByGroupId.size === 0) return new Map();
 
   const inheritedActionsBySubjectId = new Map<string, ResourceAction[]>();
-  await Promise.all(
-    Array.from(subjectsByGroupId.entries()).map(async ([groupId, subjects]) => {
+  await runWithConcurrency(
+    Array.from(subjectsByGroupId.entries()),
+    PERMISSION_OVERVIEW_HYDRATION_CONCURRENCY,
+    async ([groupId, subjects]) => {
       const data = await TagApi.getTagTree(TagServicesMap.mapGetTagTreeRequest(groupId)).catch(
         () => undefined
       );
@@ -180,20 +157,22 @@ const loadPermissionInheritedActions = async (
           inheritedActionsBySubjectId.set(subject.id, inheritedActions);
         }
       });
-    })
+    }
   );
   return inheritedActionsBySubjectId;
 };
 
 const enrichResourcePermissionOverview = async (
   overview: ResourcePermissionOverview,
+  params: GetResourcePermissionOverviewRequest,
   deps: ResourcePermissionOverviewDeps
 ): Promise<ResourcePermissionOverview> => {
-  const [userInfoById, groupInfoById, inheritedActionsBySubjectId] = await Promise.all([
-    loadPermissionUserInfo(overview, deps.userService),
-    loadPermissionGroupInfo(overview, deps.groupService),
-    loadPermissionInheritedActions(overview),
+  const groupIds = collectPermissionGroupIds(overview, params.groupHydrationLimit);
+  const [groupInfoById, inheritedActionsBySubjectId] = await Promise.all([
+    loadPermissionGroupInfo(groupIds, deps.groupService),
+    loadPermissionInheritedActions(overview, groupIds),
   ]);
+  const userInfoById: ResourcePermissionHydration['userInfoById'] = new Map();
   const hydration: ResourcePermissionHydration = {
     userInfoById,
     groupInfoById,
@@ -211,5 +190,5 @@ export const getResourcePermissionOverview = async (
     resourceInfo,
     params.resourceId
   );
-  return enrichResourcePermissionOverview(overview, deps);
+  return enrichResourcePermissionOverview(overview, params, deps);
 };

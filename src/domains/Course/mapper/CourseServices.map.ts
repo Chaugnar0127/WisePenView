@@ -291,10 +291,7 @@ const mapGroupMemberToCourseMember = (member: GroupMember): CourseMember => ({
 const getTeacherName = (group: Group): string =>
   group.ownerInfo?.realName || group.ownerInfo?.nickname || '';
 
-const mapGroupToCourseSummary = (
-  group: Group,
-  role: 'OWNER' | 'ADMIN' | 'MEMBER'
-): CourseSummary => {
+const mapGroupToCourseSummary = (group: Group): CourseSummary => {
   const metadata = parseCourseMeta(group.groupMetaInfo);
   return {
     courseId: group.groupId,
@@ -303,7 +300,6 @@ const mapGroupToCourseSummary = (
     coverUrl: group.groupCoverUrl || undefined,
     term: metadata.term,
     category: metadata.category,
-    myRole: mapGroupRole(role),
     teacherName: getTeacherName(group),
   };
 };
@@ -312,7 +308,8 @@ const mapGroupToCourseDetail = (group: Group, role: 'OWNER' | 'ADMIN' | 'MEMBER'
   const metadata = parseCourseMeta(group.groupMetaInfo);
   const teacherName = getTeacherName(group);
   return {
-    ...mapGroupToCourseSummary(group, role),
+    ...mapGroupToCourseSummary(group),
+    myRole: mapGroupRole(role),
     teacher: {
       userId: group.ownerId ?? '',
       name: teacherName,

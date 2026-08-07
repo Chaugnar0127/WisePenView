@@ -4,8 +4,8 @@ import EntryIcon from '@/components/Icons/EntryIcon';
 import { useResourceService } from '@/domains';
 import type { SearchHitItem, SearchResultPage } from '@/domains/Resource';
 import { SEARCH_SCOPE } from '@/domains/Resource';
-import { useOpenInWorkspace } from '@/hooks/useOpenInWorkspace';
-import { useWorkspaceNavigationStore } from '@/layouts/Workspace/_store/useWorkspaceNavigationStore';
+import { useOpenResource } from '@/hooks/useOpenResource';
+import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useInfiniteScroll } from 'ahooks';
@@ -41,16 +41,16 @@ const toPlainText = (markup: string): string => {
 };
 
 function ResourceResultItem({ item, onSelect }: { item: SearchHitItem; onSelect: () => void }) {
-  const openInWorkspace = useOpenInWorkspace();
+  const openResource = useOpenResource();
   const plainName = toPlainText(item.resourceName);
 
   const handleSelect = () => {
     onSelect();
-    openInWorkspace({
+    openResource({
       resourceId: item.resourceId,
       resourceType: item.resourceType,
       resourceName: plainName,
-      driveLocation: { scope: useWorkspaceNavigationStore.getState().location.scope },
+      driveLocation: { scope: useResourceNavigationStore.getState().location.scope },
     });
   };
 

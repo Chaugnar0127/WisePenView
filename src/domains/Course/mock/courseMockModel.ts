@@ -80,6 +80,7 @@ export const mapCourseMockDetailToSummary = (detail: CourseDetail): CourseSummar
     totalTeachingWeeks: _totalTeachingWeeks,
     memberCount: _memberCount,
     outlineRootTagId: _outlineRootTagId,
+    myRole: _myRole,
     ...summary
   } = detail;
   return summary;

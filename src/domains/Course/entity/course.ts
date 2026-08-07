@@ -46,7 +46,6 @@ export interface CourseSummary {
   coverUrl?: string;
   term: string;
   category?: string;
-  myRole: CourseRole;
   /** 聚合查询接入前，真实 Group 列表可能不提供课程进度。 */
   readResourceCount?: number;
   totalResourceCount?: number;
@@ -56,6 +55,7 @@ export interface CourseSummary {
 }
 
 export interface CourseDetail extends CourseSummary {
+  myRole: CourseRole;
   teacher: CourseTeacher;
   startAt?: string;
   endAt?: string;

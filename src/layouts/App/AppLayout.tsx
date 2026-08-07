@@ -4,6 +4,7 @@ import {
   LAYOUT_DENSITY,
   resolveLayoutDensity,
 } from '@/constants/layoutScale';
+import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
 import { focusVisibleSidebarToggle } from '@/layouts/_common/a11y/sidebarToggle';
@@ -38,10 +39,12 @@ import type {
 } from 'react-resizable-panels';
 import { Outlet } from 'react-router-dom';
 import styles from './AppLayout.module.less';
+import AppResourceShell from './AppResourceShell';
 
 function AppLayout() {
   const { t } = useTranslation('shell');
   const appNavigation = useAppNavigation();
+  const routeMeta = useAppRouteMeta();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () =>
       typeof window !== 'undefined' &&
@@ -72,6 +75,8 @@ function AppLayout() {
   const anchorSidebarSlide = isSidebarAnimating || sidebarCollapsed;
   /* Desktop 收起控件在主顶栏：收起一开始就挂上，避免动画结束再挂载导致末帧卡顿 */
   const showDesktopCollapsedChrome = sidebarCollapsed;
+  const isResourceRoute = routeMeta?.pageKey === 'resource';
+  const contentContainer = routeMeta?.contentContainer;
 
   const persistSidebarWidthFromPanel = () => {
     const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
@@ -131,6 +136,14 @@ function AppLayout() {
     if (sidebarCollapsed || !meta.isUserInteraction || pendingSidebarWidth == null) return;
     setSidebarWidth(pendingSidebarWidth);
   };
+
+  const content = isResourceRoute ? (
+    <AppResourceShell>
+      <Outlet />
+    </AppResourceShell>
+  ) : (
+    <Outlet />
+  );
 
   return (
     <div className={styles.root} data-layout-density={density}>
@@ -238,8 +251,27 @@ function AppLayout() {
               ) : null}
             </header>
           ) : null}
-          <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.middleContent}>
-            <Outlet />
+          <main
+            id={MAIN_CONTENT_ID}
+            tabIndex={-1}
+            className={clsx(
+              styles.middleContent,
+              isResourceRoute && styles.middleContentResource,
+              contentContainer && styles.middleContentContained
+            )}
+          >
+            {contentContainer ? (
+              <div
+                className={clsx(
+                  styles.appPageContainer,
+                  contentContainer === 'fixed' && styles.appPageContainerFixed
+                )}
+              >
+                {content}
+              </div>
+            ) : (
+              content
+            )}
           </main>
         </SystemResizablePanel>
       </SystemResizablePanelGroup>

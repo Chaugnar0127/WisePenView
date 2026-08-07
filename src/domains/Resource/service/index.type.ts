@@ -112,6 +112,8 @@ export type ResourcePermissionResourceType = 'note' | 'drawio' | 'file' | 'skill
 export interface GetResourcePermissionOverviewRequest {
   resourceId: string;
   resourceType: ResourcePermissionResourceType;
+  /** 权限概览最多补全的小组数量；超出部分由调用方按需加载。 */
+  groupHydrationLimit?: number;
 }
 
 export type ResourcePermissionSubjectKind = 'owner' | 'group' | 'user';

@@ -166,6 +166,7 @@ function ResourcePermissionPanel({
   const {
     actionOptions,
     addSpecifiedUserCandidate,
+    canLoadMoreGroups,
     error,
     existingSpecifiedUserIds,
     handleActionToggle,
@@ -174,7 +175,9 @@ function ResourcePermissionPanel({
     handleUserSearchError,
     inheritedSubjects,
     isUpdating,
+    loadMoreGroups,
     loading,
+    loadingMoreGroups,
     newUserKeyword,
     permissionOverview,
     queryUserCandidates,
@@ -263,6 +266,22 @@ function ResourcePermissionPanel({
                 aria-label={t('permission.collaboratorSources')}
               >
                 {inheritedSubjects.map(renderSubjectItem)}
+                {canLoadMoreGroups ? (
+                  <div className={styles.loadMoreGroupsRow}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className={styles.loadMoreGroupsButton}
+                      isDisabled={isUpdating || loadingMoreGroups}
+                      aria-busy={loadingMoreGroups || undefined}
+                      onPress={loadMoreGroups}
+                    >
+                      {loadingMoreGroups
+                        ? t('permission.loadingMoreGroups')
+                        : t('permission.loadMoreGroups')}
+                    </Button>
+                  </div>
+                ) : null}
                 {shouldShowInviteDivider ? (
                   <div className={styles.inviteDivider} aria-hidden />
                 ) : null}

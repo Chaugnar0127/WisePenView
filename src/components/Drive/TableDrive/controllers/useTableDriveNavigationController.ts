@@ -8,6 +8,8 @@ import { startTransition, useRef, useState } from 'react';
 import { useDriveTreeChildren } from '../../common/useDriveTreeChildren';
 import type { DriveRow } from '../index.type';
 
+const TABLE_DRIVE_RESOURCE_PREVIEW_LIMIT = 50;
+
 interface UseTableDriveNavigationControllerParams {
   initialNodeId?: string;
   scope: DriveNodeScope;
@@ -58,7 +60,11 @@ export function useTableDriveNavigationController({
   // 当前 Drive 作用域及其子节点缓存
   const rootId = scope.rootId;
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
-  const { childrenMap, loadChildren, reset } = useDriveTreeChildren({ groupId, scope });
+  const { childrenMap, loadChildren, reset } = useDriveTreeChildren({
+    groupId,
+    scope,
+    resourceLimit: TABLE_DRIVE_RESOURCE_PREVIEW_LIMIT,
+  });
 
   // 导航定位：作用域或初始节点变化时重置当前目录
   const navigationKey = `${rootId}\u0000${initialNodeId ?? ''}`;

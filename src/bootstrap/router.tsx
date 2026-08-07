@@ -1,7 +1,11 @@
 import { lazy } from 'react';
 import { createHashRouter, Navigate } from 'react-router-dom';
 
-import { APP_HEADER_NAV_KEY, appRouteHandle } from '@/bootstrap/routeMeta';
+import {
+  APP_HEADER_NAV_KEY,
+  appRouteHandle,
+  type AppRouteContentContainer,
+} from '@/bootstrap/routeMeta';
 import AdminLayout from '@/layouts/Admin/AdminLayout';
 import { AppAuthProvider } from '@/layouts/App/AppAuthProvider';
 import AppLayout from '@/layouts/App/AppLayout';
@@ -9,8 +13,6 @@ import AppNavigationLayout from '@/layouts/AppNavigation/AppNavigationLayout';
 import AuthLayout from '@/layouts/Auth/AuthLayout';
 import CourseLayout from '@/layouts/Course/CourseLayout';
 import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
-import PublicLayout from '@/layouts/Public/PublicLayout';
-import WorkspaceLayout from '@/layouts/Workspace/WorkspaceLayout';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
 import AppError from '@/views/app/error/AppError';
@@ -56,7 +58,7 @@ const AuthBindingOnboarding = lazy(() => import('@/views/app/auth/AuthBindingOnb
 const ResetPassword = lazy(() => import('@/views/app/auth/ResetPassword'));
 const NewPassword = lazy(() => import('@/views/app/auth/NewPassword'));
 const VerifyEmail = lazy(() => import('@/views/app/auth/VerifyEmail'));
-const WorkspaceResourceView = lazy(() => import('@/views/workspace/WorkspaceResourceView'));
+const ResourceRouteView = lazy(() => import('@/views/resource/ResourceRouteView'));
 const ChatPage = lazy(() => import('@/views/app/chat'));
 const NotificationsPage = lazy(() => import('@/views/app/notifications'));
 const CourseRoute = lazy(() => import('@/views/app/course/CourseRoute'));
@@ -90,24 +92,29 @@ const chatSessionHandle = appRouteHandle({
 const notificationHandle = appRouteHandle({
   pageKey: 'notifications',
   headerNav: APP_HEADER_NAV_KEY.NOTIFICATIONS,
+  contentContainer: 'scrollable',
 });
 const driveHandle = appRouteHandle({
   pageKey: 'drive',
   headerNav: APP_HEADER_NAV_KEY.DRIVE,
+  contentContainer: 'fixed',
 });
-const groupHandle = (pageKey: string) =>
+const groupHandle = (pageKey: string, contentContainer?: AppRouteContentContainer) =>
   appRouteHandle({
     pageKey,
     headerNav: APP_HEADER_NAV_KEY.PUBLIC,
+    contentContainer,
   });
-const courseHandle = (pageKey: string) =>
+const courseHandle = (pageKey: string, contentContainer?: AppRouteContentContainer) =>
   appRouteHandle({
     pageKey,
     headerNav: APP_HEADER_NAV_KEY.PUBLIC,
+    contentContainer,
   });
 const publicInviteHandle = appRouteHandle({
   pageKey: 'invite',
   headerNav: APP_HEADER_NAV_KEY.PUBLIC,
+  contentContainer: 'scrollable',
 });
 const resourceHandle = appRouteHandle({
   pageKey: 'resource',
@@ -115,6 +122,7 @@ const resourceHandle = appRouteHandle({
 });
 const profileHandle = appRouteHandle({
   pageKey: 'profile',
+  contentContainer: 'scrollable',
 });
 
 const router = createHashRouter([
@@ -219,142 +227,142 @@ const router = createHashRouter([
                 element: <Drive viewMode="trash" />,
                 handle: driveHandle,
               },
+              {
+                path: 'resources/:resourceType/:resourceId',
+                element: <ResourceRouteView />,
+                handle: resourceHandle,
+              },
               { index: true, element: <Navigate to={APP_ROUTE_PATH.GROUPS} replace /> },
               {
-                element: <PublicLayout />,
+                path: 'invite',
+                element: <PublicInvitePage />,
+                handle: publicInviteHandle,
+              },
+              {
+                path: 'groups',
+                element: <PublicGroupsPage />,
+                handle: groupHandle('groups.list', 'scrollable'),
+              },
+              {
+                path: 'groups/:groupId',
+                element: <GroupRoute />,
                 children: [
                   {
-                    path: 'invite',
-                    element: <PublicInvitePage />,
-                    handle: publicInviteHandle,
+                    index: true,
+                    element: <Navigate to="files" replace />,
                   },
                   {
-                    path: 'groups',
-                    element: <PublicGroupsPage />,
-                    handle: groupHandle('groups.list'),
+                    element: <GroupDetail />,
+                    children: [
+                      {
+                        path: 'files',
+                        element: <GroupFilesPage />,
+                        handle: groupHandle('group.files'),
+                      },
+                      {
+                        path: 'files/folder/:folderId',
+                        element: <GroupFilesPage />,
+                        handle: groupHandle('group.files'),
+                      },
+                      {
+                        path: 'members',
+                        element: <GroupMembersPage />,
+                        handle: groupHandle('group.members'),
+                      },
+                      {
+                        element: <GroupWalletRouteGuard />,
+                        children: [
+                          {
+                            path: 'wallet',
+                            element: <GroupWalletPage />,
+                            handle: groupHandle('group.wallet'),
+                          },
+                          {
+                            path: 'token-transfer',
+                            element: <GroupTokenTransferPage />,
+                            handle: groupHandle('group.tokenTransfer'),
+                          },
+                        ],
+                      },
+                      {
+                        path: 'settings',
+                        element: <GroupSettingsPage />,
+                        handle: groupHandle('group.settings'),
+                      },
+                    ],
                   },
+                ],
+              },
+              {
+                path: 'courses',
+                element: <PublicCoursesPage />,
+                handle: courseHandle('courses.list', 'scrollable'),
+              },
+              {
+                path: 'courses/:courseId',
+                element: <CourseRoute />,
+                children: [
                   {
-                    path: 'groups/:groupId',
-                    element: <GroupRoute />,
+                    element: <CourseLayout />,
                     children: [
                       {
                         index: true,
-                        element: <Navigate to="files" replace />,
+                        element: <Navigate to="home" replace />,
                       },
                       {
-                        element: <GroupDetail />,
+                        element: <CourseContextPage />,
                         children: [
                           {
-                            path: 'files',
-                            element: <GroupFilesPage />,
-                            handle: groupHandle('group.files'),
+                            path: 'home',
+                            element: <CourseHomePage />,
+                            handle: courseHandle('course.home'),
                           },
                           {
-                            path: 'files/folder/:folderId',
-                            element: <GroupFilesPage />,
-                            handle: groupHandle('group.files'),
-                          },
-                          {
-                            path: 'members',
-                            element: <GroupMembersPage />,
-                            handle: groupHandle('group.members'),
-                          },
-                          {
-                            element: <GroupWalletRouteGuard />,
-                            children: [
-                              {
-                                path: 'wallet',
-                                element: <GroupWalletPage />,
-                                handle: groupHandle('group.wallet'),
-                              },
-                              {
-                                path: 'token-transfer',
-                                element: <GroupTokenTransferPage />,
-                                handle: groupHandle('group.tokenTransfer'),
-                              },
-                            ],
-                          },
-                          {
-                            path: 'settings',
-                            element: <GroupSettingsPage />,
-                            handle: groupHandle('group.settings'),
+                            path: 'info',
+                            element: <CourseInfoPage />,
+                            handle: courseHandle('course.info'),
                           },
                         ],
+                      },
+                      {
+                        path: 'assignments',
+                        element: <CourseAssignmentsPage />,
+                        handle: courseHandle('course.assignments'),
+                      },
+                      {
+                        path: 'assignments/:assignmentId',
+                        element: <CourseAssignmentDetailPage />,
+                        handle: courseHandle('course.assignment'),
+                      },
+                      {
+                        path: 'materials',
+                        element: <CourseMaterialsPage />,
+                        handle: courseHandle('course.materials'),
+                      },
+                      {
+                        path: 'announcements',
+                        element: <CourseAnnouncementsPage />,
+                        handle: courseHandle('course.announcements'),
+                      },
+                      {
+                        path: 'members',
+                        element: <CourseMembersPage />,
+                        handle: courseHandle('course.members'),
                       },
                     ],
                   },
                   {
-                    path: 'courses',
-                    element: <PublicCoursesPage />,
-                    handle: courseHandle('courses.list'),
+                    path: 'learning/:outlineNodeId?',
+                    element: <CourseLearningLayout />,
+                    handle: courseHandle('course.learning'),
                   },
                   {
-                    path: 'courses/:courseId',
-                    element: <CourseRoute />,
+                    element: <CourseSettingsRouteGuard />,
                     children: [
                       {
-                        element: <CourseLayout />,
-                        children: [
-                          {
-                            index: true,
-                            element: <Navigate to="home" replace />,
-                          },
-                          {
-                            element: <CourseContextPage />,
-                            children: [
-                              {
-                                path: 'home',
-                                element: <CourseHomePage />,
-                                handle: courseHandle('course.home'),
-                              },
-                              {
-                                path: 'info',
-                                element: <CourseInfoPage />,
-                                handle: courseHandle('course.info'),
-                              },
-                            ],
-                          },
-                          {
-                            path: 'assignments',
-                            element: <CourseAssignmentsPage />,
-                            handle: courseHandle('course.assignments'),
-                          },
-                          {
-                            path: 'assignments/:assignmentId',
-                            element: <CourseAssignmentDetailPage />,
-                            handle: courseHandle('course.assignment'),
-                          },
-                          {
-                            path: 'materials',
-                            element: <CourseMaterialsPage />,
-                            handle: courseHandle('course.materials'),
-                          },
-                          {
-                            path: 'announcements',
-                            element: <CourseAnnouncementsPage />,
-                            handle: courseHandle('course.announcements'),
-                          },
-                          {
-                            path: 'members',
-                            element: <CourseMembersPage />,
-                            handle: courseHandle('course.members'),
-                          },
-                        ],
-                      },
-                      {
-                        path: 'learning/:outlineNodeId?',
-                        element: <CourseLearningLayout />,
-                        handle: courseHandle('course.learning'),
-                      },
-                      {
-                        element: <CourseSettingsRouteGuard />,
-                        children: [
-                          {
-                            path: 'settings',
-                            element: <CourseEditorPage />,
-                            handle: courseHandle('course.settings'),
-                          },
-                        ],
+                        path: 'settings',
+                        element: <CourseEditorPage />,
+                        handle: courseHandle('course.settings'),
                       },
                     ],
                   },
@@ -377,17 +385,6 @@ const router = createHashRouter([
             handle: appRouteHandle({
               pageKey: 'app.notFound',
             }),
-          },
-          {
-            element: <WorkspaceLayout />,
-            errorElement: <RouteError />,
-            children: [
-              {
-                path: 'resources/:resourceType/:resourceId',
-                element: <WorkspaceResourceView />,
-                handle: resourceHandle,
-              },
-            ],
           },
         ],
       },

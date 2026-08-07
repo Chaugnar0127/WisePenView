@@ -6,9 +6,9 @@ import {
   type OpenResourceFn,
   type ResourceHostContextValue,
   type ResourceHostLayoutConfig,
-} from '@/views/workspace/ResourceHostContext';
-import ResourceRenderer from '@/views/workspace/ResourceRenderer';
-import WorkspaceResourceSidePanel from '@/views/workspace/_components/WorkspaceResourceSidePanel';
+} from '@/views/resource/ResourceHostContext';
+import ResourceRenderer from '@/views/resource/ResourceRenderer';
+import ResourceSidePanel from '@/views/resource/_components/ResourceSidePanel';
 import clsx from 'clsx';
 import styles from './style.module.less';
 
@@ -66,13 +66,13 @@ function CourseResourceHost({
 
   return (
     <ResourceHostContext value={resourceHostContext}>
-      <WorkspaceResourceSidePanel resourceId={target.resourceId ?? ''} config={sidePanelConfig}>
+      <ResourceSidePanel resourceId={target.resourceId ?? ''} config={sidePanelConfig}>
         <div className={clsx(styles.root, layoutConfig.className)}>
           <div className={clsx(styles.body, layoutConfig.bodyClassName)}>
             <ResourceRenderer target={target} onTargetChange={onTargetChange} onClose={onClose} />
           </div>
         </div>
-      </WorkspaceResourceSidePanel>
+      </ResourceSidePanel>
     </ResourceHostContext>
   );
 }

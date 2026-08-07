@@ -1,16 +1,13 @@
-import { ResultState, Spin } from '@/components/Feedback';
+import { buildLoginPathForCurrentLocation } from '@/bootstrap/authContinuation';
+import { Spin } from '@/components/Feedback';
 import { useUserService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
-import { Button } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import styles from './style.module.less';
 
 function AuthenticatedRouteGuard() {
-  const { t } = useTranslation('errors');
   const userService = useUserService();
-  const { data, error, loading, refresh } = useRequest(() => userService.getUserInfo());
+  const { data, error, loading } = useRequest(() => userService.getUserInfo());
 
   if (loading || (!data && !error)) {
     return (
@@ -21,20 +18,7 @@ function AuthenticatedRouteGuard() {
   }
 
   if (error || !data) {
-    return (
-      <div className={styles.state}>
-        <ResultState
-          status="error"
-          title={t('page.sessionCheckFailed')}
-          subTitle={error ? parseErrorMessage(error) : t('page.loadFailed')}
-          extra={
-            <Button variant="primary" onPress={refresh}>
-              {t('page.retry')}
-            </Button>
-          }
-        />
-      </div>
-    );
+    return <Navigate to={buildLoginPathForCurrentLocation()} replace />;
   }
 
   return <Outlet />;

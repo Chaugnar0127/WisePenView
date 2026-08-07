@@ -1,3 +1,4 @@
+import { buildLoginPathForCurrentLocation } from '@/bootstrap/authContinuation';
 import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
 import { resetSessionStores } from '@/store/lifecycle';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
@@ -40,15 +41,9 @@ const resetSessionState = (): void => {
   resetSessionStores();
 };
 
-const redirectToPublicChat = (): void => {
-  if (window.location.pathname !== APP_ROUTE_PATH.PUBLIC_CHAT) {
-    window.location.replace(APP_ROUTE_PATH.PUBLIC_CHAT);
-  }
-};
-
 const redirectToLogin = (): void => {
   if (window.location.pathname !== APP_ROUTE_PATH.AUTH_LOGIN) {
-    window.location.replace(APP_ROUTE_PATH.AUTH_LOGIN);
+    window.location.replace(buildLoginPathForCurrentLocation());
   }
 };
 
@@ -67,7 +62,7 @@ const applySessionEvent = (type: AuthSessionEventType): void => {
     redirectToLogin();
     return;
   }
-  redirectToPublicChat();
+  redirectToLogin();
 };
 
 const broadcastSessionEvent = (type: AuthSessionEventType): void => {
@@ -90,7 +85,7 @@ const coordinateSessionEvent = (type: AuthSessionEventType): void => {
       redirectToLogin();
       return;
     }
-    redirectToPublicChat();
+    redirectToLogin();
     return;
   }
 

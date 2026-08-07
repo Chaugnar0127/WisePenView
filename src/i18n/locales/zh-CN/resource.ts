@@ -201,6 +201,8 @@ const zhCNResource = {
     loadingAria: '正在加载权限配置',
     collaborator: '协作者',
     collaboratorSources: '协作者权限来源',
+    loadMoreGroups: '加载更多小组',
+    loadingMoreGroups: '加载中...',
     removeCollaborator: '移除协作者',
     userPlaceholder: '完整用户名或邮箱',
     userInputAria: '协作者用户名或邮箱',

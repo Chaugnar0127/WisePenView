@@ -19,6 +19,53 @@ export interface ResourcePermissionOverviewDeps {
   groupService: IGroupService;
 }
 
+const PERMISSION_OVERVIEW_HYDRATION_CONCURRENCY = 10;
+
+const normalizePermissionGroupHydrationLimit = (value: number | undefined): number | undefined => {
+  if (value === undefined) return undefined;
+  return Math.max(0, Math.floor(value));
+};
+
+const runWithConcurrency = async <T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>
+): Promise<R[]> => {
+  const results = new Array<R>(items.length);
+  let cursor = 0;
+
+  const runNext = async (): Promise<void> => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await worker(items[index], index);
+    }
+  };
+
+  const workerCount = Math.min(Math.max(1, concurrency), items.length);
+  await Promise.all(Array.from({ length: workerCount }, () => runNext()));
+  return results;
+};
+
+const collectPermissionGroupIds = (
+  overview: ResourcePermissionOverview,
+  limit?: number
+): string[] => {
+  const groupIds: string[] = [];
+  const seenGroupIds = new Set<string>();
+  const normalizedLimit = normalizePermissionGroupHydrationLimit(limit);
+
+  for (const subject of overview.subjects) {
+    const groupId = subject.groupId;
+    if (!groupId || seenGroupIds.has(groupId)) continue;
+    groupIds.push(groupId);
+    seenGroupIds.add(groupId);
+    if (normalizedLimit !== undefined && groupIds.length >= normalizedLimit) break;
+  }
+
+  return groupIds;
+};
+
 const getPermissionResourceInfo = async (params: GetResourcePermissionOverviewRequest) => {
   switch (params.resourceType) {
     case 'note':
@@ -42,20 +89,15 @@ const getPermissionResourceInfo = async (params: GetResourcePermissionOverviewRe
 };
 
 const loadPermissionGroupInfo = async (
-  overview: ResourcePermissionOverview,
+  groupIds: string[],
   groupService: IGroupService
 ): Promise<ReadonlyMap<string, ResourcePermissionGroupInfo>> => {
-  const groupIds = Array.from(
-    new Set(
-      overview.subjects
-        .map((subject) => subject.groupId)
-        .filter((groupId): groupId is string => Boolean(groupId))
-    )
-  );
   if (groupIds.length === 0) return new Map();
 
-  const groupInfos = await Promise.all(
-    groupIds.map((groupId) => groupService.fetchGroupBaseInfo(groupId).catch(() => undefined))
+  const groupInfos = await runWithConcurrency(
+    groupIds,
+    PERMISSION_OVERVIEW_HYDRATION_CONCURRENCY,
+    (groupId) => groupService.fetchGroupBaseInfo(groupId).catch(() => undefined)
   );
   return new Map(
     groupInfos
@@ -84,11 +126,13 @@ const buildTagFlatMap = (roots: TagTreeNode[]): Map<string, TagTreeNode> => {
 
 /** TagService 反向依赖 ResourceService，此处复用 Tag API 与 mapper 避免 registry 循环。 */
 const loadPermissionInheritedActions = async (
-  overview: ResourcePermissionOverview
+  overview: ResourcePermissionOverview,
+  groupIds: string[]
 ): Promise<ReadonlyMap<string, ResourceAction[]>> => {
+  const groupIdSet = new Set(groupIds);
   const subjectsByGroupId = new Map<string, ResourcePermissionOverview['subjects']>();
   overview.subjects.forEach((subject) => {
-    if (!subject.groupId || !subject.primaryTagId) return;
+    if (!subject.groupId || !subject.primaryTagId || !groupIdSet.has(subject.groupId)) return;
     const subjects = subjectsByGroupId.get(subject.groupId) ?? [];
     subjects.push(subject);
     subjectsByGroupId.set(subject.groupId, subjects);
@@ -96,8 +140,10 @@ const loadPermissionInheritedActions = async (
   if (subjectsByGroupId.size === 0) return new Map();
 
   const inheritedActionsBySubjectId = new Map<string, ResourceAction[]>();
-  await Promise.all(
-    Array.from(subjectsByGroupId.entries()).map(async ([groupId, subjects]) => {
+  await runWithConcurrency(
+    Array.from(subjectsByGroupId.entries()),
+    PERMISSION_OVERVIEW_HYDRATION_CONCURRENCY,
+    async ([groupId, subjects]) => {
       const data = await TagApi.getTagTree(TagServicesMap.mapGetTagTreeRequest(groupId)).catch(
         () => undefined
       );
@@ -111,18 +157,20 @@ const loadPermissionInheritedActions = async (
           inheritedActionsBySubjectId.set(subject.id, inheritedActions);
         }
       });
-    })
+    }
   );
   return inheritedActionsBySubjectId;
 };
 
 const enrichResourcePermissionOverview = async (
   overview: ResourcePermissionOverview,
+  params: GetResourcePermissionOverviewRequest,
   deps: ResourcePermissionOverviewDeps
 ): Promise<ResourcePermissionOverview> => {
+  const groupIds = collectPermissionGroupIds(overview, params.groupHydrationLimit);
   const [groupInfoById, inheritedActionsBySubjectId] = await Promise.all([
-    loadPermissionGroupInfo(overview, deps.groupService),
-    loadPermissionInheritedActions(overview),
+    loadPermissionGroupInfo(groupIds, deps.groupService),
+    loadPermissionInheritedActions(overview, groupIds),
   ]);
   const userInfoById: ResourcePermissionHydration['userInfoById'] = new Map();
   const hydration: ResourcePermissionHydration = {
@@ -142,5 +190,5 @@ export const getResourcePermissionOverview = async (
     resourceInfo,
     params.resourceId
   );
-  return enrichResourcePermissionOverview(overview, deps);
+  return enrichResourcePermissionOverview(overview, params, deps);
 };

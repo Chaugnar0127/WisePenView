@@ -21,6 +21,20 @@ import {
 } from './resourcePermissionPanelModel';
 
 const EMPTY_ACTION_OPTIONS: ResourcePermissionActionOption[] = [];
+const GROUP_PERMISSION_PAGE_SIZE = 10;
+
+const resolveVisibleGroupIds = (
+  subjects: ResourcePermissionSubject[],
+  limit: number
+): Set<string> => {
+  const groupIds = new Set<string>();
+  for (const subject of subjects) {
+    if (!subject.groupId || groupIds.has(subject.groupId)) continue;
+    groupIds.add(subject.groupId);
+    if (groupIds.size >= limit) break;
+  }
+  return groupIds;
+};
 
 export const useResourcePermissionPanelController = ({
   resourceId,
@@ -33,18 +47,33 @@ export const useResourcePermissionPanelController = ({
   const updateQueueRef = useRef<Promise<void>>(Promise.resolve());
   const latestSubjectsRef = useRef<ResourcePermissionSubject[]>([]);
   const [subjectDrafts, setSubjectDrafts] = useState<ResourcePermissionSubject[] | null>(null);
+  const [groupHydrationState, setGroupHydrationState] = useState<{
+    resourceId: string;
+    resourceType: string;
+    limit: number;
+  } | null>(null);
   const [newUserKeyword, setNewUserKeyword] = useState('');
   const [pendingUpdateCount, setPendingUpdateCount] = useState(0);
+  const groupHydrationLimit =
+    groupHydrationState?.resourceId === resourceId &&
+    groupHydrationState.resourceType === resourceType
+      ? groupHydrationState.limit
+      : GROUP_PERMISSION_PAGE_SIZE;
   const {
     data: permissionOverview,
     loading,
     error,
     refresh: refreshPermissionOverview,
   } = useRequest(
-    () => resourceService.getResourcePermissionOverview({ resourceId, resourceType }),
+    () =>
+      resourceService.getResourcePermissionOverview({
+        resourceId,
+        resourceType,
+        groupHydrationLimit,
+      }),
     {
       ready: Boolean(resourceId && resourceType),
-      refreshDeps: [resourceId, resourceType],
+      refreshDeps: [resourceId, resourceType, groupHydrationLimit],
       onSuccess: (overview: ResourcePermissionOverview) => {
         latestSubjectsRef.current = overview.subjects;
         setSubjectDrafts(overview.subjects);
@@ -57,6 +86,13 @@ export const useResourcePermissionPanelController = ({
   );
   const inheritedSubjects = subjects.filter((subject) => subject.source !== 'specifiedUser');
   const specifiedUserSubjects = subjects.filter((subject) => subject.source === 'specifiedUser');
+  const visibleGroupIds = resolveVisibleGroupIds(inheritedSubjects, groupHydrationLimit);
+  const visibleInheritedSubjects = inheritedSubjects.filter(
+    (subject) => !subject.groupId || visibleGroupIds.has(subject.groupId)
+  );
+  const canLoadMoreGroups = inheritedSubjects.some(
+    (subject) => subject.groupId && !visibleGroupIds.has(subject.groupId)
+  );
   const existingSpecifiedUserIds = new Set(
     specifiedUserSubjects
       .map((subject) => subject.userId)
@@ -152,23 +188,35 @@ export const useResourcePermissionPanelController = ({
   const queryUserCandidates = (keyword: string) =>
     userService.queryUserSearchCandidates({ keyword, size: 6 });
 
+  const loadMoreGroups = () => {
+    setGroupHydrationState({
+      resourceId,
+      resourceType,
+      limit: groupHydrationLimit + GROUP_PERMISSION_PAGE_SIZE,
+    });
+  };
+
   return {
     actionOptions,
     addSpecifiedUserCandidate,
+    canLoadMoreGroups,
     error,
     existingSpecifiedUserIds,
     handleActionToggle,
     handleRemoveSpecifiedUser,
     handleUserSearchEmpty,
     handleUserSearchError,
-    inheritedSubjects,
+    inheritedSubjects: visibleInheritedSubjects,
     isUpdating: pendingUpdateCount > 0,
-    loading,
+    loadMoreGroups,
+    loading: loading && !permissionOverview,
+    loadingMoreGroups: loading && Boolean(permissionOverview),
     newUserKeyword,
     permissionOverview,
     queryUserCandidates,
     setNewUserKeyword,
-    shouldShowInviteDivider: inheritedSubjects.length > 0 && specifiedUserSubjects.length > 0,
+    shouldShowInviteDivider:
+      visibleInheritedSubjects.length > 0 && specifiedUserSubjects.length > 0,
     specifiedUserSubjects,
   };
 };

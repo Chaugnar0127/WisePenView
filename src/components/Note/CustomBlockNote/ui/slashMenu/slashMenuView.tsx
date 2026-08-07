@@ -155,7 +155,7 @@ export function SlashMenuListBoxItems({
       {groupedItems.map(([group, groupItems, currentOffset]) => {
         return (
           <ListBoxSection id={`slash-group-${group}`} className={styles.section} key={group}>
-            <Header className={styles.sectionTitle}>{group}</Header>
+            <Header className={styles.sectionTitle}>{resolveSlashMenuGroupLabel(group)}</Header>
             {groupItems.map((item, itemIndexInGroup) => {
               const itemIndex = currentOffset + itemIndexInGroup;
               const itemId = getItemId(item, itemIndex);

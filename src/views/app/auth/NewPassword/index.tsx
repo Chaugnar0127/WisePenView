@@ -1,3 +1,4 @@
+import { getCurrentRouteSearch } from '@/bootstrap/authContinuation';
 import { FormField, PasswordInput } from '@/components/Input';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useAuthService } from '@/domains';
@@ -32,7 +33,7 @@ function NewPassword() {
   const navigate = useNavigate();
 
   useMount(() => {
-    const queryToken = new URLSearchParams(window.location.search).get('token') ?? '';
+    const queryToken = new URLSearchParams(getCurrentRouteSearch()).get('token') ?? '';
     setToken(queryToken);
   });
 

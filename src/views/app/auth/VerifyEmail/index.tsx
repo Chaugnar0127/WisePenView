@@ -1,5 +1,6 @@
 import {
   consumeActiveAuthContinuation,
+  getCurrentRouteSearch,
   readOptionalRedirectParam,
 } from '@/bootstrap/authContinuation';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
@@ -20,7 +21,8 @@ function VerifyEmail() {
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const searchParams = new URLSearchParams(window.location.search);
+  const routeSearch = getCurrentRouteSearch();
+  const searchParams = new URLSearchParams(routeSearch);
   const token = searchParams.get('token');
 
   const { loading, run: runVerify } = useRequest(
@@ -50,7 +52,7 @@ function VerifyEmail() {
 
   const goToAccount = () => {
     setSuccessModalOpen(false);
-    const queryRedirectPath = readOptionalRedirectParam(window.location.search);
+    const queryRedirectPath = readOptionalRedirectParam(routeSearch);
     const continuation = consumeActiveAuthContinuation();
     navigate(queryRedirectPath ?? continuation?.redirectPath ?? APP_ROUTE_PATH.PROFILE_ACCOUNT, {
       replace: true,

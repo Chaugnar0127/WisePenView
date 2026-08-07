@@ -1,6 +1,7 @@
 import {
   DEFAULT_AUTH_REDIRECT_PATH,
   getCurrentRedirectPath,
+  getCurrentRouteSearch,
   readRedirectParam,
   saveAuthContinuation,
 } from '@/bootstrap/authContinuation';
@@ -18,7 +19,7 @@ import { resolveUisQrImageDataUrl } from './resolveUisQrImageDataUrl';
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const resolveVerificationRedirectPath = (): string => {
-  const authRedirectPath = readRedirectParam(window.location.search);
+  const authRedirectPath = readRedirectParam(getCurrentRouteSearch());
   return authRedirectPath === DEFAULT_AUTH_REDIRECT_PATH
     ? getCurrentRedirectPath()
     : authRedirectPath;

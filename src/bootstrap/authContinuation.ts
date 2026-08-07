@@ -46,8 +46,38 @@ const parseStoredContinuation = (raw: string | null): AuthContinuation | null =>
 
 const createContinuationId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-const toPathWithSearch = (location: Location): string =>
-  `${location.pathname}${location.search}${location.hash}`;
+const normalizeRoutePath = (path: string): string => (path.startsWith('/') ? path : `/${path}`);
+
+const toCurrentRoutePathWithSearch = (location: Location): string => {
+  if (location.hash.startsWith('#/')) return normalizeRoutePath(location.hash.slice(1));
+  return `${location.pathname}${location.search}`;
+};
+
+const splitRoutePathWithSearch = (
+  routePathWithSearch: string
+): { pathname: string; search: string } => {
+  const fragmentIndex = routePathWithSearch.indexOf('#');
+  const pathWithSearch =
+    fragmentIndex >= 0 ? routePathWithSearch.slice(0, fragmentIndex) : routePathWithSearch;
+  const searchIndex = pathWithSearch.indexOf('?');
+
+  if (searchIndex < 0) {
+    return { pathname: pathWithSearch || APP_ROUTE_PATH.HOME, search: '' };
+  }
+
+  return {
+    pathname: pathWithSearch.slice(0, searchIndex) || APP_ROUTE_PATH.HOME,
+    search: pathWithSearch.slice(searchIndex),
+  };
+};
+
+export const toHashRouteHref = (path: string): string => `/#${normalizeRoutePath(path)}`;
+
+export const getCurrentRoutePath = (): string =>
+  splitRoutePathWithSearch(toCurrentRoutePathWithSearch(window.location)).pathname;
+
+export const getCurrentRouteSearch = (): string =>
+  splitRoutePathWithSearch(toCurrentRoutePathWithSearch(window.location)).search;
 
 export const sanitizeOptionalRedirectPath = (raw: string | null | undefined): string | null => {
   if (!raw) return null;
@@ -115,13 +145,16 @@ export const consumeActiveAuthContinuation = (): AuthContinuation | null => {
 };
 
 export const getCurrentRedirectPath = (): string =>
-  sanitizeRedirectPath(toPathWithSearch(window.location));
+  sanitizeRedirectPath(toCurrentRoutePathWithSearch(window.location));
 
 export const buildLoginPathForCurrentLocation = (): string => {
   const redirectPath = getCurrentRedirectPath();
   saveAuthContinuation('auth', redirectPath);
   return appendRedirectParam(APP_ROUTE_PATH.AUTH_LOGIN, redirectPath);
 };
+
+export const buildLoginHrefForCurrentLocation = (): string =>
+  toHashRouteHref(buildLoginPathForCurrentLocation());
 
 export const buildRegisterOnboardingPath = (redirectPath: string): string => {
   const safeRedirectPath = sanitizeRedirectPath(redirectPath);

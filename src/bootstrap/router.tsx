@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 
 import { APP_HEADER_NAV_KEY, appRouteHandle } from '@/bootstrap/routeMeta';
 import AdminLayout from '@/layouts/Admin/AdminLayout';
@@ -117,7 +117,7 @@ const profileHandle = appRouteHandle({
   pageKey: 'profile',
 });
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: APP_ROUTE_PATH.HOME,
     element: <Navigate to={APP_ROUTE_PATH.PUBLIC_CHAT} replace />,

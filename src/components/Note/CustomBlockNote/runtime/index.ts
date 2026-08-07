@@ -5,4 +5,9 @@ export { useNoteEditorCommands } from './useNoteEditorCommands';
 export { useNoteEditorDefinition, type NoteEditorDefinition } from './useNoteEditorDefinition';
 export { useNoteEditorHydration } from './useNoteEditorHydration';
 export { useNoteEditorScroll } from './useNoteEditorScroll';
+export {
+  useNoteImageUploadEditorBinding,
+  useNoteImageUploadRuntime,
+  type NoteImageUploadRuntime,
+} from './useNoteImageUploadRuntime';
 export { useNoteOutlineRuntime } from './useNoteOutlineRuntime';

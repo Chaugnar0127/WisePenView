@@ -1,3 +1,4 @@
+import { useCreateBlockNote } from '@blocknote/react';
 import { toast } from '@heroui/react';
 import { useMemoizedFn } from 'ahooks';
 import { useTranslation } from 'react-i18next';
@@ -9,22 +10,16 @@ import {
   useNoteCollaboration,
   useNoteDocument,
   useNoteEditorCommands,
+  useNoteEditorDefinition,
   useNoteEditorHydration,
   useNoteEditorScroll,
+  useNoteImageUploadEditorBinding,
+  useNoteImageUploadRuntime,
   useNoteOutlineRuntime,
-  type NoteEditorDefinition,
 } from '../runtime';
-import { notePluginRegistry, type CustomBlockNoteEditor } from './noteEditorComposition';
+import { notePluginRegistry } from './noteEditorComposition';
 
-export function useNoteEditorRuntimeCoordinator({
-  editor,
-  definition,
-  props,
-}: {
-  editor: CustomBlockNoteEditor;
-  definition: NoteEditorDefinition;
-  props: CustomBlockNoteProps;
-}) {
+export function useNoteEditorRuntimeCoordinator(props: CustomBlockNoteProps) {
   const { t } = useTranslation('note');
   const {
     resourceId,
@@ -37,6 +32,15 @@ export function useNoteEditorRuntimeCoordinator({
     onAskAi,
     onAiDiffBodyContentHashChange,
   } = props;
+  const imageUploadRuntime = useNoteImageUploadRuntime({
+    resourceId,
+    readOnly,
+    onPendingCountChange: props.onImageUploadCountChange,
+  });
+  const definition = useNoteEditorDefinition(props, {
+    uploadFile: imageUploadRuntime.uploadFile,
+  });
+  const editor = useCreateBlockNote(definition.editorOptions);
   const collaboration = useNoteCollaboration({
     editor,
     definition,
@@ -82,6 +86,11 @@ export function useNoteEditorRuntimeCoordinator({
     scheduleBodyContentHashRefresh: document.scheduleBodyContentHashRefresh,
   });
 
+  useNoteImageUploadEditorBinding({
+    editor,
+    runtime: imageUploadRuntime,
+  });
+
   const scroll = useNoteEditorScroll(editor);
   const commands = useNoteEditorCommands(
     editor,
@@ -111,6 +120,7 @@ export function useNoteEditorRuntimeCoordinator({
   });
 
   return {
+    editor,
     collaboration,
     document,
     aiDiff,

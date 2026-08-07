@@ -1,5 +1,6 @@
 ﻿import { Spin } from '@/components/Feedback';
 import InlineComment from '@/components/InlineComment';
+import { UnsavedChangesDialog } from '@/components/Overlay';
 import { useMemoizedFn, useUnmount } from 'ahooks';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ import type {
 import type { NoteInfoDisplayData } from '@/domains/Note';
 import { encodeNoteClientContentSignature } from '@/domains/Note';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { isDesktop } from '@/utils/platform';
 import {
@@ -50,6 +52,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   const [aiDiffControlsPortalContainer, setAiDiffControlsPortalContainer] =
     useState<HTMLDivElement | null>(null);
   const [titleSaveStatus, setTitleSaveStatus] = useState<NoteTitleSaveStatus>('saved');
+  const [pendingImageUploadCount, setPendingImageUploadCount] = useState(0);
   const fallbackNoteTitle = noteInfoDisplay.noteTitle;
   const [aiDiffBodyContentHash, setAiDiffBodyContentHash] = useState<string | undefined>(undefined);
   const noteClientContentSignature = aiDiffBodyContentHash
@@ -104,6 +107,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   } = workspace;
   const headerSaveStatus = resolveNoteHeaderSaveStatus(saveStatus, titleSaveStatus);
   const saveStatusText = t(`save.${headerSaveStatus}`);
+  const imageUploadNavigationGuard = useUnsavedChangesGuard(pendingImageUploadCount > 0);
   const focusBody = () => {
     bodyEditorRef.current?.focus();
   };
@@ -155,6 +159,18 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
       threadId: inlineCommentScrollTarget.threadId,
     });
   }, [inlineCommentScrollTarget]);
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：用户尝试离开且图片上传随后完成时，继续之前被拦截的路由跳转。
+   * 不可替代原因：路由 blocker 是外部状态机，只有上传 runtime 回报 pending 数归零后才能恢复跳转。
+   * cleanup：没有订阅或异步任务，无需清理。
+   */
+  useEffect(() => {
+    if (!imageUploadNavigationGuard.isBlocked) return;
+    if (pendingImageUploadCount > 0) return;
+    imageUploadNavigationGuard.proceed();
+  }, [imageUploadNavigationGuard, pendingImageUploadCount]);
 
   const resourceHostConfig = {
     className: styles.pageWrap,
@@ -363,6 +379,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
                         findBar: findBarPortalContainer,
                       }}
                       onAiDiffBodyContentHashChange={setAiDiffBodyContentHash}
+                      onImageUploadCountChange={setPendingImageUploadCount}
                       inlineComments={inlineCommentsBinding}
                     />
                   ) : null}
@@ -390,6 +407,15 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
           </div>
         </div>
       ) : null}
+      <UnsavedChangesDialog
+        type="warning"
+        isOpen={imageUploadNavigationGuard.isBlocked}
+        title={t('workspace.imageUploadLeaveTitle')}
+        description={t('workspace.imageUploadLeaveDescription', { count: pendingImageUploadCount })}
+        confirmText={t('workspace.imageUploadContinue')}
+        onCancel={imageUploadNavigationGuard.reset}
+        onConfirm={imageUploadNavigationGuard.reset}
+      />
     </>
   );
 }

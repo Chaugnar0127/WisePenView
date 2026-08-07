@@ -341,6 +341,12 @@
   font-weight: var(--font-weight-medium);
 }
 
+.popoverLoadMore {
+  width: 100%;
+  margin-top: var(--space-2xs);
+  color: var(--muted);
+}
+
 .listBox {
   display: flex;
   flex-direction: column;
@@ -450,6 +456,52 @@
   font-size: var(--font-size-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.agentGroupTreeWrap {
+  margin-top: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--border-light);
+}
+
+.agentGroupTree {
+  font-size: var(--font-size-sm);
+
+  :global(.wisepen-tree__item) {
+    padding: 1px 0;
+  }
+
+  :global(.wisepen-tree__switcher) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+  }
+
+  :global(.wisepen-tree__content) {
+    min-height: 24px;
+    border-radius: var(--radius-lg);
+  }
+}
+
+.agentGroupTitle,
+.agentTreeLeaf {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+
+  > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  > :global(svg) {
+    flex-shrink: 0;
+  }
 }
 
 .modelSelectorShell {

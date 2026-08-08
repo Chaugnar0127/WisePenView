@@ -33,22 +33,20 @@ function PublicGroupsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const roleFilter = GROUP_ROLE_FILTER_MAP[query.role];
   const { data, loading, error, refresh } = useRequest(
-    async () => {
-      const groups = await groupService.fetchAllMyGroups(roleFilter);
-      const matchingGroups = groups.filter((group) => group.groupType === GROUP_TYPE.NORMAL);
-      const start = Math.max(0, (query.page - 1) * query.size);
-      return {
-        list: matchingGroups.slice(start, start + query.size),
-        total: matchingGroups.length,
-      };
-    },
+    () =>
+      groupService.fetchGroupList({
+        groupRoleFilter: roleFilter,
+        groupType: GROUP_TYPE.NORMAL,
+        page: query.page,
+        size: query.size,
+      }),
     {
       refreshDeps: [query.role, query.page, query.size],
       loadingDelay: 160,
       onError: () => toast.danger(t('list.loadFailed')),
     }
   );
-  const groups = data?.list ?? [];
+  const groups = data?.groups ?? [];
   const total = data?.total ?? 0;
   const waitingForInitialData = data === undefined && !error && !loading;
   const canonicalPath = buildGroupListPath(query);

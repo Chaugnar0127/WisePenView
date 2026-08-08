@@ -34,6 +34,7 @@ import type {
   CreateGroupRequest,
   EditGroupRequest,
   FetchGroupListRequest,
+  FetchGroupListResponse,
   UpdateGroupResConfigRequest,
   UpdateMemberRoleRequest,
 } from '../service/index.type';
@@ -42,6 +43,13 @@ import { mapGroupMemberFromApi } from './groupMember.mapper';
 const mapGroupTypeFromApi = (value: unknown): number => normalizeFiniteNumber(value) ?? 0;
 
 const mapGroupTypeToApi = (value: number): string => String(value);
+
+const mapGroupTypeToListApi = (value?: number): ListGroupApiRequest['groupType'] | undefined => {
+  if (value === 1) return 'NORMAL_GROUP';
+  if (value === 2) return 'ADVANCED_GROUP';
+  if (value === 3) return 'MARKET_GROUP';
+  return undefined;
+};
 
 const parseGroupMetaInfo = (value: unknown): Record<string, unknown> => {
   if (typeof value !== 'string' || !value.trim()) return {};
@@ -96,15 +104,18 @@ const mapDefaultMemberActionsFromApi = (actions?: unknown[]): TagResourceAction[
 
 const mapFetchGroupListRequest = (params: FetchGroupListRequest): ListGroupApiRequest => ({
   groupRoleFilter: params.groupRoleFilter,
+  groupType: mapGroupTypeToListApi(params.groupType),
   page: params.page,
   size: params.size,
 });
 
-const mapFetchGroupListFromApi = (
-  data: ListGroupApiResponse
-): { groups: Group[]; total: number } => ({
+const mapFetchGroupListFromApi = (data: ListGroupApiResponse): FetchGroupListResponse => ({
   groups: data.list.map(mapGroupFromApi),
   total: data.total,
+  page: data.page,
+  size: data.size,
+  totalPage: data.totalPage,
+  hasMore: data.page < data.totalPage,
 });
 
 const mapFetchGroupInfoFromApi = (data: GroupApiResponse): Group => mapGroupFromApi(data);

@@ -340,3 +340,23 @@
   color: var(--muted);
   font-size: var(--font-size-sm, 12px);
 }
+
+.scopeLoadMoreButton {
+  width: 100%;
+  padding: 8px;
+  color: var(--accent-text);
+  text-align: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+
+  &:disabled {
+    color: var(--muted);
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+}

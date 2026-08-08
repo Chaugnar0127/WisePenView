@@ -3,8 +3,7 @@ import type { TagResourceAction } from '@/domains/Tag';
 
 /** GroupService 接口：供依赖注入使用 */
 export interface IGroupService {
-  fetchGroupList(params: FetchGroupListRequest): Promise<{ groups: Group[]; total: number }>;
-  fetchAllMyGroups(groupRoleFilter?: GroupRoleFilter): Promise<Group[]>;
+  fetchGroupList(params: FetchGroupListRequest): Promise<FetchGroupListResponse>;
   fetchGroupBaseInfo(groupId: string): Promise<GroupBaseInfo>;
   fetchGroupInfo(groupId: string): Promise<Group>;
   getGroupWalletInfo(params: GetGroupWalletInfoRequest): Promise<number>;
@@ -26,8 +25,12 @@ export interface IGroupService {
 
 /** 获取小组列表响应 */
 export interface FetchGroupListResponse {
+  groups: Group[];
   total: number;
-  list: Group[];
+  page: number;
+  size: number;
+  totalPage: number;
+  hasMore: boolean;
 }
 
 export interface GetGroupWalletInfoRequest {
@@ -37,6 +40,7 @@ export interface GetGroupWalletInfoRequest {
 /** 获取小组列表请求参数 */
 export interface FetchGroupListRequest {
   groupRoleFilter: GroupRoleFilter;
+  groupType?: number;
   page: number;
   size: number;
 }

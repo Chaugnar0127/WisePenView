@@ -13,22 +13,40 @@ import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
 const PERSONAL_SCOPE_KEY = '__personal__';
+const GROUP_SCOPE_PAGE_SIZE = 20;
+
 function SidebarDriveScopeSwitcher() {
   const { t } = useTranslation('drive');
   const groupService = useGroupService();
   const activeScope = useSidebarDriveScopeStore((state) => state.scope);
   const setScope = useSidebarDriveScopeStore((state) => state.setScope);
   const [open, setOpen] = useState(false);
+  const [groupPage, setGroupPage] = useState(1);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [groupTotalPage, setGroupTotalPage] = useState(1);
   const selectedKey = activeScope.type === 'group' ? activeScope.groupId : PERSONAL_SCOPE_KEY;
 
-  const { data: groups = [], loading } = useRequest(
-    async (): Promise<Group[]> => groupService.fetchAllMyGroups(),
+  const { loading } = useRequest(
+    () =>
+      groupService.fetchGroupList({
+        groupRoleFilter: 'ALL',
+        page: groupPage,
+        size: GROUP_SCOPE_PAGE_SIZE,
+      }),
     {
+      refreshDeps: [groupPage],
+      onSuccess: (result) => {
+        setGroups((current) =>
+          result.page === 1 ? result.groups : [...current, ...result.groups]
+        );
+        setGroupTotalPage(result.totalPage);
+      },
       onError: () => {
         toast.danger(t('sidebar.loadGroupsFailed'));
       },
     }
   );
+  const hasMoreGroups = groupPage < groupTotalPage;
 
   const handleSelectScope = (nextGroupId?: string): void => {
     setScope(buildDriveNodeScope(nextGroupId));
@@ -84,6 +102,16 @@ function SidebarDriveScopeSwitcher() {
               </button>
             ))}
           </div>
+          {hasMoreGroups ? (
+            <button
+              type="button"
+              className={styles.scopeLoadMoreButton}
+              onClick={() => setGroupPage((page) => page + 1)}
+              disabled={loading}
+            >
+              {loading ? t('sidebar.loadingGroups') : t('sidebar.loadMoreGroups')}
+            </button>
+          ) : null}
           {loading ? <div className={styles.scopeHint}>{t('sidebar.loadingGroups')}</div> : null}
           {!loading && groups.length === 0 ? (
             <div className={styles.scopeHint}>{t('sidebar.noGroups')}</div>

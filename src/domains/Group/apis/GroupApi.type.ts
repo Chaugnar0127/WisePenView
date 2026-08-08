@@ -5,12 +5,14 @@ import type { UserIdentityTypeApiValue } from '@/domains/User/apis/UserApi.type'
 
 type GroupFileOrgLogicApiValue = 'FOLDER' | 'TAG';
 type GroupTypeApiValue = NumericEnumApiValue<1 | 2 | 3>;
+type GroupTypeApiRequestValue = 'NORMAL_GROUP' | 'ADVANCED_GROUP' | 'MARKET_GROUP';
 type GroupRoleApiValue = '0' | '1' | '2' | '-1';
 type GroupResourceActionApiValue = TagResourceActionKey | NumericEnumApiValue;
 type GroupResourceActionApiList = GroupResourceActionApiValue[];
 
 export interface ListGroupApiRequest extends PageApiRequest {
   groupRoleFilter: 'ALL' | 'JOINED' | 'MANAGED';
+  groupType?: GroupTypeApiRequestValue;
 }
 
 export interface GroupApiResponse {

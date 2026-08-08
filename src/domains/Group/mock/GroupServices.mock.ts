@@ -1,6 +1,8 @@
 import type {
   CreateGroupRequest,
   EditGroupRequest,
+  FetchGroupListRequest,
+  FetchGroupListResponse,
   GetGroupWalletInfoRequest,
   Group,
   GroupBaseInfo,
@@ -31,14 +33,24 @@ const pickGroupBaseInfo = (group: Group): GroupBaseInfo => ({
   groupType: group.groupType,
 });
 
-const fetchGroupList = async (): Promise<{ groups: Group[]; total: number }> => {
+const fetchGroupList = async ({
+  groupType,
+  page,
+  size,
+}: FetchGroupListRequest): Promise<FetchGroupListResponse> => {
   await delay(200);
-  return { groups, total: groups.length };
-};
-
-const fetchAllMyGroups = async (): Promise<Group[]> => {
-  await delay(200);
-  return groups;
+  const matchedGroups =
+    groupType == null ? groups : groups.filter((group) => group.groupType === groupType);
+  const start = Math.max(0, (page - 1) * size);
+  const totalPage = size > 0 ? Math.ceil(matchedGroups.length / size) : 0;
+  return {
+    groups: matchedGroups.slice(start, start + size),
+    total: matchedGroups.length,
+    page,
+    size,
+    totalPage,
+    hasMore: page < totalPage,
+  };
 };
 
 const fetchGroupBaseInfo = async (groupId: string): Promise<GroupBaseInfo> => {
@@ -160,7 +172,6 @@ const kickMembers = async (): Promise<void> => {
 
 export const GroupServicesMock: IGroupService = {
   fetchGroupList,
-  fetchAllMyGroups,
   fetchGroupBaseInfo,
   fetchGroupInfo,
   getGroupWalletInfo,

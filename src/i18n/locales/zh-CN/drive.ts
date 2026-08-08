@@ -20,6 +20,7 @@ const zhCNDrive = {
     link: '链接',
     loading: '正在加载...',
     loadMoreProgress: '加载更多（已加载 {{loaded}} / 共 {{total}}）',
+    loadMoreGroups: '加载更多小组',
     unnamedFolder: '未命名文件夹',
     unnamedFile: '未命名文件',
     unnamedDocument: '未命名文档',
@@ -39,6 +40,7 @@ const zhCNDrive = {
     switchDrive: '切换云盘',
     loadGroupsFailed: '获取小组列表失败',
     loadingGroups: '正在加载小组...',
+    loadMoreGroups: '加载更多小组',
     noGroups: '暂无可切换小组',
   },
   uploadQueue: {

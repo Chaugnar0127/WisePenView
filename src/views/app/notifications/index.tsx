@@ -92,8 +92,8 @@ function NotificationsPage() {
       ? messageVirtualizer.getTotalSize() - (virtualItems[virtualItems.length - 1]?.end ?? 0)
       : 0;
 
-  const { runAsync: readMessage } = useRequest(
-    (messageId: string) => messageService.readMessage({ messageId }),
+  const { runAsync: readMessages } = useRequest(
+    (messageIds: string[]) => messageService.readMessages({ messageIds }),
     { manual: true }
   );
 
@@ -129,7 +129,7 @@ function NotificationsPage() {
     navigate(buildNotificationPath(message.messageId));
     if (message.read) return;
     try {
-      await readMessage(message.messageId);
+      await readMessages([message.messageId]);
       markLoadedMessageAsRead(message.messageId);
     } catch (error: unknown) {
       toast.warning(parseErrorMessage(error));
@@ -148,7 +148,7 @@ function NotificationsPage() {
     const unreadMessages = messages.filter((message) => !message.read);
     if (unreadMessages.length === 0) return;
     try {
-      await Promise.all(unreadMessages.map((message) => readMessage(message.messageId)));
+      await readMessages(unreadMessages.map((message) => message.messageId));
       markLoadedMessagesAsRead();
     } catch (error: unknown) {
       toast.warning(parseErrorMessage(error));

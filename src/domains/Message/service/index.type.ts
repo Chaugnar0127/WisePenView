@@ -2,7 +2,7 @@ import type { UserMessage } from '../entity/message';
 
 export interface IMessageService {
   listUserMessages(params: ListUserMessagesRequest): Promise<ListUserMessagesResponse>;
-  readMessage(params: ReadMessageRequest): Promise<void>;
+  readMessages(params: ReadMessagesRequest): Promise<void>;
 }
 
 export interface ListUserMessagesRequest {
@@ -18,6 +18,6 @@ export interface ListUserMessagesResponse {
   totalPage: number;
 }
 
-export interface ReadMessageRequest {
-  messageId: string;
+export interface ReadMessagesRequest {
+  messageIds: string[];
 }

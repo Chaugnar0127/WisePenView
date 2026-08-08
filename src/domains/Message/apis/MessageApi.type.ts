@@ -17,5 +17,5 @@ export interface UserMessageApiModel {
 export type ListUserMessagesApiResponse = PageR<UserMessageApiModel>;
 
 export interface ReadMessageApiRequest {
-  messageId: string;
+  messageIds: string[];
 }

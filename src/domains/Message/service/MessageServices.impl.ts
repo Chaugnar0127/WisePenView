@@ -4,7 +4,7 @@ import type {
   IMessageService,
   ListUserMessagesRequest,
   ListUserMessagesResponse,
-  ReadMessageRequest,
+  ReadMessagesRequest,
 } from './index.type';
 
 const listUserMessages = async (
@@ -15,12 +15,12 @@ const listUserMessages = async (
   return MessageServicesMap.mapListUserMessagesFromApi(data);
 };
 
-const readMessage = async (params: ReadMessageRequest): Promise<void> => {
-  const body = MessageServicesMap.mapReadMessageRequest(params);
+const readMessages = async (params: ReadMessagesRequest): Promise<void> => {
+  const body = MessageServicesMap.mapReadMessagesRequest(params);
   await MessageApi.readMessage(body);
 };
 
 export const createMessageServices = (): IMessageService => ({
   listUserMessages,
-  readMessage,
+  readMessages,
 });

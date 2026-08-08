@@ -9,7 +9,7 @@ import type { UserMessage } from '../entity/message';
 import type {
   ListUserMessagesRequest,
   ListUserMessagesResponse,
-  ReadMessageRequest,
+  ReadMessagesRequest,
 } from '../service/index.type';
 import { normalizeMessageType } from './messageType.mapper';
 
@@ -42,12 +42,12 @@ const mapListUserMessagesFromApi = (
   totalPage: data.totalPage,
 });
 
-const mapReadMessageRequest = (params: ReadMessageRequest): ReadMessageApiRequest => ({
-  messageId: params.messageId,
+const mapReadMessagesRequest = (params: ReadMessagesRequest): ReadMessageApiRequest => ({
+  messageIds: params.messageIds,
 });
 
 export const MessageServicesMap = {
   mapListUserMessagesRequest,
   mapListUserMessagesFromApi,
-  mapReadMessageRequest,
+  mapReadMessagesRequest,
 };

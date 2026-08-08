@@ -261,8 +261,7 @@ export const createDriveServices = (
 
   const fetchResourceNodes = async (
     nodeId: string,
-    groupId: string | undefined,
-    resourceLimit?: number
+    groupId: string | undefined
   ): Promise<Array<ResourceNode | LinkNode>> => {
     const { parentTagId, isVirtualRoot } = await resolveParentTagId(nodeId, groupId);
     if (!parentTagId || isVirtualRoot) {
@@ -274,17 +273,10 @@ export const createDriveServices = (
     const nodes: Array<ResourceNode | LinkNode> = [];
     let page = 1;
 
-    const normalizedResourceLimit =
-      resourceLimit == null ? undefined : Math.max(0, Math.floor(resourceLimit));
-    if (normalizedResourceLimit === 0) return [];
-
     while (true) {
-      const requestSize = normalizedResourceLimit
-        ? Math.min(pageSize, normalizedResourceLimit - nodes.length)
-        : pageSize;
       const listParams = {
         page,
-        size: requestSize,
+        size: pageSize,
         sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
         sortDir: RESOURCE_SORT_DIR.DESC,
         tagIds: [parentTagId],
@@ -300,13 +292,9 @@ export const createDriveServices = (
         nodes.push(childNode);
       }
 
-      if (normalizedResourceLimit && nodes.length >= normalizedResourceLimit) {
-        return nodes.slice(0, normalizedResourceLimit);
-      }
-
       const reachedKnownTotal = result.total > 0 && nodes.length >= result.total;
       const reachedKnownLastPage = result.totalPage > 0 && page >= result.totalPage;
-      const reachedShortPage = result.list.length < requestSize;
+      const reachedShortPage = result.list.length < pageSize;
       if (reachedKnownTotal || reachedKnownLastPage || reachedShortPage) {
         break;
       }
@@ -380,27 +368,6 @@ export const createDriveServices = (
     if (!parent || !isContainerNode(parent)) return;
     parent.childrenIds = children.filter((node) => node.type !== 'loading').map((node) => node.id);
     nodeMap.set(parentId, parent);
-  };
-
-  const listNodeChildren: IDriveService['listNodeChildren'] = async ({
-    nodeId,
-    groupId,
-    resourceLimit,
-    refresh,
-  }) => {
-    const effectiveGroupId = resolveEffectiveGroupId(nodeId, groupId);
-    const groupKey = resolveGroupKey(effectiveGroupId);
-    const folderNodes = await loadFolderNodes(nodeId, effectiveGroupId, { refresh });
-    const resourceNodes = await fetchResourceNodes(nodeId, effectiveGroupId, resourceLimit);
-    const dedup = new Map<string, DriveNode>();
-    [...folderNodes, ...resourceNodes].forEach((node) => dedup.set(node.id, node));
-    const children = [...dedup.values()];
-
-    trackNodes(children, groupKey);
-    if (resourceLimit == null) {
-      updateParentChildren(nodeId, children);
-    }
-    return children;
   };
 
   const listFolderChildren: IDriveService['listFolderChildren'] = async ({
@@ -739,16 +706,23 @@ export const createDriveServices = (
   };
 
   const getResourceNode: IDriveService['getResourceNode'] = async (params) => {
-    const children = await listNodeChildren({
-      nodeId: params.parentNodeId,
-      groupId: params.groupId,
-    });
-    return children.find(
-      (node): node is ResourceNode | LinkNode =>
-        (node.type === 'resource' || node.type === 'link') &&
-        node.resourceId === params.resourceId &&
-        (!params.nodeId || node.id === params.nodeId)
-    );
+    let resourcePage = 1;
+
+    while (true) {
+      const result = await fetchResourceNodePage(
+        params.parentNodeId,
+        params.groupId,
+        resourcePage,
+        pageSize
+      );
+      const matched = result.resourceNodes.find(
+        (node) =>
+          node.resourceId === params.resourceId && (!params.nodeId || node.id === params.nodeId)
+      );
+      if (matched) return matched;
+      if (!result.hasMoreResources) return undefined;
+      resourcePage += 1;
+    }
   };
 
   const createLink: IDriveService['createLink'] = async (params) => {
@@ -1032,7 +1006,6 @@ export const createDriveServices = (
   return {
     getRootNode,
     getTrashFolderNodeId,
-    listNodeChildren,
     listFolderChildren,
     listNodeChildrenPage,
     getNodePath,

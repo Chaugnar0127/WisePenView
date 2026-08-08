@@ -8,6 +8,7 @@ import styles from './style.module.less';
 interface DriveNavigatorNodeTitleProps {
   node: DriveNode;
   displayName?: string;
+  onLoadMore?: () => void;
 }
 
 function getNodeDisplayName(
@@ -27,7 +28,7 @@ function getNodeDisplayName(
   return node.label || t('node.loading');
 }
 
-function DriveNavigatorNodeTitle({ node, displayName }: DriveNavigatorNodeTitleProps) {
+function DriveNavigatorNodeTitle({ node, displayName, onLoadMore }: DriveNavigatorNodeTitleProps) {
   const { t } = useTranslation('drive');
   const resourceId = node.type === 'resource' || node.type === 'link' ? node.resourceId : undefined;
   const fallbackName = node.type === 'resource' || node.type === 'link' ? node.title : undefined;
@@ -36,6 +37,23 @@ function DriveNavigatorNodeTitle({ node, displayName }: DriveNavigatorNodeTitleP
     node.type === 'resource' || node.type === 'link' ? node.resourceType : undefined;
   const resourceIconType =
     node.type === 'resource' || node.type === 'link' ? node.resourceIconType : undefined;
+  const label = getNodeDisplayName(node, resourceName, t, displayName);
+
+  if (node.type === 'loading') {
+    return (
+      <button
+        type="button"
+        className={styles.loadMoreNode}
+        onClick={(event) => {
+          event.stopPropagation();
+          onLoadMore?.();
+        }}
+      >
+        {label}
+      </button>
+    );
+  }
+
   return (
     <span className={styles.nodeTitle}>
       <span className={styles.nodeIcon} aria-hidden="true">
@@ -46,9 +64,7 @@ function DriveNavigatorNodeTitle({ node, displayName }: DriveNavigatorNodeTitleP
           size={14}
         />
       </span>
-      <span className={styles.nodeLabel}>
-        {getNodeDisplayName(node, resourceName, t, displayName)}
-      </span>
+      <span className={styles.nodeLabel}>{label}</span>
     </span>
   );
 }

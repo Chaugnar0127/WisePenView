@@ -12,7 +12,6 @@ import type {
   GetNodePathParams,
   GetRootNodeParams,
   IDriveService,
-  ListNodeChildrenParams,
   MoveNodesToFolderParams,
   MoveToFolderParams,
   RemoveNodeParams,
@@ -297,25 +296,6 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
     return root;
   };
 
-  const listNodeChildren = async (params: ListNodeChildrenParams): Promise<DriveNode[]> => {
-    await delay(NETWORK_DELAY_MS);
-    const parent = getContainer(params.nodeId);
-    if (!parent) return [];
-    const children = parent.childrenIds
-      .map((id) => nodes.get(id))
-      .filter((node): node is DriveNode => node != null && node.type !== 'loading');
-    const folderNodes = children.filter((node): node is FolderNode => node.type === 'folder');
-    const otherNodes = children.filter((node) => node.type !== 'folder');
-    const normalizedResourceLimit =
-      params.resourceLimit == null ? undefined : Math.max(0, Math.floor(params.resourceLimit));
-    return [
-      ...orderDriveFolderNodes(folderNodes),
-      ...(normalizedResourceLimit == null
-        ? otherNodes
-        : otherNodes.slice(0, normalizedResourceLimit)),
-    ];
-  };
-
   const listFolderChildren: IDriveService['listFolderChildren'] = async (params) => {
     await delay(NETWORK_DELAY_MS);
     const parent = getContainer(params.nodeId);
@@ -567,7 +547,6 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
   return {
     getRootNode,
     getTrashFolderNodeId,
-    listNodeChildren,
     listFolderChildren,
     listNodeChildrenPage,
     getNodePath,

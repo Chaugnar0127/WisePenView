@@ -9,12 +9,17 @@ import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourc
 import { parseErrorMessage } from '@/utils/error';
 import { SEARCH_HIGHLIGHT_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
 import { toast } from '@heroui/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll } from 'ahooks';
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useState, type CSSProperties, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
 const PAGE_SIZE = 20;
+const RESOURCE_ITEM_ESTIMATE_SIZE = 60;
+const RESOURCE_ITEM_OVERSCAN = 6;
+const RESOURCE_GROUP_ID = 'resource-search-results';
+const RESOURCE_GROUP_SELECTOR = '[data-resource-search-group]';
 
 interface CommandSearchResultPage extends SearchResultPage {
   query: string;
@@ -22,6 +27,7 @@ interface CommandSearchResultPage extends SearchResultPage {
 
 interface ResourceSearchResultsProps {
   keyword: string;
+  layoutKeyword: string;
   onSelect: () => void;
   viewportRef: RefObject<HTMLDivElement | null>;
 }
@@ -39,7 +45,17 @@ const toPlainText = (markup: string): string => {
   return new DOMParser().parseFromString(markup, 'text/html').body.textContent ?? '';
 };
 
-function ResourceResultItem({ item, onSelect }: { item: SearchHitItem; onSelect: () => void }) {
+function ResourceResultItem({
+  item,
+  onSelect,
+  dataIndex,
+  measureElement,
+}: {
+  item: SearchHitItem;
+  onSelect: () => void;
+  dataIndex: number;
+  measureElement: (element: Element | null) => void;
+}) {
   const openResource = useOpenResource();
   const plainName = toPlainText(item.resourceName);
   const sanitizedName = sanitizeHtml(item.resourceName, SEARCH_HIGHLIGHT_SANITIZE_CONFIG);
@@ -62,6 +78,8 @@ function ResourceResultItem({ item, onSelect }: { item: SearchHitItem; onSelect:
       value={`resource:${item.resourceId}`}
       keywords={[plainName, toPlainText(item.highlightContent ?? '')]}
       onSelect={handleSelect}
+      data-index={dataIndex}
+      ref={measureElement}
     >
       <span className={styles.resourceIcon}>
         <EntryIcon
@@ -87,10 +105,16 @@ function ResourceResultItem({ item, onSelect }: { item: SearchHitItem; onSelect:
   );
 }
 
-function ResourceSearchResults({ keyword, onSelect, viewportRef }: ResourceSearchResultsProps) {
+function ResourceSearchResults({
+  keyword,
+  layoutKeyword,
+  onSelect,
+  viewportRef,
+}: ResourceSearchResultsProps) {
   const { t } = useTranslation(['shell', 'resource']);
   const resourceService = useResourceService();
   const query = keyword.trim();
+  const [resourceListOffset, setResourceListOffset] = useState(0);
 
   const { data, loading, loadingMore, noMore, mutate } = useInfiniteScroll<CommandSearchResultPage>(
     async (current) => {
@@ -117,6 +141,9 @@ function ResourceSearchResults({ keyword, onSelect, viewportRef }: ResourceSearc
     }
   );
 
+  const items = data?.query === query ? data.list : [];
+  const initialLoading = loading && items.length === 0;
+
   /**
    * @wisepen-manual-effect
    * 执行时机：标准化搜索词变化时复位滚动位置与无限列表缓存。
@@ -128,15 +155,62 @@ function ResourceSearchResults({ keyword, onSelect, viewportRef }: ResourceSearc
     mutate(createEmptySearchResult(query));
   }, [query, mutate, viewportRef]);
 
-  if (!query) return null;
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：每次渲染提交后重新测量资源组在共享滚动容器中的起始位置。
+   * 不可替代原因：前置命令分组会随外层搜索词变化而增删，虚拟列表需要这个命令式布局偏移来计算可视范围。
+   * cleanup：没有持续订阅或延迟任务，无需清理。
+   */
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const group = viewport?.querySelector<HTMLElement>(RESOURCE_GROUP_SELECTOR);
+    if (!viewport || !group) {
+      setResourceListOffset((current) => (current === 0 ? current : 0));
+      return;
+    }
 
-  const items = data?.query === query ? data.list : [];
-  const initialLoading = loading && items.length === 0;
+    const heading = group.querySelector<HTMLElement>('[slot="heading"]');
+    const viewportRect = viewport.getBoundingClientRect();
+    const nextOffset = Math.max(
+      0,
+      group.getBoundingClientRect().top -
+        viewportRect.top +
+        viewport.scrollTop +
+        (heading?.offsetHeight ?? 0)
+    );
+    setResourceListOffset((current) => (current === nextOffset ? current : nextOffset));
+  }, [layoutKeyword, query, items.length, loading, loadingMore, noMore, viewportRef]);
+
+  // eslint-disable-next-line react-hooks/incompatible-library -- 资源结果高度包含摘要，虚拟列表需要动态测量真实高度。
+  const resourceVirtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => viewportRef.current,
+    estimateSize: () => RESOURCE_ITEM_ESTIMATE_SIZE,
+    overscan: RESOURCE_ITEM_OVERSCAN,
+    scrollMargin: resourceListOffset,
+    getItemKey: (index) => items[index]?.resourceId ?? index,
+  });
+  const virtualItems = resourceVirtualizer.getVirtualItems();
+  const virtualTopPadding = virtualItems[0]
+    ? Math.max(virtualItems[0].start - resourceListOffset, 0)
+    : 0;
+  const virtualBottomPadding =
+    virtualItems.length > 0
+      ? Math.max(
+          resourceVirtualizer.getTotalSize() -
+            (virtualItems[virtualItems.length - 1]?.end ?? resourceListOffset) +
+            resourceListOffset,
+          0
+        )
+      : 0;
+
+  if (!query) return null;
 
   return (
     <CommandGroup
-      value="resource-search-results"
+      value={RESOURCE_GROUP_ID}
       heading={t('commandPalette.groups.resources', { ns: 'shell' })}
+      data-resource-search-group="true"
     >
       {initialLoading ? (
         <CommandItem
@@ -150,9 +224,39 @@ function ResourceSearchResults({ keyword, onSelect, viewportRef }: ResourceSearc
         </CommandItem>
       ) : items.length > 0 ? (
         <>
-          {items.map((item) => (
-            <ResourceResultItem key={item.resourceId} item={item} onSelect={onSelect} />
-          ))}
+          {virtualTopPadding > 0 ? (
+            <CommandItem
+              value="resource-search-virtual-top"
+              textValue=""
+              disabled
+              aria-hidden
+              className={styles.virtualSpacer}
+              style={{ height: virtualTopPadding } as CSSProperties}
+            />
+          ) : null}
+          {virtualItems.map((virtualItem) => {
+            const item = items[virtualItem.index];
+            if (!item) return null;
+            return (
+              <ResourceResultItem
+                key={item.resourceId}
+                item={item}
+                dataIndex={virtualItem.index}
+                measureElement={resourceVirtualizer.measureElement}
+                onSelect={onSelect}
+              />
+            );
+          })}
+          {virtualBottomPadding > 0 ? (
+            <CommandItem
+              value="resource-search-virtual-bottom"
+              textValue=""
+              disabled
+              aria-hidden
+              className={styles.virtualSpacer}
+              style={{ height: virtualBottomPadding } as CSSProperties}
+            />
+          ) : null}
           {loadingMore ? (
             <CommandItem
               value="resource-search-loading-more"

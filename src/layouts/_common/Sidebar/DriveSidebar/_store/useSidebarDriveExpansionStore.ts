@@ -37,6 +37,8 @@ export const useSidebarDriveExpansionStore = create<SidebarDriveExpansionState>(
     {
       name: 'sidebar-drive-expansion',
       storage: createStoreJSONStorage('session'),
+      version: 1,
+      migrate: () => DEFAULT_SIDEBAR_DRIVE_EXPANSION_STATE,
     }
   )
 );

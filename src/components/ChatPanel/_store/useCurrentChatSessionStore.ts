@@ -66,7 +66,12 @@ export const useCurrentChatSessionStore = create<CurrentChatSessionState>()(
           return DEFAULT_CURRENT_CHAT_SESSION_STATE;
         }),
     }),
-    { name: 'current-chat-session', storage: createStoreJSONStorage('tab') }
+    {
+      name: 'current-chat-session',
+      storage: createStoreJSONStorage('tab'),
+      version: 1,
+      migrate: () => DEFAULT_CURRENT_CHAT_SESSION_STATE,
+    }
   )
 );
 

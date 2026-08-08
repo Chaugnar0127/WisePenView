@@ -22,6 +22,8 @@ export const useAppHeaderNavStore = create<AppHeaderNavState>()(
     {
       name: 'app-header-nav',
       storage: createStoreJSONStorage('tab'),
+      version: 1,
+      migrate: () => DEFAULT_APP_HEADER_NAV_STATE,
     }
   )
 );

@@ -22,6 +22,7 @@ import { ButtonGroup, Separator, Toolbar } from '@heroui/react';
 import { useEventListener } from 'ahooks';
 import { MessageSquarePlus, Search, Sparkles } from 'lucide-react';
 import { useState, type ComponentProps } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { BlockTypeMenu } from './components/BlockTypeMenu';
 import { ColorMenu } from './components/ColorMenu';
@@ -277,7 +278,7 @@ function TextSelectionFormattingToolbar({
     return null;
   }
 
-  return (
+  return createPortal(
     <div
       className={styles.toolbarPopover}
       data-visible={toolbarState.visible && !hidden}
@@ -287,7 +288,8 @@ function TextSelectionFormattingToolbar({
       }}
     >
       <CustomFormattingToolbar {...toolbarProps} onLinkPopoverOpenChange={setLinkPopoverOpen} />
-    </div>
+    </div>,
+    document.body
   );
 }
 

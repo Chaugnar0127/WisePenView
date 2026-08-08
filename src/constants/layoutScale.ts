@@ -26,8 +26,8 @@ export const MAIN_SCROLL_MIN_WIDTH = 400;
  */
 export const NOTE_EDITOR_MIN_WIDTH = 560;
 
-/** 笔记大纲展开宽度上限与收起宽度 */
-export const NOTE_OUTLINE_OPEN_WIDTH = 200;
+/** 笔记大纲展开宽度与收起宽度；对齐飞书文档目录的可读宽度。 */
+export const NOTE_OUTLINE_OPEN_WIDTH = 280;
 export const NOTE_OUTLINE_COLLAPSED_WIDTH = 40;
 
 /** Chat 侧栏/分栏面板下限：扣除输入区两侧留白后，卡片至少保留 480px */

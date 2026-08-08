@@ -87,7 +87,7 @@
   --note-editor-canvas-width: calc(
     var(--note-editor-content-width) + var(--note-editor-gutter) + var(--note-editor-gutter)
   );
-  --note-outline-open-width: clamp(180px, 18cqw, var(--layout-note-outline-open-width, 200px));
+  --note-outline-open-width: var(--layout-note-outline-open-width, 320px);
 }
 
 .contentRowOutlineOpen .mainPanel {
@@ -158,7 +158,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
+  background: var(--background);
 }
 
 .middleOverlayLoading {

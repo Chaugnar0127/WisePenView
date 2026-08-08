@@ -55,7 +55,7 @@ export function useSkillMarkdownPreviewController({
    * @wisepen-manual-effect
    * 执行时机：Markdown 图片引用、文件树或版本变化时加载尚未解析的本地资源。
    * 不可替代原因：图片 Blob 来自异步 Skill service，并需创建浏览器 Object URL。
-   * cleanup：将本轮标记为 disposed，阻止旧异步结果写入新预览；URL 在 hook 卸载时统一释放。
+   * cleanup：将本轮标记为 disposed，阻止旧异步结果写入新预览；切换文件时释放不再引用的 URL。
    */
   useEffect(() => {
     const imageTargets = (() => {
@@ -64,6 +64,22 @@ export function useSkillMarkdownPreviewController({
         .map((url) => resolveRelativeSkillFile(files, selectedFile, url))
         .filter((file): file is SkillFileNode => Boolean(file && isSkillImageFile(file)));
     })();
+    const activeFileIds = new Set(imageTargets.map((file) => file.id));
+    const staleFileIds = [...assetUrlRef.current.keys()].filter(
+      (fileId) => !activeFileIds.has(fileId)
+    );
+    if (staleFileIds.length > 0) {
+      staleFileIds.forEach((fileId) => {
+        const url = assetUrlRef.current.get(fileId);
+        if (url) URL.revokeObjectURL(url);
+        assetUrlRef.current.delete(fileId);
+      });
+      setAssetUrls((current) => {
+        const next = { ...current };
+        staleFileIds.forEach((fileId) => delete next[fileId]);
+        return next;
+      });
+    }
     const missingFiles = imageTargets.filter((file) => !Object.hasOwn(assetUrls, file.id));
     if (missingFiles.length === 0) return;
     let disposed = false;

@@ -18,7 +18,12 @@ import {
   mapTagToFolderNode,
   orderDriveFolderNodes,
 } from '../mapper/DriveServices.map';
-import type { CreateDriveServiceOptions, IDriveService, MoveToFolderParams } from './index.type';
+import type {
+  CreateDriveServiceOptions,
+  IDriveService,
+  ListNodeChildrenPageResult,
+  MoveToFolderParams,
+} from './index.type';
 
 const CACHE_KEY_DEFAULT = '__default__';
 const DEFAULT_PAGE_SIZE = 50;
@@ -311,6 +316,65 @@ export const createDriveServices = (
     return nodes;
   };
 
+  const fetchResourceNodePage = async (
+    nodeId: string,
+    groupId: string | undefined,
+    resourcePage = 1,
+    resourceSize = pageSize
+  ): Promise<Omit<ListNodeChildrenPageResult, 'folderNodes' | 'nodes'>> => {
+    const { parentTagId, isVirtualRoot } = await resolveParentTagId(nodeId, groupId);
+    const normalizedResourcePage = Math.max(1, Math.floor(resourcePage));
+    const normalizedResourceSize = Math.max(1, Math.floor(resourceSize));
+    if (!parentTagId || isVirtualRoot) {
+      return {
+        resourceNodes: [],
+        resourcePage: normalizedResourcePage,
+        resourceSize: normalizedResourceSize,
+        resourceTotal: 0,
+        resourceTotalPage: 0,
+        hasMoreResources: false,
+      };
+    }
+
+    const normalizedGroupId = normalizeTagGroupId(groupId);
+    const scope = buildDriveNodeScope(normalizedGroupId);
+    const listParams = {
+      page: normalizedResourcePage,
+      size: normalizedResourceSize,
+      sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
+      sortDir: RESOURCE_SORT_DIR.DESC,
+      tagIds: [parentTagId],
+      tagQueryLogicMode: 'AND' as const,
+    };
+    const result = normalizedGroupId
+      ? await resourceService.getGroupResources({ ...listParams, groupId: normalizedGroupId })
+      : await resourceService.getUserResources(listParams);
+    const resourceNodes = result.list.map((item) => {
+      const childNode = mapResourceItemToChildNode(item, parentTagId, nodeId, scope);
+      resourceItemByNodeId.set(childNode.id, item);
+      return childNode;
+    });
+    const resultPage = Math.max(1, Math.floor(result.page || normalizedResourcePage));
+    const resultTotal = Math.max(0, Math.floor(result.total || 0));
+    const resultTotalPage = Math.max(0, Math.floor(result.totalPage || 0));
+    const loadedCount = (resultPage - 1) * normalizedResourceSize + resourceNodes.length;
+    const hasMoreResources =
+      resultTotalPage > 0
+        ? resultPage < resultTotalPage
+        : resultTotal > 0
+          ? loadedCount < resultTotal
+          : resourceNodes.length >= normalizedResourceSize;
+
+    return {
+      resourceNodes,
+      resourcePage: resultPage,
+      resourceSize: normalizedResourceSize,
+      resourceTotal: resultTotal,
+      resourceTotalPage: resultTotalPage,
+      hasMoreResources,
+    };
+  };
+
   const updateParentChildren = (parentId: string, children: DriveNode[]): void => {
     const parent = nodeMap.get(parentId);
     if (!parent || !isContainerNode(parent)) return;
@@ -337,6 +401,47 @@ export const createDriveServices = (
       updateParentChildren(nodeId, children);
     }
     return children;
+  };
+
+  const listFolderChildren: IDriveService['listFolderChildren'] = async ({
+    nodeId,
+    groupId,
+    refresh,
+  }) => {
+    const effectiveGroupId = resolveEffectiveGroupId(nodeId, groupId);
+    const groupKey = resolveGroupKey(effectiveGroupId);
+    const folderNodes = await loadFolderNodes(nodeId, effectiveGroupId, { refresh });
+    trackNodes(folderNodes, groupKey);
+    updateParentChildren(nodeId, folderNodes);
+    return folderNodes;
+  };
+
+  const listNodeChildrenPage: IDriveService['listNodeChildrenPage'] = async ({
+    nodeId,
+    groupId,
+    resourcePage,
+    resourceSize,
+    includeFolders = true,
+    refresh,
+  }) => {
+    const effectiveGroupId = resolveEffectiveGroupId(nodeId, groupId);
+    const groupKey = resolveGroupKey(effectiveGroupId);
+    const [folderNodes, resourcePageResult] = await Promise.all([
+      includeFolders ? loadFolderNodes(nodeId, effectiveGroupId, { refresh }) : Promise.resolve([]),
+      fetchResourceNodePage(nodeId, effectiveGroupId, resourcePage, resourceSize),
+    ]);
+    const dedup = new Map<string, DriveNode>();
+    [...folderNodes, ...resourcePageResult.resourceNodes].forEach((node) =>
+      dedup.set(node.id, node)
+    );
+    const nodes = [...dedup.values()];
+
+    trackNodes(nodes, groupKey);
+    return {
+      ...resourcePageResult,
+      folderNodes,
+      nodes,
+    };
   };
 
   const ensureTrashTagId = async (groupId?: string): Promise<string> => {
@@ -928,6 +1033,8 @@ export const createDriveServices = (
     getRootNode,
     getTrashFolderNodeId,
     listNodeChildren,
+    listFolderChildren,
+    listNodeChildrenPage,
     getNodePath,
     getResourceNode,
     moveToFolder: moveNodeToFolder,

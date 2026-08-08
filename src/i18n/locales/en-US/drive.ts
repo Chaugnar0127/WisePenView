@@ -19,6 +19,7 @@ const enUSDrive = {
     resource: 'Resource',
     link: 'Link',
     loading: 'Loading...',
+    loadMoreProgress: 'Load more ({{loaded}} / {{total}} loaded)',
     unnamedFolder: 'Untitled folder',
     unnamedFile: 'Untitled file',
     unnamedDocument: 'Untitled document',

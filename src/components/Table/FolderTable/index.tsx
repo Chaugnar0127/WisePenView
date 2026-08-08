@@ -34,6 +34,7 @@ import FolderTableLoadingSkeleton from './parts/LoadingSkeleton';
 import styles from './style.module.less';
 
 import { Table } from '@heroui/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Folder } from 'lucide-react';
 import {
   memo,
@@ -48,6 +49,8 @@ import {
 import { useTranslation } from 'react-i18next';
 
 const LOAD_MORE_THRESHOLD_PX = 48;
+const VIRTUAL_ROW_ESTIMATE_SIZE = 60;
+const VIRTUAL_ROW_OVERSCAN = 8;
 const ROW_ID_ATTRIBUTE = 'data-folder-row-id';
 const INTERACTIVE_ROW_TARGET_SELECTOR = [
   'a',
@@ -421,6 +424,7 @@ function FolderTable<T extends FolderTableRow>({
   const resolvedEmptyText = emptyText ?? t('empty.folderEmpty');
   const resolvedEmptyDescription = emptyDescription ?? t('empty.folderDescription');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bodyScrollRef = useRef<HTMLDivElement | HTMLTableSectionElement | null>(null);
   const loadMoreLockRef = useRef(false);
   const selectionAnchorRef = useRef<string | undefined>(undefined);
 
@@ -449,6 +453,19 @@ function FolderTable<T extends FolderTableRow>({
   );
 
   const visibleRows = flattenFolderRows(sortedItems, expandedKeySet);
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual 官方 hook 与 React Compiler 的兼容提示，当前组件需要虚拟滚动能力。
+  const rowVirtualizer = useVirtualizer({
+    count: visibleRows.length,
+    getScrollElement: () => bodyScrollRef.current,
+    estimateSize: () => VIRTUAL_ROW_ESTIMATE_SIZE,
+    overscan: VIRTUAL_ROW_OVERSCAN,
+  });
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const virtualTopPadding = virtualRows[0]?.start ?? 0;
+  const virtualBottomPadding =
+    virtualRows.length > 0
+      ? rowVirtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0)
+      : 0;
   const visibleRowMap = (() => {
     const map = new Map<string, FolderTableVisibleRow & T>();
     for (const row of visibleRows) {
@@ -711,7 +728,11 @@ function FolderTable<T extends FolderTableRow>({
   ) => {
     if (column.isNameColumn) {
       if (row.entryType === 'loading') {
-        return <span className={styles.inlineLoadMoreButton}>{row.name || t('loadMore')}</span>;
+        return (
+          <span className={styles.inlineLoadMoreButton} data-depth={row.depth}>
+            {row.name || t('loadMore')}
+          </span>
+        );
       }
 
       const expandable = folderRowHasChildren(row);
@@ -863,7 +884,7 @@ function FolderTable<T extends FolderTableRow>({
               ))}
             </Table.Header>
 
-            <Table.Body onScroll={handleScroll}>
+            <Table.Body ref={bodyScrollRef} onScroll={handleScroll}>
               {showSkeletonBody ? (
                 <FolderTableLoadingSkeleton
                   rowCount={skeletonRowCount}
@@ -873,7 +894,18 @@ function FolderTable<T extends FolderTableRow>({
                 />
               ) : (
                 <>
-                  {visibleRows.map((row) => {
+                  {virtualTopPadding > 0 ? (
+                    <Table.Row id="__virtual_top" textValue="" className={styles.virtualSpacerRow}>
+                      <Table.Cell
+                        colSpan={columns.length + (showCheckboxSelection ? 1 : 0)}
+                        className={styles.virtualSpacerCell}
+                        style={{ height: virtualTopPadding } as CSSProperties}
+                      />
+                    </Table.Row>
+                  ) : null}
+                  {virtualRows.map((virtualRow) => {
+                    const row = visibleRows[virtualRow.index];
+                    if (!row) return null;
                     const rowId = row.id;
                     const isLoadMoreRow = row.entryType === 'loading';
                     const isSelected = isEditMode
@@ -899,6 +931,19 @@ function FolderTable<T extends FolderTableRow>({
                       />
                     );
                   })}
+                  {virtualBottomPadding > 0 ? (
+                    <Table.Row
+                      id="__virtual_bottom"
+                      textValue=""
+                      className={styles.virtualSpacerRow}
+                    >
+                      <Table.Cell
+                        colSpan={columns.length + (showCheckboxSelection ? 1 : 0)}
+                        className={styles.virtualSpacerCell}
+                        style={{ height: virtualBottomPadding } as CSSProperties}
+                      />
+                    </Table.Row>
+                  ) : null}
                   {loadMore?.loading ? (
                     <Table.Row
                       id="__load_more"

@@ -19,6 +19,7 @@ const zhCNDrive = {
     resource: '资源',
     link: '链接',
     loading: '正在加载...',
+    loadMoreProgress: '加载更多（已加载 {{loaded}} / 共 {{total}}）',
     unnamedFolder: '未命名文件夹',
     unnamedFile: '未命名文件',
     unnamedDocument: '未命名文档',

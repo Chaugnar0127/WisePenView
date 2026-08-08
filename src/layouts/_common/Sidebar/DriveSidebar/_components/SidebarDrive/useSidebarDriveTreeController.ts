@@ -57,7 +57,7 @@ export function useSidebarDriveTreeController({
         useSidebarDriveExpansionStore.getState().expandedNodeIdsByScope[expansionScopeKey] ?? []
       );
       const rootNode = await driveService.getRootNode({ rootId: scope.rootId, groupId });
-      const rootChildren = await driveService.listNodeChildren({ nodeId: rootNode.id, groupId });
+      const rootChildren = await driveService.listFolderChildren({ nodeId: rootNode.id, groupId });
       const baseRoot = buildTreeData([rootNode], nextNodeMap, treeControls)[0];
       if (!baseRoot) return { treeData: [], nodeMap: nextNodeMap, expandedKeys: [] };
 
@@ -67,7 +67,7 @@ export function useSidebarDriveTreeController({
           nodes.map(async (node) => {
             if (node.type !== 'folder' || !expandedNodeIds.has(node.id)) return;
             try {
-              const children = await driveService.listNodeChildren({ nodeId: node.id, groupId });
+              const children = await driveService.listFolderChildren({ nodeId: node.id, groupId });
               childrenByParent.set(node.id, children);
               await loadExpandedChildren(children);
             } catch {
@@ -117,7 +117,7 @@ export function useSidebarDriveTreeController({
     const node = nodeMap.get(key);
     if (!node || (node.type !== 'root' && node.type !== 'folder')) return;
     try {
-      const children = await driveService.listNodeChildren({
+      const children = await driveService.listFolderChildren({
         nodeId: node.id,
         groupId: getDriveScopeGroupId(node.scope),
         refresh: true,

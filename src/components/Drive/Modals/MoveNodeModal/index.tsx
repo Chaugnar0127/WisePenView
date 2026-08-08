@@ -1,5 +1,5 @@
 import { useDriveService } from '@/domains';
-import type { FolderNode, IDriveService } from '@/domains/Drive';
+import type { IDriveService } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -25,14 +25,13 @@ async function collectFolderSubtreeNodeIds(
   visitedFolderIds.add(folderId);
   disabledNodeIds.add(folderId);
 
-  const children = await driveService.listNodeChildren({
+  const children = await driveService.listFolderChildren({
     nodeId: folderId,
     groupId,
   });
   children.forEach((child) => disabledNodeIds.add(child.id));
-  const folderChildren = children.filter((child): child is FolderNode => child.type === 'folder');
   await Promise.all(
-    folderChildren.map((child) =>
+    children.map((child) =>
       collectFolderSubtreeNodeIds(
         driveService,
         child.id,

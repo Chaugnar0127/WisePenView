@@ -3,7 +3,7 @@ import type { DriveNode } from '@/domains/Drive';
 import type { ReactNode } from 'react';
 import type { DriveScope } from '../common/driveComponentModel';
 
-/** TableDrive 行类型：DriveNode 本身（含 loading 占位节点），可选挂 children */
+/** TableDrive 行类型：DriveNode 本身（含 loading / 加载更多占位节点），可选挂 children */
 export type DriveRow = DriveNode & { children?: DriveRow[] };
 
 /** FolderTable 展示行：保留原始 DriveNode，避免 UI 模型污染 service 模型 */

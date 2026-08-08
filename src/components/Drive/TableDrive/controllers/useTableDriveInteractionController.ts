@@ -40,7 +40,6 @@ export function useTableDriveInteractionController({
   const sharedRowKeys = new Set(
     [...rowMap.values()].filter((row) => isDriveSharedFolderNode(row.node)).map((row) => row.id)
   );
-  const currentDirectoryItemCount = rows.filter((row) => row.entryType !== 'loading').length;
 
   const clearChecked = () => setCheckedRowKeys(new Set());
   const clearSelectedRow = () => setSelectedRowId(undefined);
@@ -62,7 +61,6 @@ export function useTableDriveInteractionController({
     checkedRowKeys,
     clearSelectedRow,
     clearChecked,
-    currentDirectoryItemCount,
     handleSortChange,
     isDetailPanelCollapsed,
     rowMap,

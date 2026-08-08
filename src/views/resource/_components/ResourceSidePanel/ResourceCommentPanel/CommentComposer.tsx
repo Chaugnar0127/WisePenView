@@ -71,7 +71,7 @@ function CommentComposer({ placeholder, autoFocus, onCancel, onSubmit }: Comment
   const { loading: submitting, runAsync: submitComment } = useRequest(
     async () => {
       if (!canSubmit) return;
-      const imageUrls = await Promise.all(
+      const uploadResults = await Promise.allSettled(
         pendingImages.map(async ({ file }) => {
           const result = await imageService.uploadImage({
             file,
@@ -81,10 +81,24 @@ function CommentComposer({ placeholder, autoFocus, onCancel, onSubmit }: Comment
           return result.publicUrl;
         })
       );
+      const imageUrls = uploadResults.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value] : []
+      );
+      const failedImages = pendingImages.filter(
+        (_, index) => uploadResults[index].status === 'rejected'
+      );
+      const failedUpload = uploadResults.find(
+        (result): result is PromiseRejectedResult => result.status === 'rejected'
+      );
+
+      if (failedImages.length === pendingImages.length && failedUpload) {
+        throw failedUpload.reason;
+      }
+
       await onSubmit(content.trim() || IMAGE_ONLY_CONTENT, imageUrls);
       setContent('');
-      setPendingImages([]);
-      setSubmitError(undefined);
+      setPendingImages(failedImages);
+      setSubmitError(failedUpload ? parseErrorMessage(failedUpload.reason) : undefined);
     },
     {
       manual: true,

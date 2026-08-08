@@ -2,7 +2,6 @@ import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/note
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
 import { ToggleButtonGroup } from '@heroui/react';
 import { Bold, Code, Italic, Strikethrough, Underline } from 'lucide-react';
-import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   basicStyleExists,
@@ -71,22 +70,17 @@ export function TextStyleButtons() {
       orientation="horizontal"
       size="sm"
     >
-      {state.items.map((item, index) => {
+      {state.items.map((item) => {
         const Icon = item.icon;
         return (
-          <Fragment key={item.key}>
-            {index > 0 ? <ToggleButtonGroup.Separator /> : null}
-            <ToolbarToggleButton
-              id={item.key}
-              label={t(`editor.textStyle.${item.key}`)}
-              icon={
-                <Icon
-                  size={20}
-                  strokeWidth={'strokeWidth' in item ? item.strokeWidth : undefined}
-                />
-              }
-            />
-          </Fragment>
+          <ToolbarToggleButton
+            key={item.key}
+            id={item.key}
+            label={t(`editor.textStyle.${item.key}`)}
+            icon={
+              <Icon size={20} strokeWidth={'strokeWidth' in item ? item.strokeWidth : undefined} />
+            }
+          />
         );
       })}
     </ToggleButtonGroup>

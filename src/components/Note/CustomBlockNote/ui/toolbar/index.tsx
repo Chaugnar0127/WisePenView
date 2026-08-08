@@ -145,7 +145,9 @@ function getTableRailSelectionRect(
 }
 
 function ToolbarSeparator() {
-  return <Separator orientation="vertical" className={styles.toolbarSeparator} />;
+  return (
+    <Separator aria-hidden="true" orientation="vertical" className={styles.toolbarSeparator} />
+  );
 }
 
 function useNoteToolbarShortcuts(onOpenFind: NoteToolbarProps['onOpenFind']) {

@@ -11,7 +11,6 @@ import {
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
 import { ToggleButtonGroup } from '@heroui/react';
 import { AlignCenter, AlignLeft, AlignRight } from 'lucide-react';
-import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getSelectedBlocks, toBlockUpdate } from '../utils';
 import { ToolbarToggleButton } from './ToolbarButton';
@@ -124,17 +123,15 @@ export function TextAlignButtons() {
       size="sm"
       disallowEmptySelection
     >
-      {textAlignButtons.map((item, index) => {
+      {textAlignButtons.map((item) => {
         const Icon = item.icon;
         return (
-          <Fragment key={item.key}>
-            {index > 0 ? <ToggleButtonGroup.Separator /> : null}
-            <ToolbarToggleButton
-              id={item.key}
-              label={t(`editor.align.${item.key}`)}
-              icon={<Icon size={20} />}
-            />
-          </Fragment>
+          <ToolbarToggleButton
+            key={item.key}
+            id={item.key}
+            label={t(`editor.align.${item.key}`)}
+            icon={<Icon size={20} />}
+          />
         );
       })}
     </ToggleButtonGroup>

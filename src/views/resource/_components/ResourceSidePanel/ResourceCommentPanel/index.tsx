@@ -5,8 +5,9 @@ import type { CommentSortBy, ResourceComment } from '@/domains/Interact';
 import type { ResourceItem } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, Tabs, toast } from '@heroui/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll, useRequest } from 'ahooks';
-import { useEffect, useState, type Key } from 'react';
+import { useEffect, useRef, useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import ResourceFavoriteAction from '../../ResourceFavoriteAction';
 import CommentComposer from './CommentComposer';
@@ -16,6 +17,8 @@ import styles from './style.module.less';
 import { updateCommentLikeCount } from './utils';
 
 const COMMENT_PAGE_SIZE = 10;
+const COMMENT_THREAD_ESTIMATE_SIZE = 180;
+const COMMENT_THREAD_OVERSCAN = 6;
 const EMPTY_LIKED_COMMENT_IDS = new Set<string>();
 
 interface CommentListPage {
@@ -53,6 +56,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   const [sortBy, setSortBy] = useState<CommentSortBy>('CREATE_TIME');
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion>();
   const [previewImageUrl, setPreviewImageUrl] = useState<string>();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const { data: currentUser } = useRequest(() => userService.getUserInfo());
   const {
@@ -132,6 +136,21 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   };
 
   const likedCommentIds = commentLikeIds ?? interaction?.likedCommentIds ?? EMPTY_LIKED_COMMENT_IDS;
+  const comments = commentPageData?.list ?? [];
+  // eslint-disable-next-line react-hooks/incompatible-library -- 评论行包含图片与展开回复，虚拟列表需要动态测量真实高度。
+  const commentVirtualizer = useVirtualizer({
+    count: comments.length,
+    getScrollElement: () => contentRef.current,
+    estimateSize: () => COMMENT_THREAD_ESTIMATE_SIZE,
+    overscan: COMMENT_THREAD_OVERSCAN,
+    getItemKey: (index) => comments[index]?.commentId ?? index,
+  });
+  const virtualComments = commentVirtualizer.getVirtualItems();
+  const virtualTopPadding = virtualComments[0]?.start ?? 0;
+  const virtualBottomPadding =
+    virtualComments.length > 0
+      ? commentVirtualizer.getTotalSize() - (virtualComments[virtualComments.length - 1]?.end ?? 0)
+      : 0;
 
   const toggleCommentLike = async (comment: ResourceComment): Promise<boolean> => {
     const wasLiked = likedCommentIds.has(comment.commentId);
@@ -228,7 +247,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
         <h2 className={styles.panelTitle}>{t('resource:sidePanel.comments')}</h2>
       </header>
 
-      <div className={styles.content}>
+      <div className={styles.content} ref={contentRef}>
         <section
           className={styles.commentsSection}
           aria-label={t('resource:sidePanel.commentsAria')}
@@ -273,26 +292,49 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
           {commentsLoading && !commentPageData?.list.length ? (
             <p className={styles.mutedText}>{t('resource:comment.loading')}</p>
           ) : null}
-          {!commentsLoading && !commentPageData?.list.length ? (
+          {!commentsLoading && !comments.length ? (
             <p className={styles.emptyText}>{t('resource:comment.empty')}</p>
           ) : null}
 
           <div className={styles.commentList}>
-            {(commentPageData?.list ?? []).map((comment) => (
-              <ResourceCommentThread
-                key={comment.commentId}
-                resourceId={resourceId}
-                rootComment={comment}
-                currentUserId={currentUser?.id}
-                resourceOwnerId={resource.ownerId}
-                likedCommentIds={likedCommentIds}
-                pendingLikeIds={pendingLikeIds}
-                onLike={toggleCommentLike}
-                onDelete={(target, onDeleted) => setPendingDeletion({ comment: target, onDeleted })}
-                onCommentsChanged={refreshComments}
-                onPreviewImage={setPreviewImageUrl}
+            {virtualTopPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualTopPadding }}
+                aria-hidden
               />
-            ))}
+            ) : null}
+            {virtualComments.map((virtualComment) => {
+              const comment = comments[virtualComment.index];
+              if (!comment) return null;
+              return (
+                <ResourceCommentThread
+                  key={comment.commentId}
+                  dataIndex={virtualComment.index}
+                  measureElement={commentVirtualizer.measureElement}
+                  scrollElementRef={contentRef}
+                  resourceId={resourceId}
+                  rootComment={comment}
+                  currentUserId={currentUser?.id}
+                  resourceOwnerId={resource.ownerId}
+                  likedCommentIds={likedCommentIds}
+                  pendingLikeIds={pendingLikeIds}
+                  onLike={toggleCommentLike}
+                  onDelete={(target, onDeleted) =>
+                    setPendingDeletion({ comment: target, onDeleted })
+                  }
+                  onCommentsChanged={refreshComments}
+                  onPreviewImage={setPreviewImageUrl}
+                />
+              );
+            })}
+            {virtualBottomPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualBottomPadding }}
+                aria-hidden
+              />
+            ) : null}
           </div>
 
           {commentPageData && !commentsNoMore ? (

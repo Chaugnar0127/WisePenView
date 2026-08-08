@@ -6,9 +6,10 @@ import AppModal from '@/components/Overlay/AppModal';
 import type { InlineCommentItem, InlineCommentReactionGroup } from '@/domains/InlineComment';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, Chip, toast } from '@heroui/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRequest } from 'ahooks';
 import { Check, RotateCcw, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import EmojiPicker from '@/components/EmojiPicker';
@@ -20,6 +21,10 @@ import type {
   InlineCommentThreadView,
 } from './index.type';
 import styles from './style.module.less';
+
+const INLINE_THREAD_ESTIMATE_SIZE = 240;
+const INLINE_RESOLVED_THREAD_ESTIMATE_SIZE = 180;
+const INLINE_THREAD_OVERSCAN = 6;
 
 function getAuthorInitial(name: string): string {
   return name.trim().slice(0, 1).toUpperCase() || '?';
@@ -415,6 +420,36 @@ function InlineComment({
   const { t } = useTranslation('common');
   const [pendingDeletion, setPendingDeletion] = useState<InlineCommentDeletePayload>();
   const [previewImageUrl, setPreviewImageUrl] = useState<string>();
+  const threadListRef = useRef<HTMLDivElement>(null);
+  const resolvedListRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line react-hooks/incompatible-library -- 批注线程包含回复、图片与编辑器，虚拟列表需要动态测量真实高度。
+  const threadVirtualizer = useVirtualizer({
+    count: threads.length,
+    getScrollElement: () => threadListRef.current,
+    estimateSize: () => INLINE_THREAD_ESTIMATE_SIZE,
+    overscan: INLINE_THREAD_OVERSCAN,
+    getItemKey: (index) => threads[index]?.threadId ?? index,
+  });
+  const virtualThreads = threadVirtualizer.getVirtualItems();
+  const virtualThreadTopPadding = virtualThreads[0]?.start ?? 0;
+  const virtualThreadBottomPadding =
+    virtualThreads.length > 0
+      ? threadVirtualizer.getTotalSize() - (virtualThreads[virtualThreads.length - 1]?.end ?? 0)
+      : 0;
+  const resolvedThreadVirtualizer = useVirtualizer({
+    count: resolvedThreads.length,
+    getScrollElement: () => resolvedListRef.current,
+    estimateSize: () => INLINE_RESOLVED_THREAD_ESTIMATE_SIZE,
+    overscan: INLINE_THREAD_OVERSCAN,
+    getItemKey: (index) => resolvedThreads[index]?.threadId ?? index,
+  });
+  const virtualResolvedThreads = resolvedThreadVirtualizer.getVirtualItems();
+  const virtualResolvedTopPadding = virtualResolvedThreads[0]?.start ?? 0;
+  const virtualResolvedBottomPadding =
+    virtualResolvedThreads.length > 0
+      ? resolvedThreadVirtualizer.getTotalSize() -
+        (virtualResolvedThreads[virtualResolvedThreads.length - 1]?.end ?? 0)
+      : 0;
   const { loading: deleting, runAsync: deleteComment } = useRequest(
     async () => {
       if (!pendingDeletion) return;
@@ -432,7 +467,7 @@ function InlineComment({
 
   return (
     <div className={styles.panel}>
-      <div className={styles.threadList}>
+      <div className={styles.threadList} ref={threadListRef}>
         {loading && threads.length === 0 ? (
           <p className={styles.stateText}>{t('inlineComment.loading')}</p>
         ) : null}
@@ -466,22 +501,45 @@ function InlineComment({
           </article>
         ) : null}
 
-        {threads.map((thread) => (
-          <CommentThread
-            key={thread.threadId}
-            thread={thread}
-            activeThreadId={activeThreadId}
-            currentUserId={currentUserId}
-            resourceOwnerId={resourceOwnerId}
-            imageUpload={imageUpload}
-            onThreadSelect={onThreadSelect}
-            onReply={onReply}
-            onReactionChange={onReactionChange}
-            onResolve={onResolve}
-            onDelete={setPendingDeletion}
-            onPreviewImage={setPreviewImageUrl}
+        {virtualThreadTopPadding > 0 ? (
+          <div
+            className={styles.virtualSpacer}
+            style={{ height: virtualThreadTopPadding }}
+            aria-hidden
           />
-        ))}
+        ) : null}
+        {virtualThreads.map((virtualThread) => {
+          const thread = threads[virtualThread.index];
+          if (!thread) return null;
+          return (
+            <div
+              key={thread.threadId}
+              data-index={virtualThread.index}
+              ref={threadVirtualizer.measureElement}
+            >
+              <CommentThread
+                thread={thread}
+                activeThreadId={activeThreadId}
+                currentUserId={currentUserId}
+                resourceOwnerId={resourceOwnerId}
+                imageUpload={imageUpload}
+                onThreadSelect={onThreadSelect}
+                onReply={onReply}
+                onReactionChange={onReactionChange}
+                onResolve={onResolve}
+                onDelete={setPendingDeletion}
+                onPreviewImage={setPreviewImageUrl}
+              />
+            </div>
+          );
+        })}
+        {virtualThreadBottomPadding > 0 ? (
+          <div
+            className={styles.virtualSpacer}
+            style={{ height: virtualThreadBottomPadding }}
+            aria-hidden
+          />
+        ) : null}
       </div>
 
       <AppAlertDialog
@@ -514,21 +572,44 @@ function InlineComment({
           <p className={styles.stateText}>{t('inlineComment.historyEmpty')}</p>
         ) : null}
         {resolvedThreads.length > 0 ? (
-          <div className={styles.resolvedList}>
-            {resolvedThreads.map((thread) => (
-              <ResolvedCommentThread
-                key={thread.threadId}
-                thread={thread}
-                currentUserId={currentUserId}
-                resourceOwnerId={resourceOwnerId}
-                onReopen={async (threadId) => {
-                  await onReopen(threadId);
-                  onHistoryOpenChange(false);
-                }}
-                onDelete={setPendingDeletion}
-                onPreviewImage={setPreviewImageUrl}
+          <div className={styles.resolvedList} ref={resolvedListRef}>
+            {virtualResolvedTopPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualResolvedTopPadding }}
+                aria-hidden
               />
-            ))}
+            ) : null}
+            {virtualResolvedThreads.map((virtualThread) => {
+              const thread = resolvedThreads[virtualThread.index];
+              if (!thread) return null;
+              return (
+                <div
+                  key={thread.threadId}
+                  data-index={virtualThread.index}
+                  ref={resolvedThreadVirtualizer.measureElement}
+                >
+                  <ResolvedCommentThread
+                    thread={thread}
+                    currentUserId={currentUserId}
+                    resourceOwnerId={resourceOwnerId}
+                    onReopen={async (threadId) => {
+                      await onReopen(threadId);
+                      onHistoryOpenChange(false);
+                    }}
+                    onDelete={setPendingDeletion}
+                    onPreviewImage={setPreviewImageUrl}
+                  />
+                </div>
+              );
+            })}
+            {virtualResolvedBottomPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualResolvedBottomPadding }}
+                aria-hidden
+              />
+            ) : null}
           </div>
         ) : null}
       </AppModal>

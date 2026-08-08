@@ -19,12 +19,15 @@ import type { DataTableProps, DataTableRowContext } from './index.type';
 import styles from './style.module.less';
 
 import { Table } from '@heroui/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowUpDown } from 'lucide-react';
 import { useRef, type CSSProperties, type UIEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import DataTableLoadingSkeleton from './parts/LoadingSkeleton';
 
 const LOAD_MORE_THRESHOLD_PX = 48;
+const VIRTUAL_ROW_ESTIMATE_SIZE = 60;
+const VIRTUAL_ROW_OVERSCAN = 8;
 function getRowTextValue<T extends object>(row: T, rowKey: keyof T & string): string {
   const value = row[rowKey];
   return value == null ? '' : String(value);
@@ -127,6 +130,19 @@ function DataTable<T extends object>({
     }),
     { locale: sortLocale }
   );
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual 官方 hook 与 React Compiler 的兼容提示，当前组件需要虚拟滚动能力。
+  const rowVirtualizer = useVirtualizer({
+    count: sortedItems.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => VIRTUAL_ROW_ESTIMATE_SIZE,
+    overscan: VIRTUAL_ROW_OVERSCAN,
+  });
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const virtualTopPadding = virtualRows[0]?.start ?? 0;
+  const virtualBottomPadding =
+    virtualRows.length > 0
+      ? rowVirtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0)
+      : 0;
 
   return (
     <div className={joinClassNames(styles.shell, className)}>
@@ -215,7 +231,18 @@ function DataTable<T extends object>({
                 />
               ) : (
                 <>
-                  {sortedItems.map((row) => {
+                  {virtualTopPadding > 0 ? (
+                    <Table.Row id="__virtual_top" textValue="" className={styles.virtualSpacerRow}>
+                      <Table.Cell
+                        colSpan={columns.length}
+                        className={styles.virtualSpacerCell}
+                        style={{ height: virtualTopPadding } as CSSProperties}
+                      />
+                    </Table.Row>
+                  ) : null}
+                  {virtualRows.map((virtualRow) => {
+                    const row = sortedItems[virtualRow.index];
+                    if (!row) return null;
                     const rowId = String(row[rowKey]);
                     const ctx: DataTableRowContext<T> = { row, rowId };
 
@@ -246,6 +273,19 @@ function DataTable<T extends object>({
                       </Table.Row>
                     );
                   })}
+                  {virtualBottomPadding > 0 ? (
+                    <Table.Row
+                      id="__virtual_bottom"
+                      textValue=""
+                      className={styles.virtualSpacerRow}
+                    >
+                      <Table.Cell
+                        colSpan={columns.length}
+                        className={styles.virtualSpacerCell}
+                        style={{ height: virtualBottomPadding } as CSSProperties}
+                      />
+                    </Table.Row>
+                  ) : null}
                   {loadMore?.loading ? (
                     <Table.Row
                       id="__load_more"

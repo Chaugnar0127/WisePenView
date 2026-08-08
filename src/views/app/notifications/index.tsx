@@ -7,6 +7,7 @@ import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/form
 import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll, useRequest } from 'ahooks';
 import clsx from 'clsx';
 import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
@@ -16,6 +17,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
 
 const MESSAGE_PAGE_SIZE = 100;
+const MESSAGE_ITEM_ESTIMATE_SIZE = 156;
+const MESSAGE_ITEM_OVERSCAN = 8;
 
 interface UserMessageInfinitePage {
   list: UserMessage[];
@@ -74,6 +77,20 @@ function NotificationsPage() {
   const selectedMessage = messages.find((message) => message.messageId === selectedMessageId);
   const isInitialLoading = messagesRequest.loading && messagesRequest.data == null;
   const hasMoreMessages = !messagesRequest.noMore;
+  // eslint-disable-next-line react-hooks/incompatible-library -- 虚拟列表需要读取滚动容器尺寸与动态行高，属于命令式测量。
+  const messageVirtualizer = useVirtualizer({
+    count: messages.length,
+    getScrollElement: () => messageListRef.current,
+    estimateSize: () => MESSAGE_ITEM_ESTIMATE_SIZE,
+    overscan: MESSAGE_ITEM_OVERSCAN,
+    getItemKey: (index) => messages[index]?.messageId ?? index,
+  });
+  const virtualItems = messageVirtualizer.getVirtualItems();
+  const virtualTopPadding = virtualItems[0]?.start ?? 0;
+  const virtualBottomPadding =
+    virtualItems.length > 0
+      ? messageVirtualizer.getTotalSize() - (virtualItems[virtualItems.length - 1]?.end ?? 0)
+      : 0;
 
   const { runAsync: readMessage } = useRequest(
     (messageId: string) => messageService.readMessage({ messageId }),
@@ -205,7 +222,16 @@ function NotificationsPage() {
           </div>
         ) : (
           <div className={styles.messageList} ref={messageListRef}>
-            {messages.map((message) => {
+            {virtualTopPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualTopPadding }}
+                aria-hidden
+              />
+            ) : null}
+            {virtualItems.map((virtualItem) => {
+              const message = messages[virtualItem.index];
+              if (!message) return null;
               const isSelected = message.messageId === selectedMessageId;
               const isUnread = !message.read;
               const title = message.title || t('page.untitled');
@@ -225,6 +251,8 @@ function NotificationsPage() {
               return (
                 <article
                   key={message.messageId}
+                  data-index={virtualItem.index}
+                  ref={messageVirtualizer.measureElement}
                   className={clsx(styles.messageItem, isSelected && styles.messageItemSelected)}
                 >
                   <div className={styles.messageSummary}>
@@ -303,6 +331,13 @@ function NotificationsPage() {
                 </article>
               );
             })}
+            {virtualBottomPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualBottomPadding }}
+                aria-hidden
+              />
+            ) : null}
             {hasMoreMessages ? (
               <div className={styles.loadMoreBar}>
                 <Button

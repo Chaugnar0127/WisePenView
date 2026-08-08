@@ -2,9 +2,10 @@ import { useInteractService } from '@/domains';
 import type { ResourceComment } from '@/domains/Interact';
 import { parseErrorMessage } from '@/utils/error';
 import { Button } from '@heroui/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll } from 'ahooks';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import CommentComposer from './CommentComposer';
 import ResourceCommentItem from './ResourceCommentItem';
@@ -12,6 +13,8 @@ import styles from './style.module.less';
 import { updateCommentLikeCount } from './utils';
 
 const REPLY_PAGE_SIZE = 10;
+const REPLY_ITEM_ESTIMATE_SIZE = 132;
+const REPLY_ITEM_OVERSCAN = 6;
 
 interface ReplyListPage {
   list: ResourceComment[];
@@ -20,6 +23,9 @@ interface ReplyListPage {
 }
 
 interface ResourceCommentThreadProps {
+  dataIndex: number;
+  measureElement: (element: Element | null) => void;
+  scrollElementRef: RefObject<HTMLDivElement | null>;
   resourceId: string;
   rootComment: ResourceComment;
   currentUserId?: string;
@@ -33,6 +39,9 @@ interface ResourceCommentThreadProps {
 }
 
 function ResourceCommentThread({
+  dataIndex,
+  measureElement,
+  scrollElementRef,
   resourceId,
   rootComment,
   currentUserId,
@@ -89,6 +98,22 @@ function ResourceCommentThread({
     mutateReplies(undefined);
   }, [rootComment.commentId, mutateReplies]);
 
+  const replies = replyPageData?.list ?? [];
+  // eslint-disable-next-line react-hooks/incompatible-library -- 回复内容含图片且高度不固定，虚拟列表需要动态测量真实高度。
+  const replyVirtualizer = useVirtualizer({
+    count: replies.length,
+    getScrollElement: () => scrollElementRef.current,
+    estimateSize: () => REPLY_ITEM_ESTIMATE_SIZE,
+    overscan: REPLY_ITEM_OVERSCAN,
+    getItemKey: (index) => replies[index]?.commentId ?? index,
+  });
+  const virtualReplies = replyVirtualizer.getVirtualItems();
+  const virtualReplyTopPadding = virtualReplies[0]?.start ?? 0;
+  const virtualReplyBottomPadding =
+    virtualReplies.length > 0
+      ? replyVirtualizer.getTotalSize() - (virtualReplies[virtualReplies.length - 1]?.end ?? 0)
+      : 0;
+
   const handleToggleReplies = () => {
     if (expanded) {
       setExpanded(false);
@@ -129,7 +154,7 @@ function ResourceCommentThread({
   };
 
   return (
-    <div className={styles.commentThread}>
+    <div className={styles.commentThread} data-index={dataIndex} ref={measureElement}>
       <ResourceCommentItem
         comment={rootComment}
         currentUserId={currentUserId}
@@ -161,24 +186,47 @@ function ResourceCommentThread({
           {repliesLoading && !replyPageData?.list.length ? (
             <p className={styles.mutedText}>{t('comment.loadingReplies')}</p>
           ) : null}
-          {(replyPageData?.list ?? []).map((reply) => (
-            <ResourceCommentItem
-              key={reply.commentId}
-              comment={reply}
-              currentUserId={currentUserId}
-              resourceOwnerId={resourceOwnerId}
-              liked={likedCommentIds.has(reply.commentId)}
-              likePending={pendingLikeIds.has(reply.commentId)}
-              onReply={setReplyTarget}
-              onLike={handleReplyLike}
-              onDelete={(comment) =>
-                onDelete(comment, async () => {
-                  await reloadRepliesAsync();
-                })
-              }
-              onPreviewImage={onPreviewImage}
+          {virtualReplyTopPadding > 0 ? (
+            <div
+              className={styles.virtualSpacer}
+              style={{ height: virtualReplyTopPadding }}
+              aria-hidden
             />
-          ))}
+          ) : null}
+          {virtualReplies.map((virtualReply) => {
+            const reply = replies[virtualReply.index];
+            if (!reply) return null;
+            return (
+              <div
+                key={reply.commentId}
+                data-index={virtualReply.index}
+                ref={replyVirtualizer.measureElement}
+              >
+                <ResourceCommentItem
+                  comment={reply}
+                  currentUserId={currentUserId}
+                  resourceOwnerId={resourceOwnerId}
+                  liked={likedCommentIds.has(reply.commentId)}
+                  likePending={pendingLikeIds.has(reply.commentId)}
+                  onReply={setReplyTarget}
+                  onLike={handleReplyLike}
+                  onDelete={(comment) =>
+                    onDelete(comment, async () => {
+                      await reloadRepliesAsync();
+                    })
+                  }
+                  onPreviewImage={onPreviewImage}
+                />
+              </div>
+            );
+          })}
+          {virtualReplyBottomPadding > 0 ? (
+            <div
+              className={styles.virtualSpacer}
+              style={{ height: virtualReplyBottomPadding }}
+              aria-hidden
+            />
+          ) : null}
           {repliesError ? (
             <p className={styles.errorText}>{parseErrorMessage(repliesError)}</p>
           ) : null}

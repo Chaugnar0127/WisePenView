@@ -42,15 +42,21 @@
 
 .historyBody {
   max-height: min(70vh, 560px);
-  overflow-y: auto;
-  .appSubtleScrollbar();
+  overflow: hidden;
 }
 
 .resolvedList {
   display: flex;
   min-width: 0;
+  max-height: min(70vh, 560px);
   flex-direction: column;
   gap: var(--space-sm);
+  overflow-y: auto;
+  .appSubtleScrollbar();
+}
+
+.virtualSpacer {
+  flex: none;
 }
 
 .resolvedThread {

@@ -5,6 +5,7 @@ import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
 import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
 import { WisePenError } from '@/utils/error';
 import { FRONTEND_NETWORK_ERROR } from '@/utils/error/codes';
+import { toast } from '@heroui/react';
 import axios, { AxiosHeaders, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 declare module 'axios' {
@@ -21,6 +22,9 @@ const Axios = axios.create({
 
 const DEFAULT_RETRY_COUNT = 2;
 const DEFAULT_RETRY_DELAY_MS = 300;
+const UNAUTHORIZED_TOAST_DEBOUNCE_MS = 3000;
+
+let lastUnauthorizedToastAt = 0;
 
 type RetryableAxiosConfig = InternalAxiosRequestConfig & {
   __wisePenRetryCount?: number;
@@ -104,6 +108,14 @@ const retryAxiosRequest = (error: AxiosError): Promise<unknown> | undefined => {
   return delay(delayBase * 2 ** retryCount).then(() => Axios.request(config));
 };
 
+const notifyUnauthorized = (): void => {
+  const now = Date.now();
+  if (now - lastUnauthorizedToastAt < UNAUTHORIZED_TOAST_DEBOUNCE_MS) return;
+
+  lastUnauthorizedToastAt = now;
+  toast.danger('无权访问');
+};
+
 const mapAxiosErrorToWisePenError = (error: AxiosError): WisePenError => {
   if (!error.response) {
     const code = mapNetworkCode(error);
@@ -160,6 +172,7 @@ Axios.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
+      notifyUnauthorized();
       authSessionCoordinator.unauthorized();
     }
     return Promise.reject(mapAxiosErrorToWisePenError(error));

@@ -4,8 +4,6 @@ const zhCNWorkspace = {
     chatPanel: '聊天面板',
     resizeSidebar: '调整侧边栏宽度',
     resizeChatPanel: '调整聊天面板宽度',
-    enterZen: '进入 Zen Mode',
-    exitZen: '退出 Zen Mode',
   },
   breadcrumb: { unnamedGroup: '未命名小组', personalDrive: '个人云盘' },
   renderer: {
@@ -53,15 +51,6 @@ const zhCNWorkspace = {
     versionsFailed: '版本记录加载失败',
     versionsEmpty: '暂无版本记录',
     status: { dirty: '未保存', saving: '保存中', failed: '保存失败', saved: '已保存' },
-  },
-  zen: {
-    resourcePane: '资源版面',
-    emptyPane: '空白版面',
-    replaceResource: '替换资源',
-    selectResource: '选择资源',
-    closeResource: '关闭资源',
-    selectFromDrive: '从云盘选择文件',
-    selectTitle: '选择版面资源',
   },
 };
 

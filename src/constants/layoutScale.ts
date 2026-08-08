@@ -37,10 +37,6 @@ export const CHAT_PANEL_MIN_WIDTH = 480;
  */
 export const CHAT_FULL_WIDTH_MIN_WIDTH = 720;
 export const WORKSPACE_CHAT_PANEL_MAX_WIDTH = 1020;
-export const ZEN_CHAT_PANEL_MAX_WIDTH = 720;
-
-/** Zen 单侧资源栏 */
-export const ZEN_RESOURCE_PANE_MIN_WIDTH = 320;
 
 /** 分栏拖拽条预留 */
 export const LAYOUT_RESIZE_HANDLE_RESERVE = 24;
@@ -48,9 +44,6 @@ export const LAYOUT_RESIZE_HANDLE_RESERVE = 24;
 /** Workspace 下限：侧栏 + 主区 + Chat */
 export const WORKSPACE_THREE_COLUMN_MIN_WIDTH =
   SIDEBAR_MIN_WIDTH + MAIN_MIN_WIDTH + CHAT_PANEL_MIN_WIDTH;
-
-/** Zen：双资源栏 + Chat */
-export const ZEN_THREE_COLUMN_MIN_WIDTH = ZEN_RESOURCE_PANE_MIN_WIDTH * 2 + CHAT_PANEL_MIN_WIDTH;
 
 /** App 双栏（侧栏展开 + 主区）下限 */
 export const APP_TWO_COLUMN_MIN_WIDTH =
@@ -148,9 +141,7 @@ export const APP_PAGE_PADDING_INLINE_COMPACT = 24;
 /**
  * Electron 窗口最小宽
  */
-export const WINDOW_MIN_WIDTH =
-  Math.max(WORKSPACE_THREE_COLUMN_MIN_WIDTH, ZEN_THREE_COLUMN_MIN_WIDTH) +
-  LAYOUT_RESIZE_HANDLE_RESERVE;
+export const WINDOW_MIN_WIDTH = WORKSPACE_THREE_COLUMN_MIN_WIDTH + LAYOUT_RESIZE_HANDLE_RESERVE;
 
 /**
  * 窗口最小高：覆盖侧栏可用高度
@@ -204,9 +195,6 @@ export const clampSidebarWidth = (width: number): number =>
 
 export const clampWorkspaceChatPanelWidth = (width: number): number =>
   Math.min(Math.max(Math.round(width), CHAT_PANEL_MIN_WIDTH), WORKSPACE_CHAT_PANEL_MAX_WIDTH);
-
-export const clampZenChatPanelWidth = (width: number): number =>
-  Math.min(Math.max(Math.round(width), CHAT_PANEL_MIN_WIDTH), ZEN_CHAT_PANEL_MAX_WIDTH);
 
 export interface LayoutScaleCssVarOptions {
   widthDensity?: LayoutDensity;

@@ -19,7 +19,6 @@ function ResourceShellHeader({
   onGoBack,
   onGoForward,
   onToggleLeftSidebar,
-  // onEnterZenMode,
   className,
 }: ResourceShellHeaderProps) {
   const desktopWindow = useDesktopWindowState();
@@ -73,14 +72,6 @@ function ResourceShellHeader({
             <div className={styles.toolbarEnd}>
               {extra}
               {resourceSidePanelActions}
-              {/* Zen Mode 暂不上线，暂时隐藏入口按钮。 */}
-              {/* {onEnterZenMode ? (
-                  <AppIconButton
-                    icon={<PanelsTopLeft size={18} aria-hidden="true" />}
-                    label={t('shell.enterZen')}
-                    onPress={onEnterZenMode}
-                  />
-                ) : null} */}
             </div>
           )}
         </div>

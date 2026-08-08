@@ -57,9 +57,11 @@ function AppLayout() {
   const pendingFocusSidebarToggleRef = useRef(false);
   const sidebarWidth = clampSidebarWidth(storedSidebarWidth);
   const desktopWindow = useDesktopWindowState();
-  const collapsedSidebarWidth = desktopWindow.isDesktop
-    ? SIDEBAR_COLLAPSED_WIDTH
-    : APP_WEB_SIDEBAR_COLLAPSED_WIDTH;
+  const isResourceRoute = routeMeta?.pageKey === 'resource';
+  const collapsedSidebarWidth =
+    desktopWindow.isDesktop || isResourceRoute
+      ? SIDEBAR_COLLAPSED_WIDTH
+      : APP_WEB_SIDEBAR_COLLAPSED_WIDTH;
   const {
     panelSize: sidebarPanelSize,
     minSize: sidebarMinSize,
@@ -75,7 +77,6 @@ function AppLayout() {
   const anchorSidebarSlide = isSidebarAnimating || sidebarCollapsed;
   /* Desktop 收起控件在主顶栏：收起一开始就挂上，避免动画结束再挂载导致末帧卡顿 */
   const showDesktopCollapsedChrome = sidebarCollapsed;
-  const isResourceRoute = routeMeta?.pageKey === 'resource';
   const contentContainer = routeMeta?.contentContainer;
 
   const persistSidebarWidthFromPanel = () => {
@@ -138,7 +139,14 @@ function AppLayout() {
   };
 
   const content = isResourceRoute ? (
-    <AppResourceShell>
+    <AppResourceShell
+      leftSidebarCollapsed={sidebarCollapsed}
+      canGoBack={appNavigation.canGoBack}
+      canGoForward={appNavigation.canGoForward}
+      onGoBack={appNavigation.goBack}
+      onGoForward={appNavigation.goForward}
+      onToggleLeftSidebar={handleSidebarToggle}
+    >
       <Outlet />
     </AppResourceShell>
   ) : (
@@ -169,7 +177,7 @@ function AppLayout() {
           aria-hidden={sidebarCollapsed && desktopWindow.isDesktop ? true : undefined}
           onResize={handleSidebarResize}
         >
-          {showWebCollapsedChrome && !desktopWindow.isDesktop ? (
+          {showWebCollapsedChrome && !desktopWindow.isDesktop && !isResourceRoute ? (
             <header className={styles.webCollapsedSidebar}>
               <AppNavigationControls
                 sidebarCollapsed
@@ -224,7 +232,7 @@ function AppLayout() {
           minSize={APP_MAIN_MIN_WIDTH}
           className={styles.middleLayout}
         >
-          {desktopWindow.isDesktop ? (
+          {desktopWindow.isDesktop && !isResourceRoute ? (
             <header
               className={clsx(
                 styles.desktopHeader,
@@ -236,7 +244,7 @@ function AppLayout() {
                   styles.titleBarInsetEnd
               )}
             >
-              {showDesktopCollapsedChrome ? (
+              {showDesktopCollapsedChrome && !isResourceRoute ? (
                 <div className={styles.collapsedHeaderControls}>
                   <AppNavigationControls
                     sidebarCollapsed

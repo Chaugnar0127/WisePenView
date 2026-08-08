@@ -129,17 +129,17 @@ export const createUserServices = (): IUserService => {
   const updateUserInfo = async (params: UpdateUserInfoRequest): Promise<void> => {
     const { userInfoPayload, userProfilePayload } =
       UserServicesMap.mapUpdateUserInfoRequests(params);
-    const tasks: Promise<unknown>[] = [];
-    if (Object.keys(userInfoPayload).length > 0) {
-      tasks.push(UserApi.changeUserInfo(userInfoPayload));
-    }
-    if (Object.keys(userProfilePayload).length > 0) {
-      tasks.push(UserApi.changeUserProfile(userProfilePayload));
-    }
-    if (tasks.length === 0) {
+    const hasUserInfoPayload = Object.keys(userInfoPayload).length > 0;
+    const hasUserProfilePayload = Object.keys(userProfilePayload).length > 0;
+    if (!hasUserInfoPayload && !hasUserProfilePayload) {
       return;
     }
-    await Promise.all(tasks);
+    if (hasUserInfoPayload) {
+      await UserApi.changeUserInfo(userInfoPayload);
+    }
+    if (hasUserProfilePayload) {
+      await UserApi.changeUserProfile(userProfilePayload);
+    }
 
     userInfoCache.delete(USER_INFO_CACHE_KEY);
   };

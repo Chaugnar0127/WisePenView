@@ -1,6 +1,7 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import EntryIcon from '@/components/Icons/EntryIcon';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import TableTextCell from '../../../shared/cells/TextCell';
 import type { FolderTableRow } from '../../index.type';
@@ -33,9 +34,12 @@ function FolderTableNameCell<T extends FolderTableRow>({
   const content = renderNameContent
     ? renderNameContent(nameContent, row, { row, rowId: row.id, depth })
     : nameContent;
+  const nameCellStyle = {
+    '--folder-table-depth-indent': `${depth * 24}px`,
+  } as CSSProperties;
 
   return (
-    <div className={styles.nameCell} data-depth={depth} data-name-column="true">
+    <div className={styles.nameCell} style={nameCellStyle} data-name-column="true">
       {expandable ? (
         <AppIconButton
           icon={expanded ? <ChevronDown aria-hidden /> : <ChevronRight aria-hidden />}

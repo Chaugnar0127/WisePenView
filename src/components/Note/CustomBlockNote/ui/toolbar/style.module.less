@@ -1,5 +1,5 @@
 .toolbarPopover {
-  position: absolute;
+  position: fixed;
   z-index: var(--app-z-index-editor-toolbar, 220);
   transform: translate(-15%, -100%);
   opacity: 0;
@@ -16,7 +16,7 @@
 }
 
 .floatingLayer {
-  z-index: var(--app-z-index-editor-toolbar, 220);
+  z-index: calc(var(--app-z-index-editor-toolbar, 220) + 2);
 }
 
 :global(.bodyBlockNoteView) {
@@ -61,11 +61,7 @@
 }
 
 .toolbarSeparator {
-  width: 1px;
-  height: calc(var(--control-height-sm) - var(--space-sm));
-  align-self: center;
   margin-inline: var(--space-2xs);
-  background: var(--separator);
 }
 
 .toolbarSeparator:first-child,

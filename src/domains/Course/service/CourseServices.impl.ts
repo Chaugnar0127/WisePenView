@@ -1,4 +1,4 @@
-import { GROUP_TYPE, type Group, type IGroupService } from '@/domains/Group';
+import { GROUP_TYPE, type IGroupService } from '@/domains/Group';
 import type { IInteractService } from '@/domains/Interact';
 import type { IResourceService, ResourceItem } from '@/domains/Resource';
 import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR, TAG_QUERY_LOGIC_MODE } from '@/domains/Resource';
@@ -18,29 +18,6 @@ const unavailable = async (..._args: unknown[]): Promise<never> => {
 };
 
 const COURSE_RESOURCE_PAGE_SIZE = 100;
-const COURSE_GROUP_SCAN_PAGE_SIZE = 100;
-
-const fetchAllAdvancedCourseGroups = async (groupService: IGroupService): Promise<Group[]> => {
-  const groups: Group[] = [];
-  let page = 1;
-
-  while (true) {
-    const data = await groupService.fetchGroupList({
-      groupRoleFilter: 'ALL',
-      page,
-      size: COURSE_GROUP_SCAN_PAGE_SIZE,
-    });
-    groups.push(...data.groups.filter((group) => group.groupType === GROUP_TYPE.ADVANCED));
-
-    const reachedKnownTotal = data.total > 0 && page * COURSE_GROUP_SCAN_PAGE_SIZE >= data.total;
-    const reachedShortPage = data.groups.length < COURSE_GROUP_SCAN_PAGE_SIZE;
-    if (reachedKnownTotal || reachedShortPage) {
-      return groups;
-    }
-    page += 1;
-  }
-};
-
 const findTag = (nodes: TagTreeNode[], tagId: string): TagTreeNode | undefined => {
   for (const node of nodes) {
     if (node.tagId === tagId) return node;
@@ -62,11 +39,18 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
   const { groupService, interactService, resourceService, tagService } = deps;
 
   const listMyCourses = async ({ page, size }: ListMyCoursesRequest) => {
-    const groups = await fetchAllAdvancedCourseGroups(groupService);
-    const start = Math.max(0, (page - 1) * size);
-    const pageGroups = groups.slice(start, start + size);
-    const list = pageGroups.map(CourseServicesMap.mapGroupToCourseSummary);
-    return { list, total: groups.length, page, size };
+    const data = await groupService.fetchGroupList({
+      groupRoleFilter: 'ALL',
+      groupType: GROUP_TYPE.ADVANCED,
+      page,
+      size,
+    });
+    return {
+      list: data.groups.map(CourseServicesMap.mapGroupToCourseSummary),
+      total: data.total,
+      page: data.page,
+      size: data.size,
+    };
   };
 
   const getCourseDetail = async (courseId: string) => {

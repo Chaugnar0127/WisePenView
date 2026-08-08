@@ -19,6 +19,8 @@ const enUSDrive = {
     resource: 'Resource',
     link: 'Link',
     loading: 'Loading...',
+    loadMoreProgress: 'Load more ({{loaded}} / {{total}} loaded)',
+    loadMoreGroups: 'Load more groups',
     unnamedFolder: 'Untitled folder',
     unnamedFile: 'Untitled file',
     unnamedDocument: 'Untitled document',
@@ -38,6 +40,7 @@ const enUSDrive = {
     switchDrive: 'Switch Drive',
     loadGroupsFailed: 'Failed to load groups',
     loadingGroups: 'Loading groups...',
+    loadMoreGroups: 'Load more groups',
     noGroups: 'No groups available',
   },
   uploadQueue: {

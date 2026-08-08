@@ -73,8 +73,7 @@
     border-radius: 0;
   }
 
-  :global(.wisepen-tree__switcher),
-  :global(.wisepen-tree__switcher-placeholder) {
+  :global(.wisepen-tree__switcher) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -82,6 +81,11 @@
     width: 20px;
     height: 20px;
     color: var(--muted);
+  }
+
+  // 课程列表是扁平叶子节点，不需要为展开控件保留占位宽度。
+  :global(.wisepen-tree__switcher-placeholder) {
+    display: none;
   }
 
   :global(.wisepen-tree__title) {

@@ -23,12 +23,7 @@ type NotePasteHandler = NonNullable<CreateBlockNoteOptions['pasteHandler']>;
 type NoteUploadFile = NonNullable<CreateBlockNoteOptions['uploadFile']>;
 
 const NOTE_EDITOR_PROPS = collectNoteEditorProps(notePluginRegistry);
-const STRUCTURED_CLIPBOARD_TYPES = new Set([
-  'blocknote/html',
-  'text/markdown',
-  'Files',
-  'vscode-editor-data',
-]);
+const BLOCKNOTE_CLIPBOARD_HTML = 'blocknote/html';
 
 function buildNoteDictionary(language: string | undefined): Dictionary {
   const dictionary = language === 'en-US' ? en : zh;
@@ -83,22 +78,37 @@ function renderNoteCollaborationCursor(user: NoteCollaborationUser): HTMLElement
   return cursor;
 }
 
-function shouldPastePlainTextIntoEmptyHeading({
+function htmlRepresentsOnlyParagraphBlocks(html: string) {
+  if (!html.trim()) return false;
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const contentTypes = Array.from(doc.body.querySelectorAll<HTMLElement>('[data-content-type]'));
+  return (
+    contentTypes.length > 0 &&
+    contentTypes.every((element) => element.dataset.contentType === 'paragraph')
+  );
+}
+
+function isEmptyTypedInlineBlock(block: { type: string; content?: unknown }) {
+  return block.type !== 'paragraph' && Array.isArray(block.content) && block.content.length === 0;
+}
+
+function shouldPasteOwnParagraphAsPlainTextIntoEmptyTypedBlock({
   event,
   editor,
 }: Pick<Parameters<NotePasteHandler>[0], 'event' | 'editor'>) {
   const text = event.clipboardData?.getData('text/plain');
   if (!text) return false;
-  if (event.clipboardData?.types.some((type) => STRUCTURED_CLIPBOARD_TYPES.has(type))) return false;
 
   const currentBlock = editor.getTextCursorPosition().block;
-  return currentBlock.type === 'heading' && Array.isArray(currentBlock.content)
-    ? currentBlock.content.length === 0
-    : false;
+  if (!isEmptyTypedInlineBlock(currentBlock)) return false;
+
+  const internalHtml = event.clipboardData?.getData(BLOCKNOTE_CLIPBOARD_HTML);
+  return htmlRepresentsOnlyParagraphBlocks(internalHtml ?? '');
 }
 
 const handlePasteIntoNote: NotePasteHandler = ({ event, editor, defaultPasteHandler }) => {
-  if (shouldPastePlainTextIntoEmptyHeading({ event, editor })) {
+  if (shouldPasteOwnParagraphAsPlainTextIntoEmptyTypedBlock({ event, editor })) {
     editor.pasteText(event.clipboardData?.getData('text/plain') ?? '');
     return true;
   }

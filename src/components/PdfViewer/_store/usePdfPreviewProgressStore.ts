@@ -37,7 +37,12 @@ export const usePdfPreviewProgressStore = create<PdfPreviewProgressState>()(
           };
         }),
     }),
-    { name: 'pdf-preview-progress', storage: createStoreJSONStorage('tab') }
+    {
+      name: 'pdf-preview-progress',
+      storage: createStoreJSONStorage('tab'),
+      version: 1,
+      migrate: () => DEFAULT_PDF_PREVIEW_PROGRESS,
+    }
   )
 );
 

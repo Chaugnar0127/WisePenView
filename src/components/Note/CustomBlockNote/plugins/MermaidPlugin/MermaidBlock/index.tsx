@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import AppIconButton from '@/components/Button/AppIconButton';
 import i18n from '@/i18n';
 import { copyText } from '@/utils/browser/copyText';
+import { SVG_HTML_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
 import { useNoteEditorReadOnlyContext } from '../../../engines/editor/readOnly';
 import { renderNoteMermaidDiagram } from '../mermaidRuntime';
 import {
@@ -245,7 +246,12 @@ function MermaidBlockView({ block, contentRef, editor }: MermaidBlockRenderProps
                 <div className={styles.error}>{result.error}</div>
               ) : null}
               {shouldRender && result?.svg ? (
-                <div className={styles.diagram} dangerouslySetInnerHTML={{ __html: result.svg }} />
+                <div
+                  className={styles.diagram}
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(result.svg, SVG_HTML_SANITIZE_CONFIG),
+                  }}
+                />
               ) : null}
             </div>
           </section>

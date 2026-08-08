@@ -7,15 +7,35 @@ import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/form
 import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useInfiniteScroll, useRequest } from 'ahooks';
 import clsx from 'clsx';
 import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
 
 const MESSAGE_PAGE_SIZE = 100;
+const MESSAGE_ITEM_ESTIMATE_SIZE = 156;
+const MESSAGE_ITEM_OVERSCAN = 8;
+
+interface UserMessageInfinitePage {
+  list: UserMessage[];
+  total: number;
+  page: number;
+  size: number;
+  totalPage: number;
+}
+
+interface UserMessagePagePayload extends Omit<UserMessageInfinitePage, 'list'> {
+  messages: UserMessage[];
+}
+
+const toUserMessageInfinitePage = (data: UserMessagePagePayload): UserMessageInfinitePage => {
+  const { messages, ...page } = data;
+  return { ...page, list: messages };
+};
 
 const resolveMessageTypeLabel = (
   message: UserMessage,
@@ -35,60 +55,46 @@ function NotificationsPage() {
   const { messageId: routeMessageId } = useParams<{ messageId: string }>();
   const selectedMessageId = routeMessageId ? decodeURIComponent(routeMessageId) : undefined;
   const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
-  const [loadedMessages, setLoadedMessages] = useState<UserMessage[]>([]);
-  const [lastLoadedPage, setLastLoadedPage] = useState(1);
-  const loadGenerationRef = useRef(0);
+  const messageListRef = useRef<HTMLDivElement>(null);
 
-  const messagesRequest = useRequest(
-    () => messageService.listUserMessages({ page: 1, size: MESSAGE_PAGE_SIZE }),
-    {
-      onSuccess: () => {
-        setLoadedMessages([]);
-        setLastLoadedPage(1);
-      },
-    }
-  );
-
-  const messages = [...(messagesRequest.data?.messages ?? []), ...loadedMessages];
-  const selectedMessage = messages.find((message) => message.messageId === selectedMessageId);
-  const isInitialLoading = messagesRequest.loading && messagesRequest.data == null;
-  const hasMoreMessages = Boolean(
-    messagesRequest.data && lastLoadedPage < messagesRequest.data.totalPage
-  );
-
-  const { runAsync: readMessage } = useRequest(
-    (messageId: string) => messageService.readMessage({ messageId }),
-    { manual: true }
-  );
-
-  const { loading: loadingMore, run: loadMoreMessages } = useRequest(
-    async () => {
-      const currentPageData = messagesRequest.data;
-      if (!currentPageData || lastLoadedPage >= currentPageData.totalPage) return;
-
-      const loadGeneration = loadGenerationRef.current;
-      const nextPage = lastLoadedPage + 1;
-      const nextPageData = await messageService.listUserMessages({
+  const messagesRequest = useInfiniteScroll<UserMessageInfinitePage>(
+    async (current) => {
+      const nextPage = Math.floor((current?.list.length ?? 0) / MESSAGE_PAGE_SIZE) + 1;
+      const data = await messageService.listUserMessages({
         page: nextPage,
         size: MESSAGE_PAGE_SIZE,
       });
-      if (loadGeneration !== loadGenerationRef.current) return;
-
-      setLoadedMessages((items) => {
-        const knownIds = new Set(
-          [...currentPageData.messages, ...items].map((message) => message.messageId)
-        );
-        return [
-          ...items,
-          ...nextPageData.messages.filter((message) => !knownIds.has(message.messageId)),
-        ];
-      });
-      setLastLoadedPage(nextPageData.page || nextPage);
+      return toUserMessageInfinitePage(data);
     },
     {
-      manual: true,
+      target: messageListRef,
+      isNoMore: (data) => Boolean(data && data.page >= data.totalPage),
       onError: (error) => toast.warning(parseErrorMessage(error)),
     }
+  );
+
+  const messages = messagesRequest.data?.list ?? [];
+  const selectedMessage = messages.find((message) => message.messageId === selectedMessageId);
+  const isInitialLoading = messagesRequest.loading && messagesRequest.data == null;
+  const hasMoreMessages = !messagesRequest.noMore;
+  // eslint-disable-next-line react-hooks/incompatible-library -- 虚拟列表需要读取滚动容器尺寸与动态行高，属于命令式测量。
+  const messageVirtualizer = useVirtualizer({
+    count: messages.length,
+    getScrollElement: () => messageListRef.current,
+    estimateSize: () => MESSAGE_ITEM_ESTIMATE_SIZE,
+    overscan: MESSAGE_ITEM_OVERSCAN,
+    getItemKey: (index) => messages[index]?.messageId ?? index,
+  });
+  const virtualItems = messageVirtualizer.getVirtualItems();
+  const virtualTopPadding = virtualItems[0]?.start ?? 0;
+  const virtualBottomPadding =
+    virtualItems.length > 0
+      ? messageVirtualizer.getTotalSize() - (virtualItems[virtualItems.length - 1]?.end ?? 0)
+      : 0;
+
+  const { runAsync: readMessages } = useRequest(
+    (messageIds: string[]) => messageService.readMessages({ messageIds }),
+    { manual: true }
   );
 
   const markLoadedMessageAsRead = (messageId: string) => {
@@ -96,16 +102,11 @@ function NotificationsPage() {
       data
         ? {
             ...data,
-            messages: data.messages.map((message) =>
+            list: data.list.map((message) =>
               message.messageId === messageId ? { ...message, read: true } : message
             ),
           }
         : data
-    );
-    setLoadedMessages((items) =>
-      items.map((message) =>
-        message.messageId === messageId ? { ...message, read: true } : message
-      )
     );
   };
 
@@ -114,25 +115,21 @@ function NotificationsPage() {
       data
         ? {
             ...data,
-            messages: data.messages.map((message) => ({ ...message, read: true })),
+            list: data.list.map((message) => ({ ...message, read: true })),
           }
         : data
     );
-    setLoadedMessages((items) => items.map((message) => ({ ...message, read: true })));
   };
 
   const handleRefreshMessages = () => {
-    loadGenerationRef.current += 1;
-    setLoadedMessages([]);
-    setLastLoadedPage(1);
-    messagesRequest.refresh();
+    messagesRequest.reload();
   };
 
   const handleSelectMessage = async (message: UserMessage) => {
     navigate(buildNotificationPath(message.messageId));
     if (message.read) return;
     try {
-      await readMessage(message.messageId);
+      await readMessages([message.messageId]);
       markLoadedMessageAsRead(message.messageId);
     } catch (error: unknown) {
       toast.warning(parseErrorMessage(error));
@@ -148,10 +145,10 @@ function NotificationsPage() {
   };
 
   const handleMarkAllAsRead = async () => {
-    const unreadMessages = messagesRequest.data?.messages.filter((message) => !message.read) ?? [];
+    const unreadMessages = messages.filter((message) => !message.read);
     if (unreadMessages.length === 0) return;
     try {
-      await Promise.all(unreadMessages.map((message) => readMessage(message.messageId)));
+      await readMessages(unreadMessages.map((message) => message.messageId));
       markLoadedMessagesAsRead();
     } catch (error: unknown) {
       toast.warning(parseErrorMessage(error));
@@ -224,8 +221,17 @@ function NotificationsPage() {
             />
           </div>
         ) : (
-          <div className={styles.messageList}>
-            {messages.map((message) => {
+          <div className={styles.messageList} ref={messageListRef}>
+            {virtualTopPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualTopPadding }}
+                aria-hidden
+              />
+            ) : null}
+            {virtualItems.map((virtualItem) => {
+              const message = messages[virtualItem.index];
+              if (!message) return null;
               const isSelected = message.messageId === selectedMessageId;
               const isUnread = !message.read;
               const title = message.title || t('page.untitled');
@@ -245,6 +251,8 @@ function NotificationsPage() {
               return (
                 <article
                   key={message.messageId}
+                  data-index={virtualItem.index}
+                  ref={messageVirtualizer.measureElement}
                   className={clsx(styles.messageItem, isSelected && styles.messageItemSelected)}
                 >
                   <div className={styles.messageSummary}>
@@ -323,16 +331,23 @@ function NotificationsPage() {
                 </article>
               );
             })}
+            {virtualBottomPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualBottomPadding }}
+                aria-hidden
+              />
+            ) : null}
             {hasMoreMessages ? (
               <div className={styles.loadMoreBar}>
                 <Button
                   variant="ghost"
                   size="sm"
                   className={styles.loadMoreButton}
-                  isDisabled={loadingMore}
-                  onPress={() => loadMoreMessages()}
+                  isDisabled={messagesRequest.loadingMore}
+                  onPress={messagesRequest.loadMore}
                 >
-                  {loadingMore ? t('page.loadingMore') : t('page.loadMore')}
+                  {messagesRequest.loadingMore ? t('page.loadingMore') : t('page.loadMore')}
                 </Button>
               </div>
             ) : null}

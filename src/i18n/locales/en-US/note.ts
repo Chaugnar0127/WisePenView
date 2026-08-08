@@ -273,6 +273,7 @@ const enUSNote = {
     copy: 'Copy source',
     empty: 'Enter Mermaid diagram source.',
     rendering: 'Rendering diagram...',
+    sourceTooLong: 'Mermaid source cannot exceed {{maxLength}} characters.',
     renderFailed: 'Unable to render the diagram. Check the Mermaid syntax.',
   },
 };

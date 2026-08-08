@@ -77,7 +77,6 @@ export function NestButtons() {
       size="sm"
     >
       <NestButton type="nest" />
-      <ToggleButtonGroup.Separator />
       <NestButton type="unnest" />
     </ToggleButtonGroup>
   );

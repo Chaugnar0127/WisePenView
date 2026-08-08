@@ -1,13 +1,13 @@
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
 import { useNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
 import { useChatService } from '@/domains';
-import type { ChatSession } from '@/domains/Chat';
+import type { ChatSession, PageResult } from '@/domains/Chat';
 import { parseErrorMessage } from '@/utils/error';
 import { buildChatPath } from '@/utils/navigation/appRoute';
 import { Button, ListBox, ListBoxItem, ListBoxSection, toast } from '@heroui/react';
-import { useMemoizedFn, useRequest } from 'ahooks';
+import { useInfiniteScroll, useMemoizedFn } from 'ahooks';
 import clsx from 'clsx';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useSidebarSessionHistoryStore } from '../_store/useSidebarSessionHistoryStore';
@@ -19,57 +19,50 @@ const SESSION_PAGE_SIZE = 20;
 
 const useSessionListGroup = () => {
   const chatService = useChatService();
-  const [loadingMoreSessions, setLoadingMoreSessions] = useState(false);
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const setCurrentSession = useCurrentChatSessionStore((state) => state.setCurrentSession);
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
   const sessionItems = useSidebarSessionHistoryStore((state) => state.sessionItems);
-  const sessionPage = useSidebarSessionHistoryStore((state) => state.sessionPage);
-  const sessionTotalPage = useSidebarSessionHistoryStore((state) => state.sessionTotalPage);
   const setSessionPageResult = useSidebarSessionHistoryStore((state) => state.setSessionPageResult);
   const removeSession = useSidebarSessionHistoryStore((state) => state.removeSession);
   const navigate = useNavigate();
 
-  const { runAsync: runListSessions, loading: sessionListLoading } = useRequest(
-    async (page: number) =>
+  const {
+    data: sessionPageData,
+    loading: sessionListLoading,
+    loadingMore: loadingMoreSessions,
+    noMore: noMoreSessions,
+    loadMore: loadMoreSessions,
+    reloadAsync: reloadSessions,
+  } = useInfiniteScroll<PageResult<ChatSession>>(
+    async (current) =>
       chatService.listSessions({
-        page,
+        page: Math.floor((current?.list.length ?? 0) / SESSION_PAGE_SIZE) + 1,
         size: SESSION_PAGE_SIZE,
       }),
     {
       manual: true,
+      isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
+      onSuccess: (payload) => {
+        // 始终以 store 最新 sessionId 为准，避免闭包里读到旧值后回写错误会话。
+        const latestSessionId = useCurrentChatSessionStore.getState().currentSessionId;
+        if (latestSessionId) {
+          const currentSession = payload.list.find((item) => item.id === latestSessionId);
+          if (currentSession) {
+            setCurrentSession({ id: currentSession.id, title: currentSession.title });
+          }
+        }
+        setSessionPageResult(payload, payload.page > 1);
+      },
+      onError: (err) => toast.danger(parseErrorMessage(err)),
     }
   );
 
-  const loadSessionPage = async (page: number, append: boolean) => {
-    if (append) {
-      setLoadingMoreSessions(true);
-    }
-    try {
-      const payload = await runListSessions(page);
-      // 始终以 store 最新 sessionId 为准，避免闭包里读到旧值后回写错误会话。
-      const latestSessionId = useCurrentChatSessionStore.getState().currentSessionId;
-      if (latestSessionId) {
-        const currentSession = payload.list.find((item) => item.id === latestSessionId);
-        if (currentSession) {
-          setCurrentSession({ id: currentSession.id, title: currentSession.title });
-        }
-      }
-      setSessionPageResult(payload, append);
-    } catch (err) {
-      toast.danger(parseErrorMessage(err));
-    } finally {
-      if (append) {
-        setLoadingMoreSessions(false);
-      }
-    }
-  };
-
   const refresh = useMemoizedFn(async () => {
-    await loadSessionPage(1, false);
+    await reloadSessions();
   });
 
-  const hasMoreSessions = sessionPage < sessionTotalPage;
+  const hasMoreSessions = Boolean(sessionPageData) && !noMoreSessions;
 
   const handleDeleted = (sessionId: string) => {
     if (currentSessionId === sessionId) {
@@ -82,11 +75,6 @@ const useSessionListGroup = () => {
   const selectSession = (session: ChatSession) => {
     setCurrentSession({ id: session.id, title: session.title });
     navigate(buildChatPath(session.id));
-  };
-
-  const loadMoreSessions = () => {
-    if (loadingMoreSessions || !hasMoreSessions) return;
-    void loadSessionPage(sessionPage + 1, true);
   };
 
   return {

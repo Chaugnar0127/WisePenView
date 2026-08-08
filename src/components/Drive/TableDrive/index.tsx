@@ -147,6 +147,13 @@ function TableDrive({
 
   // 封装一个通用的点击节点回调，清理选中状态并刷新列表
   const handleClickNode = useClickNode({ enterFolder: handleEnterFolder });
+  const handleActivateNode = (row: DriveTableRow) => {
+    if (row.node.type === 'loading') {
+      void navigation.loadMoreChildren(row.node.parentId);
+      return;
+    }
+    handleClickNode(row);
+  };
 
   // 初始化回收站控制器
   const trash = useTableDriveTrashController({
@@ -191,13 +198,15 @@ function TableDrive({
   };
 
   const handleRowSelect = (row: DriveTableRow) => {
-    if (row.node.type !== 'loading') {
-      if (interaction.selectedRow?.id === row.id) {
-        // 已选中状态，单击打开（checkbox 未生效时的策略）
-        handleClickNode(row);
-      } else {
-        interaction.setSelectedRowId(row.id);
-      }
+    if (row.node.type === 'loading') {
+      void navigation.loadMoreChildren(row.node.parentId);
+      return;
+    }
+    if (interaction.selectedRow?.id === row.id) {
+      // 已选中状态，单击打开（checkbox 未生效时的策略）
+      handleActivateNode(row);
+    } else {
+      interaction.setSelectedRowId(row.id);
     }
   };
 
@@ -207,7 +216,7 @@ function TableDrive({
     isTrashView: trash.isTrashView,
     showManagePermission: actionsController.showManagePermission,
     onEnterFolder: handleEnterFolder,
-    onOpenNode: handleClickNode,
+    onOpenNode: handleActivateNode,
     onRename: actionsController.setRenameTarget,
     onMoveNodes: actionsController.setMoveNodes,
     onDelete: actionsController.setDeleteTarget,
@@ -331,7 +340,7 @@ function TableDrive({
                 onExpandedChange={navigation.handleExpandedChange}
                 selectedRowKey={interaction.selectedRow?.id}
                 onRowSelect={handleRowSelect}
-                onRowActivate={handleClickNode}
+                onRowActivate={handleActivateNode}
                 renderNameContent={renderNameContent}
                 renderRow={dnd.renderRow}
                 bodyDragHandlers={externalDnd.bodyDragHandlers}
@@ -342,8 +351,13 @@ function TableDrive({
                     </div>
                   ) : null
                 }
-                totalCount={interaction.currentDirectoryItemCount}
-                summary={t('table.summary', { count: interaction.currentDirectoryItemCount })}
+                loadMore={{
+                  loading: navigation.loadingMore,
+                  hasMore: navigation.hasMore,
+                  onLoadMore: navigation.loadMore,
+                }}
+                totalCount={navigation.totalCount}
+                summary={t('table.summary', { count: navigation.totalCount })}
                 className={styles.table}
                 sortDescriptor={interaction.sortDescriptor}
                 onSortChange={interaction.handleSortChange}

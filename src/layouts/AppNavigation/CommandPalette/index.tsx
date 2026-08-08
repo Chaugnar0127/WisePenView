@@ -355,6 +355,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
           {query && hasPrimaryCommands ? <CommandSeparator /> : null}
           <ResourceSearchResults
             keyword={debouncedQuery}
+            layoutKeyword={query}
             viewportRef={commandListRef}
             onSelect={closePalette}
           />

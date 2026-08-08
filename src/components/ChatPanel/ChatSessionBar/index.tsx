@@ -1,10 +1,9 @@
 import { useChatService } from '@/domains';
-import type { ChatSession } from '@/domains/Chat';
+import type { ChatSession, PageResult } from '@/domains/Chat';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useKeyPress, useMount, useRequest } from 'ahooks';
+import { useInfiniteScroll, useKeyPress } from 'ahooks';
 import clsx from 'clsx';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
 
@@ -34,31 +33,23 @@ function ChatSessionBar({ activeSessionId, onClose, onSelectSession }: ChatSessi
   const { i18n, t } = useTranslation('chat');
   const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
   const chatService = useChatService();
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(1);
-
-  const { loading, runAsync: runListSessions } = useRequest(
-    (nextPage: number) => chatService.listSessions({ page: nextPage, size: SESSION_PAGE_SIZE }),
-    { manual: true }
-  );
-
-  const loadSessions = async (nextPage: number) => {
-    try {
-      const payload = await runListSessions(nextPage);
-      setSessions((previousSessions) =>
-        nextPage === 1 ? payload.list : [...previousSessions, ...payload.list]
-      );
-      setPage(payload.page ?? nextPage);
-      setTotalPage(payload.totalPage ?? 1);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
+  const {
+    data: sessionPage,
+    loading,
+    loadingMore,
+    noMore,
+    loadMore,
+  } = useInfiniteScroll<PageResult<ChatSession>>(
+    (current) =>
+      chatService.listSessions({
+        page: Math.floor((current?.list.length ?? 0) / SESSION_PAGE_SIZE) + 1,
+        size: SESSION_PAGE_SIZE,
+      }),
+    {
+      isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
+      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
-  };
-
-  useMount(() => {
-    void loadSessions(1);
-  });
+  );
 
   useKeyPress(
     'esc',
@@ -70,13 +61,9 @@ function ChatSessionBar({ activeSessionId, onClose, onSelectSession }: ChatSessi
     { events: ['keydown'], useCapture: true }
   );
 
+  const sessions = sessionPage?.list ?? [];
   const initialLoading = loading && sessions.length === 0;
-  const canLoadMore = !loading && page < totalPage;
-
-  const handleLoadMore = () => {
-    if (!canLoadMore) return;
-    void loadSessions(page + 1);
-  };
+  const canLoadMore = Boolean(sessionPage) && !loadingMore && !noMore;
 
   return (
     <aside className={styles.sessionBar} aria-label={t('session.listAria')}>
@@ -113,13 +100,11 @@ function ChatSessionBar({ activeSessionId, onClose, onSelectSession }: ChatSessi
         })}
 
         {canLoadMore ? (
-          <button type="button" className={styles.sessionLoadMoreButton} onClick={handleLoadMore}>
+          <button type="button" className={styles.sessionLoadMoreButton} onClick={loadMore}>
             {t('session.loadMore')}
           </button>
         ) : null}
-        {loading && sessions.length > 0 ? (
-          <div className={styles.sessionStateText}>{t('session.loading')}</div>
-        ) : null}
+        {loadingMore ? <div className={styles.sessionStateText}>{t('session.loading')}</div> : null}
       </div>
     </aside>
   );

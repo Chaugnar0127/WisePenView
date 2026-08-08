@@ -254,17 +254,13 @@ export function useSkillSaveController({
 
   const saveAll = async (options?: SaveOptions) => {
     if (!canEdit) return;
-    const tasks: Promise<unknown>[] = [];
     if (fileSnapshots.length > 0) {
-      tasks.push(saveFiles(fileSnapshots, { ...options, showToast: false }));
+      await saveFiles(fileSnapshots, { ...options, showToast: false });
     }
     if (configSnapshot) {
-      tasks.push(saveConfigSnapshot(configSnapshot, { ...options, showToast: false }));
+      await saveConfigSnapshot(configSnapshot, { ...options, showToast: false });
     }
-    if (tasks.length === 0) return;
-    const results = await Promise.allSettled(tasks);
-    const failed = results.find((result) => result.status === 'rejected');
-    if (failed?.status === 'rejected') throw failed.reason;
+    if (fileSnapshots.length === 0 && !configSnapshot) return;
     if (options?.showToast !== false) toast.success(t('toast.saveSuccess'));
     if (options?.refresh) refreshSkill();
   };

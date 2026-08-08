@@ -1,14 +1,15 @@
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
+import { buildLoadingNode } from '@/domains/Drive/mapper/DriveServices.map';
 import { parseErrorMessage } from '@/utils/error';
 import { findTreeNodeById } from '@/utils/tree/findTreeNodeById';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { startTransition, useRef, useState } from 'react';
-import { useDriveTreeChildren } from '../../common/useDriveTreeChildren';
+import { useDrivePagedTreeChildren } from '../../common/useDrivePagedTreeChildren';
 import type { DriveRow } from '../index.type';
 
-const TABLE_DRIVE_RESOURCE_PREVIEW_LIMIT = 50;
+const TABLE_DRIVE_RESOURCE_PAGE_SIZE = 50;
 
 interface UseTableDriveNavigationControllerParams {
   initialNodeId?: string;
@@ -21,10 +22,18 @@ interface UseTableDriveNavigationControllerReturn {
   currentNodeId: string;
   /** 当前层级的 dataSource（已挂上 expanded children） */
   dataSource: DriveRow[];
+  /** 当前目录总条数，包含尚未滚底加载的资源/link。 */
+  totalCount: number;
   /** breadcrumb 路径（含目标节点本身） */
   pathNodes: DriveNode[];
   loading: boolean;
+  loadingMore: boolean;
+  hasMore: boolean;
   expandedRowKeys: string[];
+  /** 滚底加载当前目录下一页资源/link。 */
+  loadMore: () => void;
+  /** 手动加载某个已展开子目录的下一页资源/link。 */
+  loadMoreChildren: (nodeId: string) => Promise<void>;
   /** 进入容器目录（root / folder 调用） */
   enterFolder: (nodeId: string) => void;
   /** Table 展开行变更回调 */
@@ -42,6 +51,16 @@ interface DriveRowsResult {
   locationKey: string;
   rows: DriveRow[];
   expandedRowKeys: string[];
+  resourcePage: number;
+  hasMore: boolean;
+  totalCount: number;
+}
+
+interface DriveLoadMoreResult {
+  locationKey: string;
+  resourcePage: number;
+  resourceNodes: DriveNode[];
+  hasMore: boolean;
 }
 
 /**
@@ -60,10 +79,33 @@ export function useTableDriveNavigationController({
   // 当前 Drive 作用域及其子节点缓存
   const rootId = scope.rootId;
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
-  const { childrenMap, loadChildren, reset } = useDriveTreeChildren({
-    groupId,
-    scope,
-    resourceLimit: TABLE_DRIVE_RESOURCE_PREVIEW_LIMIT,
+  const {
+    childrenMap,
+    loadChildren,
+    loadMoreChildren: loadMorePagedChildren,
+    reset,
+  } = useDrivePagedTreeChildren({
+    pageSize: TABLE_DRIVE_RESOURCE_PAGE_SIZE,
+    loadPage: async ({ nodeId, page, size, refresh, mode }) => {
+      const result = await driveService.listNodeChildrenPage({
+        nodeId,
+        groupId,
+        resourcePage: page,
+        resourceSize: size,
+        includeFolders: mode === 'initial',
+        refresh,
+      });
+      return {
+        nodes: mode === 'initial' ? result.nodes : result.resourceNodes,
+        page: result.resourcePage,
+        size: result.resourceSize,
+        total: result.resourceTotal,
+        hasMore: result.hasMoreResources,
+      };
+    },
+    countLoaded: (children) =>
+      children.filter((node) => node.type === 'resource' || node.type === 'link').length,
+    buildLoadingPlaceholder: (nodeId, label) => buildLoadingNode(nodeId, label, scope),
   });
 
   // 导航定位：作用域或初始节点变化时重置当前目录
@@ -79,6 +121,12 @@ export function useTableDriveNavigationController({
   // 当前目录内容及展开状态
   const [rows, setRows] = useState<DriveRow[]>([]);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+  const [pageState, setPageState] = useState({
+    locationKey: '',
+    resourcePage: 1,
+    hasMore: false,
+    totalCount: 0,
+  });
 
   // 用于异步刷新期间恢复展开分支，并避免闭包读取旧状态
   const expandedRowKeysRef = useRef<string[]>([]);
@@ -93,15 +141,43 @@ export function useTableDriveNavigationController({
     setExpandedRowKeys(nextKeys);
   };
 
+  const loadCurrentNodeFirstPage = async (): Promise<{
+    rows: DriveNode[];
+    resourcePage: number;
+    hasMore: boolean;
+    totalCount: number;
+  }> => {
+    const result = await driveService.listNodeChildrenPage({
+      nodeId: currentNodeId,
+      groupId,
+      resourcePage: 1,
+      resourceSize: TABLE_DRIVE_RESOURCE_PAGE_SIZE,
+    });
+    return {
+      rows: result.nodes,
+      resourcePage: result.resourcePage,
+      hasMore: result.hasMoreResources,
+      totalCount: result.folderNodes.length + result.resourceTotal,
+    };
+  };
+
   // 切换目录时清空展开状态；同目录刷新时重载已展开分支并保留仍然存在的节点。
   const { loading, refresh } = useRequest(
     async (): Promise<DriveRowsResult> => {
       const expandedKeysToRestore =
         loadedLocationKeyRef.current === locationKey ? new Set(expandedRowKeysRef.current) : null;
       reset();
-      const nextRows = await loadChildren(currentNodeId);
+      const firstPage = await loadCurrentNodeFirstPage();
+      const nextRows = firstPage.rows;
       if (!expandedKeysToRestore?.size) {
-        return { locationKey, rows: nextRows as DriveRow[], expandedRowKeys: [] };
+        return {
+          locationKey,
+          rows: nextRows as DriveRow[],
+          expandedRowKeys: [],
+          resourcePage: firstPage.resourcePage,
+          hasMore: firstPage.hasMore,
+          totalCount: firstPage.totalCount,
+        };
       }
 
       const restoredExpandedKeys: string[] = [];
@@ -126,6 +202,9 @@ export function useTableDriveNavigationController({
         locationKey,
         rows: nextRows as DriveRow[],
         expandedRowKeys: restoredExpandedKeys,
+        resourcePage: firstPage.resourcePage,
+        hasMore: firstPage.hasMore,
+        totalCount: firstPage.totalCount,
       };
     },
     {
@@ -139,7 +218,49 @@ export function useTableDriveNavigationController({
       onSuccess: (result) => {
         loadedLocationKeyRef.current = result.locationKey;
         setRows(result.rows);
+        setPageState({
+          locationKey: result.locationKey,
+          resourcePage: result.resourcePage,
+          hasMore: result.hasMore,
+          totalCount: result.totalCount,
+        });
         updateExpandedRowKeys(result.expandedRowKeys);
+      },
+    }
+  );
+
+  const { loading: loadingMore, run: loadMore } = useRequest(
+    async (): Promise<DriveLoadMoreResult> => {
+      const nextResourcePage =
+        pageState.locationKey === locationKey ? pageState.resourcePage + 1 : 1;
+      const result = await driveService.listNodeChildrenPage({
+        nodeId: currentNodeId,
+        groupId,
+        resourcePage: nextResourcePage,
+        resourceSize: TABLE_DRIVE_RESOURCE_PAGE_SIZE,
+        includeFolders: false,
+      });
+      return {
+        locationKey,
+        resourcePage: result.resourcePage,
+        resourceNodes: result.resourceNodes,
+        hasMore: result.hasMoreResources,
+      };
+    },
+    {
+      manual: true,
+      onSuccess: (result) => {
+        if (result.locationKey !== locationKey) return;
+        setRows((currentRows) => [...currentRows, ...(result.resourceNodes as DriveRow[])]);
+        setPageState((current) => ({
+          ...current,
+          locationKey: result.locationKey,
+          resourcePage: result.resourcePage,
+          hasMore: result.hasMore,
+        }));
+      },
+      onError: (err) => {
+        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -214,8 +335,15 @@ export function useTableDriveNavigationController({
   return {
     currentNodeId,
     dataSource,
+    totalCount: pageState.locationKey === locationKey ? pageState.totalCount : rows.length,
     pathNodes,
     loading: !ready || loading,
+    loadingMore,
+    hasMore: pageState.locationKey === locationKey && pageState.hasMore,
+    loadMore,
+    loadMoreChildren: async (nodeId) => {
+      await loadMorePagedChildren(nodeId);
+    },
     expandedRowKeys,
     enterFolder,
     handleExpandedChange,

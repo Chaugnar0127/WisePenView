@@ -51,6 +51,8 @@ export const useResourceSidePanelStore = create<ResourceSidePanelState>()(
     {
       name: 'resource-side-panel',
       storage: createStoreJSONStorage('tab'),
+      version: 1,
+      migrate: () => ({ width: RESOURCE_SIDE_PANEL_DEFAULT_WIDTH }),
       partialize: (state) => ({ width: state.width }),
       merge: (persisted, current) => {
         const stored = persisted as Partial<ResourceSidePanelState> | undefined;

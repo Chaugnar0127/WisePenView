@@ -10,11 +10,11 @@
   border: none;
   outline: none;
   box-shadow: none;
-  background: var(--surface);
+  background: var(--background);
 }
 
 .panel {
-  width: var(--note-outline-open-width, var(--layout-note-outline-open-width, 200px));
+  width: var(--note-outline-open-width, var(--layout-note-outline-open-width, 320px));
 }
 
 .collapsedPanel {
@@ -22,10 +22,11 @@
 }
 
 .aside {
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 0;
+  padding: 0 0 0 var(--space-md);
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -85,11 +86,12 @@
 }
 
 .collapsedContent {
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
   min-height: 0;
   align-self: stretch;
-  padding: var(--space-sm) 0;
+  padding: var(--space-sm) 0 var(--space-sm) var(--space-sm);
 }
 
 .toggleButton {

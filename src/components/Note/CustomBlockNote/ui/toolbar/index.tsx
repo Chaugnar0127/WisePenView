@@ -22,6 +22,7 @@ import { ButtonGroup, Separator, Toolbar } from '@heroui/react';
 import { useEventListener } from 'ahooks';
 import { MessageSquarePlus, Search, Sparkles } from 'lucide-react';
 import { useState, type ComponentProps } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { BlockTypeMenu } from './components/BlockTypeMenu';
 import { ColorMenu } from './components/ColorMenu';
@@ -50,8 +51,104 @@ const getTableRailToolbarPlacement = (
 const toDOMRect = (rect: { height: number; width: number; x: number; y: number }) =>
   new DOMRect(rect.x, rect.y, rect.width, rect.height);
 
+function findTableBlockElement(editorElement: HTMLElement | undefined, blockId: string | null) {
+  if (!editorElement || !blockId) {
+    return null;
+  }
+  const blockContainers = editorElement.querySelectorAll<HTMLElement>(
+    '[data-node-type="blockContainer"][data-id]'
+  );
+
+  return Array.from(blockContainers).find((element) => element.dataset.id === blockId) ?? null;
+}
+
+function getTableRailSelectionRect(
+  editorElement: HTMLElement | undefined,
+  tableRailSelection: ReturnType<typeof useTableRailSelectionState>
+) {
+  const blockElement = findTableBlockElement(editorElement, tableRailSelection.blockId);
+  const tableContentElement = blockElement?.querySelector<HTMLElement>(
+    '.bn-block-content[data-content-type="table"]'
+  );
+  const tableElement = tableContentElement?.querySelector<HTMLTableElement>('table');
+  const rows = tableElement
+    ? Array.from(tableElement.querySelectorAll<HTMLTableRowElement>('tbody > tr'))
+    : [];
+  const startIndex = tableRailSelection.startIndex;
+  const endIndex = tableRailSelection.endIndex;
+
+  if (
+    !tableContentElement ||
+    !tableElement ||
+    tableRailSelection.orientation === null ||
+    startIndex === null ||
+    endIndex === null
+  ) {
+    return tableRailSelection.rect;
+  }
+
+  const tableRect = tableElement.getBoundingClientRect();
+  const blockStyle = window.getComputedStyle(tableContentElement);
+  const selectionRailSize =
+    Number.parseFloat(blockStyle.getPropertyValue('--note-table-select-rail-size')) || 8;
+  const firstIndex = Math.min(startIndex, endIndex);
+  const lastIndex = Math.max(startIndex, endIndex);
+
+  if (tableRailSelection.orientation === 'row') {
+    const firstRow = rows[firstIndex];
+    const lastRow = rows[lastIndex];
+    if (!firstRow || !lastRow) {
+      return tableRailSelection.rect;
+    }
+    const firstRowRect = firstRow.getBoundingClientRect();
+    const lastRowRect = lastRow.getBoundingClientRect();
+
+    return {
+      x: tableRect.left - selectionRailSize,
+      y: firstRowRect.top,
+      width: selectionRailSize,
+      height: lastRowRect.bottom - firstRowRect.top,
+    };
+  }
+
+  const columnBoundaries = [tableRect.left, tableRect.right];
+  for (const row of rows) {
+    for (const cell of Array.from(row.children)) {
+      if (!(cell instanceof HTMLElement)) {
+        continue;
+      }
+      const cellRect = cell.getBoundingClientRect();
+      columnBoundaries.push(cellRect.left, cellRect.right);
+    }
+  }
+  const mergedColumnBoundaries = columnBoundaries
+    .sort((a, b) => a - b)
+    .reduce<number[]>((result, value) => {
+      const previous = result.at(-1);
+      if (previous == null || Math.abs(previous - value) > 1) {
+        result.push(value);
+      }
+      return result;
+    }, []);
+  const left = mergedColumnBoundaries[firstIndex];
+  const right = mergedColumnBoundaries[lastIndex + 1];
+
+  if (left == null || right == null) {
+    return tableRailSelection.rect;
+  }
+
+  return {
+    x: left,
+    y: tableRect.top - selectionRailSize,
+    width: right - left,
+    height: selectionRailSize,
+  };
+}
+
 function ToolbarSeparator() {
-  return <Separator orientation="vertical" className={styles.toolbarSeparator} />;
+  return (
+    <Separator aria-hidden="true" orientation="vertical" className={styles.toolbarSeparator} />
+  );
 }
 
 function useNoteToolbarShortcuts(onOpenFind: NoteToolbarProps['onOpenFind']) {
@@ -181,7 +278,7 @@ function TextSelectionFormattingToolbar({
     return null;
   }
 
-  return (
+  return createPortal(
     <div
       className={styles.toolbarPopover}
       data-visible={toolbarState.visible && !hidden}
@@ -191,7 +288,8 @@ function TextSelectionFormattingToolbar({
       }}
     >
       <CustomFormattingToolbar {...toolbarProps} onLinkPopoverOpenChange={setLinkPopoverOpen} />
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -212,7 +310,8 @@ function TableRailFormattingToolbar({
       return undefined;
     }
     const element = editor.domElement?.firstElementChild ?? undefined;
-    const getBoundingClientRect = () => toDOMRect(tableRailSelection.rect!);
+    const getBoundingClientRect = () =>
+      toDOMRect(getTableRailSelectionRect(editor.domElement, tableRailSelection)!);
 
     return element
       ? { element, getBoundingClientRect, cacheMountedBoundingClientRect: false }

@@ -37,19 +37,13 @@ function getEditorDomSelectionRange(view: EditorView): Range | null {
   return isInsideEditor(range.startContainer) && isInsideEditor(range.endContainer) ? range : null;
 }
 
-function getToolbarPositioningRoot(view: EditorView): HTMLElement {
-  return view.dom.closest<HTMLElement>('.bodyBlockNoteView') ?? view.dom;
-}
-
 function mapViewportRectToToolbarState(
-  view: EditorView,
   rect: Pick<DOMRect, 'left' | 'top'>
 ): FloatingToolbarGeometry {
-  const rootRect = getToolbarPositioningRoot(view).getBoundingClientRect();
   return {
     visible: true,
-    left: rect.left - rootRect.left,
-    top: Math.max(8, rect.top - rootRect.top - 10),
+    left: rect.left,
+    top: Math.max(8, rect.top - 10),
   };
 }
 
@@ -62,7 +56,7 @@ function getDomSelectionToolbarState(view: EditorView): FloatingToolbarGeometry 
   if (rect.width === 0 && rect.height === 0) {
     return { visible: false, left: 0, top: 0 };
   }
-  return mapViewportRectToToolbarState(view, rect);
+  return mapViewportRectToToolbarState(rect);
 }
 
 function getSafeToolbarState(
@@ -85,7 +79,7 @@ function getSafeToolbarState(
 
   try {
     const startRect = view.coordsAtPos(selection.from);
-    return mapViewportRectToToolbarState(view, startRect);
+    return mapViewportRectToToolbarState(startRect);
   } catch {
     return getDomSelectionToolbarState(view);
   }

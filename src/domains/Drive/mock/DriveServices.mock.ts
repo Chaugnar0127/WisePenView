@@ -1,6 +1,6 @@
 import { resolveResourceIconType } from '@/domains/Resource';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
-import type { DriveNode, FolderNode, RootNode } from '../entity/drive';
+import type { DriveNode, FolderNode, LinkNode, ResourceNode, RootNode } from '../entity/drive';
 import {
   buildDriveNodeScope,
   decodeRootNodeScope,
@@ -12,7 +12,6 @@ import type {
   GetNodePathParams,
   GetRootNodeParams,
   IDriveService,
-  ListNodeChildrenParams,
   MoveNodesToFolderParams,
   MoveToFolderParams,
   RemoveNodeParams,
@@ -297,23 +296,62 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
     return root;
   };
 
-  const listNodeChildren = async (params: ListNodeChildrenParams): Promise<DriveNode[]> => {
+  const listFolderChildren: IDriveService['listFolderChildren'] = async (params) => {
     await delay(NETWORK_DELAY_MS);
     const parent = getContainer(params.nodeId);
     if (!parent) return [];
     const children = parent.childrenIds
       .map((id) => nodes.get(id))
       .filter((node): node is DriveNode => node != null && node.type !== 'loading');
-    const folderNodes = children.filter((node): node is FolderNode => node.type === 'folder');
-    const otherNodes = children.filter((node) => node.type !== 'folder');
-    const normalizedResourceLimit =
-      params.resourceLimit == null ? undefined : Math.max(0, Math.floor(params.resourceLimit));
-    return [
-      ...orderDriveFolderNodes(folderNodes),
-      ...(normalizedResourceLimit == null
-        ? otherNodes
-        : otherNodes.slice(0, normalizedResourceLimit)),
-    ];
+    return orderDriveFolderNodes(
+      children.filter((node): node is FolderNode => node.type === 'folder')
+    );
+  };
+
+  const listNodeChildrenPage: IDriveService['listNodeChildrenPage'] = async (params) => {
+    await delay(NETWORK_DELAY_MS);
+    const parent = getContainer(params.nodeId);
+    const resourcePage = Math.max(1, Math.floor(params.resourcePage ?? 1));
+    const resourceSize = Math.max(1, Math.floor(params.resourceSize ?? pageSize));
+    if (!parent) {
+      return {
+        nodes: [],
+        folderNodes: [],
+        resourceNodes: [],
+        resourcePage,
+        resourceSize,
+        resourceTotal: 0,
+        resourceTotalPage: 0,
+        hasMoreResources: false,
+      };
+    }
+    const children = parent.childrenIds
+      .map((id) => nodes.get(id))
+      .filter((node): node is DriveNode => node != null && node.type !== 'loading');
+    const folderNodes =
+      params.includeFolders === false
+        ? []
+        : orderDriveFolderNodes(
+            children.filter((node): node is FolderNode => node.type === 'folder')
+          );
+    const allResourceNodes = children.filter(
+      (node): node is ResourceNode | LinkNode => node.type === 'resource' || node.type === 'link'
+    );
+    const start = (resourcePage - 1) * resourceSize;
+    const resourceNodes = allResourceNodes.slice(start, start + resourceSize);
+    const resourceTotal = allResourceNodes.length;
+    const resourceTotalPage = Math.max(1, Math.ceil(resourceTotal / resourceSize));
+
+    return {
+      nodes: [...folderNodes, ...resourceNodes],
+      folderNodes,
+      resourceNodes,
+      resourcePage,
+      resourceSize,
+      resourceTotal,
+      resourceTotalPage,
+      hasMoreResources: resourcePage < resourceTotalPage,
+    };
   };
 
   const getNodePath: IDriveService['getNodePath'] = async (params: GetNodePathParams) => {
@@ -509,7 +547,8 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
   return {
     getRootNode,
     getTrashFolderNodeId,
-    listNodeChildren,
+    listFolderChildren,
+    listNodeChildrenPage,
     getNodePath,
     getResourceNode,
     moveToFolder,

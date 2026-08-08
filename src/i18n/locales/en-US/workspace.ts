@@ -4,8 +4,6 @@ const enUSWorkspace = {
     chatPanel: 'Chat panel',
     resizeSidebar: 'Resize sidebar',
     resizeChatPanel: 'Resize chat panel',
-    enterZen: 'Enter Zen Mode',
-    exitZen: 'Exit Zen Mode',
   },
   breadcrumb: { unnamedGroup: 'Unnamed group', personalDrive: 'Personal Drive' },
   renderer: {
@@ -53,15 +51,6 @@ const enUSWorkspace = {
     versionsFailed: 'Version history failed to load',
     versionsEmpty: 'No version history',
     status: { dirty: 'Unsaved', saving: 'Saving', failed: 'Save failed', saved: 'Saved' },
-  },
-  zen: {
-    resourcePane: 'Resource pane',
-    emptyPane: 'Empty pane',
-    replaceResource: 'Replace resource',
-    selectResource: 'Select resource',
-    closeResource: 'Close resource',
-    selectFromDrive: 'Select a file from Drive',
-    selectTitle: 'Select pane resource',
   },
 };
 

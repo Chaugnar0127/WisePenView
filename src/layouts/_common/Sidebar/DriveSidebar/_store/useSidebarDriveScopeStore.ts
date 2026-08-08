@@ -22,6 +22,8 @@ export const useSidebarDriveScopeStore = create<SidebarDriveScopeState>()(
     {
       name: 'sidebar-drive-scope',
       storage: createStoreJSONStorage('session'),
+      version: 1,
+      migrate: () => DEFAULT_SIDEBAR_DRIVE_SCOPE_STATE,
     }
   )
 );

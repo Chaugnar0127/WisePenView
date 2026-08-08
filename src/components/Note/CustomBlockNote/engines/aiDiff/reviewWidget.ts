@@ -9,6 +9,7 @@ import type {
   NotePluginRegistry,
 } from '../../registry/types';
 import type { NoteAiDiffActionRequest } from './action';
+import { addAiDiffDomListener } from './domCleanup';
 import styles from './style.module.less';
 
 export interface AiDiffReviewUnit {
@@ -63,12 +64,12 @@ function createToolbarButton(params: {
   button.title = label;
   button.setAttribute('aria-label', label);
   button.disabled = !onClick;
-  button.addEventListener('mousedown', (event) => {
+  addAiDiffDomListener(button, 'mousedown', (event) => {
     event.preventDefault();
     event.stopPropagation();
   });
   if (onClick) {
-    button.addEventListener('click', (event) => {
+    addAiDiffDomListener(button, 'click', (event) => {
       event.preventDefault();
       event.stopPropagation();
       onClick();
@@ -252,7 +253,8 @@ export function createAiDiffReviewWidget(params: {
   if (selected) root.dataset.aiDiffSelected = 'true';
 
   if (blockUnit) {
-    root.addEventListener(
+    addAiDiffDomListener(
+      root,
       'mousedown',
       (event) => {
         const target = event.target as HTMLElement | null;
@@ -285,7 +287,7 @@ export function createAiDiffReviewWidget(params: {
                 element.dataset.aiDiffSelected = 'true';
                 element.classList.add(styles.inlineHunkSelected);
               }
-              element.addEventListener('mousedown', (event) => {
+              addAiDiffDomListener(element, 'mousedown', (event) => {
                 event.stopPropagation();
                 const targetElement = event.target as HTMLElement | null;
                 if (!targetElement?.closest('button')) onSelectChange(unit.key);

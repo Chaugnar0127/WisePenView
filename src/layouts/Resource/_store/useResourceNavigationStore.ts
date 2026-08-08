@@ -34,7 +34,12 @@ export const useResourceNavigationStore = create<ResourceNavigationState>()(
       navigateToScope: (scope) => set({ location: { scope } }),
       navigateToResource: (location) => set({ location }),
     }),
-    { name: 'resource-navigation', storage: createStoreJSONStorage('tab') }
+    {
+      name: 'resource-navigation',
+      storage: createStoreJSONStorage('tab'),
+      version: 1,
+      migrate: () => ({ location: DEFAULT_LOCATION }),
+    }
   )
 );
 

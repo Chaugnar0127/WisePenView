@@ -287,6 +287,7 @@ const zhCNNote = {
     copy: '复制源码',
     empty: '请输入 Mermaid 图表源码。',
     rendering: '正在渲染图表...',
+    sourceTooLong: 'Mermaid 源码长度不能超过 {{maxLength}} 个字符。',
     renderFailed: '图表渲染失败，请检查 Mermaid 语法。',
   },
 };

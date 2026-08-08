@@ -95,9 +95,7 @@ const appendError = (
       lines.push(`${detailLabel('serverMessage')}: ${error.serverMsg}`);
     }
 
-    if (error.meta) {
-      lines.push(`${detailLabel('metadata')}: ${serializeValue(error.meta)}`);
-    }
+    // meta 仅用于错误文案插值，禁止进入可展示和复制的详情，避免泄露调用方传入的敏感参数。
   }
 
   if (error.stack) {

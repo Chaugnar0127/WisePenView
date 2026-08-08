@@ -60,10 +60,11 @@ export const MessageServicesMock: IMessageService = {
       totalPage: Math.ceil(mockMessages.length / params.size),
     };
   },
-  async readMessage(params) {
-    const message = mockMessages.find((item) => item.messageId === params.messageId);
-    if (message) {
-      message.read = true;
-    }
+  async readMessages(params) {
+    mockMessages.forEach((message) => {
+      if (params.messageIds.includes(message.messageId)) {
+        message.read = true;
+      }
+    });
   },
 };

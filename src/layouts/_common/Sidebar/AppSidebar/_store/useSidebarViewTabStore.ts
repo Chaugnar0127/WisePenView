@@ -29,6 +29,8 @@ export const useSidebarViewTabStore = create<SidebarViewTabState>()(
     {
       name: 'sidebar-view-tab',
       storage: createStoreJSONStorage('tab'),
+      version: 1,
+      migrate: () => DEFAULT_SIDEBAR_VIEW_TAB_STATE,
     }
   )
 );

@@ -48,7 +48,12 @@ export const useChatPanelStore = create<ChatPanelState>()(
           return { chatPanelDraftOpen: open };
         }),
     }),
-    { name: 'chat-panel', storage: createStoreJSONStorage('tab') }
+    {
+      name: 'chat-panel',
+      storage: createStoreJSONStorage('tab'),
+      version: 1,
+      migrate: () => DEFAULT_CHAT_PANEL_STATE,
+    }
   )
 );
 

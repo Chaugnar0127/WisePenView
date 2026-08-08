@@ -1,4 +1,9 @@
+import i18n from '@/i18n';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import type { Mermaid } from 'mermaid';
+
+/** Mermaid 源码最大长度，避免超大图表触发高耗时解析和布局计算。 */
+export const NOTE_MERMAID_SOURCE_MAX_LENGTH = 50_000;
 
 let mermaidPromise: Promise<Mermaid> | null = null;
 
@@ -41,6 +46,7 @@ async function getNoteMermaid(): Promise<Mermaid> {
         securityLevel: 'strict',
         htmlLabels: false,
         theme: 'neutral',
+        maxTextSize: NOTE_MERMAID_SOURCE_MAX_LENGTH,
         fontFamily:
           "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       });
@@ -51,6 +57,15 @@ async function getNoteMermaid(): Promise<Mermaid> {
 }
 
 export async function renderNoteMermaidDiagram(id: string, source: string): Promise<string> {
+  if (source.length > NOTE_MERMAID_SOURCE_MAX_LENGTH) {
+    const error = createClientError(FRONTEND_CLIENT_ERROR.VALIDATION);
+    error.message = i18n.t('mermaid.sourceTooLong', {
+      ns: 'note',
+      maxLength: NOTE_MERMAID_SOURCE_MAX_LENGTH.toLocaleString(),
+    });
+    throw error;
+  }
+
   const mermaid = await getNoteMermaid();
   const { svg } = await mermaid.render(id, source);
   return preserveSvgCanvasSize(svg);

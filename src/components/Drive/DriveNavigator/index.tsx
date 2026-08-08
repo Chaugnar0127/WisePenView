@@ -2,7 +2,8 @@ import { Empty, Spin } from '@/components/Feedback';
 import type { DataNode } from '@/components/Tree';
 import Tree from '@/components/Tree';
 import { useDriveService, useGroupService } from '@/domains';
-import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
+import { buildDriveNodeScope, type DriveNode, type DriveNodeScope } from '@/domains/Drive';
+import { buildLoadingNode } from '@/domains/Drive/mapper/DriveServices.map';
 import type { IGroupService } from '@/domains/Group';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
@@ -23,6 +24,7 @@ import {
   type DriveScope,
   type DriveSelectionItem,
 } from '../common/driveComponentModel';
+import { useDrivePagedTreeChildren } from '../common/useDrivePagedTreeChildren';
 import DriveNavigatorNodeTitle from './DriveNavigatorNodeTitle';
 import type { DriveNavigatorProps } from './index.type';
 import styles from './style.module.less';
@@ -31,6 +33,9 @@ const DEFAULT_RENDERABLE_TYPES: DriveItemKind[] = ['root', 'folder', 'resource',
 const DEFAULT_SELECTABLE_TYPES: DriveItemKind[] = ['folder'];
 const PERSONAL_SCOPE_KEY = 'personal';
 const DEFAULT_RESOURCE_PREVIEW_LIMIT = 8;
+const DEFAULT_SELECTABLE_RESOURCE_PAGE_SIZE = 50;
+const GROUP_SCOPE_PAGE_SIZE = 20;
+const GROUP_SCOPE_LOAD_MORE_NODE_ID = 'group-scope-load-more';
 const TREE_KEY_SEPARATOR = '\u001f';
 
 interface DriveNavigatorScopeOption {
@@ -95,26 +100,33 @@ function buildSingleScopeOption(
   };
 }
 
-async function fetchAllScopeOptions(
+async function fetchScopeOptionsPage(
   groupService: IGroupService,
+  page: number,
   includePersonal: boolean,
   excludedGroupIds: Set<string>,
   t: TFunction<'drive'>
-): Promise<DriveNavigatorScopeOption[]> {
-  const groups = (await groupService.fetchAllMyGroups()).filter(
-    (group) => !excludedGroupIds.has(group.groupId)
-  );
+): Promise<{ options: DriveNavigatorScopeOption[]; hasMore: boolean }> {
+  const result = await groupService.fetchGroupList({
+    groupRoleFilter: 'ALL',
+    page,
+    size: GROUP_SCOPE_PAGE_SIZE,
+  });
+  const groups = result.groups.filter((group) => !excludedGroupIds.has(group.groupId));
 
-  return [
-    ...(includePersonal ? [buildScopeOption({ type: 'personal' }, t)] : []),
-    ...groups.map((group) =>
-      buildScopeOption(
-        { type: 'group', groupId: group.groupId },
-        t,
-        group.groupName || t('navigator.unnamedGroup')
-      )
-    ),
-  ];
+  return {
+    options: [
+      ...(includePersonal ? [buildScopeOption({ type: 'personal' }, t)] : []),
+      ...groups.map((group) =>
+        buildScopeOption(
+          { type: 'group', groupId: group.groupId },
+          t,
+          group.groupName || t('navigator.unnamedGroup')
+        )
+      ),
+    ],
+    hasMore: result.hasMore,
+  };
 }
 
 function DriveNavigator({
@@ -148,6 +160,7 @@ function DriveNavigator({
   const rootLabelRef = useRef<Map<string, string>>(new Map());
   const [treeData, setTreeData] = useState<DataNode[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const scopePageStateRef = useRef({ page: 0, hasMore: false, loading: false });
   const renderableTypeKey = [...renderableTypes].sort().join('\u0001');
   const selectableTypeKey = [...selectableTypes].sort().join('\u0001');
   const disabledNodeIdKey = [...(disabledNodeIds ?? [])].sort().join('\u0001');
@@ -160,14 +173,70 @@ function DriveNavigator({
   const selectsResources = selectableTypeSet.has('resource') || selectableTypeSet.has('link');
   const effectiveResourceLimit =
     showsResources && !selectsResources ? resourcePreviewLimit : undefined;
+  const navigatorResourcePageSize = effectiveResourceLimit ?? DEFAULT_SELECTABLE_RESOURCE_PAGE_SIZE;
   const disabledNodeIdSet = buildSetFromStableKey(disabledNodeIdKey);
+  const { loadChildren, loadMoreChildren, reset } = useDrivePagedTreeChildren({
+    pageSize: navigatorResourcePageSize,
+    loadPage: async ({ nodeId, page, size, refresh, mode }) => {
+      if (!showsResources) {
+        const folderNodes =
+          mode === 'initial'
+            ? await driveService.listFolderChildren({
+                nodeId,
+                groupId: finalGroupId,
+                refresh,
+              })
+            : [];
+        return {
+          nodes: folderNodes,
+          page,
+          size: size ?? navigatorResourcePageSize,
+          total: 0,
+          hasMore: false,
+        };
+      }
+
+      const result = await driveService.listNodeChildrenPage({
+        nodeId,
+        groupId: finalGroupId,
+        resourcePage: page,
+        resourceSize: size,
+        includeFolders: mode === 'initial',
+        refresh,
+      });
+      return {
+        nodes: mode === 'initial' ? result.nodes : result.resourceNodes,
+        page: result.resourcePage,
+        size: result.resourceSize,
+        total: result.resourceTotal,
+        hasMore: result.hasMoreResources,
+      };
+    },
+    countLoaded: (children) =>
+      children.filter((node) => node.type === 'resource' || node.type === 'link').length,
+    buildLoadingPlaceholder: (nodeId, label) => buildLoadingNode(nodeId, label, singleScope.scope),
+  });
 
   const getTreeKey = (node: DriveNode): string => {
     return buildTreeKey(buildScopeKey(node.scope), node.id);
   };
 
   const renderTitle = (node: DriveNode) => {
-    return <DriveNavigatorNodeTitle node={node} displayName={rootLabelRef.current.get(node.id)} />;
+    const isScopeLoadMore =
+      node.type === 'loading' && node.parentId === GROUP_SCOPE_LOAD_MORE_NODE_ID;
+    return (
+      <DriveNavigatorNodeTitle
+        node={node}
+        displayName={rootLabelRef.current.get(node.id)}
+        onLoadMore={
+          isScopeLoadMore
+            ? () => void handleLoadMoreScopes()
+            : node.type === 'loading'
+              ? () => void handleLoadMoreChildren(node.parentId)
+              : undefined
+        }
+      />
+    );
   };
 
   const buildChildrenData = (nodes: DriveNode[]): DataNode[] =>
@@ -177,6 +246,7 @@ function DriveNavigator({
         renderableTypes: renderableTypeSet,
         selectableTypes: selectableTypeSet,
         dimUnselectableNodes,
+        interactiveLoadingNodes: true,
         disabledNodeIds: disabledNodeIdSet,
         getTreeKey,
         renderTitle,
@@ -189,16 +259,25 @@ function DriveNavigator({
   const loadChildrenForNode = async (node: DriveNode): Promise<DriveNode[]> => {
     if (node.type !== 'root' && node.type !== 'folder') return [];
     try {
-      return await driveService.listNodeChildren({
+      const result = await driveService.listNodeChildrenPage({
         nodeId: node.id,
         groupId: getDriveScopeGroupId(node.scope),
-        resourceLimit: effectiveResourceLimit,
+        resourceSize: navigatorResourcePageSize,
       });
+      return result.nodes;
     } catch (err) {
       toast.danger(parseErrorMessage(err));
       return [];
     }
   };
+
+  async function handleLoadMoreChildren(parentNodeId: string): Promise<void> {
+    if (disabled || scopeMode !== 'single') return;
+    const parentTreeKey = buildTreeKey(finalScopeKey, parentNodeId);
+    const nextChildren = await loadMoreChildren(parentNodeId);
+    const childData = buildChildrenData(nextChildren);
+    setTreeData((prev) => replaceDriveTreeNodeChildren(prev, parentTreeKey, childData));
+  }
 
   const resolveInputKey = (key: string): string | undefined => {
     if (nodeMapRef.current.has(key)) return key;
@@ -263,20 +342,70 @@ function DriveNavigator({
     return rootNode;
   };
 
+  const buildScopeLoadMoreNode = (): DriveNode =>
+    buildLoadingNode(
+      GROUP_SCOPE_LOAD_MORE_NODE_ID,
+      t('node.loadMoreGroups'),
+      buildDriveNodeScope()
+    );
+
+  async function handleLoadMoreScopes(): Promise<void> {
+    if (scopePageStateRef.current.loading || !scopePageStateRef.current.hasMore) return;
+    scopePageStateRef.current.loading = true;
+    const nextPage = scopePageStateRef.current.page + 1;
+    try {
+      const result = await fetchScopeOptionsPage(
+        groupService,
+        nextPage,
+        false,
+        excludedGroupIdSet,
+        t
+      );
+      const rootNodes = await Promise.all(result.options.map(loadRootNode));
+      scopePageStateRef.current = {
+        page: nextPage,
+        hasMore: result.hasMore,
+        loading: false,
+      };
+      const nextData = buildChildrenData([
+        ...rootNodes,
+        ...(result.hasMore ? [buildScopeLoadMoreNode()] : []),
+      ]);
+      setTreeData((current) => [
+        ...current.filter(
+          (node) =>
+            !String(node.key).includes(
+              `${TREE_KEY_SEPARATOR}loading:${GROUP_SCOPE_LOAD_MORE_NODE_ID}`
+            )
+        ),
+        ...nextData,
+      ]);
+    } catch (err) {
+      scopePageStateRef.current.loading = false;
+      toast.danger(parseErrorMessage(err));
+    }
+  }
+
   const { loading } = useRequest(
     async (): Promise<DataNode[]> => {
       nodeMapRef.current.clear();
       rootLabelRef.current.clear();
+      reset();
 
       if (scopeMode === 'all' || scopeMode === 'groups') {
-        const scopeOptions = await fetchAllScopeOptions(
+        const scopeResult = await fetchScopeOptionsPage(
           groupService,
+          1,
           scopeMode === 'all',
           excludedGroupIdSet,
           t
         );
-        const rootNodes = await Promise.all(scopeOptions.map(loadRootNode));
-        return buildChildrenData(rootNodes);
+        scopePageStateRef.current = { page: 1, hasMore: scopeResult.hasMore, loading: false };
+        const rootNodes = await Promise.all(scopeResult.options.map(loadRootNode));
+        return buildChildrenData([
+          ...rootNodes,
+          ...(scopeResult.hasMore ? [buildScopeLoadMoreNode()] : []),
+        ]);
       }
 
       const rootNode = await loadRootNode(
@@ -286,7 +415,7 @@ function DriveNavigator({
       if (!baseRoot) return [];
       if (rootNode.type !== 'root') return [baseRoot];
 
-      const children = await loadChildrenForNode(rootNode);
+      const children = await loadChildren(rootNode.id);
       const childData = buildChildrenData(children);
       return [{ ...baseRoot, children: childData }];
     },
@@ -298,7 +427,8 @@ function DriveNavigator({
         finalRootId,
         finalGroupId,
         refreshTrigger,
-        effectiveResourceLimit,
+        navigatorResourcePageSize,
+        showsResources,
         renderableTypeKey,
         selectableTypeKey,
         disabledNodeIdKey,
@@ -325,7 +455,10 @@ function DriveNavigator({
     const key = String(treeNode.key);
     const node = nodeMapRef.current.get(key);
     if (!node || (node.type !== 'root' && node.type !== 'folder')) return;
-    const children = await loadChildrenForNode(node);
+    const children =
+      scopeMode === 'single'
+        ? await loadChildren(node.id, { refresh: true })
+        : await loadChildrenForNode(node);
     const childData = buildChildrenData(children);
     setTreeData((prev) => replaceDriveTreeNodeChildren(prev, key, childData));
   };

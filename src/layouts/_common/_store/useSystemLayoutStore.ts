@@ -32,7 +32,12 @@ export const useSystemLayoutStore = create<SystemLayoutState>()(
       setAppSidebarWidth: (width) => set((state) => setWidth('appSidebarWidth', width)(state)),
       setAdminSidebarWidth: (width) => set((state) => setWidth('adminSidebarWidth', width)(state)),
     }),
-    { name: 'system-layout', storage: createStoreJSONStorage('tab') }
+    {
+      name: 'system-layout',
+      storage: createStoreJSONStorage('tab'),
+      version: 1,
+      migrate: () => DEFAULT_SYSTEM_LAYOUT_STATE,
+    }
   )
 );
 

@@ -1,4 +1,5 @@
 import { Checkbox } from '@/components/Input';
+import { MATH_HTML_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
 import type { ParsedBlock, RootContent } from '@incremark/core';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -132,12 +133,13 @@ function readMathExpression(
 
 function renderMathHtml(expression: string, displayMode: boolean): string | null {
   try {
-    return katex.renderToString(expression, {
+    const html = katex.renderToString(expression, {
       displayMode,
       output: 'htmlAndMathml',
       throwOnError: false,
       trust: false,
     });
+    return sanitizeHtml(html, MATH_HTML_SANITIZE_CONFIG);
   } catch {
     return null;
   }

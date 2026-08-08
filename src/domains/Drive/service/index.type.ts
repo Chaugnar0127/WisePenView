@@ -9,8 +9,10 @@ export interface IDriveService {
   getRootNode(params?: GetRootNodeParams): Promise<RootNode>;
   /** 获取当前 scope 的回收站文件夹节点 ID；系统目录缺失时抛出客户端错误。 */
   getTrashFolderNodeId(groupId?: string): Promise<string>;
-  /** nodeId 可独立携带 scope 信息；并列展示多个 root 时不强依赖全局 groupId。 */
-  listNodeChildren(params: ListNodeChildrenParams): Promise<DriveNode[]>;
+  /** 仅获取直接子文件夹，用于侧边栏、移动弹窗等目录导航场景。 */
+  listFolderChildren(params: ListFolderChildrenParams): Promise<FolderNode[]>;
+  /** 获取目录直接子节点页；文件夹完整返回，资源/link 按页返回。 */
+  listNodeChildrenPage(params: ListNodeChildrenPageParams): Promise<ListNodeChildrenPageResult>;
   getNodePath(params: GetNodePathParams): Promise<Array<RootNode | FolderNode>>;
   /** 按当前父目录定位资源挂载，供资源详情页识别主文件与 link。 */
   getResourceNode(params: GetResourceNodeParams): Promise<ResourceNode | LinkNode | undefined>;
@@ -29,13 +31,35 @@ export interface GetRootNodeParams {
   groupId?: string;
 }
 
-export interface ListNodeChildrenParams {
+export interface ListFolderChildrenParams {
   nodeId: string;
   groupId?: string;
-  /** 仅限制返回的资源/link 数量，文件夹始终完整返回。 */
-  resourceLimit?: number;
   /** 强制刷新底层目录树缓存，适用于用户点击展开等实时性入口。 */
   refresh?: boolean;
+}
+
+export interface ListNodeChildrenPageParams {
+  nodeId: string;
+  groupId?: string;
+  /** 资源/link 页码，从 1 开始。 */
+  resourcePage?: number;
+  /** 资源/link 每页数量。 */
+  resourceSize?: number;
+  /** 是否同时返回直接子文件夹；滚底追加页可关闭。 */
+  includeFolders?: boolean;
+  /** 强制刷新底层目录树缓存，适用于用户点击展开等实时性入口。 */
+  refresh?: boolean;
+}
+
+export interface ListNodeChildrenPageResult {
+  nodes: DriveNode[];
+  folderNodes: FolderNode[];
+  resourceNodes: Array<ResourceNode | LinkNode>;
+  resourcePage: number;
+  resourceSize: number;
+  resourceTotal: number;
+  resourceTotalPage: number;
+  hasMoreResources: boolean;
 }
 
 export interface GetNodePathParams {

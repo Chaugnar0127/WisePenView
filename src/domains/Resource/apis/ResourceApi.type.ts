@@ -108,6 +108,12 @@ export interface ChangeResourceTagsApiRequest {
   primaryTagId?: string;
 }
 
+export interface MountResourcesToGroupTagApiRequest {
+  resourceIds: string[];
+  groupId: string;
+  tagId: string;
+}
+
 export interface ChangeResourceActionPermissionApiRequest {
   resourceId: string;
   overrideGrantedActions?: Record<string, ResourceActionApiKey[] | null> | null;

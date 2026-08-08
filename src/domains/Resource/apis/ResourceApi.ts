@@ -6,6 +6,7 @@ import type {
   GlobalSearchApiRequest,
   GlobalSearchApiResponse,
   ListResourceItemsApiRequest,
+  MountResourcesToGroupTagApiRequest,
   RemoveResourcesApiRequest,
   RenameResourceApiRequest,
   ResourceListPageApiResponse,
@@ -26,6 +27,10 @@ function renameResource(req: RenameResourceApiRequest): Promise<void> {
 
 function changeResourceTags(req: ChangeResourceTagsApiRequest): Promise<void> {
   return apiPost('/resource/item/changeResourceTags', req);
+}
+
+function mountResourcesToGroupTag(req: MountResourcesToGroupTagApiRequest): Promise<void> {
+  return apiPost('/resource/item/mountResourcesToGroupTag', req);
 }
 
 function changeResourceActionPermission(
@@ -49,6 +54,7 @@ export const ResourceItemApi = {
   listResources,
   renameResource,
   changeResourceTags,
+  mountResourcesToGroupTag,
   changeResourceActionPermission,
   removeResources,
   globalSearch,

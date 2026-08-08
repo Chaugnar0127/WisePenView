@@ -20,6 +20,5 @@ export interface ResourceShellHeaderProps {
   onGoBack?: () => void;
   onGoForward?: () => void;
   onToggleLeftSidebar?: () => void;
-  // onEnterZenMode?: () => void;
   className?: string;
 }

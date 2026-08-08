@@ -5,8 +5,9 @@ import type { CommentSortBy, ResourceComment } from '@/domains/Interact';
 import type { ResourceItem } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, Tabs, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
-import { useState, type Key } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useInfiniteScroll, useRequest } from 'ahooks';
+import { useEffect, useRef, useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import ResourceFavoriteAction from '../../ResourceFavoriteAction';
 import CommentComposer from './CommentComposer';
@@ -16,7 +17,15 @@ import styles from './style.module.less';
 import { updateCommentLikeCount } from './utils';
 
 const COMMENT_PAGE_SIZE = 10;
+const COMMENT_THREAD_ESTIMATE_SIZE = 180;
+const COMMENT_THREAD_OVERSCAN = 6;
 const EMPTY_LIKED_COMMENT_IDS = new Set<string>();
+
+interface CommentListPage {
+  list: ResourceComment[];
+  total: number;
+  totalPage: number;
+}
 
 interface ResourceCommentPanelProps {
   resource: ResourceItem;
@@ -44,11 +53,10 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   const [optimisticLike, setOptimisticLike] = useState<OptimisticLikeState>();
   const [commentLikeIds, setCommentLikeIds] = useState<ReadonlySet<string>>();
   const [pendingLikeIds, setPendingLikeIds] = useState<ReadonlySet<string>>(new Set());
-  const [comments, setComments] = useState<ResourceComment[]>([]);
-  const [commentPage, setCommentPage] = useState(1);
   const [sortBy, setSortBy] = useState<CommentSortBy>('CREATE_TIME');
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion>();
   const [previewImageUrl, setPreviewImageUrl] = useState<string>();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const { data: currentUser } = useRequest(() => userService.getUserInfo());
   const {
@@ -85,31 +93,64 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     data: commentPageData,
     error: commentsError,
     loading: commentsLoading,
-    runAsync: loadComments,
-  } = useRequest(
-    async (page: number, append: boolean, nextSortBy: CommentSortBy) => {
+    loadingMore: commentsLoadingMore,
+    noMore: commentsNoMore,
+    loadMore: loadMoreComments,
+    reloadAsync: reloadComments,
+    mutate: mutateComments,
+  } = useInfiniteScroll<CommentListPage>(
+    async (current) => {
+      const nextPage = Math.floor((current?.list.length ?? 0) / COMMENT_PAGE_SIZE) + 1;
       const data = await interactService.listComments({
         resourceId,
-        sortBy: nextSortBy,
-        page,
+        sortBy,
+        page: nextPage,
         size: COMMENT_PAGE_SIZE,
       });
-      setComments((current) => (append ? [...current, ...data.items] : data.items));
-      setCommentPage(page);
-      return data;
+      return {
+        list: data.items,
+        total: data.total,
+        totalPage: data.totalPage,
+      };
     },
     {
-      defaultParams: [1, false, 'CREATE_TIME'],
-      refreshDeps: [resourceId],
+      reloadDeps: [resourceId, sortBy],
+      isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
+      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：资源或排序切换时先清空评论缓存，避免短暂显示旧资源的评论。
+   * 不可替代原因：useInfiniteScroll 的 reloadDeps 只负责重新拉取，不会自动清理已累积列表。
+   * cleanup：没有订阅或延迟任务，无需清理。
+   */
+  useEffect(() => {
+    mutateComments(undefined);
+  }, [resourceId, sortBy, mutateComments]);
+
   const refreshComments = async () => {
-    await loadComments(1, false, sortBy);
+    await reloadComments();
     notifyResourceChanged();
   };
 
   const likedCommentIds = commentLikeIds ?? interaction?.likedCommentIds ?? EMPTY_LIKED_COMMENT_IDS;
+  const comments = commentPageData?.list ?? [];
+  // eslint-disable-next-line react-hooks/incompatible-library -- 评论行包含图片与展开回复，虚拟列表需要动态测量真实高度。
+  const commentVirtualizer = useVirtualizer({
+    count: comments.length,
+    getScrollElement: () => contentRef.current,
+    estimateSize: () => COMMENT_THREAD_ESTIMATE_SIZE,
+    overscan: COMMENT_THREAD_OVERSCAN,
+    getItemKey: (index) => comments[index]?.commentId ?? index,
+  });
+  const virtualComments = commentVirtualizer.getVirtualItems();
+  const virtualTopPadding = virtualComments[0]?.start ?? 0;
+  const virtualBottomPadding =
+    virtualComments.length > 0
+      ? commentVirtualizer.getTotalSize() - (virtualComments[virtualComments.length - 1]?.end ?? 0)
+      : 0;
 
   const toggleCommentLike = async (comment: ResourceComment): Promise<boolean> => {
     const wasLiked = likedCommentIds.has(comment.commentId);
@@ -128,7 +169,14 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
         return next;
       });
       if (liked !== wasLiked) {
-        setComments((current) => updateCommentLikeCount(current, comment.commentId, liked));
+        mutateComments((current) =>
+          current
+            ? {
+                ...current,
+                list: updateCommentLikeCount(current.list, comment.commentId, liked),
+              }
+            : current
+        );
       }
       return liked;
     } catch (error) {
@@ -166,7 +214,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     optimisticLike?.resourceId === resourceId && optimisticLike.baseCount === resourceLikeCount
       ? optimisticLike
       : undefined;
-  const hasMoreComments = Boolean(commentPageData && commentPage < commentPageData.totalPage);
   const commentSortOptions: Array<{ key: CommentSortBy; label: string }> = [
     { key: 'CREATE_TIME', label: t('resource:comment.sort.latest') },
     { key: 'LIKE_COUNT', label: t('resource:comment.sort.hottest') },
@@ -185,7 +232,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
 
   const handleSortChange = (nextSortBy: CommentSortBy) => {
     setSortBy(nextSortBy);
-    void loadComments(1, false, nextSortBy);
   };
 
   const handleSortSelectionChange = (key: Key) => {
@@ -201,7 +247,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
         <h2 className={styles.panelTitle}>{t('resource:sidePanel.comments')}</h2>
       </header>
 
-      <div className={styles.content}>
+      <div className={styles.content} ref={contentRef}>
         <section
           className={styles.commentsSection}
           aria-label={t('resource:sidePanel.commentsAria')}
@@ -243,40 +289,63 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
           {commentsError ? (
             <p className={styles.errorText}>{parseErrorMessage(commentsError)}</p>
           ) : null}
-          {commentsLoading && comments.length === 0 ? (
+          {commentsLoading && !commentPageData?.list.length ? (
             <p className={styles.mutedText}>{t('resource:comment.loading')}</p>
           ) : null}
-          {!commentsLoading && comments.length === 0 ? (
+          {!commentsLoading && !comments.length ? (
             <p className={styles.emptyText}>{t('resource:comment.empty')}</p>
           ) : null}
 
           <div className={styles.commentList}>
-            {comments.map((comment) => (
-              <ResourceCommentThread
-                key={comment.commentId}
-                resourceId={resourceId}
-                rootComment={comment}
-                currentUserId={currentUser?.id}
-                resourceOwnerId={resource.ownerId}
-                likedCommentIds={likedCommentIds}
-                pendingLikeIds={pendingLikeIds}
-                onLike={toggleCommentLike}
-                onDelete={(target, onDeleted) => setPendingDeletion({ comment: target, onDeleted })}
-                onCommentsChanged={refreshComments}
-                onPreviewImage={setPreviewImageUrl}
+            {virtualTopPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualTopPadding }}
+                aria-hidden
               />
-            ))}
+            ) : null}
+            {virtualComments.map((virtualComment) => {
+              const comment = comments[virtualComment.index];
+              if (!comment) return null;
+              return (
+                <ResourceCommentThread
+                  key={comment.commentId}
+                  dataIndex={virtualComment.index}
+                  measureElement={commentVirtualizer.measureElement}
+                  scrollElementRef={contentRef}
+                  resourceId={resourceId}
+                  rootComment={comment}
+                  currentUserId={currentUser?.id}
+                  resourceOwnerId={resource.ownerId}
+                  likedCommentIds={likedCommentIds}
+                  pendingLikeIds={pendingLikeIds}
+                  onLike={toggleCommentLike}
+                  onDelete={(target, onDeleted) =>
+                    setPendingDeletion({ comment: target, onDeleted })
+                  }
+                  onCommentsChanged={refreshComments}
+                  onPreviewImage={setPreviewImageUrl}
+                />
+              );
+            })}
+            {virtualBottomPadding > 0 ? (
+              <div
+                className={styles.virtualSpacer}
+                style={{ height: virtualBottomPadding }}
+                aria-hidden
+              />
+            ) : null}
           </div>
 
-          {hasMoreComments ? (
+          {commentPageData && !commentsNoMore ? (
             <Button
               variant="ghost"
               size="sm"
               className={styles.loadMoreButton}
-              isDisabled={commentsLoading}
-              onPress={() => void loadComments(commentPage + 1, true, sortBy)}
+              isDisabled={commentsLoadingMore}
+              onPress={loadMoreComments}
             >
-              {commentsLoading
+              {commentsLoadingMore
                 ? t('resource:comment.loadingShort')
                 : t('resource:comment.loadMore')}
             </Button>

@@ -138,6 +138,24 @@
   cursor: default;
 }
 
+.virtualSpacerRow {
+  pointer-events: none;
+
+  :global(.table__cell) {
+    padding: 0;
+    border-bottom: 0;
+    background: var(--surface);
+  }
+}
+
+.virtualSpacerCell:global(.table__cell) {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  padding: 0;
+  border-bottom: 0;
+}
+
 .bodyCell {
   overflow: hidden;
 }

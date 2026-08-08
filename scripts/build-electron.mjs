@@ -7,7 +7,7 @@ const commonBuildOptions = {
   bundle: true,
   external: ['electron'],
   platform: 'node',
-  sourcemap: true,
+  sourcemap: watch,
   target: 'node22',
 };
 

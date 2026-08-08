@@ -3,5 +3,5 @@ export type {
   IMessageService,
   ListUserMessagesRequest,
   ListUserMessagesResponse,
-  ReadMessageRequest,
+  ReadMessagesRequest,
 } from './service/index.type';

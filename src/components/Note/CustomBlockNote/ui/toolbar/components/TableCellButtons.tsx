@@ -17,7 +17,7 @@ import {
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
 import { ButtonGroup, ToggleButtonGroup } from '@heroui/react';
 import { Paintbrush, PanelLeft, PanelTop, TableCellsMerge, TableCellsSplit } from 'lucide-react';
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getSelectedBlocks, toBlockUpdate } from '../utils';
 import { ToolbarButton, ToolbarToggleButton, type ButtonGroupChildProps } from './ToolbarButton';
@@ -250,11 +250,11 @@ export function TableCellButtons() {
           orientation="horizontal"
           size="sm"
         >
-          {toggleButtons.map((button, index) => (
-            <Fragment key={button}>
-              {index > 0 ? <ToggleButtonGroup.Separator /> : null}
-              {button === 'merge' ? (
+          {toggleButtons.map((button) => {
+            if (button === 'merge') {
+              return (
                 <ToolbarToggleButton
+                  key={button}
                   id={isSplitAction ? 'split-cell' : 'merge-cells'}
                   label={t(isSplitAction ? 'table.unmerge' : 'table.merge')}
                   icon={
@@ -277,27 +277,33 @@ export function TableCellButtons() {
                     refocusEditor();
                   }}
                 />
-              ) : null}
-              {button === 'header-row' ? (
+              );
+            }
+
+            if (button === 'header-row') {
+              return (
                 <ToolbarToggleButton
+                  key={button}
                   id="table-header-row"
                   label={t(state.isHeaderRow ? 'table.unsetHeaderRow' : 'table.setHeaderRow')}
                   icon={<PanelTop size={20} />}
                   onPress={() => toggleHeader('row')}
                 />
-              ) : null}
-              {button === 'header-column' ? (
-                <ToolbarToggleButton
-                  id="table-header-column"
-                  label={t(
-                    state.isHeaderColumn ? 'table.unsetHeaderColumn' : 'table.setHeaderColumn'
-                  )}
-                  icon={<PanelLeft size={20} />}
-                  onPress={() => toggleHeader('column')}
-                />
-              ) : null}
-            </Fragment>
-          ))}
+              );
+            }
+
+            return (
+              <ToolbarToggleButton
+                key={button}
+                id="table-header-column"
+                label={t(
+                  state.isHeaderColumn ? 'table.unsetHeaderColumn' : 'table.setHeaderColumn'
+                )}
+                icon={<PanelLeft size={20} />}
+                onPress={() => toggleHeader('column')}
+              />
+            );
+          })}
         </ToggleButtonGroup>
       ) : null}
       <ButtonGroup size="sm" variant="ghost" aria-label={t('table.colors')}>

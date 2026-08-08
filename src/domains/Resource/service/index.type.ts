@@ -88,7 +88,7 @@ export interface UpdateResourceTagsRequest {
   primaryTagId?: string;
 }
 
-/** 上传/挂载资源到小组标签：已有主挂载则只追加 tags，没有主挂载则同时初始化 primaryTagId */
+/** 上传/挂载资源到小组标签：后端按当前小组绑定决定初始化主挂载或追加 link */
 export interface MountResourcesToGroupTagRequest {
   resourceIds: string[];
   groupId: string;

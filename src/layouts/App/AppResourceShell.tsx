@@ -44,9 +44,23 @@ const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
 
 interface AppResourceShellProps {
   children: ReactNode;
+  leftSidebarCollapsed: boolean;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  onGoBack: () => void;
+  onGoForward: () => void;
+  onToggleLeftSidebar: () => void;
 }
 
-function AppResourceShell({ children }: AppResourceShellProps) {
+function AppResourceShell({
+  children,
+  leftSidebarCollapsed,
+  canGoBack,
+  canGoForward,
+  onGoBack,
+  onGoForward,
+  onToggleLeftSidebar,
+}: AppResourceShellProps) {
   const { t } = useTranslation('workspace');
   const [layoutConfig, setLayoutConfigState] = useState<ResourceHostLayoutConfig>({});
   const chatPanelRef = useRef<PanelImperativeHandle | null>(null);
@@ -102,7 +116,19 @@ function AppResourceShell({ children }: AppResourceShellProps) {
   } satisfies ResourceHostContextValue;
 
   const renderHeader = () => {
-    if (layoutConfig.header === false) return null;
+    if (layoutConfig.header === false) {
+      return leftSidebarCollapsed ? (
+        <ResourceShellHeader
+          leftSidebarCollapsed
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          onGoBack={onGoBack}
+          onGoForward={onGoForward}
+          onToggleLeftSidebar={onToggleLeftSidebar}
+          headerRef={headerRef}
+        />
+      ) : null;
+    }
 
     const headerConfig = layoutConfig.header ?? {};
     const sidePanelConfig =
@@ -131,6 +157,12 @@ function AppResourceShell({ children }: AppResourceShellProps) {
             />
           ) : undefined
         }
+        leftSidebarCollapsed={leftSidebarCollapsed}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onGoBack={onGoBack}
+        onGoForward={onGoForward}
+        onToggleLeftSidebar={onToggleLeftSidebar}
         headerRef={headerRef}
       />
     );

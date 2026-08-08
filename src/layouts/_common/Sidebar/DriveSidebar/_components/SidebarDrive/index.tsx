@@ -150,7 +150,10 @@ function SidebarDrive() {
   function buildChildrenData(
     nodes: DriveNode[],
     targetNodeMap: Map<string, DriveNode>,
-    controls: { handleCollapseAll: () => void }
+    controls: {
+      handleCollapseAll: () => void;
+      handleLoadMore: (parentNodeId: string) => void;
+    }
   ): DataNode[] {
     return buildDriveTreeData(
       nodes,
@@ -158,6 +161,7 @@ function SidebarDrive() {
         renderableTypes: SIDEBAR_RENDERABLE_TYPES,
         selectableTypes: SIDEBAR_SELECTABLE_TYPES,
         disabledNodeIds: SIDEBAR_DISABLED_NODE_IDS,
+        interactiveLoadingNodes: true,
         getTreeKey: (node) => node.id,
         renderTitle: (node) => (
           <SidebarDriveNodeTitle
@@ -166,6 +170,9 @@ function SidebarDrive() {
             scopeSwitcher={node.type === 'root' ? <SidebarDriveScopeSwitcher /> : undefined}
             onCreateNode={handleCreateNode}
             onCollapseAll={node.type === 'root' ? controls.handleCollapseAll : undefined}
+            onLoadMoreNode={
+              node.type === 'loading' ? () => controls.handleLoadMore(node.parentId) : undefined
+            }
             onRenameNode={setRenameTarget}
             onDeleteNode={setDeleteTarget}
           />

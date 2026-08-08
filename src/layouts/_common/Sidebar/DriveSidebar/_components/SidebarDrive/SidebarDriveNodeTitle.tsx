@@ -30,6 +30,7 @@ interface SidebarDriveNodeTitleProps {
   scopeSwitcher?: ReactNode;
   onCreateNode: (node: RootNode | FolderNode, action: SidebarDriveCreateAction) => void;
   onCollapseAll?: () => void;
+  onLoadMoreNode?: () => void;
   onRenameNode: (node: DriveActionTarget) => void;
   onDeleteNode: (node: DriveActionTarget) => void;
 }
@@ -62,6 +63,7 @@ function SidebarDriveNodeTitle({
   scopeSwitcher,
   onCreateNode,
   onCollapseAll,
+  onLoadMoreNode,
   onRenameNode,
   onDeleteNode,
 }: SidebarDriveNodeTitleProps) {
@@ -99,6 +101,21 @@ function SidebarDriveNodeTitle({
     setCreateMenuOpen(false);
     if (node.type === 'root' || node.type === 'folder') onCreateNode(node, action);
   };
+
+  if (node.type === 'loading') {
+    return (
+      <button
+        type="button"
+        className={styles.loadMoreNode}
+        onClick={(event) => {
+          stopTreeAction(event);
+          onLoadMoreNode?.();
+        }}
+      >
+        {label}
+      </button>
+    );
+  }
 
   return (
     <span className={styles.nodeTitle}>

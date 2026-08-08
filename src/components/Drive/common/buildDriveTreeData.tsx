@@ -13,6 +13,7 @@ interface DriveNodeSelectionOptions {
 interface BuildDriveTreeDataOptions extends DriveNodeSelectionOptions {
   renderableTypes: Set<DriveItemKind>;
   dimUnselectableNodes?: boolean;
+  interactiveLoadingNodes?: boolean;
   getTreeKey: (node: DriveNode) => string;
   renderTitle: (node: DriveNode) => ReactNode;
 }
@@ -84,7 +85,7 @@ function toTreeDataNode(
     return {
       key,
       title,
-      disabled: true,
+      disabled: options.interactiveLoadingNodes !== true,
       selectable: false,
       checkable: false,
       isLeaf: true,

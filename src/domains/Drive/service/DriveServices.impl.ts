@@ -416,6 +416,34 @@ export const createDriveServices = (
     return folderNodes;
   };
 
+  const listFolderChildrenPage: IDriveService['listFolderChildrenPage'] = async ({
+    nodeId,
+    groupId,
+    folderPage = 1,
+    folderSize = pageSize,
+    refresh,
+  }) => {
+    const effectiveGroupId = resolveEffectiveGroupId(nodeId, groupId);
+    const groupKey = resolveGroupKey(effectiveGroupId);
+    const normalizedFolderPage = Math.max(1, Math.floor(folderPage));
+    const normalizedFolderSize = Math.max(1, Math.floor(folderSize));
+    const folderNodes = await loadFolderNodes(nodeId, effectiveGroupId, { refresh });
+    const start = (normalizedFolderPage - 1) * normalizedFolderSize;
+    const pageFolderNodes = folderNodes.slice(start, start + normalizedFolderSize);
+    const folderTotal = folderNodes.length;
+    const folderTotalPage = Math.max(0, Math.ceil(folderTotal / normalizedFolderSize));
+
+    trackNodes(pageFolderNodes, groupKey);
+    return {
+      folderNodes: pageFolderNodes,
+      folderPage: normalizedFolderPage,
+      folderSize: normalizedFolderSize,
+      folderTotal,
+      folderTotalPage,
+      hasMoreFolders: normalizedFolderPage < folderTotalPage,
+    };
+  };
+
   const listNodeChildrenPage: IDriveService['listNodeChildrenPage'] = async ({
     nodeId,
     groupId,
@@ -1034,6 +1062,7 @@ export const createDriveServices = (
     getTrashFolderNodeId,
     listNodeChildren,
     listFolderChildren,
+    listFolderChildrenPage,
     listNodeChildrenPage,
     getNodePath,
     getResourceNode,

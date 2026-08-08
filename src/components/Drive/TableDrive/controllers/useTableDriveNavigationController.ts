@@ -1,11 +1,12 @@
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
+import { buildLoadingNode } from '@/domains/Drive/mapper/DriveServices.map';
 import { parseErrorMessage } from '@/utils/error';
 import { findTreeNodeById } from '@/utils/tree/findTreeNodeById';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { startTransition, useRef, useState } from 'react';
-import { useDriveTreeChildren } from '../../common/useDriveTreeChildren';
+import { useDrivePagedTreeChildren } from '../../common/useDrivePagedTreeChildren';
 import type { DriveRow } from '../index.type';
 
 const TABLE_DRIVE_RESOURCE_PAGE_SIZE = 50;
@@ -78,10 +79,33 @@ export function useTableDriveNavigationController({
   // 当前 Drive 作用域及其子节点缓存
   const rootId = scope.rootId;
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
-  const { childrenMap, loadChildren, loadMoreChildren, reset } = useDriveTreeChildren({
-    groupId,
-    scope,
-    resourceSize: TABLE_DRIVE_RESOURCE_PAGE_SIZE,
+  const {
+    childrenMap,
+    loadChildren,
+    loadMoreChildren: loadMorePagedChildren,
+    reset,
+  } = useDrivePagedTreeChildren({
+    pageSize: TABLE_DRIVE_RESOURCE_PAGE_SIZE,
+    loadPage: async ({ nodeId, page, size, refresh, mode }) => {
+      const result = await driveService.listNodeChildrenPage({
+        nodeId,
+        groupId,
+        resourcePage: page,
+        resourceSize: size,
+        includeFolders: mode === 'initial',
+        refresh,
+      });
+      return {
+        nodes: mode === 'initial' ? result.nodes : result.resourceNodes,
+        page: result.resourcePage,
+        size: result.resourceSize,
+        total: result.resourceTotal,
+        hasMore: result.hasMoreResources,
+      };
+    },
+    countLoaded: (children) =>
+      children.filter((node) => node.type === 'resource' || node.type === 'link').length,
+    buildLoadingPlaceholder: (nodeId, label) => buildLoadingNode(nodeId, label, scope),
   });
 
   // 导航定位：作用域或初始节点变化时重置当前目录
@@ -317,7 +341,9 @@ export function useTableDriveNavigationController({
     loadingMore,
     hasMore: pageState.locationKey === locationKey && pageState.hasMore,
     loadMore,
-    loadMoreChildren,
+    loadMoreChildren: async (nodeId) => {
+      await loadMorePagedChildren(nodeId);
+    },
     expandedRowKeys,
     enterFolder,
     handleExpandedChange,

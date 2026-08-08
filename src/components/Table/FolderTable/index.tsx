@@ -196,6 +196,12 @@ function resolveMaxBodyHeight(value: number | string | undefined): string | unde
   return typeof value === 'number' ? `${value}px` : value;
 }
 
+function resolveFolderDepthIndentStyle(depth: number): CSSProperties {
+  return {
+    '--folder-table-depth-indent': `${depth * 24}px`,
+  } as CSSProperties;
+}
+
 function evaluateRowPredicate<T>(
   predicate: boolean | ((row: T) => boolean) | undefined,
   row: T,
@@ -729,7 +735,10 @@ function FolderTable<T extends FolderTableRow>({
     if (column.isNameColumn) {
       if (row.entryType === 'loading') {
         return (
-          <span className={styles.inlineLoadMoreButton} data-depth={row.depth}>
+          <span
+            className={styles.inlineLoadMoreButton}
+            style={resolveFolderDepthIndentStyle(row.depth)}
+          >
             {row.name || t('loadMore')}
           </span>
         );

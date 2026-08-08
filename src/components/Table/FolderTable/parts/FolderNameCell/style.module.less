@@ -6,18 +6,7 @@
   gap: var(--space-xs);
   height: @row-content-height;
   min-width: 0;
-
-  &[data-depth='1'] {
-    padding-left: 24px;
-  }
-
-  &[data-depth='2'] {
-    padding-left: 48px;
-  }
-
-  &[data-depth='3'] {
-    padding-left: 72px;
-  }
+  padding-left: var(--folder-table-depth-indent, 0);
 }
 
 .expandBtn {

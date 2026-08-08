@@ -328,42 +328,6 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
     );
   };
 
-  const listFolderChildrenPage: IDriveService['listFolderChildrenPage'] = async (params) => {
-    await delay(NETWORK_DELAY_MS);
-    const folderPage = Math.max(1, Math.floor(params.folderPage ?? 1));
-    const folderSize = Math.max(1, Math.floor(params.folderSize ?? pageSize));
-    const parent = getContainer(params.nodeId);
-    if (!parent) {
-      return {
-        folderNodes: [],
-        folderPage,
-        folderSize,
-        folderTotal: 0,
-        folderTotalPage: 0,
-        hasMoreFolders: false,
-      };
-    }
-    const children = parent.childrenIds
-      .map((id) => nodes.get(id))
-      .filter((node): node is DriveNode => node != null && node.type !== 'loading');
-    const allFolderNodes = orderDriveFolderNodes(
-      children.filter((node): node is FolderNode => node.type === 'folder')
-    );
-    const start = (folderPage - 1) * folderSize;
-    const folderNodes = allFolderNodes.slice(start, start + folderSize);
-    const folderTotal = allFolderNodes.length;
-    const folderTotalPage = Math.max(0, Math.ceil(folderTotal / folderSize));
-
-    return {
-      folderNodes,
-      folderPage,
-      folderSize,
-      folderTotal,
-      folderTotalPage,
-      hasMoreFolders: folderPage < folderTotalPage,
-    };
-  };
-
   const listNodeChildrenPage: IDriveService['listNodeChildrenPage'] = async (params) => {
     await delay(NETWORK_DELAY_MS);
     const parent = getContainer(params.nodeId);
@@ -605,7 +569,6 @@ function createDriveServiceMock(opts?: CreateDriveServiceOptions): IDriveService
     getTrashFolderNodeId,
     listNodeChildren,
     listFolderChildren,
-    listFolderChildrenPage,
     listNodeChildrenPage,
     getNodePath,
     getResourceNode,

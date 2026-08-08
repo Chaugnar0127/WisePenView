@@ -12,7 +12,7 @@ import { useRequest } from 'ahooks';
 import { useState, type Key } from 'react';
 import { isSidebarResourceNode } from './sidebarDriveModel';
 
-const SIDEBAR_DRIVE_FOLDER_PAGE_SIZE = 50;
+const SIDEBAR_DRIVE_RESOURCE_PAGE_SIZE = 50;
 
 interface SidebarTreeLoadResult {
   treeData: DataNode[];
@@ -50,23 +50,26 @@ export function useSidebarDriveTreeController({
   const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const { loadChildren, loadMoreChildren, reset } = useDrivePagedTreeChildren({
-    pageSize: SIDEBAR_DRIVE_FOLDER_PAGE_SIZE,
-    loadPage: async ({ nodeId, page, size, refresh }) => {
-      const result = await driveService.listFolderChildrenPage({
+    pageSize: SIDEBAR_DRIVE_RESOURCE_PAGE_SIZE,
+    loadPage: async ({ nodeId, page, size, refresh, mode }) => {
+      const result = await driveService.listNodeChildrenPage({
         nodeId,
         groupId,
-        folderPage: page,
-        folderSize: size,
+        resourcePage: page,
+        resourceSize: size,
+        includeFolders: mode === 'initial',
         refresh,
       });
       return {
-        nodes: result.folderNodes,
-        page: result.folderPage,
-        size: result.folderSize,
-        total: result.folderTotal,
-        hasMore: result.hasMoreFolders,
+        nodes: mode === 'initial' ? result.nodes : result.resourceNodes,
+        page: result.resourcePage,
+        size: result.resourceSize,
+        total: result.resourceTotal,
+        hasMore: result.hasMoreResources,
       };
     },
+    countLoaded: (children) =>
+      children.filter((node) => node.type === 'resource' || node.type === 'link').length,
     buildLoadingPlaceholder: (nodeId, label) => buildLoadingNode(nodeId, label, scope),
   });
   const handleCollapseAll = () => {

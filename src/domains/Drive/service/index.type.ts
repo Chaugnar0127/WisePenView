@@ -13,10 +13,6 @@ export interface IDriveService {
   listNodeChildren(params: ListNodeChildrenParams): Promise<DriveNode[]>;
   /** 仅获取直接子文件夹，用于侧边栏、移动弹窗等目录导航场景。 */
   listFolderChildren(params: ListFolderChildrenParams): Promise<FolderNode[]>;
-  /** 获取直接子文件夹页；用于侧边栏等 UI 按需渲染场景。 */
-  listFolderChildrenPage(
-    params: ListFolderChildrenPageParams
-  ): Promise<ListFolderChildrenPageResult>;
   /** 获取目录直接子节点页；文件夹完整返回，资源/link 按页返回。 */
   listNodeChildrenPage(params: ListNodeChildrenPageParams): Promise<ListNodeChildrenPageResult>;
   getNodePath(params: GetNodePathParams): Promise<Array<RootNode | FolderNode>>;
@@ -51,22 +47,6 @@ export interface ListFolderChildrenParams {
   groupId?: string;
   /** 强制刷新底层目录树缓存，适用于用户点击展开等实时性入口。 */
   refresh?: boolean;
-}
-
-export interface ListFolderChildrenPageParams extends ListFolderChildrenParams {
-  /** 文件夹页码，从 1 开始。 */
-  folderPage?: number;
-  /** 文件夹每页数量。 */
-  folderSize?: number;
-}
-
-export interface ListFolderChildrenPageResult {
-  folderNodes: FolderNode[];
-  folderPage: number;
-  folderSize: number;
-  folderTotal: number;
-  folderTotalPage: number;
-  hasMoreFolders: boolean;
 }
 
 export interface ListNodeChildrenPageParams {

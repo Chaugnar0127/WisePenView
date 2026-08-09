@@ -13,35 +13,31 @@ interface UseResizablePanelSizeOptions {
   /** 缓动时长 ms，仅 animate 时生效 */
   durationMs?: number;
   /**
-   * 尺寸写入后回调（含动画每一帧）。
-   * 经 ref 读取，不进入 resize effect 依赖，避免打断插值。
-   */
-  onSizePixels?: (sizePx: number) => void;
-  /**
    * 本次尺寸同步结束（插值到达目标或瞬时写入完成）。
    * 经 ref 读取，不进入 resize effect 依赖。
    */
   onComplete?: () => void;
 }
 
-/** 短促 ease-out，收起/展开更跟手 */
 const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
+const easeInCubic = (t: number): number => t ** 3;
+
+const SNAP_EXPAND_PX = 2.5;
+/** 收起更早吸附，避免收到 0 时末段顿挫 */
+const SNAP_COLLAPSE_PX = 10;
 
 const toPixelSize = (size: ResizablePanelSize): number | null =>
   typeof size === 'number' && Number.isFinite(size) ? size : null;
 
-/** 同步外部折叠状态到 react-resizable-panels 的命令式尺寸模型。 */
 export function useResizablePanelSize({
   panelRef,
   size,
   enabled = true,
   animate = false,
   durationMs = 200,
-  onSizePixels,
   onComplete,
 }: UseResizablePanelSizeOptions) {
   const frameRef = useRef<number | null>(null);
-  const onSizePixelsRef = useRef(onSizePixels);
   const onCompleteRef = useRef(onComplete);
 
   /**
@@ -51,15 +47,14 @@ export function useResizablePanelSize({
    * cleanup：无。
    */
   useEffect(() => {
-    onSizePixelsRef.current = onSizePixels;
     onCompleteRef.current = onComplete;
-  }, [onComplete, onSizePixels]);
+  }, [onComplete]);
 
   /**
    * @wisepen-manual-effect
    * 执行时机：受控尺寸或启用状态变化时，同步命令式面板尺寸。
    * 不可替代原因：react-resizable-panels 通过 imperative handle 管理布局，不属于 React 渲染输出。
-   * cleanup：取消进行中的 rAF 动画/补偿帧，避免卸载后改尺寸。
+   * cleanup：取消进行中的 rAF 动画，避免卸载后改尺寸。
    */
   useEffect(() => {
     if (!enabled) return;
@@ -71,12 +66,7 @@ export function useResizablePanelSize({
       }
     };
 
-    const reportSize = (sizePx: number) => {
-      onSizePixelsRef.current?.(sizePx);
-    };
-
     const finish = () => {
-      /* 先让最终宽度完成绘制，再清 isAnimating，避免同帧 DOM/约束切换叠在最后一击 resize 上 */
       frameRef.current = window.requestAnimationFrame(() => {
         frameRef.current = null;
         onCompleteRef.current?.();
@@ -84,11 +74,14 @@ export function useResizablePanelSize({
     };
 
     const resizeTo = (next: ResizablePanelSize) => {
-      panelRef.current?.resize(next);
-      const px = toPixelSize(next) ?? panelRef.current?.getSize().inPixels;
-      if (px != null && Number.isFinite(px)) {
-        reportSize(px);
+      const nextPx = toPixelSize(next);
+      if (nextPx != null) {
+        const current = panelRef.current?.getSize().inPixels;
+        if (current != null && Math.abs(current - nextPx) < 0.5) {
+          return;
+        }
       }
+      panelRef.current?.resize(next);
     };
 
     const panel = panelRef.current;
@@ -105,33 +98,46 @@ export function useResizablePanelSize({
 
     if (!animate || targetPx == null || !Number.isFinite(currentPx)) {
       resizeTo(size);
-      frameRef.current = window.requestAnimationFrame(() => {
-        resizeTo(size);
-        finish();
-      });
-      return cancelFrame;
-    }
-
-    const startPx = currentPx;
-    const delta = targetPx - startPx;
-    if (Math.abs(delta) < 0.5) {
-      resizeTo(targetPx);
       finish();
       return cancelFrame;
     }
 
+    const endPx = Math.round(targetPx);
+    const startPx = currentPx;
+    const delta = endPx - startPx;
+    if (Math.abs(delta) < 0.5) {
+      resizeTo(endPx);
+      finish();
+      return cancelFrame;
+    }
+
+    const collapsing = delta < 0;
+    const ease = collapsing ? easeInCubic : easeOutCubic;
+    const snapPx = collapsing ? SNAP_COLLAPSE_PX : SNAP_EXPAND_PX;
+
     let startedAt: number | null = null;
+    let lastRounded = Math.round(startPx);
     const tick = (now: number) => {
       if (startedAt == null) startedAt = now;
       const progress = Math.min(1, (now - startedAt) / durationMs);
-      const next = startPx + delta * easeOutCubic(progress);
-      resizeTo(next);
-      if (progress < 1) {
-        frameRef.current = window.requestAnimationFrame(tick);
-      } else {
-        resizeTo(targetPx);
+      const next = startPx + delta * ease(progress);
+      const remaining = Math.abs(endPx - next);
+
+      if (progress >= 1 || remaining <= snapPx) {
+        if (lastRounded !== endPx) {
+          lastRounded = endPx;
+          resizeTo(endPx);
+        }
         finish();
+        return;
       }
+
+      const rounded = Math.round(next);
+      if (rounded !== lastRounded) {
+        lastRounded = rounded;
+        resizeTo(rounded);
+      }
+      frameRef.current = window.requestAnimationFrame(tick);
     };
 
     frameRef.current = window.requestAnimationFrame(tick);

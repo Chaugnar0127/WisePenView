@@ -1,3 +1,4 @@
+import type { AppRouteContentContainer } from '@/bootstrap/routeMeta';
 import {
   APP_MAIN_MIN_WIDTH,
   APP_WEB_SIDEBAR_COLLAPSED_WIDTH,
@@ -29,7 +30,7 @@ import {
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
 import clsx from 'clsx';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { memo, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -40,6 +41,107 @@ import type {
 import { Outlet } from 'react-router-dom';
 import styles from './AppLayout.module.less';
 import AppResourceShell from './AppResourceShell';
+
+const APP_LAYOUT_PANEL_GROUP_ID = 'app-layout-panels';
+
+type AppMainColumnProps = {
+  isDesktop: boolean;
+  hasTitleBarInset: boolean;
+  titleBarInsetSide: 'start' | 'end' | null;
+  showDesktopCollapsedChrome: boolean;
+  isResourceRoute: boolean;
+  contentContainer?: AppRouteContentContainer | false | null;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  onGoBack: () => void;
+  onGoForward: () => void;
+  onToggleSidebar: () => void;
+  leftSidebarCollapsed: boolean;
+};
+
+/** 侧栏开合时避免连带 Outlet 重渲 */
+const AppMainColumn = memo(function AppMainColumn({
+  isDesktop,
+  hasTitleBarInset,
+  titleBarInsetSide,
+  showDesktopCollapsedChrome,
+  isResourceRoute,
+  contentContainer,
+  canGoBack,
+  canGoForward,
+  onGoBack,
+  onGoForward,
+  onToggleSidebar,
+  leftSidebarCollapsed,
+}: AppMainColumnProps) {
+  const content = isResourceRoute ? (
+    <AppResourceShell
+      leftSidebarCollapsed={leftSidebarCollapsed}
+      canGoBack={canGoBack}
+      canGoForward={canGoForward}
+      onGoBack={onGoBack}
+      onGoForward={onGoForward}
+      onToggleLeftSidebar={onToggleSidebar}
+    >
+      <Outlet />
+    </AppResourceShell>
+  ) : (
+    <Outlet />
+  );
+
+  return (
+    <SystemResizablePanel
+      id="app-main"
+      minSize={APP_MAIN_MIN_WIDTH}
+      className={styles.middleLayout}
+    >
+      {isDesktop && !isResourceRoute ? (
+        <header
+          className={clsx(
+            styles.desktopHeader,
+            hasTitleBarInset && titleBarInsetSide === 'start' && styles.titleBarInsetStart,
+            hasTitleBarInset && titleBarInsetSide === 'end' && styles.titleBarInsetEnd
+          )}
+        >
+          {showDesktopCollapsedChrome ? (
+            <div className={styles.collapsedHeaderControls}>
+              <AppNavigationControls
+                sidebarCollapsed
+                canGoBack={canGoBack}
+                canGoForward={canGoForward}
+                onGoBack={onGoBack}
+                onGoForward={onGoForward}
+                onToggleSidebar={onToggleSidebar}
+              />
+            </div>
+          ) : null}
+        </header>
+      ) : null}
+      <main
+        id={MAIN_CONTENT_ID}
+        tabIndex={-1}
+        className={clsx(
+          styles.middleContent,
+          isResourceRoute && styles.middleContentResource,
+          contentContainer && styles.middleContentContained
+        )}
+      >
+        {contentContainer ? (
+          <div
+            className={clsx(
+              styles.appPageContainer,
+              contentContainer === 'fixed' && styles.appPageContainerFixed
+            )}
+          >
+            {content}
+          </div>
+        ) : (
+          content
+        )}
+      </main>
+    </SystemResizablePanel>
+  );
+});
 
 function AppLayout() {
   const { t } = useTranslation('shell');
@@ -66,17 +168,17 @@ function AppLayout() {
     panelSize: sidebarPanelSize,
     minSize: sidebarMinSize,
     maxSize: sidebarMaxSize,
-    showCollapsedChrome: showWebCollapsedChrome,
-    isAnimating: isSidebarAnimating,
+    isMotionLockedRef,
     notifyAnimationComplete: notifySidebarAnimationComplete,
   } = useSidebarCollapseMotion({
     collapsed: sidebarCollapsed,
     expandedWidth: sidebarWidth,
     collapsedWidth: collapsedSidebarWidth,
+    panelGroupId: APP_LAYOUT_PANEL_GROUP_ID,
   });
-  const anchorSidebarSlide = isSidebarAnimating || sidebarCollapsed;
-  /* Desktop 收起控件在主顶栏：收起一开始就挂上，避免动画结束再挂载导致末帧卡顿 */
-  const showDesktopCollapsedChrome = sidebarCollapsed;
+  const [liveSidebarWidthPx, setLiveSidebarWidthPx] = useState(sidebarWidth);
+  const showDesktopCollapsedChrome = sidebarCollapsed && !isResourceRoute;
+  const showWebCollapsedChrome = sidebarCollapsed && !desktopWindow.isDesktop && !isResourceRoute;
   const contentContainer = routeMeta?.contentContainer;
 
   const persistSidebarWidthFromPanel = () => {
@@ -84,6 +186,7 @@ function AppLayout() {
     if (currentWidth == null) return;
     const nextSidebarWidth = clampSidebarWidth(currentWidth);
     if (nextSidebarWidth > SIDEBAR_MIN_WIDTH || sidebarWidth === SIDEBAR_MIN_WIDTH) {
+      setLiveSidebarWidthPx(nextSidebarWidth);
       setSidebarWidth(nextSidebarWidth);
     }
   };
@@ -94,26 +197,33 @@ function AppLayout() {
     onAutoCollapse: persistSidebarWidthFromPanel,
   });
 
+  const handleSidebarAnimationComplete = () => {
+    notifySidebarAnimationComplete();
+    if (!pendingFocusSidebarToggleRef.current || !sidebarCollapsed) return;
+    pendingFocusSidebarToggleRef.current = false;
+    focusVisibleSidebarToggle();
+  };
+
   useResizablePanelSize({
     panelRef: sidebarPanelRef,
     size: sidebarPanelSize,
     animate: true,
     durationMs: SIDEBAR_COLLAPSE_DURATION_MS,
-    onComplete: notifySidebarAnimationComplete,
+    onComplete: handleSidebarAnimationComplete,
   });
 
   /**
    * @wisepen-manual-effect
-   * 执行时机：侧栏折叠态或 Web 收起 chrome 就绪后，归还焦点到可见切换按钮。
-   * 不可替代原因：Web 收起 chrome 在动画结束后才挂载，不能在 toggle 当时同步 focus。
+   * 执行时机：展开后归还焦点到侧栏内切换按钮。
+   * 不可替代原因：收起要等 motion 结束显轨后才能 focus（onComplete）；展开可在 collapsed 翻转后立刻 focus。
    * cleanup：无。
    */
   useEffect(() => {
     if (!pendingFocusSidebarToggleRef.current) return;
-    if (sidebarCollapsed && !desktopWindow.isDesktop && !showWebCollapsedChrome) return;
+    if (sidebarCollapsed) return;
     pendingFocusSidebarToggleRef.current = false;
     focusVisibleSidebarToggle();
-  }, [sidebarCollapsed, showWebCollapsedChrome, desktopWindow.isDesktop]);
+  }, [sidebarCollapsed]);
 
   const handleSidebarToggle = () => {
     pendingFocusSidebarToggleRef.current = true;
@@ -121,42 +231,43 @@ function AppLayout() {
     setSidebarCollapsed((collapsed) => {
       if (!collapsed) {
         persistSidebarWidthFromPanel();
+      } else {
+        setLiveSidebarWidthPx(sidebarWidth);
       }
       return !collapsed;
     });
   };
 
   const handleSidebarResize = (panelSize: PanelSize) => {
-    if (sidebarCollapsed) return;
+    if (sidebarCollapsed || isMotionLockedRef.current) return;
+    setLiveSidebarWidthPx(panelSize.inPixels);
     pendingSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
   };
 
   const handleLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
     const pendingSidebarWidth = pendingSidebarWidthRef.current;
     pendingSidebarWidthRef.current = null;
-    if (sidebarCollapsed || !meta.isUserInteraction || pendingSidebarWidth == null) return;
-    setSidebarWidth(pendingSidebarWidth);
-  };
+    if (sidebarCollapsed || isMotionLockedRef.current) return;
 
-  const content = isResourceRoute ? (
-    <AppResourceShell
-      leftSidebarCollapsed={sidebarCollapsed}
-      canGoBack={appNavigation.canGoBack}
-      canGoForward={appNavigation.canGoForward}
-      onGoBack={appNavigation.goBack}
-      onGoForward={appNavigation.goForward}
-      onToggleLeftSidebar={handleSidebarToggle}
-    >
-      <Outlet />
-    </AppResourceShell>
-  ) : (
-    <Outlet />
-  );
+    if (meta.isUserInteraction && pendingSidebarWidth != null) {
+      setLiveSidebarWidthPx(pendingSidebarWidth);
+      setSidebarWidth(pendingSidebarWidth);
+      sidebarPanelRef.current?.resize(pendingSidebarWidth);
+      return;
+    }
+
+    const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
+    if (currentWidth == null || currentWidth >= SIDEBAR_MIN_WIDTH - 0.5) return;
+    sidebarPanelRef.current?.resize(SIDEBAR_MIN_WIDTH);
+    setLiveSidebarWidthPx(SIDEBAR_MIN_WIDTH);
+    setSidebarWidth(SIDEBAR_MIN_WIDTH);
+  };
 
   return (
     <div className={styles.root} data-layout-density={density}>
       <SkipToMainLink />
       <SystemResizablePanelGroup
+        id={APP_LAYOUT_PANEL_GROUP_ID}
         orientation="horizontal"
         className={styles.panelGroup}
         onLayoutChanged={handleLayoutChanged}
@@ -165,7 +276,6 @@ function AppLayout() {
           id="app-sidebar"
           panelRef={sidebarPanelRef}
           defaultSize={sidebarPanelSize}
-          /* min=0 允许收起/展开插值；展开态下限由 clampSidebarWidth 在拖拽落定后保证 */
           minSize={sidebarMinSize}
           maxSize={sidebarMaxSize}
           groupResizeBehavior="preserve-pixel-size"
@@ -177,7 +287,7 @@ function AppLayout() {
           aria-hidden={sidebarCollapsed && desktopWindow.isDesktop ? true : undefined}
           onResize={handleSidebarResize}
         >
-          {showWebCollapsedChrome && !desktopWindow.isDesktop && !isResourceRoute ? (
+          {showWebCollapsedChrome ? (
             <header className={styles.webCollapsedSidebar}>
               <AppNavigationControls
                 sidebarCollapsed
@@ -193,21 +303,16 @@ function AppLayout() {
           <div
             className={clsx(
               styles.sidebarSlideHost,
-              showWebCollapsedChrome && styles.sidebarSlideHostHidden
+              showWebCollapsedChrome && styles.sidebarSlideHostCollapsed
             )}
             inert={sidebarCollapsed || undefined}
           >
             <div
-              className={clsx(
-                styles.sidebarSlideFrame,
-                anchorSidebarSlide && styles.sidebarSlideFrameAnchored
-              )}
+              className={styles.sidebarSlideFrame}
               style={
-                anchorSidebarSlide
-                  ? ({
-                      '--sidebar-slide-width': `${sidebarWidth}px`,
-                    } as CSSProperties)
-                  : undefined
+                {
+                  '--sidebar-slide-width': `${liveSidebarWidthPx}px`,
+                } as CSSProperties
               }
             >
               <AppSidebar
@@ -227,61 +332,20 @@ function AppLayout() {
           aria-label={t('navigation.resizeSidebar')}
         />
 
-        <SystemResizablePanel
-          id="app-main"
-          minSize={APP_MAIN_MIN_WIDTH}
-          className={styles.middleLayout}
-        >
-          {desktopWindow.isDesktop && !isResourceRoute ? (
-            <header
-              className={clsx(
-                styles.desktopHeader,
-                desktopWindow.hasTitleBarInset &&
-                  desktopWindow.titleBarInsetSide === 'start' &&
-                  styles.titleBarInsetStart,
-                desktopWindow.hasTitleBarInset &&
-                  desktopWindow.titleBarInsetSide === 'end' &&
-                  styles.titleBarInsetEnd
-              )}
-            >
-              {showDesktopCollapsedChrome && !isResourceRoute ? (
-                <div className={styles.collapsedHeaderControls}>
-                  <AppNavigationControls
-                    sidebarCollapsed
-                    showHistory={desktopWindow.isDesktop}
-                    canGoBack={appNavigation.canGoBack}
-                    canGoForward={appNavigation.canGoForward}
-                    onGoBack={appNavigation.goBack}
-                    onGoForward={appNavigation.goForward}
-                    onToggleSidebar={handleSidebarToggle}
-                  />
-                </div>
-              ) : null}
-            </header>
-          ) : null}
-          <main
-            id={MAIN_CONTENT_ID}
-            tabIndex={-1}
-            className={clsx(
-              styles.middleContent,
-              isResourceRoute && styles.middleContentResource,
-              contentContainer && styles.middleContentContained
-            )}
-          >
-            {contentContainer ? (
-              <div
-                className={clsx(
-                  styles.appPageContainer,
-                  contentContainer === 'fixed' && styles.appPageContainerFixed
-                )}
-              >
-                {content}
-              </div>
-            ) : (
-              content
-            )}
-          </main>
-        </SystemResizablePanel>
+        <AppMainColumn
+          isDesktop={desktopWindow.isDesktop}
+          hasTitleBarInset={desktopWindow.hasTitleBarInset}
+          titleBarInsetSide={desktopWindow.titleBarInsetSide}
+          showDesktopCollapsedChrome={showDesktopCollapsedChrome}
+          isResourceRoute={isResourceRoute}
+          contentContainer={contentContainer}
+          canGoBack={appNavigation.canGoBack}
+          canGoForward={appNavigation.canGoForward}
+          onGoBack={appNavigation.goBack}
+          onGoForward={appNavigation.goForward}
+          onToggleSidebar={handleSidebarToggle}
+          leftSidebarCollapsed={sidebarCollapsed}
+        />
       </SystemResizablePanelGroup>
     </div>
   );

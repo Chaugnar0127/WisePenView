@@ -2,6 +2,7 @@ import ChatInput from './ChatInput';
 import ChatSessionBar from './ChatSessionBar';
 import type { ChatPanelAgentDebugConfig } from './index.type';
 import MessageList from './MessageList';
+import Welcome from './MessageList/Welcome';
 import styles from './style.module.less';
 import type { ChatPanelController } from './useChatPanelController';
 
@@ -31,10 +32,15 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
     ensureChatSession,
   } = controller;
   const sending = status === 'submitted' || status === 'streaming';
+  const isWelcome = messages.length === 0 && !loadingInitialHistory;
 
   return (
     <div className={styles.panelBody}>
-      <div className={styles.conversationPanel} hidden={sessionBarOpen}>
+      <div
+        className={styles.conversationPanel}
+        data-welcome={isWelcome ? 'true' : 'false'}
+        hidden={sessionBarOpen}
+      >
         <div className={styles.messageViewport}>
           <MessageList
             messages={messages}
@@ -48,23 +54,38 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
             fullWidth={fullWidth}
           />
         </div>
-        <div className={styles.footerSlot}>
-          <div className={styles.inputColumn}>
-            <ChatInput
-              onSend={handleSend}
-              getUploadSessionId={ensureChatSession}
-              sending={sending}
-              onStop={stop}
-              isAuthenticated={controller.isAuthenticated}
-              onRequireLogin={controller.requireLogin}
-              contextPreview={resourceChatContext?.preview}
-              onClearContext={clearResourceChatContext}
-              injectedAgents={agentDebug ? [agentDebug.agent] : undefined}
-              preferredAgent={agentDebug?.agent}
-              fullWidth={fullWidth}
-            />
+
+        <div className={styles.composerCluster}>
+          <div
+            className={styles.welcomeSlot}
+            data-visible={isWelcome ? 'true' : 'false'}
+            aria-hidden={!isWelcome}
+          >
+            <div className={styles.welcomeSlotInner}>
+              <Welcome />
+            </div>
+          </div>
+
+          <div className={styles.footerSlot}>
+            <div className={styles.inputColumn}>
+              <ChatInput
+                onSend={handleSend}
+                getUploadSessionId={ensureChatSession}
+                sending={sending}
+                onStop={stop}
+                isAuthenticated={controller.isAuthenticated}
+                onRequireLogin={controller.requireLogin}
+                contextPreview={resourceChatContext?.preview}
+                onClearContext={clearResourceChatContext}
+                injectedAgents={agentDebug ? [agentDebug.agent] : undefined}
+                preferredAgent={agentDebug?.agent}
+                fullWidth={fullWidth}
+              />
+            </div>
           </div>
         </div>
+
+        <div className={styles.composerBottomSpacer} aria-hidden />
       </div>
 
       {sessionBarOpen ? (

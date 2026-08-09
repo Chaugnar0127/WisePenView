@@ -118,8 +118,7 @@ const zhCNChat = {
   },
   message: {
     welcome: {
-      title: '你好，我是 AI 助理小 W',
-      subtitle: '今天想做点什么？',
+      title: '今天想要做点什么？',
     },
     conversationLoading: '加载对话中...',
     scrollToBottom: '滚动到底部',

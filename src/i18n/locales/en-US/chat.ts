@@ -120,8 +120,7 @@ const enUSChat = {
   },
   message: {
     welcome: {
-      title: "Hi, I'm W, your AI assistant",
-      subtitle: 'What would you like to do today?',
+      title: 'What would you like to do today?',
     },
     conversationLoading: 'Loading conversation...',
     scrollToBottom: 'Scroll to bottom',

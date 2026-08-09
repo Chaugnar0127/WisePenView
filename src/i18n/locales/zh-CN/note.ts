@@ -237,6 +237,8 @@ const zhCNNote = {
     unsetHeaderColumn: '取消标题列',
     insertRow: '插入行',
     insertColumn: '插入列',
+    deleteRow: '删除行',
+    deleteColumn: '删除列',
     selectRow: '选择第 {{index}} 行',
     selectColumn: '选择第 {{index}} 列',
     headerRow: '标题行',

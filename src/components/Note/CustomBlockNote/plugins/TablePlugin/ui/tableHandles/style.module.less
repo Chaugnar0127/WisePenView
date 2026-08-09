@@ -125,10 +125,6 @@
   height: 100%;
 }
 
-.selectionRail[data-orientation='row'][data-selected='true']::after {
-  box-shadow: inset var(--space-2xs) 0 0 var(--accent);
-}
-
 .selectionRail[data-orientation='column'] {
   height: var(--note-table-select-hit-size);
   transform: translateY(calc(-1 * var(--note-table-select-hit-size)));
@@ -148,8 +144,19 @@
   height: var(--selection-highlight-height);
 }
 
-.selectionRail[data-orientation='column'][data-selected='true']::after {
-  box-shadow: inset 0 var(--space-2xs) 0 var(--accent);
+.selectionLayer[data-delete-preview='true'] .selectionRail[data-selected='true']::before {
+  background: var(--danger);
+}
+
+.selectionLayer[data-delete-preview='true'] .selectionRail[data-selected='true']::after {
+  background: var(--danger-soft);
+}
+
+:global(.bn-block-content[data-content-type='table']):has(
+    .selectionLayer[data-delete-preview='true']
+  )
+  :global(.selectedCell::after) {
+  background: var(--danger-soft);
 }
 
 .insertLayer {

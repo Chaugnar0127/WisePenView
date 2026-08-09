@@ -11,6 +11,7 @@ type TableRailSelectionRect = {
 
 type TableRailSelectionSnapshot = {
   blockId: string | null;
+  deletePreview: boolean;
   endIndex: number | null;
   orientation: TableRailSelectionOrientation | null;
   rect: TableRailSelectionRect | null;
@@ -20,6 +21,7 @@ type TableRailSelectionSnapshot = {
 const listeners = new Set<() => void>();
 let snapshot: TableRailSelectionSnapshot = {
   blockId: null,
+  deletePreview: false,
   endIndex: null,
   orientation: null,
   rect: null,
@@ -34,11 +36,12 @@ const emit = () => {
 
 export const tableRailSelectionState = {
   clear() {
-    if (snapshot.orientation === null) {
+    if (snapshot.orientation === null && !snapshot.deletePreview) {
       return;
     }
     snapshot = {
       blockId: null,
+      deletePreview: false,
       endIndex: null,
       orientation: null,
       rect: null,
@@ -48,6 +51,13 @@ export const tableRailSelectionState = {
   },
   getSnapshot() {
     return snapshot;
+  },
+  setDeletePreview(deletePreview: boolean) {
+    if (snapshot.orientation === null || snapshot.deletePreview === deletePreview) {
+      return;
+    }
+    snapshot = { ...snapshot, deletePreview };
+    emit();
   },
   setSelection(
     orientation: TableRailSelectionOrientation,
@@ -66,7 +76,7 @@ export const tableRailSelectionState = {
     ) {
       return;
     }
-    snapshot = { orientation, rect, ...range };
+    snapshot = { orientation, rect, deletePreview: false, ...range };
     emit();
   },
   subscribe(listener: () => void) {

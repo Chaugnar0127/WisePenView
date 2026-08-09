@@ -1,13 +1,19 @@
 import { useNoteEditorReadOnlyContext } from '@/components/Note/CustomBlockNote/engines/editor/readOnly';
+import {
+  useTableRailSelectionState,
+  type TableRailSelectionOrientation,
+} from '@/components/Note/CustomBlockNote/plugins/TablePlugin/ui/tableHandles/railSelectionState';
+import {
+  TableCellBackgroundAction,
+  TableDeleteAction,
+  TableStructureActions,
+  TableToolbarProvider,
+} from '@/components/Note/CustomBlockNote/plugins/TablePlugin/ui/TableToolbar';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
 import {
   blockMatchesBlockTypeItem,
   getAvailableBlockTypeItems,
 } from '@/components/Note/CustomBlockNote/ui/editorMenus/blockTypes';
-import {
-  useTableRailSelectionState,
-  type TableRailSelectionOrientation,
-} from '@/components/Note/CustomBlockNote/ui/tableHandles/railSelectionState';
 import { blockHasType } from '@blocknote/core';
 import { FormattingToolbarExtension } from '@blocknote/core/extensions';
 import {
@@ -29,7 +35,6 @@ import { ColorMenu } from './components/ColorMenu';
 import { FileCaptionToolbarButton } from './components/FileButtons';
 import { CreateLinkToolbarButton } from './components/LinkButton';
 import { NestButtons } from './components/NestButtons';
-import { TableCellButtons } from './components/TableCellButtons';
 import { TextAlignButtons } from './components/TextAlignButtons';
 import { TextStyleButtons } from './components/TextStyleButtons';
 import { ToolbarButton } from './components/ToolbarButton';
@@ -214,51 +219,61 @@ function CustomFormattingToolbar({
   const showBlockTypeFileGroup = useBlockTypeFileGroupVisible();
 
   return (
-    <Toolbar
-      aria-label={t('editor.toolbar.label')}
-      isAttached
-      className={styles.toolbar}
-      onMouseDown={stopToolbarMouseDown}
-    >
-      {!readOnly ? (
-        <>
-          <TableCellButtons />
-          {showBlockTypeFileGroup ? (
-            <>
-              <ToolbarSeparator />
-              <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.toolbar.blockAndFile')}>
-                <BlockTypeMenu />
-                <FileCaptionToolbarButton />
-              </ButtonGroup>
-            </>
-          ) : null}
-          <ToolbarSeparator />
-          <TextStyleButtons />
-          <ToolbarSeparator />
-          <TextAlignButtons />
-          <ToolbarSeparator />
-          <ColorMenu />
-          <ToolbarSeparator />
-          <NestButtons />
-          <ToolbarSeparator />
-          <CreateLinkToolbarButton onOpenChange={onLinkPopoverOpenChange} />
-          <ToolbarSeparator />
-        </>
-      ) : null}
-      <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.toolbar.searchCommentAi')}>
-        <ToolbarButton
-          label={t('editor.toolbar.search')}
-          icon={<Search size={20} />}
-          onPress={onOpenFind}
-        />
-        <ToolbarButton
-          label={t('editor.toolbar.addComment')}
-          icon={<MessageSquarePlus size={20} />}
-          onPress={onAddComment}
-        />
-        <ToolbarButton label={t('ai.toolbar')} icon={<Sparkles size={20} />} onPress={onAskAi} />
-      </ButtonGroup>
-    </Toolbar>
+    <TableToolbarProvider>
+      <Toolbar
+        aria-label={t('editor.toolbar.label')}
+        isAttached
+        className={styles.toolbar}
+        onMouseDown={stopToolbarMouseDown}
+      >
+        {!readOnly ? (
+          <>
+            <TableStructureActions />
+            {showBlockTypeFileGroup ? (
+              <>
+                <ToolbarSeparator />
+                <ButtonGroup
+                  size="sm"
+                  variant="ghost"
+                  aria-label={t('editor.toolbar.blockAndFile')}
+                >
+                  <BlockTypeMenu />
+                  <FileCaptionToolbarButton />
+                </ButtonGroup>
+              </>
+            ) : null}
+            <ToolbarSeparator />
+            <TextStyleButtons />
+            <ToolbarSeparator />
+            <TextAlignButtons />
+            <ToolbarSeparator />
+            <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.color.label')}>
+              <ColorMenu />
+              <TableCellBackgroundAction />
+            </ButtonGroup>
+            <ToolbarSeparator />
+            <NestButtons />
+            <ToolbarSeparator />
+            <CreateLinkToolbarButton onOpenChange={onLinkPopoverOpenChange} />
+            <ToolbarSeparator />
+            <TableDeleteAction />
+          </>
+        ) : null}
+        <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.toolbar.searchCommentAi')}>
+          <ToolbarButton
+            label={t('editor.toolbar.search')}
+            icon={<Search size={20} />}
+            onPress={onOpenFind}
+          />
+          <ToolbarButton
+            label={t('editor.toolbar.addComment')}
+            icon={<MessageSquarePlus size={20} />}
+            onPress={onAddComment}
+          />
+          <ToolbarButton label={t('ai.toolbar')} icon={<Sparkles size={20} />} onPress={onAskAi} />
+        </ButtonGroup>
+      </Toolbar>
+    </TableToolbarProvider>
   );
 }
 
@@ -340,7 +355,10 @@ function TableRailFormattingToolbar({
       reference={reference}
       useFloatingOptions={useFloatingOptions}
       focusManagerProps={{ disabled: true }}
-      elementProps={{ className: styles.floatingLayer }}
+      elementProps={{
+        // GenericPopover 只读取 style.zIndex，并据此生成最终的内联层级。
+        style: { zIndex: 'var(--app-z-index-editor-toolbar, 220)' },
+      }}
     >
       {show ? <CustomFormattingToolbar {...toolbarProps} /> : null}
     </GenericPopover>

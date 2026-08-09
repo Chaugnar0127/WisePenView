@@ -29,8 +29,8 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { tableRailSelectionState } from './railSelectionState';
-import { getSafeTableCellSelection, getTableHandles, hasMountedEditorView } from './safe';
+import { tableRailSelectionState, useTableRailSelectionState } from './railSelectionState';
+import { getTableHandles, hasMountedEditorView } from './safe';
 import styles from './style.module.less';
 
 type RowInsertTarget = { orientation: 'row'; index: number; side: 'above' | 'below' };
@@ -107,6 +107,7 @@ function MountedTableInsertHandles() {
   const editor = useBlockNoteEditor(blockNoteSchema);
   const tableHandles = getTableHandles(editor);
   const state = useExtensionState(TableHandlesExtension, { editor });
+  const railSelection = useTableRailSelectionState();
   const isSelectingTableCells = useEditorState({
     editor,
     selector: ({ editor }) => isTableCellSelection(editor.prosemirrorState.selection),
@@ -158,7 +159,28 @@ function MountedTableInsertHandles() {
     tableHandles?.unfreezeHandles();
   });
 
-  if (!state?.show || !state.referencePosTable || !tableHandles || !editor.isEditable) {
+  useEventListener(
+    'pointerdown',
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.closest('td, th')) return;
+      setRailSelectionRange(null);
+      tableRailSelectionState.clear();
+    },
+    { target: editor.domElement, capture: true }
+  );
+
+  const hasActiveRailSelection = Boolean(
+    state && railSelection.orientation && railSelection.blockId === state.block.id
+  );
+
+  if (
+    !state ||
+    (!state.show && !hasActiveRailSelection) ||
+    !state.referencePosTable ||
+    !tableHandles ||
+    !editor.isEditable
+  ) {
     return null;
   }
 
@@ -264,39 +286,9 @@ function MountedTableInsertHandles() {
     width: columnBoundaryPositions[index + 1] - left,
   }));
   const activeTargetKey = activeTarget ? getTargetKey(activeTarget) : null;
-  const cellSelection = getSafeTableCellSelection(editor);
-  const selectedRailKeysFromCellSelection =
-    cellSelection && cellSelection.cells.length > 0
-      ? (() => {
-          const selectedRows = new Set(cellSelection.cells.map((cell) => cell.row));
-          const selectedColumns = new Set(cellSelection.cells.map((cell) => cell.col));
-          const railKeys = new Set<string>();
-          for (const row of selectedRows) {
-            if (selectedColumns.size === (tableContent.rows[row]?.cells.length ?? 0)) {
-              railKeys.add(getSelectionTargetKey({ orientation: 'row', index: row }));
-            }
-          }
-          if (selectedColumns.size === 1 && selectedRows.size === rows.length) {
-            const [actualColumnIndex] = [...selectedColumns];
-            const logicalColumnIndex = columnMetrics.find((column) =>
-              rows.some(
-                (_, rowIndex) =>
-                  getActualCellIndexForLogicalColumn(rowIndex, column.target.index) ===
-                  actualColumnIndex
-              )
-            )?.target.index;
-            if (logicalColumnIndex != null) {
-              railKeys.add(
-                getSelectionTargetKey({ orientation: 'column', index: logicalColumnIndex })
-              );
-            }
-          }
-          return railKeys;
-        })()
-      : new Set<string>();
   const selectedRailKeys = visibleRailSelectionRange
     ? (() => {
-        const keys = new Set<string>(selectedRailKeysFromCellSelection);
+        const keys = new Set<string>();
         const start = Math.min(
           visibleRailSelectionRange.startIndex,
           visibleRailSelectionRange.endIndex
@@ -312,7 +304,7 @@ function MountedTableInsertHandles() {
         }
         return keys;
       })()
-    : selectedRailKeysFromCellSelection;
+    : new Set<string>();
 
   const rowBoundaries = rows.length
     ? [
@@ -544,6 +536,11 @@ function MountedTableInsertHandles() {
       <div
         className={styles.selectionLayer}
         contentEditable={false}
+        data-delete-preview={
+          railSelection.deletePreview && railSelection.blockId === state.block.id
+            ? 'true'
+            : undefined
+        }
         data-inserting={activeTargetKey ? 'true' : undefined}
       >
         {rowRails.map(({ key, target, top, height }) => (
@@ -591,82 +588,84 @@ function MountedTableInsertHandles() {
           />
         ))}
       </div>
-      <div className={styles.insertLayer} contentEditable={false}>
-        {rowBoundaries.map(({ key, top, target }) => {
-          const isActive = activeTargetKey === getTargetKey(target);
+      {state.show ? (
+        <div className={styles.insertLayer} contentEditable={false}>
+          {rowBoundaries.map(({ key, top, target }) => {
+            const isActive = activeTargetKey === getTargetKey(target);
 
-          return (
-            <div
-              key={key}
-              className={styles.insertHandle}
-              data-orientation="row"
-              data-active={isActive ? 'true' : undefined}
-              style={
-                {
-                  left: 0,
-                  top,
-                  width: tableRight,
-                  '--table-edge': `${tableLeft}px`,
-                } as CSSProperties
-              }
-            >
-              <AppIconButton
-                icon={<Plus size={16} strokeWidth={2.25} aria-hidden="true" />}
-                label={t('table.insertRow')}
-                size="sm"
-                className={styles.insertButton}
-                tooltip={{
-                  placement: 'left',
-                  offset: 8,
-                  showArrow: true,
-                  triggerClassName: styles.insertButtonTrigger,
-                }}
-                onPointerEnter={() => handleInsertPointerEnter(target)}
-                onPointerLeave={() => handleInsertPointerLeave(target)}
-                onPointerDown={(event) => handleInsertPointerDown(event, target)}
-                onClick={(event) => handleInsertClick(event, target)}
-              />
-            </div>
-          );
-        })}
-        {columnBoundaries.map(({ key, left, target }) => {
-          const isActive = activeTargetKey === getTargetKey(target);
+            return (
+              <div
+                key={key}
+                className={styles.insertHandle}
+                data-orientation="row"
+                data-active={isActive ? 'true' : undefined}
+                style={
+                  {
+                    left: 0,
+                    top,
+                    width: tableRight,
+                    '--table-edge': `${tableLeft}px`,
+                  } as CSSProperties
+                }
+              >
+                <AppIconButton
+                  icon={<Plus size={16} strokeWidth={2.25} aria-hidden="true" />}
+                  label={t('table.insertRow')}
+                  size="sm"
+                  className={styles.insertButton}
+                  tooltip={{
+                    placement: 'left',
+                    offset: 8,
+                    showArrow: true,
+                    triggerClassName: styles.insertButtonTrigger,
+                  }}
+                  onPointerEnter={() => handleInsertPointerEnter(target)}
+                  onPointerLeave={() => handleInsertPointerLeave(target)}
+                  onPointerDown={(event) => handleInsertPointerDown(event, target)}
+                  onClick={(event) => handleInsertClick(event, target)}
+                />
+              </div>
+            );
+          })}
+          {columnBoundaries.map(({ key, left, target }) => {
+            const isActive = activeTargetKey === getTargetKey(target);
 
-          return (
-            <div
-              key={key}
-              className={styles.insertHandle}
-              data-orientation="column"
-              data-active={isActive ? 'true' : undefined}
-              style={
-                {
-                  left,
-                  top: 0,
-                  height: tableBottom,
-                  '--table-edge': `${tableTop}px`,
-                } as CSSProperties
-              }
-            >
-              <AppIconButton
-                icon={<Plus size={16} strokeWidth={2.25} aria-hidden="true" />}
-                label={t('table.insertColumn')}
-                size="sm"
-                className={styles.insertButton}
-                tooltip={{
-                  placement: 'top',
-                  offset: 8,
-                  showArrow: true,
-                  triggerClassName: styles.insertButtonTrigger,
-                }}
-                onPointerEnter={() => handleInsertPointerEnter(target)}
-                onPointerLeave={() => handleInsertPointerLeave(target)}
-                onPointerDown={(event) => handleInsertPointerDown(event, target)}
-                onClick={(event) => handleInsertClick(event, target)}
-              />
-            </div>
-          );
-        })}
-      </div>
+            return (
+              <div
+                key={key}
+                className={styles.insertHandle}
+                data-orientation="column"
+                data-active={isActive ? 'true' : undefined}
+                style={
+                  {
+                    left,
+                    top: 0,
+                    height: tableBottom,
+                    '--table-edge': `${tableTop}px`,
+                  } as CSSProperties
+                }
+              >
+                <AppIconButton
+                  icon={<Plus size={16} strokeWidth={2.25} aria-hidden="true" />}
+                  label={t('table.insertColumn')}
+                  size="sm"
+                  className={styles.insertButton}
+                  tooltip={{
+                    placement: 'top',
+                    offset: 8,
+                    showArrow: true,
+                    triggerClassName: styles.insertButtonTrigger,
+                  }}
+                  onPointerEnter={() => handleInsertPointerEnter(target)}
+                  onPointerLeave={() => handleInsertPointerLeave(target)}
+                  onPointerDown={(event) => handleInsertPointerDown(event, target)}
+                  onClick={(event) => handleInsertClick(event, target)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </>,
     portalContainer
   );

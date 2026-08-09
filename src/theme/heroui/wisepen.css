@@ -99,8 +99,7 @@ html[data-theme-radius='large'] {
   --chat-input-textarea-max-height: calc(16em + 16px);
   --chat-input-card-padding-block: 12px;
   --chat-input-container-padding-block: 8px;
-  --layout-welcome-icon-size: 40px;
-  --layout-welcome-title-size: 18px;
+  --layout-welcome-title-size: 2rem;
   --radius-xs: calc(var(--radius) * 0.25);
   --radius-sm: calc(var(--radius) * 0.5);
   --radius-md: calc(var(--radius) * 0.75);

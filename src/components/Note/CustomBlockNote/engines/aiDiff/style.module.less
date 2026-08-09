@@ -36,12 +36,12 @@
   cursor: pointer;
 }
 
-/* AI Diff widget 位于原生 block-content 外，需显式恢复标题块的排版阶梯。 */
+/* AI Diff widget 在原生 block-content 外，标题阶梯与编辑器保持一致（含行高/段距），避免色块与灰底错位 */
 .review[data-ai-diff-content-type='heading'] {
-  margin-bottom: 10px;
-  font-size: 26px;
+  margin-bottom: 0;
+  font-size: 25px;
   font-weight: var(--font-weight-medium);
-  line-height: 1.8;
+  line-height: 1.4;
 }
 
 .review[data-ai-diff-content-type='heading'][data-ai-diff-heading-level='2'] {
@@ -267,7 +267,7 @@
   font-family: var(--font-mono, monospace);
 }
 
-/* 行内 hunk：对比模式专用高亮；行高仍随编辑器 */
+/* 行内 hunk：保持 inline 流式（先删后增、长文上下换行），勿用 flex 以免整段变成左右两栏 */
 .inlineHunk {
   position: relative;
   display: inline;
@@ -278,11 +278,17 @@
 
 .inlineDelete,
 .inlineAdd {
+  box-sizing: border-box;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-  /* 只用水平 padding，避免抬高整行行距 */
-  padding: 0 0.2em;
-  border-radius: var(--radius-xs);
+  /*
+   * 竖直 padding 配等量负 margin：略扩色块且不撑行高。
+   * 数值偏小，避免上下行选中色块互相遮盖。
+   */
+  vertical-align: baseline;
+  padding: 0.04em 0.16em;
+  margin-block: -0.04em;
+  border-radius: 0;
   line-height: inherit;
   font-size: inherit;
 }
@@ -295,6 +301,12 @@
 .inlineAdd {
   background: var(--diff-added);
   color: var(--foreground);
+}
+
+/* 单独色块微圆角；成对红绿见下方，直角紧贴 */
+.inlineHunk > .inlineDelete:only-child,
+.inlineHunk > .inlineAdd:only-child {
+  border-radius: var(--radius-xs);
 }
 
 .inlineHunkSelectable {
@@ -367,18 +379,16 @@
   background: var(--diff-added-selected);
 }
 
-/* 同一 hunk 内 delete→add 贴齐：邻边直角，左右内边距对称，避免绿块显大 */
+/* 同一修改内红绿紧贴：无圆角；竖直尺寸跟随基类，避免上下行遮盖 */
 .inlineHunk .inlineDelete:has(+ .inlineAdd) {
-  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
-  padding-left: 0.16em;
-  padding-right: 0.16em;
+  border-radius: 0;
+  padding-inline: 0.14em;
 }
 
 .inlineHunk .inlineDelete + .inlineAdd {
   margin-left: 0;
-  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
-  padding-left: 0.16em;
-  padding-right: 0.16em;
+  border-radius: 0;
+  padding-inline: 0.14em;
 }
 
 /* —— 段右侧工具条：左缘对齐灰块右缘，垂直对齐当前改动 —— */
@@ -558,12 +568,31 @@
   color: color-mix(in srgb, var(--danger) 58%, var(--foreground));
 }
 
-/* 选中改动所在段浅底；relative 供工具条贴右缘（颜色由 --diff-row-selected 主题覆写） */
-:global(.bn-block-outer):has([data-ai-diff-selected='true']),
-:global(.bn-block):has([data-ai-diff-selected='true']) {
+/*
+ * 有 AI Diff 时始终 relative，避免选中瞬间才切定位造成跳动。
+ * 选中只铺灰底；大标题额外始终留竖直内边距，让灰底包住色块且选中不跳动。
+ */
+:global(.bn-block):has([data-ai-diff-display-mode]),
+:global(.bn-block):has([data-ai-diff-current]),
+:global(.bn-block):has([data-ai-diff-selected]) {
   position: relative;
+}
+
+:global(.bn-block):has([data-ai-diff-content-type='heading']) {
+  padding-block: 0.22em;
+  box-sizing: border-box;
+}
+
+:global(.bn-block):has([data-ai-diff-selected='true']) {
   background: var(--diff-row-selected);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
+}
+
+/* 标题色块取消负 margin，避免背景画出灰底外 */
+.review[data-ai-diff-content-type='heading'] .inlineDelete,
+.review[data-ai-diff-content-type='heading'] .inlineAdd {
+  margin-block: 0;
+  padding-block: 0.06em;
 }
 
 /* —— L3 全文 —— */

@@ -2,7 +2,6 @@ import TableDrive from '@/components/Drive/TableDrive';
 import { useDriveService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
 import PageHeader from '@/layouts/_common/PageHeader';
-import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import {
   buildDrivePath,
@@ -14,7 +13,7 @@ import {
 import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 import { Tabs, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useEffect, type Key } from 'react';
+import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -34,37 +33,20 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   const { folderId } = useParams();
   const driveService = useDriveService();
   const driveScope = buildDriveNodeScope();
-  const workspaceScope = useResourceNavigationStore((state) => state.location.scope);
-
-  /**
-   * @wisepen-manual-effect
-   * 执行时机：URL 路由范围或云盘视图模式变化后同步 workspace scope。
-   * 不可替代原因：React Router 与工作区 Zustand store 是两个独立状态系统。
-   * cleanup：没有订阅或延迟任务，无需清理。
-   */
-  useEffect(() => {
-    if (viewMode === 'uploadQueue' || viewMode === 'favorites') return;
-
-    const nextScope = buildDriveNodeScope();
-    const currentScope = useResourceNavigationStore.getState().location.scope;
-    const currentGroupId = currentScope.type === 'group' ? currentScope.groupId : undefined;
-    const nextGroupId = nextScope.type === 'group' ? nextScope.groupId : undefined;
-    if (currentScope.rootId === nextScope.rootId && currentGroupId === nextGroupId) {
-      return;
-    }
-    useResourceNavigationStore.getState().navigateToScope(nextScope);
-  }, [viewMode]);
-
   const isTrashView = viewMode === 'trash';
   const handleTrashRootError = (error: unknown) => {
     toast.danger(parseErrorMessage(error));
   };
 
-  const { data: trashFolderNodeId } = useRequest(() => driveService.getTrashFolderNodeId(), {
-    ready: isTrashView && !folderId,
-    refreshDeps: [viewMode, folderId],
-    onError: handleTrashRootError,
-  });
+  const { data: trashFolder } = useRequest(
+    () => driveService.getSystemFolder({ scope: driveScope, type: 'trash' }),
+    {
+      ready: isTrashView && !folderId,
+      refreshDeps: [viewMode, folderId],
+      onError: handleTrashRootError,
+    }
+  );
+  const trashFolderNodeId = trashFolder?.id;
 
   const handleCurrentNodeChange = (nodeId: string) => {
     navigate(buildDrivePath({ scope: driveScope, nodeId }));
@@ -84,7 +66,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
       navigate(DRIVE_TRASH_PATH);
       return;
     }
-    navigate(buildDrivePath({ scope: workspaceScope }));
+    navigate(buildDrivePath({ scope: driveScope }));
   };
 
   const handleViewModeSelectionChange = (key: Key) => {

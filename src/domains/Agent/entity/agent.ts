@@ -1,4 +1,4 @@
-import type { ResourceAction } from '@/domains/Resource';
+import type { ResourceAction, ResourceItem } from '@/domains/Resource';
 
 export type AgentAssetResourceType = 'MD' | 'PYTHON_SCRIPT' | 'TEXT' | 'JSON' | 'YAML' | 'TOML';
 
@@ -51,6 +51,7 @@ export interface AgentAsset {
 
 export interface AgentDetail {
   resourceId: string;
+  resourceInfo?: ResourceItem;
   title: string;
   name: string;
   description: string;

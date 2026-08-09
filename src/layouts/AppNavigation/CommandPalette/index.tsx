@@ -146,7 +146,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
 
   const { loading: preparingCreate, run: prepareCreate } = useRequest(
     async (type: CreateResourceType): Promise<PrepareCreateResult> => {
-      const root = await driveService.getRootNode();
+      const root = await driveService.getRoot();
       if (!root.canMountResources || !root.tagId) {
         throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
           reason: '个人云盘根目录不可挂载资源',
@@ -174,7 +174,9 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
           resourceId: result.resourceId,
           resourceType: RESOURCE_KIND.NOTE,
           resourceName: result.title,
-          driveLocation: { scope: result.root.scope, parentNodeId: result.root.id },
+          driveLocation: result.root.tagId
+            ? { scope: result.root.scope, mountTagId: result.root.tagId }
+            : undefined,
         });
       },
       onError: (error) => {
@@ -366,7 +368,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
         <DriveCreateModal
           type={createModalTarget.type}
           isOpen
-          parentId={createModalTarget.root.id}
+          parent={createModalTarget.root}
           pathTagId={createModalTarget.root.tagId}
           parentLabel={t('navigator.personalDrive', { ns: 'drive' })}
           onOpenChange={(open) => {
@@ -378,7 +380,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
             openResource({
               resourceId: createdId,
               resourceType: type,
-              driveLocation: { scope: root.scope, parentNodeId: root.id },
+              driveLocation: root.tagId ? { scope: root.scope, mountTagId: root.tagId } : undefined,
             });
           }}
         />

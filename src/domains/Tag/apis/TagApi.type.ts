@@ -35,12 +35,12 @@ export interface ChangeTagApiRequest extends Omit<AddTagApiRequest, 'parentId' |
   targetTagId: string;
 }
 
-export interface RemoveTagApiRequest {
+export interface RemoveTagsApiRequest {
   groupId?: string;
-  targetTagId: string;
+  targetTagIds: string[];
 }
 
-export interface MoveTagApiRequest extends RemoveTagApiRequest {
+export interface MoveTagsApiRequest extends RemoveTagsApiRequest {
   newParentId?: string;
 }
 

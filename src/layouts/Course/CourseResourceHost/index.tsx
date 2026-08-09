@@ -1,5 +1,4 @@
 import type { ResourceChatContext } from '@/components/ChatPanel/ResourceChatProtocol';
-import { buildDriveNodeScope } from '@/domains/Drive';
 import type { ResourceTarget } from '@/utils/navigation/resourceTarget';
 import {
   ResourceHostContext,
@@ -14,7 +13,6 @@ import styles from './style.module.less';
 
 interface CourseResourceHostProps {
   courseId: string;
-  groupId: string;
   target: ResourceTarget;
   layoutConfig: ResourceHostLayoutConfig;
   onTargetChange: (target: ResourceTarget) => void;
@@ -26,7 +24,6 @@ interface CourseResourceHostProps {
 
 function CourseResourceHost({
   courseId,
-  groupId,
   target,
   layoutConfig,
   onTargetChange,
@@ -52,7 +49,6 @@ function CourseResourceHost({
     hostId: `course:${courseId}:${target.resourceId ?? 'empty'}`,
     layoutConfig,
     routeContext: target,
-    getNavigationScope: () => buildDriveNodeScope(groupId),
     openResource,
     setLayoutConfig: onLayoutConfigChange,
     resetLayoutConfig,

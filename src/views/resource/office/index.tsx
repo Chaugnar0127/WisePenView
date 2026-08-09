@@ -66,6 +66,7 @@ function OfficeLayoutConfig({
             resourceId: resourceInfo.resourceId,
             resourceName: resourceInfo.resourceName,
             resourceType: resourceInfo.resourceType,
+            resourceInfo,
             currentActions: resourceInfo.currentActions,
             permissionResourceType: RESOURCE_KIND.FILE,
             ownerId: resourceInfo.ownerId,

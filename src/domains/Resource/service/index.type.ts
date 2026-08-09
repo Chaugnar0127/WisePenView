@@ -29,8 +29,12 @@ export interface IResourceService {
   getGroupResources(params: GetGroupResourceRequest): Promise<ResourceListPage>;
   renameResource(params: RenameResourceRequest): Promise<void>;
   removeResources(params: RemoveResourcesRequest): Promise<void>;
-  updateResourceTags(params: UpdateResourceTagsRequest): Promise<void>;
-  mountResourcesToGroupTag(params: MountResourcesToGroupTagRequest): Promise<void>;
+  setPersonalResourcesPathTag(params: SetPersonalResourcesPathTagRequest): Promise<number>;
+  movePersonalResourcesToTrash(params: MovePersonalResourcesToTrashRequest): Promise<number>;
+  replacePersonalNormalTags(params: ReplacePersonalNormalTagsRequest): Promise<number>;
+  mountResourcesToGroup(params: MountResourcesToGroupRequest): Promise<number>;
+  unmountResourcesToGroup(params: UnmountResourcesToGroupRequest): Promise<number>;
+  moveResourcesInGroup(params: MoveResourcesInGroupRequest): Promise<number>;
   updateResourceActionPermission(params: UpdateResourceActionPermissionRequest): Promise<void>;
   updateResourcePermissionSubjects(params: UpdateResourcePermissionSubjectsRequest): Promise<void>;
   /** 获取 View 直接消费的资源权限概览 */
@@ -79,20 +83,35 @@ export interface RemoveResourcesRequest {
   resourceIds: string[];
 }
 
-/** 更新资源标签（对齐 OpenAPI ResourceUpdateTagsRequest，POST /resource/item/changeResourceTags） */
-export interface UpdateResourceTagsRequest {
-  resourceId: string;
-  tagIds: string[];
-  groupId?: string;
-  /** 该资源在当前空间没有主挂载时，用目标标签初始化主挂载 */
-  primaryTagId?: string;
+export interface SetPersonalResourcesPathTagRequest {
+  resourceIds: string[];
+  targetPathTagId: string;
 }
 
-/** 上传/挂载资源到小组标签：后端按当前小组绑定决定初始化主挂载或追加 link */
-export interface MountResourcesToGroupTagRequest {
+export interface MovePersonalResourcesToTrashRequest {
+  resourceIds: string[];
+}
+
+export interface ReplacePersonalNormalTagsRequest {
+  resourceIds: string[];
+  normalTagIds: string[];
+}
+
+export interface MountResourcesToGroupRequest {
   resourceIds: string[];
   groupId: string;
-  tagId: string;
+  targetTagId: string;
+}
+
+export type ResourceSourceTagMap = Record<string, string>;
+
+export interface UnmountResourcesToGroupRequest {
+  groupId: string;
+  resourceSourceTagMap: ResourceSourceTagMap;
+}
+
+export interface MoveResourcesInGroupRequest extends UnmountResourcesToGroupRequest {
+  targetTagId: string;
 }
 
 /** 更新单个资源的动作权限配置 */

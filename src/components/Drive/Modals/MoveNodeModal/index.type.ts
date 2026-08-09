@@ -1,3 +1,4 @@
+import type { DriveContainerNode } from '@/domains/Drive';
 import type { DriveActionTarget } from '../../common/driveComponentModel';
 
 export interface MoveNodeModalProps {
@@ -7,5 +8,6 @@ export interface MoveNodeModalProps {
   groupId?: string;
   isTrashView?: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: (targetFolderNodeId: string) => void;
+  onSuccess?: (target: DriveContainerNode) => void;
+  onError?: () => void;
 }

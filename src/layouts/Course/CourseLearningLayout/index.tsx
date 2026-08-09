@@ -141,7 +141,6 @@ function CourseLearningLayout() {
                     <CourseResourceHost
                       key={selectedNode.nodeId}
                       courseId={course.courseId}
-                      groupId={course.courseId}
                       target={{
                         resourceId: selectedNode.resourceId,
                         resourceType: selectedNode.resourceType,

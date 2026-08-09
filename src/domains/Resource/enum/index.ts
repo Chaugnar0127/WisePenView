@@ -1,12 +1,6 @@
 import type { EnumKey, EnumValue } from '@/utils/enum';
 import { createEnum } from '@/utils/enum';
 
-/** 资源类型 */
-export const RESOURCE_TYPE = createEnum([
-  { value: 'note', key: 'NOTE', label: '笔记' },
-  { value: 'file', key: 'FILE', label: '文件' },
-] as const);
-
 /** 排序字段枚举 */
 export const RESOURCE_SORT_BY = createEnum([
   { value: 'UPDATE_TIME', key: 'UPDATE_TIME', label: '更新时间' },
@@ -35,7 +29,7 @@ export const SEARCH_SCOPE = createEnum([
 ] as const);
 
 /** 全文搜索可命中的资源细分类型：仅文档类 + 笔记（Skill/Agent 属 AI 资产，不进搜索）；小写值对齐后端 extension */
-export const SEARCH_RESOURCE_TYPE = createEnum([
+const SEARCH_RESOURCE_TYPE = createEnum([
   { value: 'note', key: 'NOTE', label: 'Note' },
   { value: 'drawio', key: 'DRAWIO', label: 'Draw.io 图' },
   { value: 'pdf', key: 'PDF', label: 'PDF' },

@@ -1,29 +1,25 @@
-import type { DriveNode } from '@/domains/Drive';
-import { buildLoadingNode } from '@/domains/Drive/mapper/DriveServices.map';
+import type { DriveContainerNode, DriveNode } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { buildDriveLoadingNode, type DriveViewNode } from './driveComponentModel';
 
 interface DrivePagedTreePageResult {
   nodes: DriveNode[];
-  page: number;
-  size: number;
   total: number;
-  hasMore: boolean;
+  nextCursor?: string;
 }
 
 interface DrivePagedTreePageParams {
-  nodeId: string;
-  page: number;
-  size?: number;
+  parent: DriveContainerNode;
+  cursor?: string;
+  pageSize?: number;
   refresh?: boolean;
-  mode: 'initial' | 'more';
 }
 
 interface DrivePagedTreePageState {
-  page: number;
-  size?: number;
+  cursor?: string;
   total: number;
   hasMore: boolean;
 }
@@ -31,42 +27,48 @@ interface DrivePagedTreePageState {
 interface UseDrivePagedTreeChildrenParams {
   pageSize?: number;
   loadPage: (params: DrivePagedTreePageParams) => Promise<DrivePagedTreePageResult>;
-  countLoaded?: (children: DriveNode[]) => number;
-  buildLoadingPlaceholder?: (nodeId: string, label: string) => DriveNode;
+  countLoaded?: (children: DriveViewNode[]) => number;
+  buildLoadingPlaceholder?: (parent: DriveContainerNode, label: string) => DriveViewNode;
 }
 
 interface UseDrivePagedTreeChildrenReturn {
-  childrenMap: Map<string, DriveNode[]>;
+  childrenMap: Map<string, DriveViewNode[]>;
   pageStateMap: Map<string, DrivePagedTreePageState>;
-  loadChildren: (nodeId: string, options?: { refresh?: boolean }) => Promise<DriveNode[]>;
-  loadMoreChildren: (nodeId: string) => Promise<DriveNode[]>;
+  getPageState: (nodeId: string) => DrivePagedTreePageState | undefined;
+  loadChildren: (
+    parent: DriveContainerNode,
+    options?: { refresh?: boolean }
+  ) => Promise<DriveViewNode[]>;
+  loadMoreChildren: (parent: DriveContainerNode) => Promise<DriveViewNode[]>;
   reset: () => void;
 }
 
-const DEFAULT_COUNT_LOADED = (children: DriveNode[]): number =>
+const DEFAULT_COUNT_LOADED = (children: DriveViewNode[]): number =>
   children.filter((node) => node.type !== 'loading').length;
 
 export function useDrivePagedTreeChildren({
   pageSize,
   loadPage,
   countLoaded = DEFAULT_COUNT_LOADED,
-  buildLoadingPlaceholder = (nodeId, label) => buildLoadingNode(nodeId, label),
+  buildLoadingPlaceholder = (parent, label) =>
+    buildDriveLoadingNode(parent.id, parent.scope, label),
 }: UseDrivePagedTreeChildrenParams): UseDrivePagedTreeChildrenReturn {
   const { t } = useTranslation('drive');
-  const [childrenMap, setChildrenMap] = useState<Map<string, DriveNode[]>>(new Map());
+  const [childrenMap, setChildrenMap] = useState<Map<string, DriveViewNode[]>>(new Map());
   const [pageStateMap, setPageStateMap] = useState<Map<string, DrivePagedTreePageState>>(new Map());
+  const pageStateMapRef = useRef<Map<string, DrivePagedTreePageState>>(new Map());
   const loadingMoreNodeIdsRef = useRef<Set<string>>(new Set());
 
   const appendLoadMoreNode = (
-    nodeId: string,
-    children: DriveNode[],
+    parent: DriveContainerNode,
+    children: DriveViewNode[],
     pageState: DrivePagedTreePageState
-  ): DriveNode[] => {
+  ): DriveViewNode[] => {
     if (!pageState.hasMore) return children;
     return [
       ...children,
       buildLoadingPlaceholder(
-        nodeId,
+        parent,
         t('node.loadMoreProgress', {
           loaded: countLoaded(children),
           total: pageState.total,
@@ -75,100 +77,92 @@ export function useDrivePagedTreeChildren({
     ];
   };
 
-  const setNodeChildren = (nodeId: string, children: DriveNode[]) => {
-    setChildrenMap((prev) => {
-      const next = new Map(prev);
-      next.set(nodeId, children);
-      return next;
-    });
+  const setNodeChildren = (nodeId: string, children: DriveViewNode[]) => {
+    setChildrenMap((prev) => new Map(prev).set(nodeId, children));
   };
 
   const setNodePageState = (nodeId: string, pageState: DrivePagedTreePageState) => {
-    setPageStateMap((prev) => {
-      const next = new Map(prev);
-      next.set(nodeId, pageState);
-      return next;
-    });
+    pageStateMapRef.current = new Map(pageStateMapRef.current).set(nodeId, pageState);
+    setPageStateMap((prev) => new Map(prev).set(nodeId, pageState));
   };
 
-  const toPageState = (result: DrivePagedTreePageResult): DrivePagedTreePageState => ({
-    page: result.page,
-    size: result.size,
-    total: result.total,
-    hasMore: result.hasMore,
-  });
-
   const loadChildren = async (
-    nodeId: string,
+    parent: DriveContainerNode,
     options?: { refresh?: boolean }
-  ): Promise<DriveNode[]> => {
-    setNodeChildren(nodeId, [buildLoadingPlaceholder(nodeId, t('node.loading'))]);
+  ): Promise<DriveViewNode[]> => {
+    setNodeChildren(parent.id, [buildLoadingPlaceholder(parent, t('node.loading'))]);
     try {
       const result = await loadPage({
-        nodeId,
-        page: 1,
-        size: pageSize,
+        parent,
+        pageSize,
         refresh: options?.refresh,
-        mode: 'initial',
       });
-      const pageState = toPageState(result);
-      setNodePageState(nodeId, pageState);
-      const children = appendLoadMoreNode(nodeId, result.nodes, pageState);
-      setNodeChildren(nodeId, children);
+      const pageState = {
+        cursor: result.nextCursor,
+        total: result.total,
+        hasMore: Boolean(result.nextCursor),
+      };
+      setNodePageState(parent.id, pageState);
+      const children = appendLoadMoreNode(parent, result.nodes, pageState);
+      setNodeChildren(parent.id, children);
       return children;
     } catch (err) {
       toast.danger(parseErrorMessage(err));
-      setNodeChildren(nodeId, []);
+      setNodeChildren(parent.id, []);
       return [];
     }
   };
 
-  const loadMoreChildren = async (nodeId: string): Promise<DriveNode[]> => {
-    const pageState = pageStateMap.get(nodeId);
-    const currentChildren = childrenMap.get(nodeId) ?? [];
-    if (!pageState?.hasMore) return currentChildren;
-    if (loadingMoreNodeIdsRef.current.has(nodeId)) return currentChildren;
+  const loadMoreChildren = async (parent: DriveContainerNode): Promise<DriveViewNode[]> => {
+    const pageState = pageStateMapRef.current.get(parent.id);
+    const currentChildren = childrenMap.get(parent.id) ?? [];
+    if (!pageState?.cursor || loadingMoreNodeIdsRef.current.has(parent.id)) return currentChildren;
 
-    loadingMoreNodeIdsRef.current.add(nodeId);
+    loadingMoreNodeIdsRef.current.add(parent.id);
     const stableChildren = currentChildren.filter((node) => node.type !== 'loading');
-    setNodeChildren(nodeId, [
+    setNodeChildren(parent.id, [
       ...stableChildren,
-      buildLoadingPlaceholder(nodeId, t('node.loading')),
+      buildLoadingPlaceholder(parent, t('node.loading')),
     ]);
     try {
       const result = await loadPage({
-        nodeId,
-        page: pageState.page + 1,
-        size: pageState.size ?? pageSize,
-        mode: 'more',
+        parent,
+        cursor: pageState.cursor,
+        pageSize,
       });
-      const nextPageState = toPageState(result);
-      setNodePageState(nodeId, nextPageState);
+      const nextPageState = {
+        cursor: result.nextCursor,
+        total: result.total,
+        hasMore: Boolean(result.nextCursor),
+      };
+      setNodePageState(parent.id, nextPageState);
       const nextChildren = appendLoadMoreNode(
-        nodeId,
+        parent,
         [...stableChildren, ...result.nodes],
         nextPageState
       );
-      setNodeChildren(nodeId, nextChildren);
+      setNodeChildren(parent.id, nextChildren);
       return nextChildren;
     } catch (err) {
       toast.danger(parseErrorMessage(err));
-      setNodeChildren(nodeId, currentChildren);
+      setNodeChildren(parent.id, currentChildren);
       return currentChildren;
     } finally {
-      loadingMoreNodeIdsRef.current.delete(nodeId);
+      loadingMoreNodeIdsRef.current.delete(parent.id);
     }
   };
 
   const reset = () => {
     setChildrenMap(new Map());
     setPageStateMap(new Map());
+    pageStateMapRef.current.clear();
     loadingMoreNodeIdsRef.current.clear();
   };
 
   return {
     childrenMap,
     pageStateMap,
+    getPageState: (nodeId) => pageStateMapRef.current.get(nodeId),
     loadChildren,
     loadMoreChildren,
     reset,

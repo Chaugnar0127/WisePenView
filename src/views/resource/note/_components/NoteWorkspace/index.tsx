@@ -240,6 +240,7 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
         resourceId,
         resourceName,
         resourceIconType: 'note',
+        resourceInfo: noteInfoDisplay.resourceInfo,
         currentActions: noteInfoDisplay.resourceInfo?.currentActions,
         copyVersion: noteInfoDisplay.version,
         permissionResourceType: RESOURCE_KIND.NOTE,

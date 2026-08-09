@@ -3,7 +3,7 @@ import type {
   ResourceChatContext,
   ResourceChatStateProvider,
 } from '@/components/ChatPanel/ResourceChatProtocol';
-import type { DriveNodeScope } from '@/domains/Drive';
+import type { DriveResourceLocation } from '@/domains/Drive';
 import type { ResourceItem } from '@/domains/Resource';
 import type { ResourceHeaderConfig } from '@/layouts/Resource/ResourceHeader/index.type';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
@@ -21,13 +21,7 @@ export interface OpenResourceTarget {
   resourceType?: string;
   resourceName?: string;
   viewer?: string;
-  driveLocation:
-    | { scope: DriveNodeScope }
-    | {
-        scope: DriveNodeScope;
-        parentNodeId: string;
-        nodeId?: string;
-      };
+  driveLocation?: DriveResourceLocation;
   replace?: boolean;
 }
 
@@ -62,13 +56,13 @@ export interface ResourceHostRouteContext {
   resourceId?: string;
   resourceType?: string;
   viewer?: string;
+  driveLocation?: DriveResourceLocation;
 }
 
 export interface ResourceHostContextValue {
   hostId: string;
   layoutConfig: ResourceHostLayoutConfig;
   routeContext: ResourceHostRouteContext;
-  getNavigationScope: () => DriveNodeScope;
   openResource: OpenResourceFn;
   setLayoutConfig: (config: ResourceHostLayoutConfig) => void;
   resetLayoutConfig: () => void;

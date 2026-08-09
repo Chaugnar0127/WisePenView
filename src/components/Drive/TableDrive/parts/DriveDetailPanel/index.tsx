@@ -66,7 +66,7 @@ function resolveResourceInfoFromNode(row: DriveTableRow): ResourceItem | undefin
     preview: node.description,
     size: node.size,
     resourceIconType: node.resourceIconType,
-    mainTagId: node.type === 'link' ? node.primaryTagId : node.folderTagId,
+    mainTagId: node.type === 'link' ? node.primaryTagId : node.mountTagId,
     currentActions: node.currentActions,
     resourceAccessRole: node.resourceAccessRole,
   };

@@ -2,7 +2,6 @@ import { resolveResourceIconType, type ResourceItem } from '@/domains/Resource';
 import type { TagTreeNode } from '@/domains/Tag';
 import { normalizeTagGroupId } from '@/utils/normalize/normalizeTagGroupId';
 import type {
-  DriveNode,
   DriveNodeScope,
   DriveSystemFolderType,
   FolderNode,
@@ -13,34 +12,37 @@ import type {
 
 export const DRIVE_ROOT_ID = 'drive-root';
 export const DRIVE_SHARED_TAG_NAME = '.Shared';
+export const DRIVE_TRASH_TAG_NAME = '.Trash';
 const DRIVE_GROUP_ROOT_PREFIX = 'drive-root:group:';
 
-export type EncodedNodeKind = 'folder' | 'resource' | 'link' | 'loading';
+type EncodedNodeKind = 'folder' | 'resource' | 'link';
 
 type DecodedNodeId =
   | { kind: 'root'; groupId?: string }
   | { kind: 'folder'; tagId: string }
   | { kind: 'resource'; resourceId: string; parentTagId: string }
   | { kind: 'link'; resourceId: string; parentTagId: string }
-  | { kind: 'loading'; parentNodeId: string }
   | { kind: 'unknown'; raw: string };
 
 const getFolderName = (tagName: string): string => {
-  if (tagName === '/' || tagName === DRIVE_SHARED_TAG_NAME) return '';
+  if (tagName === '/' || tagName === DRIVE_SHARED_TAG_NAME || tagName === DRIVE_TRASH_TAG_NAME) {
+    return '';
+  }
   if (tagName.startsWith('/')) return tagName.slice(1);
   return tagName;
 };
 
 const resolveSystemFolderType = (tagName: string): DriveSystemFolderType | undefined => {
+  if (tagName === DRIVE_TRASH_TAG_NAME) return 'trash';
   if (tagName === DRIVE_SHARED_TAG_NAME) return 'shared';
   return undefined;
 };
 
-export const encodeNodeId = (kind: EncodedNodeKind, ...parts: string[]): string => {
+const encodeNodeId = (kind: EncodedNodeKind, ...parts: string[]): string => {
   return [kind, ...parts].join(':');
 };
 
-export const encodeRootNodeId = (groupId?: string): string => {
+const encodeRootNodeId = (groupId?: string): string => {
   const normalizedGroupId = normalizeTagGroupId(groupId);
   return normalizedGroupId ? `${DRIVE_GROUP_ROOT_PREFIX}${normalizedGroupId}` : DRIVE_ROOT_ID;
 };
@@ -75,7 +77,6 @@ export const decodeNodeId = (id: string): DecodedNodeId => {
   if (kind === 'link' && parts[0] && parts[1]) {
     return { kind: 'link', resourceId: parts[0], parentTagId: parts[1] };
   }
-  if (kind === 'loading' && parts[0]) return { kind: 'loading', parentNodeId: parts[0] };
   return { kind: 'unknown', raw: id };
 };
 
@@ -89,7 +90,8 @@ export const decodeRootNodeScope = (rootId?: string, fallbackGroupId?: string): 
 export const mapTagToFolderNode = (
   tag: TagTreeNode,
   parentNodeId: string | null,
-  scope: DriveNodeScope
+  scope: DriveNodeScope,
+  ancestorTagIds: string[] = []
 ): FolderNode => {
   return {
     id: encodeNodeId('folder', tag.tagId),
@@ -104,7 +106,7 @@ export const mapTagToFolderNode = (
     taggedResourceAclGrantScope: tag.taggedResourceAclGrantScope,
     tagMountPermissionScope: tag.tagMountPermissionScope,
     grantedActions: tag.grantedActions,
-    childrenIds: [],
+    ancestorTagIds,
   };
 };
 
@@ -127,7 +129,8 @@ export const mapResourceItemToChildNode = (
   item: ResourceItem,
   parentTagId: string,
   parentNodeId: string,
-  scope: DriveNodeScope
+  scope: DriveNodeScope,
+  primaryTagId = item.mainTagId
 ): ResourceNode | LinkNode => {
   const common = {
     parentId: parentNodeId,
@@ -142,10 +145,9 @@ export const mapResourceItemToChildNode = (
     currentActions: item.currentActions,
     resourceAccessRole: item.resourceAccessRole,
     resourceIconType: item.resourceIconType ?? resolveResourceIconType(item.resourceType),
-    folderTagId: parentTagId,
+    mountTagId: parentTagId,
   } as const;
-  const isPrimaryMount = item.mainTagId == null || item.mainTagId === parentTagId;
-  if (isPrimaryMount) {
+  if (scope.type === 'personal' || primaryTagId == null || primaryTagId === parentTagId) {
     return {
       id: encodeNodeId('resource', item.resourceId, parentTagId),
       type: 'resource',
@@ -155,22 +157,9 @@ export const mapResourceItemToChildNode = (
   return {
     id: encodeNodeId('link', item.resourceId, parentTagId),
     type: 'link',
-    primaryTagId: item.mainTagId,
+    primaryTagId,
     ...common,
-  };
-};
-
-export const buildLoadingNode = (
-  parentNodeId: string,
-  label?: string,
-  scope: DriveNodeScope = buildDriveNodeScope()
-): DriveNode => {
-  return {
-    id: encodeNodeId('loading', parentNodeId),
-    type: 'loading',
-    parentId: parentNodeId,
     scope,
-    label,
   };
 };
 
@@ -186,13 +175,7 @@ export const buildDriveRootNode = (params: {
     parentId: null,
     scope,
     tagId: params.personalRootTag?.tagId,
-    isVirtual: isGroupRoot,
     canMountResources: !isGroupRoot && Boolean(params.personalRootTag?.tagId),
     name: '',
-    childrenIds: [],
   };
-};
-
-export const isContainerNode = (node: DriveNode): node is RootNode | FolderNode => {
-  return node.type === 'root' || node.type === 'folder';
 };

@@ -13,6 +13,15 @@ import type {
   ResourceListPageApiResponse,
   ResourceSpecifiedUserGrantedActionsApiResponse,
 } from '../apis/ResourceApi.type';
+import type {
+  MountResourcesToGroupApiRequest,
+  MovePersonalResourcesToTrashApiRequest,
+  MoveResourcesInGroupApiRequest,
+  ReplacePersonalNormalTagsApiRequest,
+  ResourcePlacementApiResponse,
+  SetPersonalResourcesPathTagApiRequest,
+  UnmountResourcesToGroupApiRequest,
+} from '../apis/ResourcePlacementApi.type';
 import {
   areResourcePermissionActionsEqual,
   coerceResourceActions,
@@ -29,6 +38,10 @@ import {
 } from '../enum';
 import type {
   GetUserResourcesRequest,
+  MountResourcesToGroupRequest,
+  MovePersonalResourcesToTrashRequest,
+  MoveResourcesInGroupRequest,
+  ReplacePersonalNormalTagsRequest,
   ResourceListPage,
   ResourcePermissionActionOption,
   ResourcePermissionGroupInfo,
@@ -38,6 +51,8 @@ import type {
   ResourcePermissionUserInfo,
   SearchHitItem,
   SearchResultPage,
+  SetPersonalResourcesPathTagRequest,
+  UnmountResourcesToGroupRequest,
   UpdateResourceActionPermissionRequest,
   UpdateResourcePermissionSubjectsRequest,
 } from '../service/index.type';
@@ -86,6 +101,52 @@ const mapListResourceItemsRequest = (
   };
 };
 
+const mapSetPersonalResourcesPathTagRequest = (
+  params: SetPersonalResourcesPathTagRequest
+): SetPersonalResourcesPathTagApiRequest => ({
+  resourceIds: params.resourceIds,
+  targetPathTagId: params.targetPathTagId,
+});
+
+const mapMovePersonalResourcesToTrashRequest = (
+  params: MovePersonalResourcesToTrashRequest
+): MovePersonalResourcesToTrashApiRequest => ({
+  resourceIds: params.resourceIds,
+});
+
+const mapReplacePersonalNormalTagsRequest = (
+  params: ReplacePersonalNormalTagsRequest
+): ReplacePersonalNormalTagsApiRequest => ({
+  resourceIds: params.resourceIds,
+  normalTagIds: params.normalTagIds,
+});
+
+const mapMountResourcesToGroupRequest = (
+  params: MountResourcesToGroupRequest
+): MountResourcesToGroupApiRequest => ({
+  resourceIds: params.resourceIds,
+  groupId: params.groupId,
+  targetTagId: params.targetTagId,
+});
+
+const mapUnmountResourcesToGroupRequest = (
+  params: UnmountResourcesToGroupRequest
+): UnmountResourcesToGroupApiRequest => ({
+  groupId: params.groupId,
+  resourceSourceTagMap: params.resourceSourceTagMap,
+});
+
+const mapMoveResourcesInGroupRequest = (
+  params: MoveResourcesInGroupRequest
+): MoveResourcesInGroupApiRequest => ({
+  groupId: params.groupId,
+  resourceSourceTagMap: params.resourceSourceTagMap,
+  targetTagId: params.targetTagId,
+});
+
+const mapResourcePlacementCountFromApi = (data: ResourcePlacementApiResponse): number =>
+  data.resourceCount;
+
 const resolveCurrentTagBind = (
   item: ResourceItem,
   context: MapResourceItemContext
@@ -122,13 +183,6 @@ const mapMyInteractionFromApi = (
   if (!interaction) return undefined;
   return {
     read: interaction.read === true,
-    liked: interaction.liked === true,
-    score: normalizeNonNegativeNumber(interaction.score),
-    likedCommentIds: Array.isArray(interaction.likedCommentIds)
-      ? interaction.likedCommentIds.filter((commentId): commentId is string =>
-          Boolean(commentId?.trim())
-        )
-      : [],
   };
 };
 
@@ -192,8 +246,6 @@ const mapResourceItemFromApi = (
   context: MapResourceItemContext = {}
 ): ResourceItem => {
   const interactionInfo = raw.resourceInteractionInfo;
-  const scoreCount = normalizeNonNegativeNumber(interactionInfo?.scoreCount) ?? 0;
-  const scoreTotal = normalizeNonNegativeNumber(interactionInfo?.scoreTotal) ?? 0;
   const item: ResourceItem = {
     resourceId: raw.resourceId,
     resourceName: raw.resourceName,
@@ -203,7 +255,6 @@ const mapResourceItemFromApi = (
     preview: raw.preview,
     // 后端 resourceInfo.size 当前以字符串返回，前端统一归一化为 number。
     size: normalizeNonNegativeNumber(raw.size),
-    path: raw.path,
     tagBinds: mapResourceTagBindsFromApi(raw.tagBinds),
     currentActions: coerceResourceActions(raw.currentActions),
     resourceAccessRole: raw.resourceAccessRole,
@@ -212,8 +263,6 @@ const mapResourceItemFromApi = (
     readCount: normalizeNonNegativeNumber(interactionInfo?.readCount),
     likeCount: normalizeNonNegativeNumber(interactionInfo?.likeCount),
     favoriteCount: normalizeNonNegativeNumber(interactionInfo?.favoriteCount),
-    commentCount: normalizeNonNegativeNumber(interactionInfo?.commentCount),
-    scoreAvg: scoreCount > 0 ? scoreTotal / scoreCount : null,
     myInteraction: mapMyInteractionFromApi(raw.myInteractionRecord),
   };
   const currentTagBind = resolveCurrentTagBind(item, context);
@@ -226,7 +275,6 @@ const mapResourceItemFromApi = (
     currentTags,
     resourceIconType: resolveResourceIconType(item.resourceType),
     mainTagId,
-    linkTagIds: mainTagId ? tagIds.filter((tagId) => tagId !== mainTagId) : tagIds.slice(1),
   };
 };
 
@@ -582,7 +630,7 @@ const mergeResourcePermissionSubject = (
   );
 };
 
-export const mergeResourcePermissionHydration = (
+const mergeResourcePermissionHydration = (
   overview: ResourcePermissionOverview,
   hydration: ResourcePermissionHydration
 ): ResourcePermissionOverview => {
@@ -635,6 +683,13 @@ const mapSearchResultPageFromApi = (data: GlobalSearchApiResponse): SearchResult
 
 export const ResourceServicesMap = {
   mapListResourceItemsRequest,
+  mapSetPersonalResourcesPathTagRequest,
+  mapMovePersonalResourcesToTrashRequest,
+  mapReplacePersonalNormalTagsRequest,
+  mapMountResourcesToGroupRequest,
+  mapUnmountResourcesToGroupRequest,
+  mapMoveResourcesInGroupRequest,
+  mapResourcePlacementCountFromApi,
   mapResourceListPageFromApi,
   mapResourceItemFromApi,
   mapChangeResourceActionPermissionRequest,

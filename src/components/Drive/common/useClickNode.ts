@@ -32,8 +32,7 @@ export const useClickNode = ({ enterFolder }: UseClickNodeParams) => {
       viewer,
       driveLocation: {
         scope: node.scope,
-        nodeId: node.id,
-        parentNodeId: node.parentId,
+        mountTagId: node.mountTagId,
       },
     });
   };

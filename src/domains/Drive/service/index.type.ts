@@ -1,115 +1,123 @@
-import type { DriveNode, FolderNode, LinkNode, ResourceNode, RootNode } from '../entity/drive';
+import type { ResourceItem } from '@/domains/Resource';
+import type {
+  DriveContainerNode,
+  DriveMutableNode,
+  DriveNodeScope,
+  DriveResourceLocation,
+  DriveResourceNode,
+  DriveSystemFolderType,
+  FolderNode,
+  LinkNode,
+  ResourceNode,
+  RootNode,
+} from '../entity/drive';
 
 export interface IDriveService {
-  /**
-   * 获取某个 Drive scope 的根节点。
-   * - 个人盘 root 抽象为 ~/，背后绑定唯一顶层 root tag，可挂载资源。
-   * - 小组 root 抽象为 group 本身，是虚拟容器，不可直接挂载资源。
-   */
-  getRootNode(params?: GetRootNodeParams): Promise<RootNode>;
-  /** 获取当前 scope 的回收站文件夹节点 ID；系统目录缺失时抛出客户端错误。 */
-  getTrashFolderNodeId(groupId?: string): Promise<string>;
-  /** 仅获取直接子文件夹，用于侧边栏、移动弹窗等目录导航场景。 */
-  listFolderChildren(params: ListFolderChildrenParams): Promise<FolderNode[]>;
-  /** 获取目录直接子节点页；文件夹完整返回，资源/link 按页返回。 */
-  listNodeChildrenPage(params: ListNodeChildrenPageParams): Promise<ListNodeChildrenPageResult>;
+  getRoot(params?: GetDriveRootParams): Promise<RootNode>;
+  getSystemFolder(params: GetDriveSystemFolderParams): Promise<FolderNode>;
+  loadNodeChildren(params: LoadDriveNodeChildrenParams): Promise<DriveNodeChildrenPage>;
   getNodePath(params: GetNodePathParams): Promise<Array<RootNode | FolderNode>>;
-  /** 按当前父目录定位资源挂载，供资源详情页识别主文件与 link。 */
-  getResourceNode(params: GetResourceNodeParams): Promise<ResourceNode | LinkNode | undefined>;
-  moveToFolder(params: MoveToFolderParams): Promise<void>;
-  /** 为主文件在同一 scope 的目标目录创建 link。 */
-  createLink(params: CreateLinkParams): Promise<void>;
-  /** 批量移动并返回实际改变父目录的节点数。 */
-  moveNodesToFolder(params: MoveNodesToFolderParams): Promise<number>;
-  removeNode(params: RemoveNodeParams): Promise<void>;
+  getMountPath(params: GetMountPathParams): Promise<Array<RootNode | FolderNode>>;
+  resolveResourceNode(params: ResolveResourceNodeParams): Promise<DriveResourceNode>;
+
+  createFolder(params: CreateFolderParams): Promise<FolderNode>;
   renameNode(params: RenameNodeParams): Promise<void>;
-  createFolder(params: CreateFolderParams): Promise<string>;
+
+  setPersonalResourcesLocation(
+    params: SetPersonalResourcesLocationParams
+  ): Promise<DriveBatchOperationResult>;
+  addResourcesToGroup(params: AddResourcesToGroupParams): Promise<DriveBatchOperationResult>;
+  moveNodes(params: MoveNodesParams): Promise<DriveBatchOperationResult>;
+  moveNodesToTrash(params: MoveNodesToTrashParams): Promise<DriveBatchOperationResult>;
+  removeNodesFromGroup(params: RemoveNodesFromGroupParams): Promise<DriveBatchOperationResult>;
+  deleteTrashedNodes(params: DeleteTrashedNodesParams): Promise<DriveBatchOperationResult>;
 }
 
-export interface GetRootNodeParams {
+export interface GetDriveRootParams {
   rootId?: string;
   groupId?: string;
 }
 
-export interface ListFolderChildrenParams {
-  nodeId: string;
-  groupId?: string;
-  /** 强制刷新底层目录树缓存，适用于用户点击展开等实时性入口。 */
+export interface GetDriveSystemFolderParams {
+  scope: DriveNodeScope;
+  type: DriveSystemFolderType;
+}
+
+export interface LoadDriveNodeChildrenParams {
+  parent: DriveContainerNode;
+  cursor?: string;
+  pageSize?: number;
+  kinds?: Array<'folder' | 'resource' | 'link'>;
   refresh?: boolean;
 }
 
-export interface ListNodeChildrenPageParams {
-  nodeId: string;
-  groupId?: string;
-  /** 资源/link 页码，从 1 开始。 */
-  resourcePage?: number;
-  /** 资源/link 每页数量。 */
-  resourceSize?: number;
-  /** 是否同时返回直接子文件夹；滚底追加页可关闭。 */
-  includeFolders?: boolean;
-  /** 强制刷新底层目录树缓存，适用于用户点击展开等实时性入口。 */
-  refresh?: boolean;
-}
-
-export interface ListNodeChildrenPageResult {
-  nodes: DriveNode[];
+export interface DriveNodeChildrenPage {
   folderNodes: FolderNode[];
-  resourceNodes: Array<ResourceNode | LinkNode>;
-  resourcePage: number;
-  resourceSize: number;
+  resourceNodes: DriveResourceNode[];
+  folderTotal: number;
   resourceTotal: number;
-  resourceTotalPage: number;
-  hasMoreResources: boolean;
+  total: number;
+  nextCursor?: string;
 }
 
 export interface GetNodePathParams {
   nodeId: string;
-  groupId?: string;
+  scope: DriveNodeScope;
 }
 
-export interface GetResourceNodeParams {
-  resourceId: string;
-  parentNodeId: string;
-  nodeId?: string;
-  groupId?: string;
+export interface GetMountPathParams {
+  location: DriveResourceLocation;
 }
 
-export interface CreateLinkParams {
-  nodeId: string;
-  targetFolderNodeId: string;
-  groupId?: string;
-}
-
-export interface MoveToFolderParams {
-  nodeId: string;
-  targetFolderNodeId: string;
-  groupId?: string;
-}
-
-export interface MoveNodesToFolderParams {
-  nodeIds: string[];
-  targetFolderNodeId: string;
-  groupId?: string;
-}
-
-export interface RemoveNodeParams {
-  nodeId: string;
-  groupId?: string;
-}
-
-export interface RenameNodeParams {
-  nodeId: string;
-  newName: string;
-  groupId?: string;
+export interface ResolveResourceNodeParams {
+  resource: ResourceItem;
+  location: DriveResourceLocation;
 }
 
 export interface CreateFolderParams {
-  parentId: string;
+  parent: DriveContainerNode;
   name: string;
-  groupId?: string;
 }
 
-/** Service 工厂选项：默认 pageSize = 50 */
+export interface RenameNodeParams {
+  node: DriveMutableNode;
+  newName: string;
+}
+
+export interface SetPersonalResourcesLocationParams {
+  resourceIds: string[];
+  target: DriveContainerNode;
+}
+
+export interface AddResourcesToGroupParams {
+  resourceIds: string[];
+  target: FolderNode;
+}
+
+export interface MoveNodesParams {
+  nodes: DriveMutableNode[];
+  target: DriveContainerNode;
+}
+
+export interface MoveNodesToTrashParams {
+  nodes: DriveMutableNode[];
+}
+
+export interface RemoveNodesFromGroupParams {
+  nodes: DriveMutableNode[];
+}
+
+export interface DeleteTrashedNodesParams {
+  nodes: DriveMutableNode[];
+}
+
+export interface DriveBatchOperationResult {
+  requestedCount: number;
+  affectedCount: number;
+}
+
 export interface CreateDriveServiceOptions {
   pageSize?: number;
 }
+
+export type { DriveContainerNode, DriveMutableNode, LinkNode, ResourceNode, RootNode };

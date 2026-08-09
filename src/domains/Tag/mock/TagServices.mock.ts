@@ -1,10 +1,4 @@
-import type { ResourceItem } from '@/domains/Resource';
-import type {
-  GetResByTagRequest,
-  ITagService,
-  TagListByTagResponse,
-  TagTreeNode,
-} from '@/domains/Tag';
+import type { ITagService, TagTreeNode } from '@/domains/Tag';
 import { TAG_META_SCHEMA } from '@/domains/Tag';
 import { TagServicesMap } from '../mapper/TagServices.map';
 import mockdata from './mockdata.json';
@@ -26,65 +20,6 @@ const buildFlatMap = (roots: TagTreeNode[]): Map<string, TagTreeNode> => {
   };
   roots.forEach(walk);
   return map;
-};
-
-const mockFilesByTagId: Record<string, ResourceItem[]> = {
-  'tag-work': [
-    {
-      resourceId: 'res-w-001',
-      resourceName: '工作计划.docx',
-      ownerInfo: {},
-      resourceType: 'DOCX',
-      size: 15360,
-      currentTags: { 'tag-work': '工作' },
-    },
-    {
-      resourceId: 'res-w-002',
-      resourceName: '会议总结',
-      ownerInfo: {},
-      resourceType: 'NOTE',
-      size: 4096,
-      currentTags: { 'tag-work': '工作' },
-    },
-  ],
-  'tag-work-project-a': [
-    {
-      resourceId: 'res-pa-001',
-      resourceName: '项目A需求文档.md',
-      ownerInfo: {},
-      resourceType: 'NOTE',
-      size: 8192,
-      currentTags: { 'tag-work-project-a': '项目A' },
-    },
-  ],
-  'tag-study-tech': [
-    {
-      resourceId: 'res-st-001',
-      resourceName: 'React笔记',
-      ownerInfo: {},
-      resourceType: 'NOTE',
-      size: 6144,
-      currentTags: { 'tag-study-tech': '技术' },
-    },
-    {
-      resourceId: 'res-st-002',
-      resourceName: 'TypeScript手册.pdf',
-      ownerInfo: {},
-      resourceType: 'PDF',
-      size: 102400,
-      currentTags: { 'tag-study-tech': '技术' },
-    },
-  ],
-  'tag-life-reading': [
-    {
-      resourceId: 'res-lr-001',
-      resourceName: '2024书单',
-      ownerInfo: {},
-      resourceType: 'NOTE',
-      size: 3072,
-      currentTags: { 'tag-life-reading': '阅读' },
-    },
-  ],
 };
 
 const getTagTree = async (): Promise<TagTreeNode[]> => {
@@ -111,33 +46,6 @@ const getRawTagById = (tagId: string): TagTreeNode | undefined => {
   return flatMap.get(tagId);
 };
 
-const getTrashTagId = (): string | undefined => {
-  const nodes = [...tagTree];
-  while (nodes.length > 0) {
-    const node = nodes.shift();
-    if (!node) continue;
-    if (node.tagName === '.Trash') return node.tagId;
-    nodes.push(...(node.children ?? []));
-  }
-  return undefined;
-};
-
-const getResByTag = async (params: GetResByTagRequest): Promise<TagListByTagResponse> => {
-  await delay(250);
-  if (!flatMap) flatMap = buildFlatMap(tagTree);
-  const tag = flatMap.get(params.tag.tagId);
-  const tags = tag?.children ?? [];
-  const allFiles = mockFilesByTagId[params.tag.tagId] ?? [];
-  const totalFiles = allFiles.length;
-
-  const page = params.filePage ?? 1;
-  const pageSize = params.filePageSize ?? 20;
-  const start = (page - 1) * pageSize;
-  const files = allFiles.slice(start, start + pageSize);
-
-  return { tags, files, totalFiles };
-};
-
 const updateTag = async (): Promise<void> => {
   await delay(150);
 };
@@ -147,11 +55,11 @@ const addTag = async (): Promise<string> => {
   return 'tag-new-id';
 };
 
-const deleteTag = async (): Promise<void> => {
+const removeTags = async (): Promise<void> => {
   await delay(150);
 };
 
-const moveTag = async (): Promise<void> => {
+const moveTags = async (): Promise<void> => {
   await delay(150);
 };
 
@@ -176,11 +84,9 @@ export const TagServicesMock: ITagService = {
   getRawTagById,
   getTagTree,
   getTagById,
-  getTrashTagId,
-  getResByTag,
   updateTag,
   addTag,
-  deleteTag,
-  moveTag,
+  removeTags,
+  moveTags,
   reorderSiblingTags,
 };

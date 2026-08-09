@@ -7,7 +7,7 @@ import { AuthServicesMock } from '@/domains/Auth/mock/AuthServices.mock';
 import { createChatServicesMock } from '@/domains/Chat/mock/ChatServices.mock';
 import { createCourseServicesMock } from '@/domains/Course/mock/CourseServices.mock';
 import { DocumentServicesMock } from '@/domains/Document/mock/DocumentServices.mock';
-import { DriveServicesMock } from '@/domains/Drive/mock/DriveServices.mock';
+import { createDriveServicesMock } from '@/domains/Drive/mock/DriveServices.mock';
 import { GroupServicesMock } from '@/domains/Group/mock/GroupServices.mock';
 import { ImageServicesMock } from '@/domains/Image/mock/ImageServices.mock';
 import { InlineCommentServicesMock } from '@/domains/InlineComment/mock/InlineCommentServices.mock';
@@ -26,6 +26,10 @@ import type { ServicesContextValue } from './registry.types';
 
 const chatService = createChatServicesMock();
 const courseService = createCourseServicesMock();
+const driveService = createDriveServicesMock({
+  resourceService: ResourceServicesMock,
+  tagService: TagServicesMock,
+});
 
 const mockServicesValue: ServicesContextValue = {
   adminService: AdminServicesMock,
@@ -34,7 +38,7 @@ const mockServicesValue: ServicesContextValue = {
   chatService: chatService,
   courseService: courseService,
   documentService: DocumentServicesMock,
-  driveService: DriveServicesMock,
+  driveService,
   groupService: GroupServicesMock,
   imageService: ImageServicesMock,
   inlineCommentService: InlineCommentServicesMock,

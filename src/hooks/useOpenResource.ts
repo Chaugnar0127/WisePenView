@@ -1,7 +1,6 @@
 import { usePdfPreviewProgressStore } from '@/components/PdfViewer/_store/usePdfPreviewProgressStore';
-import { buildDriveNodeScope, type DriveNodeScope } from '@/domains/Drive';
-import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
-import { buildResourcePath } from '@/utils/navigation/appRoute';
+import type { DriveResourceLocation } from '@/domains/Drive';
+import { buildResourcePath } from '@/utils/navigation/resourceRoute';
 import {
   RESOURCE_VIEWER,
   resolveResourceKind,
@@ -17,13 +16,7 @@ export interface OpenResourceNavigationTarget {
   resourceType?: string;
   resourceName?: string;
   viewer?: ResourceViewer | string;
-  driveLocation?:
-    | { scope: DriveNodeScope }
-    | {
-        scope: DriveNodeScope;
-        parentNodeId: string;
-        nodeId?: string;
-      };
+  driveLocation?: DriveResourceLocation;
   replace?: boolean;
 }
 
@@ -54,28 +47,17 @@ export const useOpenResource = (): OpenResourceNavigationFn => {
     const resourceId = target.resourceId.trim();
     if (!resourceId) return;
 
-    const navigationStore = useResourceNavigationStore.getState();
-    const driveLocation = target.driveLocation;
-    const scope = driveLocation?.scope ?? buildDriveNodeScope();
-    if (driveLocation && 'parentNodeId' in driveLocation) {
-      navigationStore.navigateToResource({
-        scope,
-        resource: {
-          resourceId,
-          parentNodeId: driveLocation.parentNodeId,
-          ...(driveLocation.nodeId ? { nodeId: driveLocation.nodeId } : {}),
-        },
-      });
-    } else {
-      navigationStore.navigateToScope(scope);
-    }
-
     const resourceType = resolveResourceKind(target.resourceType);
     const viewer = resolveResourceViewer({
       resourceType: target.resourceType ?? resourceType,
       viewer: target.viewer,
     });
-    const basePath = buildResourcePath({ resourceType, resourceId, viewer });
+    const basePath = buildResourcePath({
+      resourceType,
+      resourceId,
+      viewer,
+      driveLocation: target.driveLocation,
+    });
     const path = appendPdfPreviewProgress(basePath, resourceId, viewer);
 
     startTransition(() => {

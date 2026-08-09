@@ -1,10 +1,13 @@
 import { replaceDriveTreeNodeChildren } from '@/components/Drive/common/buildDriveTreeData';
-import { getDriveScopeGroupId } from '@/components/Drive/common/driveComponentModel';
+import {
+  buildDriveLoadingNode,
+  getDriveScopeGroupId,
+  type DriveViewNode,
+} from '@/components/Drive/common/driveComponentModel';
 import { useDrivePagedTreeChildren } from '@/components/Drive/common/useDrivePagedTreeChildren';
 import type { DataNode } from '@/components/Tree';
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
-import { buildLoadingNode } from '@/domains/Drive/mapper/DriveServices.map';
 import { useSidebarDriveExpansionStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveExpansionStore';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
@@ -16,7 +19,7 @@ const SIDEBAR_DRIVE_RESOURCE_PAGE_SIZE = 50;
 
 interface SidebarTreeLoadResult {
   treeData: DataNode[];
-  nodeMap: Map<string, DriveNode>;
+  nodeMap: Map<string, DriveViewNode>;
   expandedKeys: Key[];
 }
 
@@ -29,8 +32,8 @@ interface UseSidebarDriveTreeControllerOptions {
   scope: DriveNodeScope;
   rootDisplayName?: string;
   buildTreeData: (
-    nodes: DriveNode[],
-    nodeMap: Map<string, DriveNode>,
+    nodes: DriveViewNode[],
+    nodeMap: Map<string, DriveViewNode>,
     controls: SidebarDriveTreeControls
   ) => DataNode[];
   onOpenResource: (node: Extract<DriveNode, { type: 'resource' | 'link' }>) => void;
@@ -45,32 +48,29 @@ export function useSidebarDriveTreeController({
   const driveService = useDriveService();
   const expansionScopeKey = scope.rootId;
   const groupId = getDriveScopeGroupId(scope);
-  const [nodeMap, setNodeMap] = useState<Map<string, DriveNode>>(new Map());
+  const [nodeMap, setNodeMap] = useState<Map<string, DriveViewNode>>(new Map());
   const [treeData, setTreeData] = useState<DataNode[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const { loadChildren, loadMoreChildren, reset } = useDrivePagedTreeChildren({
     pageSize: SIDEBAR_DRIVE_RESOURCE_PAGE_SIZE,
-    loadPage: async ({ nodeId, page, size, refresh, mode }) => {
-      const result = await driveService.listNodeChildrenPage({
-        nodeId,
-        groupId,
-        resourcePage: page,
-        resourceSize: size,
-        includeFolders: mode === 'initial',
+    loadPage: async ({ parent, cursor, pageSize, refresh }) => {
+      const result = await driveService.loadNodeChildren({
+        parent,
+        cursor,
+        pageSize,
         refresh,
       });
       return {
-        nodes: mode === 'initial' ? result.nodes : result.resourceNodes,
-        page: result.resourcePage,
-        size: result.resourceSize,
-        total: result.resourceTotal,
-        hasMore: result.hasMoreResources,
+        nodes: [...result.folderNodes, ...result.resourceNodes],
+        total: result.total,
+        nextCursor: result.nextCursor,
       };
     },
     countLoaded: (children) =>
       children.filter((node) => node.type === 'resource' || node.type === 'link').length,
-    buildLoadingPlaceholder: (nodeId, label) => buildLoadingNode(nodeId, label, scope),
+    buildLoadingPlaceholder: (parent, label) =>
+      buildDriveLoadingNode(parent.id, parent.scope, label),
   });
   const handleCollapseAll = () => {
     setExpandedKeys([]);
@@ -91,12 +91,12 @@ export function useSidebarDriveTreeController({
 
   const { loading: treeLoading, refresh: refreshTree } = useRequest(
     async (): Promise<SidebarTreeLoadResult> => {
-      const nextNodeMap = new Map<string, DriveNode>();
+      const nextNodeMap = new Map<string, DriveViewNode>();
       const expandedNodeIds = new Set(
         useSidebarDriveExpansionStore.getState().expandedNodeIdsByScope[expansionScopeKey] ?? []
       );
-      const rootNode = await driveService.getRootNode({ rootId: scope.rootId, groupId });
-      const rootChildren = await loadChildren(rootNode.id);
+      const rootNode = await driveService.getRoot({ rootId: scope.rootId, groupId });
+      const rootChildren = await loadChildren(rootNode);
       const baseRoot = buildTreeData([rootNode], nextNodeMap, treeControls)[0];
       if (!baseRoot) {
         return {
@@ -106,13 +106,13 @@ export function useSidebarDriveTreeController({
         };
       }
 
-      const childrenByParent = new Map<string, DriveNode[]>([[rootNode.id, rootChildren]]);
-      const loadExpandedChildren = async (nodes: DriveNode[]): Promise<void> => {
+      const childrenByParent = new Map<string, DriveViewNode[]>([[rootNode.id, rootChildren]]);
+      const loadExpandedChildren = async (nodes: DriveViewNode[]): Promise<void> => {
         await Promise.all(
           nodes.map(async (node) => {
             if (node.type !== 'folder' || !expandedNodeIds.has(node.id)) return;
             try {
-              const children = await loadChildren(node.id);
+              const children = await loadChildren(node);
               childrenByParent.set(node.id, children);
               await loadExpandedChildren(children.filter((child) => child.type === 'folder'));
             } catch {
@@ -123,7 +123,7 @@ export function useSidebarDriveTreeController({
       };
       await loadExpandedChildren(rootChildren);
 
-      const buildExpandedTree = (nodes: DriveNode[]): DataNode[] =>
+      const buildExpandedTree = (nodes: DriveViewNode[]): DataNode[] =>
         buildTreeData(nodes, nextNodeMap, treeControls).map((treeNode) => {
           const children = childrenByParent.get(String(treeNode.key));
           return children ? { ...treeNode, children: buildExpandedTree(children) } : treeNode;
@@ -163,8 +163,8 @@ export function useSidebarDriveTreeController({
     const node = nodeMap.get(key);
     if (!node || (node.type !== 'root' && node.type !== 'folder')) return;
     try {
-      const children = await loadChildren(node.id, { refresh: true });
-      const childNodeMap = new Map<string, DriveNode>();
+      const children = await loadChildren(node, { refresh: true });
+      const childNodeMap = new Map<string, DriveViewNode>();
       const childData = buildTreeData(children, childNodeMap, treeControls);
       setNodeMap((currentNodeMap) => {
         const nextNodeMap = new Map(currentNodeMap);
@@ -181,8 +181,8 @@ export function useSidebarDriveTreeController({
     if (!parentNode || (parentNode.type !== 'root' && parentNode.type !== 'folder')) return;
 
     try {
-      const nextChildren = await loadMoreChildren(parentNode.id);
-      const childNodeMap = new Map<string, DriveNode>();
+      const nextChildren = await loadMoreChildren(parentNode);
+      const childNodeMap = new Map<string, DriveViewNode>();
       const childData = buildTreeData(nextChildren, childNodeMap, treeControls);
       setNodeMap((currentNodeMap) => {
         const nextNodeMap = new Map(currentNodeMap);

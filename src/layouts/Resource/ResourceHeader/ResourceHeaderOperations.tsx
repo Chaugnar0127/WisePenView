@@ -1,7 +1,4 @@
-import {
-  isDriveTrashFolderNode,
-  type DriveSelectionItem,
-} from '@/components/Drive/common/driveComponentModel';
+import { isDriveTrashFolderNode } from '@/components/Drive/common/driveComponentModel';
 import { DriveDeleteModal, MoveNodeModal, TrashDeleteModal } from '@/components/Drive/Modals';
 import {
   useDocumentService,
@@ -10,18 +7,27 @@ import {
   useResourceService,
   useSkillService,
 } from '@/domains';
-import { buildDriveNodeScope, encodeNodeId } from '@/domains/Drive';
-import { RESOURCE_ACTION, resourceActionsInclude, type ResourceAction } from '@/domains/Resource';
+import {
+  buildDriveNodeScope,
+  type DriveContainerNode,
+  type DriveResourceNode,
+} from '@/domains/Drive';
+import {
+  RESOURCE_ACTION,
+  resourceActionsInclude,
+  type ResourceAction,
+  type ResourceItem,
+} from '@/domains/Resource';
 import { useOpenResource } from '@/hooks/useOpenResource';
-import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { buildDrivePath } from '@/utils/navigation/driveRoute';
+import { parseResourceDriveLocation } from '@/utils/navigation/resourceRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ResourceTargetModal from './ResourceTargetModal';
 
 export interface ResourceHeaderOperationHandlers {
@@ -41,6 +47,7 @@ interface ResourceHeaderOperationsProps {
   resourceId: string;
   resourceName: string;
   resourceType?: string;
+  resourceInfo?: ResourceItem;
   currentActions?: ResourceAction[] | null;
   copyVersion?: number;
   onResolve: (handlers: ResourceHeaderOperationHandlers) => ReactNode;
@@ -53,6 +60,7 @@ function ResourceHeaderOperations({
   resourceId,
   resourceName,
   resourceType,
+  resourceInfo,
   currentActions,
   copyVersion,
   onResolve,
@@ -65,41 +73,36 @@ function ResourceHeaderOperations({
   const resourceService = useResourceService();
   const openResource = useOpenResource();
   const navigate = useNavigate();
-  const location = useResourceNavigationStore((state) => state.location);
-  const matchingLocation =
-    location.resource?.resourceId === resourceId ? location.resource : undefined;
-  const scope = matchingLocation ? location.scope : buildDriveNodeScope();
+  const routeLocation = useLocation();
+  const driveLocation = parseResourceDriveLocation(new URLSearchParams(routeLocation.search));
+  const scope = driveLocation?.scope ?? buildDriveNodeScope();
   const groupId = scope.type === 'group' ? scope.groupId : undefined;
   const [targetModal, setTargetModal] = useState<TargetModal>(null);
   const [moveOpen, setMoveOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const {
-    data: node,
-    loading: locating,
-    refresh: refreshNode,
-  } = useRequest(
+  const { data: node, loading: resolvingNode } = useRequest<DriveResourceNode, []>(
     () =>
-      driveService.getResourceNode({
-        resourceId,
-        parentNodeId: matchingLocation!.parentNodeId,
-        nodeId: matchingLocation?.nodeId,
-        groupId,
+      driveService.resolveResourceNode({
+        resource: resourceInfo!,
+        location: driveLocation!,
       }),
     {
-      ready: Boolean(matchingLocation),
-      refreshDeps: [resourceId, matchingLocation?.parentNodeId, matchingLocation?.nodeId, groupId],
+      ready: Boolean(resourceInfo && resourceInfo.resourceId === resourceId && driveLocation),
+      refreshDeps: [
+        resourceId,
+        resourceInfo,
+        driveLocation?.scope.rootId,
+        driveLocation?.mountTagId,
+      ],
+      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
   const { data: parentPath, loading: locatingParentPath } = useRequest(
-    () =>
-      driveService.getNodePath({
-        nodeId: matchingLocation!.parentNodeId,
-        groupId,
-      }),
+    () => driveService.getMountPath({ location: driveLocation! }),
     {
-      ready: Boolean(matchingLocation && !groupId),
-      refreshDeps: [matchingLocation?.parentNodeId, groupId],
+      ready: Boolean(driveLocation && !groupId),
+      refreshDeps: [driveLocation?.scope.rootId, driveLocation?.mountTagId, groupId],
     }
   );
   const isTrashView = Boolean(!groupId && parentPath?.some(isDriveTrashFolderNode));
@@ -140,27 +143,22 @@ function ResourceHeaderOperations({
     });
   };
 
-  const mountResource = async (target: DriveSelectionItem, targetResourceId: string) => {
-    if (!target.tagId) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_TARGET_TAG_ID_MISSING);
-    }
-    if (target.groupId) {
-      await resourceService.mountResourcesToGroupTag({
-        resourceIds: [targetResourceId],
-        groupId: target.groupId,
-        tagId: target.tagId,
-      });
+  const mountResource = async (target: DriveContainerNode, targetResourceId: string) => {
+    if (target.scope.type === 'group') {
+      if (target.type !== 'folder') {
+        throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_TARGET_TAG_ID_MISSING);
+      }
+      await driveService.addResourcesToGroup({ resourceIds: [targetResourceId], target });
       return;
     }
-    await resourceService.updateResourceTags({
-      resourceId: targetResourceId,
-      tagIds: [target.tagId],
-      primaryTagId: target.tagId,
+    await driveService.setPersonalResourcesLocation({
+      resourceIds: [targetResourceId],
+      target,
     });
   };
 
   const { loading: copying, run: runCopy } = useRequest(
-    async (target: DriveSelectionItem) => {
+    async (target: DriveContainerNode) => {
       const newResourceId = await forkResource();
       try {
         await mountResource(target, newResourceId);
@@ -177,11 +175,12 @@ function ResourceHeaderOperations({
       onSuccess: ({ newResourceId, target }) => {
         setTargetModal(null);
         toast.success(t('resource:header.copyCreated'));
+        const mountTagId = target.tagId;
         openResource({
           resourceId: newResourceId,
           resourceType,
           resourceName: copyName,
-          driveLocation: { scope: target.scope, parentNodeId: target.nodeId },
+          driveLocation: mountTagId ? { scope: target.scope, mountTagId } : undefined,
         });
       },
       onError: (error) => toast.danger(parseErrorMessage(error)),
@@ -189,33 +188,24 @@ function ResourceHeaderOperations({
   );
 
   const { loading: linking, run: runCreateLink } = useRequest(
-    async (target: DriveSelectionItem) => {
-      if (!node) return;
-      await driveService.createLink({
-        nodeId: node.id,
-        targetFolderNodeId: target.nodeId,
-        groupId,
-      });
+    async (target: DriveContainerNode) => {
+      if (!node || target.type !== 'folder' || target.scope.type !== 'group') return;
+      await driveService.addResourcesToGroup({ resourceIds: [node.resourceId], target });
     },
     {
       manual: true,
       onSuccess: () => {
         setTargetModal(null);
         toast.success(t('resource:header.linkCreated'));
-        refreshNode();
       },
       onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
   const { loading: sharing, run: runShare } = useRequest(
-    async (target: DriveSelectionItem) => {
-      if (!target.groupId || !target.tagId) return;
-      await resourceService.mountResourcesToGroupTag({
-        resourceIds: [resourceId],
-        groupId: target.groupId,
-        tagId: target.tagId,
-      });
+    async (target: DriveContainerNode) => {
+      if (target.type !== 'folder' || target.scope.type !== 'group') return;
+      await driveService.addResourcesToGroup({ resourceIds: [resourceId], target });
     },
     {
       manual: true,
@@ -227,40 +217,29 @@ function ResourceHeaderOperations({
     }
   );
 
-  const handleOpenOriginal = async () => {
+  const handleOpenOriginal = () => {
     if (node?.type !== 'link' || !node.primaryTagId) return;
-    try {
-      const root = await driveService.getRootNode({ rootId: scope.rootId, groupId });
-      const parentNodeId =
-        root.tagId === node.primaryTagId ? root.id : encodeNodeId('folder', node.primaryTagId);
-      openResource({
-        resourceId,
-        resourceType,
-        resourceName,
-        driveLocation: {
-          scope: node.scope,
-          parentNodeId,
-          nodeId: encodeNodeId('resource', resourceId, node.primaryTagId),
-        },
-      });
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-    }
+    openResource({
+      resourceId,
+      resourceType,
+      resourceName,
+      driveLocation: { scope: node.scope, mountTagId: node.primaryTagId },
+    });
   };
 
-  const handleMoveSuccess = (targetFolderNodeId: string) => {
+  const handleMoveSuccess = (target: DriveContainerNode) => {
+    const mountTagId = target.tagId;
     openResource({
       resourceId,
       resourceType,
       resourceName,
       replace: true,
-      driveLocation: { scope, parentNodeId: targetFolderNodeId },
+      driveLocation: mountTagId ? { scope: target.scope, mountTagId } : undefined,
     });
   };
 
   const handleDeleteSuccess = () => {
-    useResourceNavigationStore.getState().navigateToScope(scope);
-    navigate(buildDrivePath({ scope, nodeId: matchingLocation?.parentNodeId }), { replace: true });
+    navigate(buildDrivePath({ scope, nodeId: node?.parentId }), { replace: true });
   };
 
   const handlers: ResourceHeaderOperationHandlers = {
@@ -272,13 +251,12 @@ function ResourceHeaderOperations({
           : isTrashView
             ? t('drive:delete.permanent')
             : t('drive:delete.moveToTrash'),
-    isLocating: locating || locatingParentPath,
+    isLocating: Boolean(driveLocation && (!resourceInfo || resolvingNode || locatingParentPath)),
     onCopy: canCopy ? () => setTargetModal('copy') : undefined,
     onCreateLink: groupId && node?.type === 'resource' ? () => setTargetModal('link') : undefined,
     onMove: node ? () => setMoveOpen(true) : undefined,
     onShare: () => setTargetModal('share'),
-    onOpenOriginal:
-      node?.type === 'link' && node.primaryTagId ? () => void handleOpenOriginal() : undefined,
+    onOpenOriginal: node?.type === 'link' && node.primaryTagId ? handleOpenOriginal : undefined,
     onDelete: node ? () => setDeleteOpen(true) : undefined,
   };
 
@@ -329,7 +307,7 @@ function ResourceHeaderOperations({
       {isTrashView ? (
         <TrashDeleteModal
           isOpen={deleteOpen}
-          node={node ?? null}
+          nodes={node ? [node] : []}
           onOpenChange={setDeleteOpen}
           onSuccess={handleDeleteSuccess}
         />

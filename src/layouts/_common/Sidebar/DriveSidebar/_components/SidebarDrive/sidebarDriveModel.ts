@@ -1,4 +1,7 @@
-import type { DriveActionTarget } from '@/components/Drive/common/driveComponentModel';
+import type {
+  DriveActionTarget,
+  DriveViewNode,
+} from '@/components/Drive/common/driveComponentModel';
 import { isDriveTrashFolderNode } from '@/components/Drive/common/driveComponentModel';
 import type { DriveNode, FolderNode } from '@/domains/Drive';
 
@@ -15,14 +18,14 @@ export const SIDEBAR_SELECTABLE_TYPES = new Set<'root' | 'folder' | 'resource' |
 export const SIDEBAR_DISABLED_NODE_IDS = new Set<string>();
 
 export function isSidebarResourceNode(
-  node: DriveNode | undefined
+  node: DriveViewNode | undefined
 ): node is Extract<DriveNode, { type: 'resource' | 'link' }> {
   return node?.type === 'resource' || node?.type === 'link';
 }
 
 export function isSidebarNodeInTrash(
   node: DriveActionTarget | null,
-  nodeMap: Map<string, DriveNode>
+  nodeMap: Map<string, DriveViewNode>
 ): boolean {
   let parentId = node?.parentId;
   while (parentId) {
@@ -34,7 +37,7 @@ export function isSidebarNodeInTrash(
 }
 
 export function getSidebarExistingFolderNames(
-  nodeMap: Map<string, DriveNode>,
+  nodeMap: Map<string, DriveViewNode>,
   parentId: string
 ): string[] {
   return [...nodeMap.values()]

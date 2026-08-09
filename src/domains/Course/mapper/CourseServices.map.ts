@@ -24,7 +24,7 @@ import {
 } from '@/domains/Course/enum';
 import type { Group, GroupMember } from '@/domains/Group';
 import type { ResourceItem } from '@/domains/Resource';
-import { TAG_META_SCHEMA, type TagMetaInfo, type TagTreeNode } from '@/domains/Tag';
+import type { TagMetaInfo, TagTreeNode } from '@/domains/Tag';
 
 const COURSE_META_SCHEMA = 'wisepen.course.v1';
 const COURSE_META_KEYS = new Set([
@@ -72,15 +72,6 @@ const getCourseOutlineResourceOrder = (tagMetaInfo?: TagMetaInfo): string[] =>
   Array.isArray(tagMetaInfo?.resourceOrder)
     ? tagMetaInfo.resourceOrder.filter((value): value is string => typeof value === 'string')
     : [];
-
-const mapCourseOutlineResourceOrderMeta = (
-  tagMetaInfo: TagMetaInfo | undefined,
-  orderedResourceIds: string[]
-): TagMetaInfo => ({
-  ...tagMetaInfo,
-  schema: tagMetaInfo?.schema ?? TAG_META_SCHEMA,
-  resourceOrder: orderedResourceIds,
-});
 
 const sortCourseOutlineResources = <T extends { resourceId: string }>(
   resources: T[],
@@ -341,9 +332,6 @@ const mapGroupToCourseDetail = (group: Group, role: 'OWNER' | 'ADMIN' | 'MEMBER'
 export const CourseServicesMap = {
   parseCourseMeta,
   serializeCourseMeta,
-  getCourseOutlineResourceOrder,
-  mapCourseOutlineResourceOrderMeta,
-  sortCourseOutlineResources,
   collectCourseOutlineTagIds,
   mapCourseOutlineNodes,
   mapCourseOutlineEditorNodes,

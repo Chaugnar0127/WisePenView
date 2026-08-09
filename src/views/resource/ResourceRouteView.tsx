@@ -1,4 +1,5 @@
-import { APP_ROUTE_PATH, buildResourcePathWithSearch } from '@/utils/navigation/appRoute';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+import { buildResourcePathWithSearch } from '@/utils/navigation/resourceRoute';
 import {
   normalizeResourceKind,
   normalizeResourceViewer,

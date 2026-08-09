@@ -36,15 +36,17 @@ import {
   mapCourseMockDetailToSummary,
   mapCourseMockOutlineToEditorNodes,
   markCourseMockResourceRead,
-  reorderCourseMockOutlineResources,
   reorderCourseMockOutlineSections,
   syncCourseMockBaseInfoFromGroup,
-  takeCourseMockOutlineResource,
 } from './courseMockModel';
 
 const NETWORK_DELAY_MS = 180;
 
 const delay = async () => new Promise<void>((resolve) => setTimeout(resolve, NETWORK_DELAY_MS));
+
+const unavailable = async (..._args: unknown[]): Promise<never> => {
+  throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_SERVICE_UNAVAILABLE);
+};
 
 export function createCourseServicesMock(): ICourseService {
   const details = cloneCourseMockValue(COURSE_MOCK_DETAILS);
@@ -289,75 +291,9 @@ export function createCourseServicesMock(): ICourseService {
       }
     },
 
-    async mountCourseOutlineResources({ courseId, targetNodeId, resources }) {
-      await delay();
-      const target = findCourseMockOutlineContainer(outlines[courseId] ?? [], targetNodeId);
-      if (!target) {
-        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
-          targetNodeId,
-        });
-      }
-      const mountedResourceIds = new Set(
-        target.children
-          .filter((node) => node.nodeType === 'RESOURCE')
-          .map((node) => node.resourceId)
-      );
-      target.children.push(
-        ...resources
-          .filter((resource) => !mountedResourceIds.has(resource.resourceId))
-          .map((resource) => ({
-            nodeId: `mount-${targetNodeId}-${resource.resourceId}`,
-            nodeType: 'RESOURCE' as const,
-            title: resource.name,
-            resourceId: resource.resourceId,
-            resourceType: resource.resourceType,
-            read: false,
-          }))
-      );
-      syncProgress(courseId);
-    },
-
-    async moveCourseOutlineResource({
-      courseId,
-      resourceId,
-      sourceNodeId,
-      targetNodeId,
-      orderedResourceIds,
-    }) {
-      await delay();
-      const resource = takeCourseMockOutlineResource(
-        outlines[courseId] ?? [],
-        resourceId,
-        sourceNodeId
-      );
-      const target = findCourseMockOutlineContainer(outlines[courseId] ?? [], targetNodeId);
-      if (!resource || !target) {
-        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
-          resourceId,
-        });
-      }
-      target.children.push(resource);
-      if (orderedResourceIds && !reorderCourseMockOutlineResources(target, orderedResourceIds)) {
-        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
-          targetNodeId,
-        });
-      }
-    },
-
-    async removeCourseOutlineResource({ courseId, resourceId, sourceNodeId }) {
-      await delay();
-      const resource = takeCourseMockOutlineResource(
-        outlines[courseId] ?? [],
-        resourceId,
-        sourceNodeId
-      );
-      if (!resource) {
-        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
-          resourceId,
-        });
-      }
-      syncProgress(courseId);
-    },
+    mountCourseOutlineResources: unavailable,
+    moveCourseOutlineResource: unavailable,
+    removeCourseOutlineResource: unavailable,
 
     async joinCourse({ inviteCode }) {
       await delay();

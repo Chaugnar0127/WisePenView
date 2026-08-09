@@ -15,8 +15,7 @@ import styles from './style.module.less';
 function DriveCreateModal({
   type,
   isOpen,
-  parentId,
-  groupId,
+  parent,
   pathTagId,
   parentLabel,
   existingFolderNames = [],
@@ -65,16 +64,12 @@ function DriveCreateModal({
           break;
         }
         case 'folder':
-          if (!parentId) {
+          if (!parent) {
             throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
               reason: t('create.targetMissing'),
             });
           }
-          createdId = await driveService.createFolder({
-            parentId,
-            groupId,
-            name: title.trim(),
-          });
+          createdId = (await driveService.createFolder({ parent, name: title.trim() })).tagId;
           break;
         case 'skill':
           createdId = await skillService.createSkill(

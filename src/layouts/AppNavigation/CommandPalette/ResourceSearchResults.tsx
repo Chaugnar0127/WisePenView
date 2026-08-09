@@ -5,7 +5,6 @@ import { useResourceService } from '@/domains';
 import type { SearchHitItem, SearchResultPage } from '@/domains/Resource';
 import { SEARCH_SCOPE } from '@/domains/Resource';
 import { useOpenResource } from '@/hooks/useOpenResource';
-import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
 import { parseErrorMessage } from '@/utils/error';
 import { SEARCH_HIGHLIGHT_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
 import { toast } from '@heroui/react';
@@ -69,7 +68,6 @@ function ResourceResultItem({
       resourceId: item.resourceId,
       resourceType: item.resourceType,
       resourceName: plainName,
-      driveLocation: { scope: useResourceNavigationStore.getState().location.scope },
     });
   };
 

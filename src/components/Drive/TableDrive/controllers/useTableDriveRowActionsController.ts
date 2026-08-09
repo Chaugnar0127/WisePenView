@@ -108,7 +108,7 @@ export function useTableDriveRowActionsController({
               resourceId: actionTarget.resourceId,
               resourceType: resolveResourceKind(actionTarget.resourceType),
               resourceName: row.name,
-              fallbackTagId: actionTarget.folderTagId,
+              fallbackTagId: actionTarget.mountTagId,
             }),
         });
       }

@@ -38,9 +38,6 @@ export interface ResourceTagBind {
 
 export interface ResourceUserInteraction {
   read: boolean;
-  liked: boolean;
-  score?: number;
-  likedCommentIds: string[];
 }
 
 /** 供前端展示与业务编排使用的稳定资源实体 */
@@ -54,8 +51,6 @@ export interface ResourceItem {
   size?: number;
   /** 有效阅读量，历史数据可能为 null，展示时用 readCount ?? 0 */
   readCount?: number | null;
-  /** 归属路径（文件夹），如 '/' 或 '/documents/notes' */
-  path?: string;
   /** 当前上下文标签映射（tagId → tagName），由 tagBinds 派生。 */
   currentTags?: Record<string, string>;
   /** 后端按 group 维度返回的有序标签绑定，tags 使用 LinkedHashMap 保持 tagIds 顺序。 */
@@ -64,8 +59,6 @@ export interface ResourceItem {
   resourceIconType?: ResourceIconType;
   /** 主挂载标签，优先来自 tagBinds.primaryTagId。 */
   mainTagId?: string;
-  /** 链接挂载标签（当前 tagBind.tags 去掉 mainTagId 后的其余项） */
-  linkTagIds?: string[];
   /** 当前用户对该资源已生效的权限动作（详情接口返回） */
   currentActions?: ResourceAction[] | null;
   /** 当前用户对该资源的访问角色（详情接口返回） */
@@ -80,10 +73,6 @@ export interface ResourceItem {
   likeCount?: number | null;
   /** 资源总收藏人数，同一用户多集合收藏只计一次 */
   favoriteCount?: number | null;
-  /** 顶级评论与回复合计数量 */
-  commentCount?: number | null;
-  /** 平均评分，暂无评分时为 null，不得展示 0.0 */
-  scoreAvg?: number | null;
   /** 当前用户对该资源的交互状态，仅在列表请求显式要求时返回。 */
   myInteraction?: ResourceUserInteraction;
 }

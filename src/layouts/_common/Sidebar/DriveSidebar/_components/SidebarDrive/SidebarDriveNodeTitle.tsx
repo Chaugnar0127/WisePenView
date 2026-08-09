@@ -12,9 +12,12 @@ import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/Button/AppIconButton';
-import type { DriveActionTarget } from '@/components/Drive/common/driveComponentModel';
+import type {
+  DriveActionTarget,
+  DriveViewNode,
+} from '@/components/Drive/common/driveComponentModel';
 import EntryIcon from '@/components/Icons/EntryIcon';
-import type { DriveNode, FolderNode, RootNode } from '@/domains/Drive';
+import type { FolderNode, RootNode } from '@/domains/Drive';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
@@ -25,7 +28,7 @@ export type SidebarDriveCreateAction =
   'folder' | 'note' | 'importNote' | 'drawio' | 'skill' | 'agent' | 'upload';
 
 interface SidebarDriveNodeTitleProps {
-  node: DriveNode;
+  node: DriveViewNode;
   rootDisplayName?: string;
   scopeSwitcher?: ReactNode;
   onCreateNode: (node: RootNode | FolderNode, action: SidebarDriveCreateAction) => void;
@@ -40,7 +43,7 @@ function stopTreeAction(event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLEleme
 }
 
 function getNodeDisplayName(
-  node: DriveNode,
+  node: DriveViewNode,
   resourceName: string,
   driveName: string,
   sharedFolder: string,

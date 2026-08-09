@@ -2,7 +2,6 @@ import type { ResourceAccessRole, ResourceAction, ResourceIconType } from '@/dom
 import type { AccessControlScope, TagResourceAction } from '@/domains/Tag';
 import type { UserDisplayBase } from '@/domains/User';
 
-export type DriveNodeType = 'root' | 'folder' | 'resource' | 'link' | 'loading';
 export type DriveSystemFolderType = 'trash' | 'shared';
 
 export type DriveNodeScope =
@@ -15,6 +14,11 @@ export type DriveNodeScope =
       rootId: string;
       groupId: string;
     };
+
+export interface DriveResourceLocation {
+  scope: DriveNodeScope;
+  mountTagId: string;
+}
 
 interface DriveNodeBase {
   /** 此处 id 由 service 分配，用于在 service 中查找节点 */
@@ -29,16 +33,15 @@ interface RootNode extends DriveNodeBase {
   name: string;
   /** 个人云盘有真实 root tag；小组 root 是虚拟容器，没有 tagId。 */
   tagId?: string;
-  /** 小组 root 只是 group 自身的视图入口；个人 root 是真实 root tag 的抽象节点。 */
-  isVirtual: boolean;
   /** 只有带真实 tagId 的个人 root 允许直接挂载资源。 */
   canMountResources: boolean;
-  childrenIds: string[];
 }
 
 interface FolderNode extends DriveNodeBase {
   type: 'folder';
   tagId: string;
+  /** 标签树中该节点的祖先 ID，供批量选择去重与防环校验。 */
+  ancestorTagIds: string[];
   name: string;
   /** 标签树返回的文件夹创建者标识。 */
   tagCreator?: string;
@@ -48,7 +51,6 @@ interface FolderNode extends DriveNodeBase {
   taggedResourceAclGrantScope?: AccessControlScope;
   tagMountPermissionScope?: AccessControlScope;
   grantedActions?: TagResourceAction[];
-  childrenIds: string[];
 }
 
 interface DriveResourceNodeBase extends DriveNodeBase {
@@ -63,8 +65,8 @@ interface DriveResourceNodeBase extends DriveNodeBase {
   ownerInfo?: UserDisplayBase;
   currentActions?: ResourceAction[] | null;
   resourceAccessRole?: ResourceAccessRole;
-  /** 当前节点所在目录 tag，用来描述资源是主挂载还是辅助挂载 */
-  folderTagId: string;
+  /** 当前节点所在目录 tag，用来描述资源是主挂载还是辅助挂载。 */
+  mountTagId: string;
 }
 
 interface ResourceNode extends DriveResourceNodeBase {
@@ -73,16 +75,13 @@ interface ResourceNode extends DriveResourceNodeBase {
 
 interface LinkNode extends DriveResourceNodeBase {
   type: 'link';
+  scope: Extract<DriveNodeScope, { type: 'group' }>;
   /** 资源主挂载 tag；后端未返回有序 tag 时允许为空 */
   primaryTagId?: string;
 }
 
-/** 加载占位节点：仅用于组件展示当前目录正在拉取子节点，不代表真实文件或文件夹 */
-interface LoadingNode extends DriveNodeBase {
-  type: 'loading';
-  parentId: string;
-  label?: string;
-}
-
-export type DriveNode = RootNode | FolderNode | ResourceNode | LinkNode | LoadingNode;
-export type { FolderNode, LinkNode, LoadingNode, ResourceNode, RootNode };
+export type DriveNode = RootNode | FolderNode | ResourceNode | LinkNode;
+export type DriveContainerNode = RootNode | FolderNode;
+export type DriveMutableNode = FolderNode | ResourceNode | LinkNode;
+export type DriveResourceNode = ResourceNode | LinkNode;
+export type { FolderNode, LinkNode, ResourceNode, RootNode };

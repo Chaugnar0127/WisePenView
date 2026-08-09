@@ -6,4 +6,5 @@ export interface DriveDeleteModalProps {
   groupId?: string;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  onError?: () => void;
 }

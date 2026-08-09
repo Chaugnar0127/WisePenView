@@ -1,7 +1,8 @@
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import AppModal from '@/components/Overlay/AppModal';
 import StepDots from '@/components/StepDots';
-import { useResourceService } from '@/domains';
+import { useDriveService } from '@/domains';
+import type { DriveNode, FolderNode } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -18,16 +19,16 @@ function UploadFileToGroupModal({
   onSuccess,
 }: UploadFileToGroupModalProps) {
   const { t } = useTranslation(['drive', 'common']);
-  const resourceService = useResourceService();
+  const driveService = useDriveService();
   const [step, setStep] = useState(0);
   const [navRefreshKey, setNavRefreshKey] = useState(0);
   const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
-  const [selectedTargetTagId, setSelectedTargetTagId] = useState<string>();
+  const [selectedTarget, setSelectedTarget] = useState<FolderNode>();
 
   const resetState = () => {
     setStep(0);
     setSelectedFileIds([]);
-    setSelectedTargetTagId(undefined);
+    setSelectedTarget(undefined);
   };
 
   const closeModal = () => {
@@ -44,18 +45,14 @@ function UploadFileToGroupModal({
     setSelectedFileIds(ids);
   };
 
-  const handleTagsChange = (nodes: DriveSelectionItem[]) => {
-    const target = nodes.find((node) => node.kind === 'folder' && Boolean(node.tagId?.trim()));
-    setSelectedTargetTagId(target?.tagId);
+  const handleTagsChange = (nodes: DriveNode[]) => {
+    const target = nodes.find((node): node is FolderNode => node.type === 'folder');
+    setSelectedTarget(target);
   };
 
   const { loading: submitting, run: runUploadToGroup } = useRequest(
-    async ({ resourceIds, tagId }: { resourceIds: string[]; tagId: string }) => {
-      await resourceService.mountResourcesToGroupTag({
-        resourceIds,
-        groupId,
-        tagId,
-      });
+    async ({ resourceIds, target }: { resourceIds: string[]; target: FolderNode }) => {
+      await driveService.addResourcesToGroup({ resourceIds, target });
       return resourceIds.length;
     },
     {
@@ -72,12 +69,12 @@ function UploadFileToGroupModal({
   );
 
   const handleSubmit = () => {
-    if (selectedFileIds.length === 0 || !selectedTargetTagId) return;
-    runUploadToGroup({ resourceIds: selectedFileIds, tagId: selectedTargetTagId });
+    if (selectedFileIds.length === 0 || !selectedTarget) return;
+    runUploadToGroup({ resourceIds: selectedFileIds, target: selectedTarget });
   };
 
   const canNext = selectedFileIds.length > 0;
-  const canSubmit = canNext && Boolean(selectedTargetTagId);
+  const canSubmit = canNext && Boolean(selectedTarget);
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
@@ -152,7 +149,7 @@ function UploadFileToGroupModal({
                     scope={{ type: 'group', groupId }}
                     selectableTypes={['folder']}
                     disabled={submitting}
-                    onChange={handleTagsChange}
+                    onNodeChange={handleTagsChange}
                   />
                 </div>
               </div>

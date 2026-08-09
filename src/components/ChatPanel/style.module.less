@@ -196,12 +196,45 @@
 }
 
 .messageViewport {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
   padding-top: 0;
   --chat-footer-scroll-offset: 0px;
+  transition: opacity 0.32s ease;
+}
+
+.composerCluster {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.welcomeSlot {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-bottom: var(--space-lg);
+  transition:
+    grid-template-rows 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease,
+    margin-bottom 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.welcomeSlotInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.welcomeSlot[data-visible='false'] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-bottom: 0;
+  pointer-events: none;
 }
 
 .footerSlot {
@@ -219,6 +252,10 @@
     color-mix(in srgb, var(--chat-shell-bg, var(--surface)) 0%, transparent) 0%,
     var(--chat-shell-bg, var(--surface)) 20%
   );
+  transition:
+    margin-top 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    padding-top 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.32s ease;
 }
 
 .inputColumn {
@@ -226,6 +263,41 @@
   max-width: var(--chat-input-max-width);
   min-width: 0;
   margin-inline: auto;
+}
+
+/* 上下对称 spacer：welcome 时与 messageViewport 一起把输入区顶到视觉中心 */
+.composerBottomSpacer {
+  flex: 1 1 0;
+  min-height: 0;
+  transition: flex-grow 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.conversationPanel[data-welcome='true'] {
+  .messageViewport {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .footerSlot {
+    margin-top: 0;
+    padding-top: 0;
+    background: transparent;
+  }
+}
+
+.conversationPanel[data-welcome='false'] {
+  .composerBottomSpacer {
+    flex-grow: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .messageViewport,
+  .welcomeSlot,
+  .footerSlot,
+  .composerBottomSpacer {
+    transition: none;
+  }
 }
 
 .sessionList {

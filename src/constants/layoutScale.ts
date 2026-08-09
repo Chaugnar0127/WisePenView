@@ -259,7 +259,6 @@ export const getLayoutScaleCssVars = (
     '--chat-input-textarea-max-height': isShort ? 'calc(6em + 16px)' : 'calc(16em + 16px)',
     '--chat-input-card-padding-block': isShort ? '8px' : '12px',
     '--chat-input-container-padding-block': isShort ? '4px' : '8px',
-    '--layout-welcome-icon-size': isShort ? '28px' : '40px',
-    '--layout-welcome-title-size': isShort ? '16px' : '18px',
+    '--layout-welcome-title-size': isShort ? '1.5rem' : '2rem',
   };
 };

@@ -1,78 +1,63 @@
 import { SIDEBAR_MAX_WIDTH } from '@/layouts/_common/Sidebar/sidebarLayoutConfig';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
-/** 侧栏开合时长：短促跟手，避免拖泥带水 */
-export const SIDEBAR_COLLAPSE_DURATION_MS = 200;
+export const SIDEBAR_COLLAPSE_DURATION_MS = 220;
 
 interface UseSidebarCollapseMotionOptions {
   collapsed: boolean;
   expandedWidth: number;
   collapsedWidth: number;
   maxSize?: number;
+  /** panel group 上挂 data-sidebar-motion，供 CSS 显隐窄轨 */
+  panelGroupId?: string;
 }
 
 interface SidebarCollapseMotion {
   panelSize: number;
   minSize: number;
   maxSize: number;
-  /** 收起动画结束后再显示窄轨/顶栏控件 */
-  showCollapsedChrome: boolean;
-  isAnimating: boolean;
-  /** 宽度插值完成时调用，与 rAF 对齐后再清动效标记 */
+  isMotionLockedRef: RefObject<boolean>;
   notifyAnimationComplete: () => void;
 }
 
-/**
- * 侧栏收起/展开：放宽 Panel 约束并标记动效期。内容常挂载，由布局侧做 clip-slide。
- * 动效结束由 useResizablePanelSize 的 onComplete 驱动，避免 setTimeout 与 rAF 错位顿挫。
- */
+/** 侧栏开合：放宽 Panel 约束；结束时清锁并摘 motion 标记，不 setState。 */
 export function useSidebarCollapseMotion({
   collapsed,
   expandedWidth,
   collapsedWidth,
   maxSize = SIDEBAR_MAX_WIDTH,
+  panelGroupId,
 }: UseSidebarCollapseMotionOptions): SidebarCollapseMotion {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [collapsedSnapshot, setCollapsedSnapshot] = useState(collapsed);
-  const collapsedRef = useRef(collapsed);
-  const collapsedWidthRef = useRef(collapsedWidth);
+  const isMotionLockedRef = useRef(false);
+  const isFirstCollapsedEffectRef = useRef(true);
 
   /**
    * @wisepen-manual-effect
-   * 执行时机：collapsed / collapsedWidth 变化后同步到 ref，供动画完成回调读取。
-   * 不可替代原因：完成回调在 rAF 中触发，不能把最新折叠态放进该回调依赖。
+   * 执行时机：折叠态切换时锁定运动并标记 panel group。
+   * 不可替代原因：插值期间挡住布局回写；motion 标记驱动 CSS 显隐，不能用 setState。
    * cleanup：无。
    */
   useEffect(() => {
-    collapsedRef.current = collapsed;
-    collapsedWidthRef.current = collapsedWidth;
-  }, [collapsed, collapsedWidth]);
-
-  let animating = isAnimating;
-  if (collapsedSnapshot !== collapsed) {
-    setCollapsedSnapshot(collapsed);
-    setIsAnimating(true);
-    animating = true;
-  }
+    if (isFirstCollapsedEffectRef.current) {
+      isFirstCollapsedEffectRef.current = false;
+      return;
+    }
+    isMotionLockedRef.current = true;
+    if (panelGroupId) {
+      document.getElementById(panelGroupId)?.setAttribute('data-sidebar-motion', 'true');
+    }
+  }, [collapsed, panelGroupId]);
 
   return {
     panelSize: collapsed ? collapsedWidth : expandedWidth,
     minSize: 0,
     maxSize,
-    showCollapsedChrome: collapsed && !animating,
-    isAnimating: animating,
+    isMotionLockedRef,
     notifyAnimationComplete: () => {
-      setIsAnimating((was) => {
-        if (!was) return false;
-        /*
-         * 收到 0 宽时锚点仍由 collapsed 维持，收起结束若再 setState
-         * 会逼整页重渲，表现为末帧卡顿；保持 true 让 React bail out。
-         */
-        if (collapsedRef.current && collapsedWidthRef.current === 0) {
-          return true;
-        }
-        return false;
-      });
+      isMotionLockedRef.current = false;
+      if (panelGroupId) {
+        document.getElementById(panelGroupId)?.removeAttribute('data-sidebar-motion');
+      }
     },
   };
 }

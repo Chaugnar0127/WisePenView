@@ -682,16 +682,56 @@ html[data-color-scheme='lavender'] {
   --danger-border: var(--red-7);
   --danger-hover: var(--red-10);
 
-  --diff-added: var(--green-2);
-  --diff-added-border: var(--green-7);
+  /*
+   * AI Diff：选中 6 / 边框 7；未选中约 70%×3 + 30%×2（teal / ruby）。
+   * 浅阶跟 surface mix、深阶跟 foreground mix，阅读模式打开时一并降饱和。
+   */
+  --diff-added: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--teal-3) 70%, var(--teal-2) 30%)
+      calc(100% - var(--palette-accent-surface-neutral-mix)),
+    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
+  );
+  --diff-added-border: color-mix(
+    in oklab,
+    var(--teal-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
+    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
+  );
   --diff-added-fg: var(--palette-neutral-12);
-  --diff-added-selected: var(--green-4);
-  --diff-removed: var(--red-2);
-  --diff-removed-border: var(--red-7);
-  --diff-removed-fg: var(--red-11);
-  --diff-removed-selected: var(--red-4);
-  --diff-modified: var(--blue-2);
-  --diff-modified-border: var(--blue-7);
+  --diff-added-selected: color-mix(
+    in oklab,
+    var(--teal-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
+    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
+  );
+  --diff-removed: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--ruby-3) 70%, var(--ruby-2) 30%)
+      calc(100% - var(--palette-accent-surface-neutral-mix)),
+    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
+  );
+  --diff-removed-border: color-mix(
+    in oklab,
+    var(--ruby-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
+    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
+  );
+  /* 删除正文用中性灰，红只保留底与左边线 */
+  --diff-removed-fg: var(--muted);
+  --diff-removed-selected: color-mix(
+    in oklab,
+    var(--ruby-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
+    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
+  );
+  --diff-modified: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--blue-3) 70%, var(--blue-2) 30%)
+      calc(100% - var(--palette-accent-surface-neutral-mix)),
+    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
+  );
+  --diff-modified-border: color-mix(
+    in oklab,
+    var(--blue-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
+    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
+  );
   --diff-row-selected: var(--palette-neutral-3);
 
   --scrollbar: var(--scrollbar-thumb);

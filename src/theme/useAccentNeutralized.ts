@@ -44,7 +44,7 @@ function setSharedReadingMode(isReadingMode: boolean) {
   emitReadingModeChange();
 }
 
-/** 阅读模式：打开后低阶 accent 混入 35% neutral，高阶 accent 混入 15% neutral。 */
+/** 阅读模式：浅阶（含 AI Diff 底）混入 40% neutral，深阶（边框等）混入 10% neutral。 */
 export function useAccentNeutralized(defaultValue = false) {
   const isAccentNeutralized = useSyncExternalStore(
     subscribeReadingMode,

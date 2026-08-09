@@ -27,12 +27,10 @@
   width: 100%;
   min-width: 0;
   min-height: 0;
-  /* 侧栏从 accent 2 起步，与 hover / selected 形成连续色阶 */
   background: var(--sidebar-surface);
   overflow: hidden;
 }
 
-/* 外层插值宽度；内层锚定贴齐右侧把手，裁切后呈向左平移 */
 .sidebarSlideHost {
   display: flex;
   justify-content: flex-end;
@@ -45,23 +43,30 @@
 }
 
 .sidebarSlideFrame {
+  flex: 0 0 auto;
   height: 100%;
   min-height: 0;
-  width: 100%;
-  min-width: 0;
-}
-
-.sidebarSlideFrameAnchored {
-  flex: 0 0 auto;
   width: var(--sidebar-slide-width);
   min-width: var(--sidebar-slide-width);
   max-width: var(--sidebar-slide-width);
   contain: layout paint;
 }
 
-.sidebarSlideHostHidden {
-  visibility: hidden;
-  pointer-events: none;
+/*
+ * 收起到位后再藏内容、露出窄轨：只靠 data-sidebar-motion，禁止收尾 setState 挂载 chrome。
+ * 开合过程中保持 slide 可见（clip），避免空轨收缩。
+ */
+.panelGroup:not([data-sidebar-motion='true']) {
+  .sidebarSlideHostCollapsed {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .webCollapsedSidebar,
+  .collapsedHeaderControls {
+    visibility: visible;
+    pointer-events: auto;
+  }
 }
 
 .webCollapsedSider {
@@ -96,8 +101,10 @@
   overflow: hidden;
 }
 
+/* 资源页（笔记/对话等）统一用 surface，避免目录/正文透出 background、聊天栏用 surface 造成色差 */
 .middleContentResource {
   overflow: hidden;
+  background: var(--surface);
 }
 
 .appPageContainer {
@@ -152,15 +159,17 @@
 .collapsedHeaderControls {
   flex: 1;
   min-width: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .webCollapsedSidebar {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
   z-index: 1;
   box-sizing: border-box;
+  width: 64px;
   height: 64px;
   display: flex;
   align-items: center;
@@ -168,6 +177,8 @@
   padding-block: var(--space-sm);
   padding-inline: var(--space-sm);
   background: var(--surface);
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Mac：折叠后主区顶栏避开红绿灯 */

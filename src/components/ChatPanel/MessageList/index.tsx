@@ -16,7 +16,6 @@ import ConversationLoading from './ConversationLoading';
 import HistoryLoader from './HistoryLoader';
 import Message from './Message';
 import MessageHistoryNavigator from './MessageHistoryNavigator';
-import Welcome from './Welcome';
 import styles from './style.module.less';
 
 const AUTO_LOAD_EDGE_THRESHOLD = 96;
@@ -48,7 +47,6 @@ function MessageList({
   const { t } = useTranslation('chat');
   const isGenerating = status === 'submitted' || status === 'streaming';
   const showConversationLoading = messages.length === 0 && loadingInitialHistory;
-  const showWelcome = messages.length === 0 && !loadingInitialHistory;
 
   return (
     <MessageScrollerProvider
@@ -69,11 +67,7 @@ function MessageList({
                 <MessageScrollerItem className={styles.welcomeItem}>
                   <ConversationLoading />
                 </MessageScrollerItem>
-              ) : showWelcome ? (
-                <MessageScrollerItem className={styles.welcomeItem}>
-                  <Welcome />
-                </MessageScrollerItem>
-              ) : (
+              ) : messages.length === 0 ? null : (
                 <>
                   <HistoryLoader
                     canLoadMoreHistory={canLoadMoreHistory}

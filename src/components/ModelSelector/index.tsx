@@ -1,9 +1,9 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import ProviderLogo from '@/components/Icons/ProviderLogo';
-import { AppPopover } from '@/components/Overlay';
+import { AppMenu } from '@/components/Overlay';
 import type { ChatModel } from '@/domains/Chat';
-import { ListBox, ListBoxItem } from '@heroui/react';
 import { Check, ChevronDown, LoaderCircle } from 'lucide-react';
+import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -46,9 +46,15 @@ function ModelSelector({
   const triggerLabel = loading
     ? t('modelSelector.loading')
     : (selected?.name ?? t('modelSelector.select'));
+  const handleAction = (key: Key) => {
+    const model = models.find((item) => item.id === key);
+    if (model) {
+      onChange(model);
+    }
+  };
 
   return (
-    <AppPopover isOpen={isOpen} onOpenChange={onOpenChange}>
+    <AppMenu isOpen={isOpen} onOpenChange={onOpenChange}>
       {iconOnly ? (
         <AppIconButton
           icon={
@@ -60,10 +66,10 @@ function ModelSelector({
           }
           label={triggerLabel}
           isDisabled={disabled}
-          overlayTrigger={<AppPopover.Trigger />}
+          overlayTrigger={<AppMenu.Trigger />}
         />
       ) : (
-        <AppPopover.Trigger>
+        <AppMenu.Trigger>
           <button
             type="button"
             className={styles.trigger}
@@ -78,28 +84,26 @@ function ModelSelector({
             <span>{triggerLabel}</span>
             <ChevronDown size={16} />
           </button>
-        </AppPopover.Trigger>
+        </AppMenu.Trigger>
       )}
-      <AppPopover.Content
-        className={styles.popover}
-        placement={placement}
-        title={t('modelSelector.title')}
-      >
+      <AppMenu.Popover className={styles.popover} placement={placement} bodyPadding="none">
+        <AppMenu.Header title={t('modelSelector.title')} />
         {models.length === 0 ? (
           <div className={styles.empty}>{t('modelSelector.empty')}</div>
         ) : (
-          <ListBox
+          <AppMenu.Menu
             aria-label={t('modelSelector.select')}
             selectionMode="single"
             selectedKeys={selected ? [selected.id] : []}
             className={styles.list}
+            onAction={handleAction}
           >
             {models.map((model) => (
-              <ListBoxItem
+              <AppMenu.Item
                 key={model.id}
                 id={model.id}
                 textValue={model.name}
-                onPress={() => onChange(model)}
+                selected={selected?.id === model.id}
               >
                 <span className={styles.item}>
                   <ProviderLogo provider={model.provider} size={18} />
@@ -111,12 +115,12 @@ function ModelSelector({
                     <Check size={14} className={styles.checkIcon} />
                   ) : null}
                 </span>
-              </ListBoxItem>
+              </AppMenu.Item>
             ))}
-          </ListBox>
+          </AppMenu.Menu>
         )}
-      </AppPopover.Content>
-    </AppPopover>
+      </AppMenu.Popover>
+    </AppMenu>
   );
 }
 

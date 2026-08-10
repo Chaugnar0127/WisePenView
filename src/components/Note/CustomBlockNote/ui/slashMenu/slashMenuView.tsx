@@ -1,6 +1,7 @@
+import { AppMenu } from '@/components/Overlay';
 import i18n from '@/i18n';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
-import { Dropdown, Header, ListBoxItem, ListBoxSection } from '@heroui/react';
+import { Header, ListBoxItem, ListBoxSection } from '@heroui/react';
 import clsx from 'clsx';
 import {
   Braces,
@@ -111,24 +112,28 @@ export function SlashMenuDropdownItems({
     <>
       {groupedItems.map(([group, groupItems, currentOffset]) => {
         return (
-          <Dropdown.Section id={`slash-group-${group}`} className={styles.section} key={group}>
-            <Header className={styles.sectionTitle}>{resolveSlashMenuGroupLabel(group)}</Header>
+          <AppMenu.Section
+            id={`slash-group-${group}`}
+            className={styles.section}
+            key={group}
+            title={resolveSlashMenuGroupLabel(group)}
+          >
             {groupItems.map((item, itemIndexInGroup) => {
               const itemIndex = currentOffset + itemIndexInGroup;
               const title = resolveSlashMenuTitle(item);
 
               return (
-                <Dropdown.Item
+                <AppMenu.Item
                   key={getItemId(item, itemIndex)}
                   id={getItemId(item, itemIndex)}
                   textValue={title}
                   className={styles.item}
                 >
                   <SlashMenuItemContent item={item} />
-                </Dropdown.Item>
+                </AppMenu.Item>
               );
             })}
-          </Dropdown.Section>
+          </AppMenu.Section>
         );
       })}
     </>

@@ -41,11 +41,13 @@ ComponentName/
 
 ## 四、Popover 约定
 
+- 操作菜单使用 `src/components/Overlay/AppMenu`，不要直接组合 `@heroui/react` 的 `Dropdown`。
 - 业务 Popover 使用 `src/components/Overlay/AppPopover`，不要直接组合底层 `Popover.Content` / `Popover.Dialog`。
 - 标准标题通过 `AppPopover.Content` 的 `title` 传入；无标题轻浮层省略 `title`，两者共用同一内容间距。
-- 危险提示型 Popover 使用 `variant="danger"`；Dropdown 中的删除、退出等危险操作使用 `Dropdown.Item variant="danger"`。
+- 危险提示型 Popover 使用 `variant="danger"`；菜单中的删除、退出等危险操作使用 `AppMenu.DangerItem`。
 - 宽度、最大高度等业务布局通过 `className` 保留在调用方，不重复设置边框、圆角、背景或阴影。
 - 内容已有完整内边距或为第三方面板时使用 `bodyPadding="none"`，避免双层间距。
+- 只有需要标题上下文的菜单才使用 `AppMenu.Header`，当前主要是 ChatInput 这一组；分组标题使用 `AppMenu.Section title`，分割线使用 `AppMenu.Section showDivider` 或 `AppMenu.Divider`，调用点不要手写菜单 divider border。
 
 ## 五、布局与可读性
 

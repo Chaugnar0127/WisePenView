@@ -1,6 +1,7 @@
 import AppIconButton from '@/components/Button/AppIconButton';
+import { AppMenu } from '@/components/Overlay';
 import type { FavoriteCollection } from '@/domains/Interact';
-import { Dropdown, ListBox, ListBoxItem } from '@heroui/react';
+import { ListBox, ListBoxItem } from '@heroui/react';
 import { EllipsisVertical, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
@@ -66,7 +67,7 @@ function FavoriteCollectionList({
                 onClick={collection.isDefault ? undefined : (event) => event.stopPropagation()}
               >
                 {!collection.isDefault ? (
-                  <Dropdown>
+                  <AppMenu>
                     <AppIconButton
                       icon={<EllipsisVertical size={16} aria-hidden="true" />}
                       label={t('favorite.collection.actionsAria', {
@@ -76,23 +77,19 @@ function FavoriteCollectionList({
                       size="sm"
                       className={styles.collectionMoreButton}
                       tooltip={{ content: t('favorite.collection.moreActions') }}
-                      overlayTrigger={<Dropdown.Trigger />}
+                      overlayTrigger={<AppMenu.Trigger />}
                     />
-                    <Dropdown.Popover placement="bottom end">
-                      <Dropdown.Menu aria-label={t('favorite.collection.menuAria')}>
-                        <Dropdown.Item id="edit" onAction={() => onEdit(collection)}>
+                    <AppMenu.Popover placement="bottom end">
+                      <AppMenu.Menu aria-label={t('favorite.collection.menuAria')}>
+                        <AppMenu.Item id="edit" onAction={() => onEdit(collection)}>
                           {t('actions.edit', { ns: 'common' })}
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          id="delete"
-                          variant="danger"
-                          onAction={() => onDelete(collection)}
-                        >
+                        </AppMenu.Item>
+                        <AppMenu.DangerItem id="delete" onAction={() => onDelete(collection)}>
                           {t('actions.delete', { ns: 'common' })}
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown.Popover>
-                  </Dropdown>
+                        </AppMenu.DangerItem>
+                      </AppMenu.Menu>
+                    </AppMenu.Popover>
+                  </AppMenu>
                 ) : null}
               </span>
             </span>

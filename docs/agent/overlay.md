@@ -19,12 +19,16 @@ Modal
 
 Popover
 └─ AppPopover
+
+Dropdown
+└─ AppMenu
 ```
 
 - `Modal` 是底层 Overlay 原子组件。
 - `AppAlertDialog`、`AppFormDialog`、`AppDisplayDialog`、`AppModal` 都直接组合 `Modal`。
 - 四个 App 级组件之间不应互相继承，也不应让 `AppAlertDialog` / `AppFormDialog` / `AppDisplayDialog` 基于 `AppModal` 实现。
 - `Popover` 是延迟挂载原子层，`AppPopover` 统一业务 Popover 的 Content、Dialog、header、无 header body 和 danger 视觉。
+- `AppMenu` 统一操作菜单的容器、菜单头、分组、分割线、菜单项、危险项、选中态和子菜单视觉。
 
 原因是 `AppModal` 现在只表示“复杂业务浮层的可定制起点”。如果其他语义组件基于它实现，`AppModal` 很容易重新变成承载 confirm、form、display、danger、banner 等语义的超级组件。
 
@@ -32,9 +36,21 @@ Popover
 
 业务代码使用 `AppPopover`，不直接使用底层 `Popover` 或 `@heroui/react` 的 `Popover`。标准标题通过 `AppPopover.Content title` 传入；无标题内容直接传 children。调用方只保留宽度、最大高度和滚动等业务布局，边框、圆角、阴影和内容间距由 `AppPopover` 统一。
 
-`AppPopover` 的 `variant="danger"` 用于整个浮层承载危险提示的场景；菜单中的单个危险操作仍使用 HeroUI 的 `Dropdown.Item variant="danger"`。
+`AppPopover` 的 `variant="danger"` 用于整个浮层承载危险提示的场景；菜单中的单个危险操作使用 `AppMenu.DangerItem`。
 
 LaTeX 编辑浮层因依赖编辑器选区和手工测量位置，不迁移 HeroUI 的定位状态，但复用 `AppPopover.Header` 以及相同的表面 token。
+
+## AppMenu
+
+操作菜单使用 `AppMenu`，不直接使用 `@heroui/react` 的 `Dropdown`。`AppMenu` 保留 HeroUI Dropdown 的键盘导航、焦点管理、selection、disabledKeys、submenu 等行为，只统一业务侧视觉和菜单语义。
+
+只有确实需要标题上下文的菜单才使用 `AppMenu.Header`，当前主要是 ChatInput 这一组选择/配置 Popover。菜单头支持标题、说明、图标和右侧操作，不放进 `AppMenu.Menu` 内，也不触发菜单选择行为。
+
+分组使用 `AppMenu.Section`，分组标题通过 `title` 传入；相邻分组需要视觉分隔时使用 `showDivider`。无标题分隔线使用 `AppMenu.Divider`。业务样式不要自行给菜单容器、菜单项、分组或分割线写 border、圆角、背景和阴影。
+
+普通操作使用 `AppMenu.Item`，危险操作使用 `AppMenu.DangerItem`。整块危险提示型浮层仍使用 `AppPopover variant="danger"`，不要用 `AppMenu.DangerItem` 表达整块提示语义。
+
+`AppMenu.Popover` 默认使用菜单容器圆角和 8px 内容间距；内容已经有完整内边距、第三方面板、颜色面板或自定义业务面板时使用 `bodyPadding="none"`。
 
 ## 组件边界
 
@@ -124,4 +140,5 @@ LaTeX 编辑浮层因依赖编辑器选区和手工测量位置，不迁移 Hero
 2. 轻量表单提交，使用 `AppFormDialog`。
 3. 只读或展示型内容，只需要关闭、复制、打开等轻动作，使用 `AppDisplayDialog`。
 4. 复杂业务流程、树选择、上传队列、多步骤配置，使用 `AppModal`，并显式提供 `actions` 或 `footer`。
-5. 完全特殊的容器结构或 command palette 体验，才直接使用底层 `Modal`。
+5. 操作菜单使用 `AppMenu`。
+6. 完全特殊的容器结构或 command palette 体验，才直接使用底层 `Modal`。

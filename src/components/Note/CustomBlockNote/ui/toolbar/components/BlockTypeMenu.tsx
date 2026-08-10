@@ -5,8 +5,8 @@ import {
   getAvailableBlockTypeItems,
   type BlockTypeMenuItem,
 } from '@/components/Note/CustomBlockNote/ui/editorMenus/blockTypes';
+import { AppMenu } from '@/components/Overlay';
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
-import { Dropdown } from '@heroui/react';
 import clsx from 'clsx';
 import { Check, Heading } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,12 @@ function BlockTypeDropdownItem({
 }) {
   const Icon = item.icon;
   return (
-    <Dropdown.Item id={item.key} textValue={item.label} className={styles.blockTypeMenuItem}>
+    <AppMenu.Item
+      id={item.key}
+      textValue={item.label}
+      className={styles.blockTypeMenuItem}
+      selected={isSelected}
+    >
       <span className={styles.blockTypeMenuIcon}>
         <Icon size={20} aria-hidden="true" />
       </span>
@@ -31,7 +36,7 @@ function BlockTypeDropdownItem({
       <span className={styles.blockTypeMenuCheck} aria-hidden="true">
         {isSelected ? <Check size={16} /> : null}
       </span>
-    </Dropdown.Item>
+    </AppMenu.Item>
   );
 }
 
@@ -73,16 +78,16 @@ export function BlockTypeMenu(buttonGroupProps: ButtonGroupChildProps) {
   };
 
   return (
-    <Dropdown>
-      <Dropdown.Trigger>
+    <AppMenu>
+      <AppMenu.Trigger>
         <ToolbarButton
           {...buttonGroupProps}
           icon={<SelectedIcon size={20} aria-hidden="true" />}
           label={t('editor.blockType.label')}
         />
-      </Dropdown.Trigger>
-      <Dropdown.Popover className={styles.blockTypeMenuPopover} placement="bottom start">
-        <Dropdown.Menu
+      </AppMenu.Trigger>
+      <AppMenu.Popover className={styles.blockTypeMenuPopover} placement="bottom start">
+        <AppMenu.Menu
           aria-label={t('editor.blockType.label')}
           className={styles.blockTypeMenu}
           selectionMode="single"
@@ -98,10 +103,11 @@ export function BlockTypeMenu(buttonGroupProps: ButtonGroupChildProps) {
           ))}
 
           {state.headingItems.length > 0 ? (
-            <Dropdown.SubmenuTrigger>
-              <Dropdown.Item
+            <AppMenu.SubmenuTrigger>
+              <AppMenu.Item
                 id="more-headings"
                 textValue={t('editor.blockType.moreHeadings')}
+                selected={selectedInMoreHeading}
                 className={clsx(
                   styles.blockTypeMenuItem,
                   selectedInMoreHeading && styles.blockTypeMenuItemActive
@@ -113,10 +119,10 @@ export function BlockTypeMenu(buttonGroupProps: ButtonGroupChildProps) {
                 <span className={styles.blockTypeMenuLabel}>
                   {t('editor.blockType.moreHeadings')}
                 </span>
-                <Dropdown.SubmenuIndicator className={styles.blockTypeMenuCheck} />
-              </Dropdown.Item>
-              <Dropdown.Popover className={styles.blockTypeMenuPopover} placement="right top">
-                <Dropdown.Menu
+                <AppMenu.SubmenuIndicator className={styles.blockTypeMenuCheck} />
+              </AppMenu.Item>
+              <AppMenu.Popover className={styles.blockTypeMenuPopover} placement="right top">
+                <AppMenu.Menu
                   aria-label={t('editor.blockType.moreHeadings')}
                   className={styles.blockTypeMenu}
                   selectionMode="single"
@@ -130,9 +136,9 @@ export function BlockTypeMenu(buttonGroupProps: ButtonGroupChildProps) {
                       isSelected={selectedItem.key === item.key}
                     />
                   ))}
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown.SubmenuTrigger>
+                </AppMenu.Menu>
+              </AppMenu.Popover>
+            </AppMenu.SubmenuTrigger>
           ) : null}
 
           {state.primaryItems.slice(4).map((item) => (
@@ -142,8 +148,8 @@ export function BlockTypeMenu(buttonGroupProps: ButtonGroupChildProps) {
               isSelected={selectedItem.key === item.key}
             />
           ))}
-        </Dropdown.Menu>
-      </Dropdown.Popover>
-    </Dropdown>
+        </AppMenu.Menu>
+      </AppMenu.Popover>
+    </AppMenu>
   );
 }

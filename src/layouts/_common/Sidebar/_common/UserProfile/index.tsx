@@ -1,11 +1,12 @@
 import AppAvatar from '@/components/Avatar';
+import { AppMenu } from '@/components/Overlay';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
 import type { User } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button, Dropdown } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { useMount } from 'ahooks';
 import clsx from 'clsx';
 import {
@@ -138,117 +139,115 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
   );
 
   const userMenu = (
-    <Dropdown.Popover placement="top left">
-      <Dropdown.Menu
+    <AppMenu.Popover placement="top left" className={styles.profileMenuPopover} bodyPadding="none">
+      <AppMenu.Menu
         aria-label={t('userMenu.aria')}
         className={styles.profileMenu}
         onAction={handleMenuAction}
       >
         {menuMode === 'admin' ? (
           <>
-            <Dropdown.Item
+            <AppMenu.Item
               id="back-app"
               textValue={t('userMenu.backToApp')}
               className={styles.profileMenuItem}
             >
               <Home size={16} />
               <span>{t('userMenu.backToApp')}</span>
-            </Dropdown.Item>
-            <Dropdown.Item
+            </AppMenu.Item>
+            <AppMenu.Item
               id="about"
               textValue={t('userMenu.about')}
               className={styles.profileMenuItem}
             >
               <Info size={16} />
               <span>{t('userMenu.about')}</span>
-            </Dropdown.Item>
-            <Dropdown.Item
+            </AppMenu.Item>
+            <AppMenu.DangerItem
               id="logout"
               textValue={t('userMenu.logout')}
-              variant="danger"
               className={styles.profileMenuItem}
             >
               <LogOut size={16} />
               <span>{t('userMenu.logout')}</span>
-            </Dropdown.Item>
+            </AppMenu.DangerItem>
           </>
         ) : (
           <>
-            <Dropdown.Item
+            <AppMenu.Item
               id="usage"
               textValue={t('userMenu.usage')}
               className={styles.profileMenuItem}
             >
               <ChartPie size={16} />
               <span>{t('userMenu.usage')}</span>
-            </Dropdown.Item>
-            <Dropdown.Item
+            </AppMenu.Item>
+            <AppMenu.Item
               id="account"
               textValue={t('userMenu.account')}
               className={styles.profileMenuItem}
             >
               <ShieldUser size={16} />
               <span>{t('userMenu.account')}</span>
-            </Dropdown.Item>
-            <Dropdown.Item
+            </AppMenu.Item>
+            <AppMenu.Item
               id="appearance"
               textValue={t('userMenu.appearance')}
               className={styles.profileMenuItem}
             >
               <Palette size={16} />
               <span>{t('userMenu.appearance')}</span>
-            </Dropdown.Item>
-            <Dropdown.Item
+            </AppMenu.Item>
+            <AppMenu.Item
               id="feedback"
               textValue={t('userMenu.feedback')}
               className={styles.profileMenuItem}
             >
               <MessageSquare size={16} />
               <span>{t('userMenu.feedback')}</span>
-            </Dropdown.Item>
+            </AppMenu.Item>
             {isAdmin && (
-              <Dropdown.Item
+              <AppMenu.Item
                 id="enter-admin"
                 textValue={t('userMenu.enterAdmin')}
                 className={styles.profileMenuItem}
               >
                 <Shield size={16} />
                 <span>{t('userMenu.enterAdmin')}</span>
-              </Dropdown.Item>
+              </AppMenu.Item>
             )}
-            <Dropdown.Item
+            <AppMenu.Item
               id="about"
               textValue={t('userMenu.about')}
               className={styles.profileMenuItem}
             >
               <Info size={16} />
               <span>{t('userMenu.about')}</span>
-            </Dropdown.Item>
-            <Dropdown.Item
+            </AppMenu.Item>
+            <AppMenu.DangerItem
               id="logout"
               textValue={t('userMenu.logout')}
-              variant="danger"
               className={styles.profileMenuItem}
             >
               <LogOut size={16} />
               <span>{t('userMenu.logout')}</span>
-            </Dropdown.Item>
+            </AppMenu.DangerItem>
           </>
         )}
-      </Dropdown.Menu>
-    </Dropdown.Popover>
+      </AppMenu.Menu>
+    </AppMenu.Popover>
   );
 
   return (
     <>
       <div className={clsx(styles.profile, !collapsed && styles.expanded)}>
         {collapsed ? (
-          <Dropdown>
-            <Dropdown.Trigger aria-label={t('userMenu.openAria')} className={styles.avatarTrigger}>
+          <AppMenu>
+            <AppMenu.Trigger aria-label={t('userMenu.openAria')} className={styles.avatarTrigger}>
               {userAvatar}
-            </Dropdown.Trigger>
+            </AppMenu.Trigger>
             {userMenu}
-          </Dropdown>
+          </AppMenu>
         ) : (
           <>
             {userAvatar}
@@ -256,15 +255,15 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
               <span className={styles.username}>{displayName}</span>
               <span className={styles.tag}>{identityLabel}</span>
             </div>
-            <Dropdown>
-              <Dropdown.Trigger
+            <AppMenu>
+              <AppMenu.Trigger
                 aria-label={t('userMenu.openSettingsAria')}
                 className={styles.menuTrigger}
               >
                 <Settings size={16} aria-hidden="true" />
-              </Dropdown.Trigger>
+              </AppMenu.Trigger>
               {userMenu}
-            </Dropdown>
+            </AppMenu>
           </>
         )}
       </div>

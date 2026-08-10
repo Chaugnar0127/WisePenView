@@ -119,12 +119,10 @@
 .popover {
   width: 15rem;
   max-width: calc(100vw - var(--space-md));
-  padding: 0;
-  border-radius: var(--app-radius-popover, min(32px, var(--radius-3xl))) !important;
+}
 
-  :global(.menu-item) {
-    border-radius: var(--app-radius-popover-item, var(--radius-xl)) !important;
-  }
+.moreMenu {
+  padding: var(--app-popover-content-padding, var(--space-xs));
 }
 
 .menuItemContent {

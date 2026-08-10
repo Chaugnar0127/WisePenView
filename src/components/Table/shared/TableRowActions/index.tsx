@@ -1,5 +1,5 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { Dropdown } from '@heroui/react';
+import { AppMenu } from '@/components/Overlay';
 import { EllipsisVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TableRowActionsProps } from './index.type';
@@ -14,35 +14,45 @@ function TableRowActions({ actions, ariaLabel, onAction }: TableRowActionsProps)
   }
 
   return (
-    <Dropdown>
+    <AppMenu>
       <AppIconButton
         icon={<EllipsisVertical size={16} aria-hidden="true" />}
         label={resolvedAriaLabel}
         size="sm"
         className={styles.trigger}
-        overlayTrigger={<Dropdown.Trigger />}
+        overlayTrigger={<AppMenu.Trigger />}
       />
-      <Dropdown.Popover placement="bottom end">
-        <Dropdown.Menu
+      <AppMenu.Popover placement="bottom end">
+        <AppMenu.Menu
           aria-label={resolvedAriaLabel}
           onAction={(key) => {
             onAction(String(key));
           }}
         >
-          {actions.map((action) => (
-            <Dropdown.Item
-              key={action.key}
-              id={action.key}
-              textValue={typeof action.label === 'string' ? action.label : action.key}
-              isDisabled={action.disabled}
-              variant={action.variant === 'danger' ? 'danger' : undefined}
-            >
-              {action.label}
-            </Dropdown.Item>
-          ))}
-        </Dropdown.Menu>
-      </Dropdown.Popover>
-    </Dropdown>
+          {actions.map((action) =>
+            action.variant === 'danger' ? (
+              <AppMenu.DangerItem
+                key={action.key}
+                id={action.key}
+                textValue={typeof action.label === 'string' ? action.label : action.key}
+                isDisabled={action.disabled}
+              >
+                {action.label}
+              </AppMenu.DangerItem>
+            ) : (
+              <AppMenu.Item
+                key={action.key}
+                id={action.key}
+                textValue={typeof action.label === 'string' ? action.label : action.key}
+                isDisabled={action.disabled}
+              >
+                {action.label}
+              </AppMenu.Item>
+            )
+          )}
+        </AppMenu.Menu>
+      </AppMenu.Popover>
+    </AppMenu>
   );
 }
 

@@ -66,6 +66,10 @@ ComponentName/
 - `AppIconButton` 作为 Popover、Dropdown 等浮层触发器时，通过 `overlayTrigger` 组合，不在调用点重复拼装 Tooltip 或设置 `tooltip={false}`。
 - Tooltip 方向由所在控件组统一决定，不由单个按钮随意选择：顶部工具栏向下、底部工具栏向上、左侧竖向工具栏向右、右侧竖向工具栏向左；同一控件组必须一致，仅在视口空间不足时允许浮层自动翻转。
 - 表格、菜单、tabs、开关、滑块等控件使用符合用户预期的交互形态。
+- 弹窗 footer 的确定/取消按钮由 Overlay 组件统一控制间距，业务代码只按视觉顺序传入按钮或 actions。
+- 页面级业务操作、表单提交/取消、创建/加入等并排文字按钮保持独立按钮，用 flex 容器和语义间距 token 排布，不使用会形成胶囊样式的 `ButtonGroup`。
+- 只有同一工具栏内的紧密图标按钮、强关联分段操作或显式 toggle 场景使用 `ButtonGroup` / `ToggleButtonGroup`。
+- 禁止用 `gap: 8px`、`marginLeft`、`marginRight` 等硬编码手动控制按钮间距；弹窗 footer 间距使用 `var(--space-sm, 12px)`。
 
 ## 七、检查清单
 

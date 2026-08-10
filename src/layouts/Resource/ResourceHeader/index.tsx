@@ -355,45 +355,49 @@ function ResourceHeader({
           {titleMeta ? <span className={styles.titleMeta}>{titleMeta}</span> : null}
         </div>
         <div className={styles.actions}>
-          {leadingActions}
-          {actions}
-          {resourceId ? (
-            <ResourceHeaderOperations
-              resourceId={resourceId}
-              resourceName={resourceName}
-              resourceType={resourceType ?? permissionResourceType}
-              resourceInfo={resourceInfo}
-              currentActions={currentActions}
-              copyVersion={copyVersion}
-              onResolve={(operations) => (
-                <ResourceHeaderMore
-                  menu={moreMenu}
-                  operations={operations}
-                  canManagePermission={canManagePermission}
-                  isDisabled={isDisabled}
-                  onOpenPermission={() => setIsPermissionModalOpen(true)}
+          {leadingActions ? <div className={styles.actionGroup}>{leadingActions}</div> : null}
+          {actions ? <div className={styles.actionGroup}>{actions}</div> : null}
+          {resourceId || trailingActions || onToggleChatPanel ? (
+            <div className={styles.actionGroup}>
+              {resourceId ? (
+                <ResourceHeaderOperations
+                  resourceId={resourceId}
+                  resourceName={resourceName}
+                  resourceType={resourceType ?? permissionResourceType}
+                  resourceInfo={resourceInfo}
+                  currentActions={currentActions}
+                  copyVersion={copyVersion}
+                  onResolve={(operations) => (
+                    <ResourceHeaderMore
+                      menu={moreMenu}
+                      operations={operations}
+                      canManagePermission={canManagePermission}
+                      isDisabled={isDisabled}
+                      onOpenPermission={() => setIsPermissionModalOpen(true)}
+                    />
+                  )}
                 />
-              )}
-            />
-          ) : null}
-          {trailingActions}
-          {onToggleChatPanel ? (
-            <AppIconButton
-              icon={
-                chatPanelCollapsed ? (
-                  <PanelRightOpen size={18} aria-hidden="true" />
-                ) : (
-                  <PanelRightClose size={18} aria-hidden="true" />
-                )
-              }
-              label={
-                chatPanelCollapsed
-                  ? t('panel.expand', { ns: 'chat' })
-                  : t('panel.collapse', { ns: 'chat' })
-              }
-              size="sm"
-              onPress={onToggleChatPanel}
-            />
+              ) : null}
+              {trailingActions}
+              {onToggleChatPanel ? (
+                <AppIconButton
+                  icon={
+                    chatPanelCollapsed ? (
+                      <PanelRightOpen size={18} aria-hidden="true" />
+                    ) : (
+                      <PanelRightClose size={18} aria-hidden="true" />
+                    )
+                  }
+                  label={
+                    chatPanelCollapsed
+                      ? t('panel.expand', { ns: 'chat' })
+                      : t('panel.collapse', { ns: 'chat' })
+                  }
+                  size="sm"
+                  onPress={onToggleChatPanel}
+                />
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

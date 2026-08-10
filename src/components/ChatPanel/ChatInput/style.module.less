@@ -458,6 +458,12 @@
   white-space: nowrap;
 }
 
+.agentGroupAction {
+  justify-content: flex-start;
+  width: 100%;
+  margin-top: var(--space-xs);
+}
+
 .agentGroupTreeWrap {
   margin-top: var(--space-xs);
   padding-top: var(--space-xs);
@@ -483,6 +489,28 @@
     min-height: 24px;
     border-radius: var(--radius-lg);
   }
+}
+
+.agentGroupModalBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.agentGroupModalHint {
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+}
+
+.agentGroupModalTree {
+  min-height: 240px;
+  max-height: min(52vh, 460px);
+  overflow: auto;
+  padding: var(--space-xs);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  background: var(--background);
 }
 
 .agentGroupTitle,

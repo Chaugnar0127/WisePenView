@@ -37,9 +37,9 @@
   --color-accent-selected: var(--accent-selected);
 
   --color-sidebar-surface: var(--sidebar-surface);
-  --color-sidebar-item-hover: var(--sidebar-item-hover);
-  --color-sidebar-item-selected: var(--sidebar-item-selected);
-  --color-sidebar-item-selected-hover: var(--sidebar-item-selected-hover);
+  --color-sidebar-item-hover: var(--item-hover);
+  --color-sidebar-item-selected: var(--item-selected);
+  --color-sidebar-item-selected-hover: var(--item-selected-hover);
 
   --color-segment: var(--segment);
   --color-segment-foreground: var(--segment-foreground);

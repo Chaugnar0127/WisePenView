@@ -85,17 +85,17 @@
 
   &:hover:not([data-selected='true']) {
     color: var(--foreground);
-    background: var(--sidebar-item-hover);
+    background: var(--item-hover);
   }
 
   &[data-selected='true'] {
     color: var(--accent-text-strong);
-    background: var(--sidebar-item-selected);
+    background: var(--item-selected);
     font-weight: var(--font-weight-semibold);
     padding-inline: var(--sidebar-tab-pad-x-selected);
 
     &:hover {
-      background: var(--sidebar-item-selected-hover);
+      background: var(--item-selected-hover);
     }
 
     .tabLabel {
@@ -304,19 +304,19 @@
   &[data-hovered],
   &[data-focus-visible] {
     color: var(--foreground);
-    background: var(--sidebar-item-hover);
+    background: var(--item-hover);
   }
 
   &[data-selected] {
     color: var(--accent-text-strong);
-    background: var(--sidebar-item-selected);
+    background: var(--item-selected);
     font-weight: var(--font-weight-semibold);
 
     &:hover,
     &[data-hovered],
     &[data-focus-visible] {
       color: var(--accent-text-strong);
-      background: var(--sidebar-item-selected-hover);
+      background: var(--item-selected-hover);
     }
   }
 

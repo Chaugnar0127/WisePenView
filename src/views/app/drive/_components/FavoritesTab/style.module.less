@@ -84,16 +84,20 @@
 
 .collectionListItem:hover:not([data-selected='true']),
 .collectionListItem[data-hovered='true']:not([data-selected='true']) {
-  background: var(--accent-soft);
+  color: var(--foreground);
+  background: var(--item-hover);
 }
 
 .collectionListItem[data-selected='true'] {
-  background: var(--accent-soft-hover);
+  color: var(--accent-text-strong);
+  background: var(--item-selected);
+  font-weight: var(--font-weight-semibold);
 }
 
 .collectionListItem[data-selected='true']:hover,
 .collectionListItem[data-selected='true'][data-hovered='true'] {
-  background: var(--accent-selected);
+  color: var(--accent-text-strong);
+  background: var(--item-selected-hover);
 }
 
 .collectionListItemContent {

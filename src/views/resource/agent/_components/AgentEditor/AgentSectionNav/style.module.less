@@ -51,9 +51,14 @@
 }
 
 .nav button.active {
-  color: var(--accent-text);
-  background: var(--accent-soft);
+  color: var(--accent-text-strong);
+  background: var(--item-selected);
   font-weight: var(--font-weight-semibold);
+
+  &:hover {
+    color: var(--accent-text-strong);
+    background: var(--item-selected-hover);
+  }
 
   &::before {
     background: var(--accent);

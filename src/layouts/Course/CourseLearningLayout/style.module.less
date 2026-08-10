@@ -190,10 +190,26 @@
     width: 100%;
     padding-right: 0;
     border-radius: var(--radius-md, 6px);
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
 
     &:hover,
     &:focus-within {
-      background: var(--accent-soft);
+      color: var(--foreground);
+      background: var(--item-hover);
+    }
+  }
+
+  :global(.wisepen-tree__item[aria-selected='true']) {
+    color: var(--accent-text-strong);
+    background: var(--item-selected);
+    font-weight: var(--font-weight-semibold);
+
+    &:hover,
+    &:focus-within {
+      color: var(--accent-text-strong);
+      background: var(--item-selected-hover);
     }
   }
 

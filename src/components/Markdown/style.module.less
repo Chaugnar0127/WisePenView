@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .markdown {
   white-space: normal;
   word-break: break-word;
@@ -181,6 +183,7 @@
   margin: 0 0 var(--space-md);
   overflow-x: auto;
   overflow-y: hidden;
+  .appSubtleScrollbar();
   text-align: center;
 
   :global(.katex-display) {
@@ -226,6 +229,7 @@
   width: 100%;
   margin: 0 0 var(--space-sm);
   overflow-x: auto;
+  .appSubtleScrollbar();
 }
 
 .tableAlignLeft {

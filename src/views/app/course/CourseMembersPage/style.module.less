@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .page {
   --course-workflow-gutter: clamp(var(--space-xl), 5vw, 64px);
   box-sizing: border-box;
@@ -25,6 +27,7 @@
 .contentArea {
   min-width: 0;
   overflow-x: auto;
+  .appSubtleScrollbar();
 }
 
 @media (max-width: 760px) {

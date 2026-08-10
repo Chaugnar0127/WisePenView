@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .pageWrap {
   min-height: 0;
 }
@@ -14,6 +16,7 @@
   min-height: 0;
   height: 100%;
   overflow: auto;
+  .appSubtleScrollbarStable();
   background: var(--surface);
   scroll-behavior: smooth;
 }
@@ -28,7 +31,7 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 .saveStatus {
   color: var(--muted);

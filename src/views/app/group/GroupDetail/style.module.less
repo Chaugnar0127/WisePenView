@@ -23,28 +23,7 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  .appSubtleScrollbar();
-  /* 默认隐藏滑块，悬停内容区再露出中性灰条 */
-  scrollbar-color: transparent transparent;
-
-  &::-webkit-scrollbar-thumb {
-    background: transparent;
-    background-clip: content-box;
-  }
-
-  &:hover {
-    scrollbar-color: var(--border) transparent;
-
-    &::-webkit-scrollbar-thumb {
-      background: var(--border);
-      background-clip: content-box;
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-      background: var(--muted);
-      background-clip: content-box;
-    }
-  }
+  .appSubtleScrollbarAutoHide();
 }
 
 /* 返回行部分占用页顶 padding；略留出一点，避免贴顶 */

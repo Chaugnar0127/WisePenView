@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .root {
   position: relative;
   box-sizing: border-box;
@@ -170,6 +172,7 @@
   min-height: 0;
   flex: 1;
   overflow-y: auto;
+  .appSubtleScrollbarStable();
   padding: 0 var(--space-sm) var(--space-md);
 }
 
@@ -369,6 +372,7 @@
   max-height: 360px;
   padding: var(--space-sm);
   overflow-y: auto;
+  .appSubtleScrollbar();
   border: 1px solid var(--border);
   border-radius: var(--radius-md, 6px);
 
@@ -472,6 +476,7 @@
   align-content: center;
   padding: var(--space-xl);
   overflow-y: auto;
+  .appSubtleScrollbar();
   color: var(--muted);
   text-align: center;
 }

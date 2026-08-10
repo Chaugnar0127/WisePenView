@@ -1,6 +1,9 @@
+@import '@/styles/scrollbar.module.less';
+
 .resourcePickerBody {
   height: min(420px, 58vh);
   overflow: auto;
+  .appSubtleScrollbar();
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
 }

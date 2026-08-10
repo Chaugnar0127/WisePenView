@@ -1,3 +1,4 @@
+@import '@/styles/scrollbar.module.less';
 @import '../../../../../components/Table/shared/styles/table.module.less';
 
 .container {
@@ -72,6 +73,7 @@
 .collectionList {
   min-height: 0;
   overflow-y: auto;
+  .appSubtleScrollbar();
 }
 
 .collectionListItem {

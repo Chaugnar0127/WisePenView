@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .permissionCard {
   display: flex;
   min-width: 0;
@@ -50,6 +52,7 @@
 .permissionTableShell {
   min-width: 0;
   overflow: auto;
+  .appSubtleScrollbar();
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   background: var(--surface);

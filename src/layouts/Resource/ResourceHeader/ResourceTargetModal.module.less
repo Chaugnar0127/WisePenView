@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -13,6 +15,7 @@
   min-height: 280px;
   max-height: 380px;
   overflow: auto;
+  .appSubtleScrollbar();
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--space-xs);

@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .container {
   flex-shrink: 0;
   padding: var(--chat-input-container-padding-block, var(--space-sm)) 0 var(--space-2xs);
@@ -46,31 +48,9 @@
     gap: var(--space-xs);
     overflow-x: auto;
     overflow-y: hidden;
+    .appSubtleScrollbar();
     padding-block: var(--space-2xs) var(--space-xs);
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin !important;
-    scrollbar-color: var(--scrollbar-thumb) transparent !important;
-
-    &::-webkit-scrollbar {
-      display: block !important;
-      width: 1px !important;
-      height: 1px !important;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent !important;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      border: 0 !important;
-      border-radius: 999px;
-      background: var(--scrollbar-thumb) !important;
-      background-clip: border-box !important;
-    }
-
-    &:hover::-webkit-scrollbar-thumb {
-      background: var(--scrollbar-thumb-hover) !important;
-    }
   }
 }
 
@@ -119,6 +99,7 @@
   min-height: calc(1.6em + 16px);
   max-height: var(--chat-input-textarea-max-height, calc(16em + 16px));
   overflow-y: auto;
+  .appSubtleScrollbar();
   resize: none !important;
   field-sizing: content;
   border: none !important;
@@ -228,25 +209,7 @@
   height: min(360px, 70vh);
   max-height: 420px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) transparent;
-
-  &::-webkit-scrollbar {
-    width: 1px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: var(--scrollbar-thumb);
-  }
-
-  &:hover::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb-hover);
-  }
+  .appSubtleScrollbar();
 }
 
 .modelMenu {
@@ -284,6 +247,7 @@
   width: 240px;
   max-height: 280px;
   overflow-y: auto;
+  .appSubtleScrollbar();
 }
 
 .popoverPanelAgentSkeleton {
@@ -507,6 +471,7 @@
   min-height: 240px;
   max-height: min(52vh, 460px);
   overflow: auto;
+  .appSubtleScrollbar();
   padding: var(--space-xs);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);

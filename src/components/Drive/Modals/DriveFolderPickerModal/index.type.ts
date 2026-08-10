@@ -1,5 +1,4 @@
-import type { DriveNode } from '@/domains/Drive';
-import type { DriveSelectionItem } from '../../common/driveComponentModel';
+import type { DriveContainerNode, DriveNode } from '@/domains/Drive';
 
 export interface DriveFolderPickerModalProps {
   isOpen: boolean;
@@ -13,5 +12,5 @@ export interface DriveFolderPickerModalProps {
   confirmText?: string;
   cancelText?: string;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (target: DriveSelectionItem) => void;
+  onConfirm: (target: DriveContainerNode) => void;
 }

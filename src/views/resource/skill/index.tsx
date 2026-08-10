@@ -164,6 +164,7 @@ function SkillView({ resourceId }: SkillViewProps) {
         resourceId: resource.skill?.resourceId ?? resourceId,
         resourceName: resource.skill?.title || t('page.resourceFallbackName'),
         resourceIconType: 'skill',
+        resourceInfo: resource.skill?.resourceInfo,
         currentActions: resource.skill?.currentActions,
         copyVersion: resource.skill?.version,
         permissionResourceType: RESOURCE_KIND.SKILL,

@@ -1,4 +1,5 @@
 import type { NumericEnumApiValue } from '@/apis/api.type';
+import type { UserDisplayBaseApiResponse } from '@/domains/User/apis/UserApi.type';
 
 type TagAccessControlScopeApiValue = 0 | 1 | 2 | 3;
 type TagResourceActionApiKey =
@@ -35,12 +36,12 @@ export interface ChangeTagApiRequest extends Omit<AddTagApiRequest, 'parentId' |
   targetTagId: string;
 }
 
-export interface RemoveTagApiRequest {
+export interface RemoveTagsApiRequest {
   groupId?: string;
-  targetTagId: string;
+  targetTagIds: string[];
 }
 
-export interface MoveTagApiRequest extends RemoveTagApiRequest {
+export interface MoveTagsApiRequest extends RemoveTagsApiRequest {
   newParentId?: string;
 }
 
@@ -57,6 +58,7 @@ export interface TagTreeApiResponse {
   tagColor?: string;
   tagMetaInfo?: string;
   tagCreator?: string;
+  creatorInfo?: UserDisplayBaseApiResponse | null;
   isPath?: boolean;
   visibilityMode?: string;
   taggedResourceAclGrantScope?: TagAccessControlScopeApiValue;

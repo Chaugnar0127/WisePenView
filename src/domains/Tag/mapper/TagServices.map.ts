@@ -9,6 +9,7 @@ import {
   type TagResourceAction,
   type TagVisibilityModeString,
 } from '@/domains/Tag';
+import { normalizeUserDisplayBaseFromApi } from '@/domains/User/mapper/userEnum.mapper';
 import { normalizeTagGroupId } from '@/utils/normalize/normalizeTagGroupId';
 import type {
   AddTagApiRequest,
@@ -117,6 +118,7 @@ const mapTagTreeNodeFromApi = (node: GetTagTreeApiResponse[number]): TagTreeNode
   return {
     ...node,
     tagMetaInfo,
+    creatorInfo: normalizeUserDisplayBaseFromApi(node.creatorInfo),
     // fallback：兼容后端返回未约束的 visibilityMode 字符串
     visibilityMode: normalizedVisibilityMode,
     taggedResourceAclGrantScope: coerceAccessControlScope(node.taggedResourceAclGrantScope),

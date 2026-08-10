@@ -3,6 +3,7 @@ import {
   getDriveNodeLabel,
   getDriveScopeGroupId,
   type DriveActionTarget,
+  type DriveViewNode,
 } from '@/components/Drive/common/driveComponentModel';
 import {
   DriveCreateModal,
@@ -20,7 +21,7 @@ import {
 import type { DataNode } from '@/components/Tree';
 import Tree from '@/components/Tree';
 import { useGroupService, useNoteService } from '@/domains';
-import type { DriveNode, FolderNode, RootNode } from '@/domains/Drive';
+import type { DriveResourceLocation, FolderNode, RootNode } from '@/domains/Drive';
 import { useOpenResource } from '@/hooks/useOpenResource';
 import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
@@ -81,6 +82,12 @@ function SidebarDrive() {
     if (node.type === 'folder') return node.tagId;
     return node.canMountResources ? node.tagId : undefined;
   };
+  const resolveContainerResourceLocation = (
+    node: RootNode | FolderNode
+  ): DriveResourceLocation | undefined => {
+    const mountTagId = resolveContainerMountTagId(node);
+    return mountTagId ? { scope: node.scope, mountTagId } : undefined;
+  };
 
   const {
     fileInputRef: markdownFileInputRef,
@@ -105,7 +112,7 @@ function SidebarDrive() {
         resourceId,
         resourceType: RESOURCE_KIND.NOTE,
         resourceName: title,
-        driveLocation: { scope: target.scope, parentNodeId: target.id },
+        driveLocation: resolveContainerResourceLocation(target),
       });
     },
     onError: () => {
@@ -148,8 +155,8 @@ function SidebarDrive() {
   };
 
   function buildChildrenData(
-    nodes: DriveNode[],
-    targetNodeMap: Map<string, DriveNode>,
+    nodes: DriveViewNode[],
+    targetNodeMap: Map<string, DriveViewNode>,
     controls: {
       handleCollapseAll: () => void;
       handleLoadMore: (parentNodeId: string) => void;
@@ -202,8 +209,7 @@ function SidebarDrive() {
         resourceName: node.title,
         driveLocation: {
           scope: node.scope,
-          nodeId: node.id,
-          parentNodeId: node.parentId,
+          mountTagId: node.mountTagId,
         },
       });
     },
@@ -236,7 +242,7 @@ function SidebarDrive() {
         openResource({
           resourceId,
           resourceType: RESOURCE_KIND.NOTE,
-          driveLocation: { scope: target.scope, parentNodeId: target.id },
+          driveLocation: resolveContainerResourceLocation(target),
         });
       },
       onError: (err) => {
@@ -299,8 +305,7 @@ function SidebarDrive() {
         <DriveCreateModal
           type={driveCreateTarget.type}
           isOpen
-          parentId={driveCreateTarget.target.id}
-          groupId={getDriveScopeGroupId(driveCreateTarget.target.scope)}
+          parent={driveCreateTarget.target}
           pathTagId={resolveContainerMountTagId(driveCreateTarget.target)}
           parentLabel={getDriveNodeLabel(driveCreateTarget.target)}
           existingFolderNames={existingFolderNames}
@@ -318,7 +323,7 @@ function SidebarDrive() {
             openResource({
               resourceId: createdId,
               resourceType: type,
-              driveLocation: { scope: target.scope, parentNodeId: target.id },
+              driveLocation: resolveContainerResourceLocation(target),
             });
           }}
         />
@@ -326,7 +331,6 @@ function SidebarDrive() {
       <RenameNodeModal
         isOpen={Boolean(renameTarget)}
         node={renameTarget}
-        groupId={groupId}
         onOpenChange={(open) => {
           if (!open) setRenameTarget(null);
         }}
@@ -335,7 +339,7 @@ function SidebarDrive() {
       {isDeleteTargetInTrash ? (
         <TrashDeleteModal
           isOpen={Boolean(deleteTarget)}
-          node={deleteTarget}
+          nodes={deleteTarget ? [deleteTarget] : []}
           onOpenChange={(open) => {
             if (!open) setDeleteTarget(null);
           }}
@@ -345,7 +349,6 @@ function SidebarDrive() {
         <DriveDeleteModal
           isOpen={Boolean(deleteTarget)}
           node={deleteTarget}
-          groupId={groupId}
           onOpenChange={(open) => {
             if (!open) setDeleteTarget(null);
           }}

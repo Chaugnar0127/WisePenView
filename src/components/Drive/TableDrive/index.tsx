@@ -79,8 +79,7 @@ const attachDriveDragOverlayToCursor: Modifier = ({
 const driveDragOverlayModifiers: Modifiers = [attachDriveDragOverlayToCursor];
 
 function toBreadcrumbItems(pathNodes: DriveNode[], scope: DriveNodeScope): AppBreadcrumbItem[] {
-  const visibleNodes = pathNodes.filter((node) => node.type !== 'loading');
-  return visibleNodes.map((node, index) => ({
+  return pathNodes.map((node, index) => ({
     key: node.id,
     label: (
       <>
@@ -88,7 +87,7 @@ function toBreadcrumbItems(pathNodes: DriveNode[], scope: DriveNodeScope): AppBr
         {getDriveNodeLabel(node)}
       </>
     ),
-    ...(index < visibleNodes.length - 1
+    ...(index < pathNodes.length - 1
       ? { to: buildDrivePath({ scope, nodeId: node.id }) }
       : { current: true }),
   }));
@@ -131,9 +130,9 @@ function TableDrive({
   const dnd = useTableDriveDndController({
     rowMap: interaction.rowMap,
     pathNodes: navigation.pathNodes,
-    checkedRowKeys: interaction.checkedRowKeys,
-    groupId: resolvedScope.groupId,
+    checkedRowKeys: interaction.selectedActionTargetKeys,
     onMoveSuccess: handleNodeActionSuccess,
+    onMoveError: navigation.refresh,
   });
 
   // 封装一个通用的进入目录回调，清理选中状态并刷新列表
@@ -174,7 +173,8 @@ function TableDrive({
   const actionsController = useTableDriveActionsController({
     currentNodeId: navigation.currentNodeId,
     currentRows: interaction.rows,
-    checkedRowKeys: interaction.checkedRowKeys,
+    selectedActionTargets: interaction.selectedActionTargets,
+    pathNodes: navigation.pathNodes,
     scope: resolvedScope.scope,
     actions,
     disabled: externalLoading,
@@ -185,9 +185,9 @@ function TableDrive({
   });
 
   const columns = buildDriveTableColumns(t, resolvedScope.scope.type === 'group');
-  const isEditMode = interaction.checkedRowKeys.size > 0;
+  const isEditMode = interaction.selectedActionTargets.length > 0;
   const checkboxSelection = {
-    selectedKeys: interaction.checkedRowKeys,
+    selectedKeys: interaction.selectedActionTargetKeys,
     onSelectionChange: (keys: Set<string>) => {
       interaction.setCheckedRowKeys(keys);
       if (keys.size > 0) {
@@ -294,7 +294,7 @@ function TableDrive({
         <Button variant="secondary" size="sm" onPress={interaction.clearChecked}>
           {t('table.clearSelection')}
         </Button>
-        {interaction.canBatchMove ? (
+        {interaction.canMoveSelection ? (
           <Button
             variant="secondary"
             size="sm"
@@ -303,16 +303,14 @@ function TableDrive({
             {t('table.move')}
           </Button>
         ) : null}
-        {!trash.isTrashView ? (
-          <Button
-            variant="danger"
-            size="sm"
-            isDisabled={actionsController.batchDeleting}
-            onPress={actionsController.runBatchDelete}
-          >
-            {t('actions.delete', { ns: 'common' })}
-          </Button>
-        ) : null}
+        <Button
+          variant="danger"
+          size="sm"
+          isDisabled={actionsController.batchDeleting}
+          onPress={actionsController.runBatchDelete}
+        >
+          {trash.isTrashView ? t('delete.permanent') : t('actions.delete', { ns: 'common' })}
+        </Button>
       </div>
     );
   })();
@@ -378,7 +376,7 @@ function TableDrive({
                   key={interaction.selectedRow?.id ?? (isEditMode ? 'edit-mode' : 'empty')}
                   selectedRow={interaction.selectedRow}
                   isEditMode={isEditMode}
-                  selectedCount={interaction.checkedRowKeys.size}
+                  selectedCount={interaction.selectedActionTargets.length}
                 />
               ) : null}
             </aside>

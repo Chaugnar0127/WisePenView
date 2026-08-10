@@ -151,6 +151,7 @@ const zhCNDrive = {
       removedFromGroup: '已从小组移除',
       movedToTrash: '已移入回收站',
       permanentlyDeleted: '已永久删除',
+      permanentlyDeletedBatch: '已永久删除 {{count}} 项',
     },
     description: {
       link: '确定删除「{{name}}」在当前文件夹中的链接吗？文件本体不会被删除。',
@@ -162,6 +163,7 @@ const zhCNDrive = {
       resource: '确定将「{{name}}」移入回收站吗？它的所有链接会同步失效，之后可从回收站恢复。',
       permanentFolder: '确定永久删除「{{name}}」及其下属内容吗？此操作不可撤销。',
       permanentResource: '确定永久删除「{{name}}」吗？此操作不可撤销。',
+      permanentBatch: '确定永久删除选中的 {{count}} 项吗？此操作不可撤销。',
     },
   },
   move: {

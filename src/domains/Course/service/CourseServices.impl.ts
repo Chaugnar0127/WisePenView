@@ -160,36 +160,6 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
     return resources;
   };
 
-  const findCourseOutlineResourceInTag = async (
-    courseId: string,
-    tagId: string,
-    resourceId: string
-  ): Promise<ResourceItem | undefined> => {
-    let page = 1;
-
-    while (true) {
-      const result = await resourceService.getGroupResources({
-        groupId: courseId,
-        page,
-        size: COURSE_RESOURCE_PAGE_SIZE,
-        sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
-        sortDir: RESOURCE_SORT_DIR.DESC,
-        tagIds: [tagId],
-        tagQueryLogicMode: TAG_QUERY_LOGIC_MODE.AND,
-      });
-      const resource = result.list.find((item) => item.resourceId === resourceId);
-      if (resource) return resource;
-
-      const reachedKnownTotal =
-        result.total > 0 && page * COURSE_RESOURCE_PAGE_SIZE >= result.total;
-      const reachedKnownLastPage = result.totalPage > 0 && page >= result.totalPage;
-      const reachedShortPage = result.list.length < COURSE_RESOURCE_PAGE_SIZE;
-      if (reachedKnownTotal || reachedKnownLastPage || reachedShortPage) return undefined;
-
-      page += 1;
-    }
-  };
-
   const getCourseOutline: ICourseService['getCourseOutline'] = async (courseId) => {
     const outlineRoot = await getCourseOutlineRoot(courseId);
     const outlineTags = outlineRoot.children ?? [];
@@ -231,68 +201,6 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
     return tagService.addTag({ groupId: courseId, parentId: targetParentId, tagName: name });
   };
 
-  const updateCourseResourceMount = async (
-    courseId: string,
-    resourceId: string,
-    sourceNodeId: string,
-    targetNodeId?: string
-  ) => {
-    const resource = await findCourseOutlineResourceInTag(courseId, sourceNodeId, resourceId);
-    if (!resource) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, { resourceId });
-    }
-    const remainingTagIds = Object.keys(resource.currentTags ?? {}).filter(
-      (tagId) => tagId !== sourceNodeId && tagId !== targetNodeId
-    );
-    const nextTagIds = targetNodeId ? [targetNodeId, ...remainingTagIds] : remainingTagIds;
-    if (targetNodeId !== sourceNodeId) {
-      await resourceService.updateResourceTags({
-        resourceId,
-        groupId: courseId,
-        tagIds: nextTagIds,
-        ...(resource.mainTagId === sourceNodeId && nextTagIds[0]
-          ? { primaryTagId: nextTagIds[0] }
-          : {}),
-      });
-    }
-  };
-
-  const updateCourseOutlineResourceOrder = async (
-    courseId: string,
-    tagId: string,
-    orderedResourceIds: string[]
-  ): Promise<void> => {
-    const tags = await tagService.getTagTree(courseId);
-    const tag = findTag(tags, tagId);
-    if (!tag) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
-        nodeId: tagId,
-      });
-    }
-    await tagService.updateTag({
-      groupId: courseId,
-      targetTagId: tagId,
-      tagMetaInfo: CourseServicesMap.mapCourseOutlineResourceOrderMeta(
-        tag.tagMetaInfo,
-        orderedResourceIds
-      ),
-    });
-  };
-
-  const removeCourseOutlineResourceFromOrder = async (
-    courseId: string,
-    tagId: string,
-    resourceId: string
-  ): Promise<void> => {
-    const tags = await tagService.getTagTree(courseId);
-    const tag = findTag(tags, tagId);
-    if (!tag) return;
-    const resourceOrder = CourseServicesMap.getCourseOutlineResourceOrder(tag.tagMetaInfo);
-    const nextOrder = resourceOrder.filter((item) => item !== resourceId);
-    if (nextOrder.length === resourceOrder.length) return;
-    await updateCourseOutlineResourceOrder(courseId, tagId, nextOrder);
-  };
-
   const listCourseMembers = async ({ courseId, page, size }: ListCourseMembersRequest) => {
     const groupMembers = await groupService.fetchGroupMembers(courseId, page, size);
     return {
@@ -319,34 +227,12 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
     updateCourseOutlineSectionDescription: ({ courseId, nodeId, description }) =>
       tagService.updateTag({ groupId: courseId, targetTagId: nodeId, tagDesc: description }),
     deleteCourseOutlineSection: ({ courseId, nodeId }) =>
-      tagService.deleteTag({ groupId: courseId, targetTagId: nodeId }),
+      tagService.removeTags({ groupId: courseId, targetTagIds: [nodeId] }),
     reorderCourseOutlineSections: ({ courseId, orderedNodeIds }) =>
       tagService.reorderSiblingTags({ groupId: courseId, orderedTagIds: orderedNodeIds }),
-    mountCourseOutlineResources: ({ courseId, targetNodeId, resources }) =>
-      resourceService.mountResourcesToGroupTag({
-        groupId: courseId,
-        tagId: targetNodeId,
-        resourceIds: resources.map((resource) => resource.resourceId),
-      }),
-    moveCourseOutlineResource: async ({
-      courseId,
-      resourceId,
-      sourceNodeId,
-      targetNodeId,
-      orderedResourceIds,
-    }) => {
-      await updateCourseResourceMount(courseId, resourceId, sourceNodeId, targetNodeId);
-      if (sourceNodeId !== targetNodeId) {
-        await removeCourseOutlineResourceFromOrder(courseId, sourceNodeId, resourceId);
-      }
-      if (orderedResourceIds) {
-        await updateCourseOutlineResourceOrder(courseId, targetNodeId, orderedResourceIds);
-      }
-    },
-    removeCourseOutlineResource: async ({ courseId, resourceId, sourceNodeId }) => {
-      await updateCourseResourceMount(courseId, resourceId, sourceNodeId);
-      await removeCourseOutlineResourceFromOrder(courseId, sourceNodeId, resourceId);
-    },
+    mountCourseOutlineResources: unavailable,
+    moveCourseOutlineResource: unavailable,
+    removeCourseOutlineResource: unavailable,
     joinCourse: (params) => groupService.joinGroup(params),
     listCourseAssignments: unavailable,
     getCourseAssignment: unavailable,

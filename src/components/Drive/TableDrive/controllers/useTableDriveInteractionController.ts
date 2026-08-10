@@ -35,8 +35,8 @@ export function useTableDriveInteractionController({
       selectedActionTargets.push(node);
     }
   });
-  const canBatchMove =
-    checkedRowKeys.size > 0 && selectedActionTargets.length === checkedRowKeys.size;
+  const selectedActionTargetKeys = new Set(selectedActionTargets.map((node) => node.id));
+  const canMoveSelection = selectedActionTargets.length > 0;
   const sharedRowKeys = new Set(
     [...rowMap.values()].filter((row) => isDriveSharedFolderNode(row.node)).map((row) => row.id)
   );
@@ -57,7 +57,7 @@ export function useTableDriveInteractionController({
   };
 
   return {
-    canBatchMove,
+    canMoveSelection,
     checkedRowKeys,
     clearSelectedRow,
     clearChecked,
@@ -66,6 +66,7 @@ export function useTableDriveInteractionController({
     rowMap,
     rows,
     selectedActionTargets,
+    selectedActionTargetKeys,
     selectedRow,
     setCheckedRowKeys,
     setIsDetailPanelCollapsed,

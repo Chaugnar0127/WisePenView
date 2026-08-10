@@ -5,6 +5,11 @@
       "parentId": "",
       "tagName": "工作",
       "tagDesc": "工作相关",
+      "tagCreator": "10086",
+      "creatorInfo": {
+        "nickname": "小明",
+        "realName": "王明"
+      },
       "grantedActions": ["DISCOVER", "VIEW", "EDIT"],
       "children": [
         {
@@ -12,6 +17,11 @@
           "parentId": "tag-work",
           "tagName": "项目A",
           "tagDesc": "项目 A",
+          "tagCreator": "10087",
+          "creatorInfo": {
+            "nickname": "小张",
+            "realName": "张三"
+          },
           "children": []
         },
         {
@@ -19,6 +29,11 @@
           "parentId": "tag-work",
           "tagName": "项目B",
           "tagDesc": "项目 B",
+          "tagCreator": "10088",
+          "creatorInfo": {
+            "nickname": "SIG 助手",
+            "realName": "陈思齐"
+          },
           "children": []
         },
         {
@@ -26,6 +41,11 @@
           "parentId": "tag-work",
           "tagName": "会议记录",
           "tagDesc": "会议纪要",
+          "tagCreator": "10086",
+          "creatorInfo": {
+            "nickname": "小明",
+            "realName": "王明"
+          },
           "children": []
         }
       ]
@@ -35,12 +55,22 @@
       "parentId": "",
       "tagName": "学习",
       "tagDesc": "学习与笔记",
+      "tagCreator": "10087",
+      "creatorInfo": {
+        "nickname": "小张",
+        "realName": "张三"
+      },
       "children": [
         {
           "tagId": "tag-study-tech",
           "parentId": "tag-study",
           "tagName": "技术",
           "tagDesc": "技术笔记",
+          "tagCreator": "10088",
+          "creatorInfo": {
+            "nickname": "SIG 助手",
+            "realName": "陈思齐"
+          },
           "children": []
         },
         {
@@ -48,6 +78,11 @@
           "parentId": "tag-study",
           "tagName": "语言",
           "tagDesc": "语言学习",
+          "tagCreator": "10086",
+          "creatorInfo": {
+            "nickname": "小明",
+            "realName": "王明"
+          },
           "children": []
         }
       ]
@@ -57,12 +92,22 @@
       "parentId": "",
       "tagName": "生活",
       "tagDesc": "生活与兴趣",
+      "tagCreator": "10088",
+      "creatorInfo": {
+        "nickname": "SIG 助手",
+        "realName": "陈思齐"
+      },
       "children": [
         {
           "tagId": "tag-life-travel",
           "parentId": "tag-life",
           "tagName": "旅行",
           "tagDesc": "旅行记录",
+          "tagCreator": "10087",
+          "creatorInfo": {
+            "nickname": "小张",
+            "realName": "张三"
+          },
           "children": []
         },
         {
@@ -70,6 +115,11 @@
           "parentId": "tag-life",
           "tagName": "阅读",
           "tagDesc": "读书笔记",
+          "tagCreator": "10086",
+          "creatorInfo": {
+            "nickname": "小明",
+            "realName": "王明"
+          },
           "children": []
         }
       ]

@@ -5,7 +5,6 @@
 
 import type {
   AccessControlScope,
-  TagListByTagResponse,
   TagMetaInfo,
   TagResourceAction,
   TagTreeNode,
@@ -22,14 +21,10 @@ export interface ITagService {
   getTagTree(groupId?: string, options?: GetTagTreeOptions): Promise<TagTreeNode[]>;
   /** 从已缓存的扁平索引中按 tagId 查找标签节点（需先调用 getTagTree） */
   getTagById(tagId: string, groupId?: string): TagTreeNode | undefined;
-  /** 获取原始标签树中解析出的系统回收站 tagId。 */
-  getTrashTagId(groupId?: string): string | undefined;
-  /** 获取某标签下的子标签 + 文件列表（分页） */
-  getResByTag(params: GetResByTagRequest): Promise<TagListByTagResponse>;
   updateTag(params: TagUpdateRequest): Promise<void>;
   addTag(params: TagCreateRequest): Promise<string>;
-  deleteTag(params: TagDeleteRequest): Promise<void>;
-  moveTag(params: TagMoveRequest): Promise<void>;
+  removeTags(params: RemoveTagsRequest): Promise<void>;
+  moveTags(params: MoveTagsRequest): Promise<void>;
   /** 按传入顺序更新一组同级 Tag；Java 暂无批量接口，当前按节点顺序提交。 */
   reorderSiblingTags(params: ReorderSiblingTagsRequest): Promise<void>;
 }
@@ -37,13 +32,6 @@ export interface ITagService {
 export interface GetTagTreeOptions {
   /** 强制绕过本地缓存重新拉取，适用于系统目录被外部手段修改后的恢复检查。 */
   refresh?: boolean;
-}
-
-/** getResByTag 请求参数 */
-export interface GetResByTagRequest {
-  tag: TagTreeNode;
-  filePage?: number;
-  filePageSize?: number;
 }
 
 /** POST /resource/tag/addTag */
@@ -84,16 +72,16 @@ export interface TagUpdateRequest {
   targetTagId: string;
 }
 
-/** POST /resource/tag/removeTag */
-export interface TagDeleteRequest {
+/** POST /resource/tag/removeTags */
+export interface RemoveTagsRequest {
   groupId?: string;
-  targetTagId: string;
+  targetTagIds: string[];
 }
 
-/** POST /resource/tag/moveTag */
-export interface TagMoveRequest {
+/** POST /resource/tag/moveTags */
+export interface MoveTagsRequest {
   groupId?: string;
-  targetTagId: string;
+  targetTagIds: string[];
   newParentId?: string;
 }
 

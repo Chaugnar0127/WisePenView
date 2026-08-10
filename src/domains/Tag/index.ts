@@ -1,4 +1,4 @@
-export type { TagListByTagResponse, TagMetaInfo, TagTreeNode } from './entity/tag';
+export type { TagMetaInfo, TagTreeNode } from './entity/tag';
 export {
   ACCESS_CONTROL_SCOPE,
   TAG_META_SCHEMA,
@@ -36,11 +36,10 @@ export type {
   TagVisibilityModeString,
 } from './enum';
 export type {
-  GetResByTagRequest,
   ITagService,
+  MoveTagsRequest,
+  RemoveTagsRequest,
   ReorderSiblingTagsRequest,
   TagCreateRequest,
-  TagDeleteRequest,
-  TagMoveRequest,
   TagUpdateRequest,
 } from './service/index.type';

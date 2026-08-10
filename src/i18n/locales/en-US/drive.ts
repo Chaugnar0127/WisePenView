@@ -153,6 +153,7 @@ const enUSDrive = {
       removedFromGroup: 'Removed from group',
       movedToTrash: 'Moved to Trash',
       permanentlyDeleted: 'Deleted permanently',
+      permanentlyDeletedBatch: 'Permanently deleted {{count}} items',
     },
     description: {
       link: 'Delete the link to "{{name}}" from this folder? The original file will not be deleted.',
@@ -165,6 +166,7 @@ const enUSDrive = {
         'Move "{{name}}" to Trash? All of its links will stop working, and it can be restored later.',
       permanentFolder: 'Permanently delete "{{name}}" and its contents? This cannot be undone.',
       permanentResource: 'Permanently delete "{{name}}"? This cannot be undone.',
+      permanentBatch: 'Permanently delete the {{count}} selected items? This cannot be undone.',
     },
   },
   move: {

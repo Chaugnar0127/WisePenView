@@ -1,12 +1,12 @@
 import EntryIcon from '@/components/Icons/EntryIcon';
-import type { DriveNode } from '@/domains/Drive';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import type { DriveViewNode } from '../common/driveComponentModel';
 import styles from './style.module.less';
 
 interface DriveNavigatorNodeTitleProps {
-  node: DriveNode;
+  node: DriveViewNode;
   displayName?: string;
   onLoadMore?: () => void;
 }

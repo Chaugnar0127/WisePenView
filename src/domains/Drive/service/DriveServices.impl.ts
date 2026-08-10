@@ -1,33 +1,48 @@
-import { registerServiceCacheCleaner } from '@/domains/_shared/cacheRegistry';
-import type { DriveNode, FolderNode, LinkNode, ResourceNode, RootNode } from '@/domains/Drive';
+import type {
+  DriveContainerNode,
+  DriveMutableNode,
+  DriveNode,
+  DriveNodeScope,
+  DriveResourceNode,
+  FolderNode,
+} from '@/domains/Drive';
 import type { IResourceService, ResourceItem } from '@/domains/Resource';
 import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
 import type { ITagService, TagTreeNode } from '@/domains/Tag';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { normalizeTagGroupId } from '@/utils/normalize/normalizeTagGroupId';
 import {
-  buildDriveNodeScope,
   buildDriveRootNode,
   decodeNodeId,
   decodeRootNodeScope,
   DRIVE_SHARED_TAG_NAME,
-  encodeNodeId,
-  encodeRootNodeId,
-  isContainerNode,
+  DRIVE_TRASH_TAG_NAME,
   mapResourceItemToChildNode,
   mapTagToFolderNode,
   orderDriveFolderNodes,
 } from '../mapper/DriveServices.map';
 import type {
+  AddResourcesToGroupParams,
   CreateDriveServiceOptions,
+  CreateFolderParams,
+  DeleteTrashedNodesParams,
+  DriveNodeChildrenPage,
+  GetDriveRootParams,
+  GetDriveSystemFolderParams,
+  GetMountPathParams,
+  GetNodePathParams,
   IDriveService,
-  ListNodeChildrenPageResult,
-  MoveToFolderParams,
+  LoadDriveNodeChildrenParams,
+  MoveNodesParams,
+  MoveNodesToTrashParams,
+  RemoveNodesFromGroupParams,
+  RenameNodeParams,
+  ResolveResourceNodeParams,
+  SetPersonalResourcesLocationParams,
 } from './index.type';
 
-const CACHE_KEY_DEFAULT = '__default__';
 const DEFAULT_PAGE_SIZE = 50;
-const TRASH_TAG_NAME = '.Trash';
+const MAX_PAGE_SIZE = 100;
 const HIDDEN_TAG_PREFIX = '.';
 
 interface DriveServicesDeps {
@@ -35,986 +50,642 @@ interface DriveServicesDeps {
   resourceService: IResourceService;
 }
 
+interface ResourceCursor {
+  parentId: string;
+  page: number;
+  pageSize: number;
+}
+
 const isVisibleFolderTag = (node: TagTreeNode): boolean => {
   const name = (node.tagName ?? '').trim();
-  if (name === TRASH_TAG_NAME) return false;
+  if (name === DRIVE_TRASH_TAG_NAME) return false;
   if (name === DRIVE_SHARED_TAG_NAME) return true;
   return !name.startsWith(HIDDEN_TAG_PREFIX);
 };
 
-const resolveGroupKey = (groupId?: string): string => {
-  return normalizeTagGroupId(groupId) ?? CACHE_KEY_DEFAULT;
-};
+const normalizeIds = (ids: string[]): string[] =>
+  Array.from(new Set(ids.map((id) => id.trim()).filter(Boolean)));
 
-const resolveGroupIdFromKey = (groupKey: string): string | undefined => {
-  return groupKey === CACHE_KEY_DEFAULT ? undefined : groupKey;
-};
+const normalizePageSize = (pageSize: number | undefined, fallback: number): number =>
+  Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize ?? fallback)));
 
-const isResourceNode = (node: DriveNode): node is ResourceNode | LinkNode => {
-  return node.type === 'resource' || node.type === 'link';
-};
+const encodeResourceCursor = (cursor: ResourceCursor): string =>
+  encodeURIComponent(JSON.stringify(cursor));
 
-interface CascadeDeletePlan {
-  tagIdsByDepth: Map<number, Set<string>>;
-  resourceIdsToDelete: Set<string>;
-  groupResourceIdsToUnmount: Set<string>;
-  linkTagIdsToUnmount: Map<
-    string,
-    {
-      source: LinkNode;
-      tagIds: Set<string>;
+const decodeResourceCursor = (value: string): ResourceCursor => {
+  try {
+    const parsed: unknown = JSON.parse(decodeURIComponent(value));
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      typeof (parsed as ResourceCursor).parentId !== 'string' ||
+      !Number.isInteger((parsed as ResourceCursor).page) ||
+      !Number.isInteger((parsed as ResourceCursor).pageSize)
+    ) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'cursor' });
     }
-  >;
-}
-
-interface MoveNodeToFolderPlan {
-  source: DriveNode;
-  targetTagId?: string;
-  groupId?: string;
-}
-
-const createCascadeDeletePlan = (): CascadeDeletePlan => ({
-  tagIdsByDepth: new Map<number, Set<string>>(),
-  resourceIdsToDelete: new Set<string>(),
-  groupResourceIdsToUnmount: new Set<string>(),
-  linkTagIdsToUnmount: new Map(),
-});
-
-const addTagIdToDeletePlan = (plan: CascadeDeletePlan, tagId: string, depth: number): void => {
-  const ids = plan.tagIdsByDepth.get(depth) ?? new Set<string>();
-  ids.add(tagId);
-  plan.tagIdsByDepth.set(depth, ids);
+    return parsed as ResourceCursor;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'WisePenError') throw error;
+    throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'cursor' }, error);
+  }
 };
 
-const addLinkTagToUnmountPlan = (
-  plan: CascadeDeletePlan,
-  source: LinkNode,
-  tagId: string
-): void => {
-  const entry = plan.linkTagIdsToUnmount.get(source.resourceId) ?? {
-    source,
-    tagIds: new Set<string>(),
-  };
-  entry.tagIds.add(tagId);
-  plan.linkTagIdsToUnmount.set(source.resourceId, entry);
-};
+const getGroupId = (scope: DriveNodeScope): string | undefined =>
+  scope.type === 'group' ? scope.groupId : undefined;
 
-export const createDriveServices = (
+const sameScope = (left: DriveNodeScope, right: DriveNodeScope): boolean =>
+  left.rootId === right.rootId;
+
+const isResourceNode = (node: DriveNode): node is DriveResourceNode =>
+  node.type === 'resource' || node.type === 'link';
+
+export const createDriveService = (
   deps: DriveServicesDeps,
   opts?: CreateDriveServiceOptions
 ): IDriveService => {
   const { tagService, resourceService } = deps;
-  const pageSize = opts?.pageSize ?? DEFAULT_PAGE_SIZE;
+  const defaultPageSize = normalizePageSize(opts?.pageSize, DEFAULT_PAGE_SIZE);
 
-  const nodeMap = new Map<string, DriveNode>();
-  const nodeGroupKeyMap = new Map<string, string>();
-  const resourceItemByNodeId = new Map<string, ResourceItem>();
-  const personalRootTagIdByGroup = new Map<string, string>();
-
-  const clearCache = (): void => {
-    nodeMap.clear();
-    nodeGroupKeyMap.clear();
-    resourceItemByNodeId.clear();
-    personalRootTagIdByGroup.clear();
-  };
-
-  registerServiceCacheCleaner(clearCache);
-
-  const trackNode = (node: DriveNode, groupKey: string): void => {
-    nodeMap.set(node.id, node);
-    nodeGroupKeyMap.set(node.id, groupKey);
-  };
-
-  const trackNodes = (nodes: DriveNode[], groupKey: string): void => {
-    nodes.forEach((node) => trackNode(node, groupKey));
-  };
-
-  const readRawRoots = async (
-    groupId?: string,
-    options?: { refresh?: boolean }
-  ): Promise<TagTreeNode[]> => {
-    const normalized = normalizeTagGroupId(groupId);
-    const roots = await tagService.getRawTagTree(normalized, options);
-    return roots;
-  };
-
-  const getPersonalRootTag = async (
-    groupId?: string,
-    options?: { refresh?: boolean }
-  ): Promise<TagTreeNode> => {
-    const groupKey = resolveGroupKey(groupId);
-    const cachedRootTagId = personalRootTagIdByGroup.get(groupKey);
-    if (cachedRootTagId && !options?.refresh) {
-      const existing = tagService.getRawTagById(cachedRootTagId, resolveGroupIdFromKey(groupKey));
-      if (existing) return existing;
-    }
-
-    const roots = await readRawRoots(groupId, options);
-    const rootTag = roots.find((item) => item.tagName === '/');
-    if (!rootTag) {
+  const getPersonalRootTag = async (refresh = false): Promise<TagTreeNode> => {
+    const roots = await tagService.getRawTagTree(undefined, { refresh });
+    const root = roots.find((tag) => tag.tagName === '/');
+    if (!root) {
       throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_PERSONAL_ROOT_NOT_FOUND);
     }
-    personalRootTagIdByGroup.set(groupKey, rootTag.tagId);
-    return rootTag;
+    return root;
   };
 
-  const getRootNode: IDriveService['getRootNode'] = async (params) => {
-    const requestedScope = decodeRootNodeScope(
-      params?.rootId,
-      normalizeTagGroupId(params?.groupId)
+  const getRoot: IDriveService['getRoot'] = async (params?: GetDriveRootParams) => {
+    const scope = decodeRootNodeScope(params?.rootId, normalizeTagGroupId(params?.groupId));
+    const personalRootTag = scope.type === 'personal' ? await getPersonalRootTag() : undefined;
+    return buildDriveRootNode({
+      groupId: getGroupId(scope),
+      personalRootTag,
+    });
+  };
+
+  const getTagAncestors = (tagId: string, groupId?: string): string[] => {
+    const ancestors: string[] = [];
+    let current = tagService.getRawTagById(tagId, groupId);
+    while (current?.parentId) {
+      ancestors.unshift(current.parentId);
+      current = tagService.getRawTagById(current.parentId, groupId);
+    }
+    return ancestors;
+  };
+
+  const mapFolder = (tag: TagTreeNode, parentNodeId: string, scope: DriveNodeScope): FolderNode =>
+    mapTagToFolderNode(tag, parentNodeId, scope, getTagAncestors(tag.tagId, getGroupId(scope)));
+
+  const getDirectFolderTags = async (
+    parent: DriveContainerNode,
+    refresh = false
+  ): Promise<TagTreeNode[]> => {
+    const groupId = getGroupId(parent.scope);
+    const roots = await tagService.getRawTagTree(groupId, { refresh });
+    if (parent.type === 'root') {
+      if (groupId) return roots.filter(isVisibleFolderTag);
+      const personalRoot = roots.find((tag) => tag.tagName === '/');
+      const sharedTag = roots.find((tag) => tag.tagName === DRIVE_SHARED_TAG_NAME);
+      return [...(sharedTag ? [sharedTag] : []), ...(personalRoot?.children ?? [])].filter(
+        isVisibleFolderTag
+      );
+    }
+    const tag = tagService.getRawTagById(parent.tagId, groupId);
+    return (tag?.children ?? []).filter(isVisibleFolderTag);
+  };
+
+  const getParentTagId = async (
+    parent: DriveContainerNode,
+    refresh = false
+  ): Promise<string | undefined> => {
+    if (parent.type === 'folder') return parent.tagId;
+    if (parent.scope.type === 'group') return undefined;
+    return (await getPersonalRootTag(refresh)).tagId;
+  };
+
+  const loadNodeChildren: IDriveService['loadNodeChildren'] = async ({
+    parent,
+    cursor,
+    pageSize,
+    kinds = ['folder', 'resource', 'link'],
+    refresh = false,
+  }: LoadDriveNodeChildrenParams): Promise<DriveNodeChildrenPage> => {
+    const resolvedSize = normalizePageSize(pageSize, defaultPageSize);
+    const cursorState = cursor ? decodeResourceCursor(cursor) : undefined;
+    if (cursorState && cursorState.parentId !== parent.id) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'cursor' });
+    }
+
+    const includeFolders = !cursor && kinds.includes('folder');
+    const includeResources = kinds.includes('resource') || kinds.includes('link');
+    const directFolderTags = await getDirectFolderTags(parent, refresh);
+    const folderTags = includeFolders ? directFolderTags : [];
+    const folderNodes = orderDriveFolderNodes(
+      folderTags.map((tag) => mapFolder(tag, parent.id, parent.scope))
     );
-    const requestedGroupId =
-      requestedScope.type === 'group' ? normalizeTagGroupId(requestedScope.groupId) : undefined;
-    const groupKey = resolveGroupKey(requestedGroupId);
-    const normalizedGroupId = resolveGroupIdFromKey(groupKey);
-    const personalRootTag = normalizedGroupId ? undefined : await getPersonalRootTag();
-    const rootNode = buildDriveRootNode({ groupId: normalizedGroupId, personalRootTag });
-    trackNode(rootNode, groupKey);
-    return rootNode;
+    const parentTagId = await getParentTagId(parent, Boolean(refresh && !cursor));
+    if (
+      !includeResources ||
+      !parentTagId ||
+      (parent.scope.type === 'group' && parent.type === 'root')
+    ) {
+      return {
+        folderNodes,
+        resourceNodes: [],
+        folderTotal: directFolderTags.length,
+        resourceTotal: 0,
+        total: directFolderTags.length,
+      };
+    }
+
+    const resourcePage = cursorState?.page ?? 1;
+    const resourcePageSize = cursorState?.pageSize ?? resolvedSize;
+    const result =
+      parent.scope.type === 'group'
+        ? await resourceService.getGroupResources({
+            page: resourcePage,
+            size: resourcePageSize,
+            sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
+            sortDir: RESOURCE_SORT_DIR.DESC,
+            tagIds: [parentTagId],
+            tagQueryLogicMode: 'AND',
+            groupId: parent.scope.groupId,
+          })
+        : await resourceService.getUserResources({
+            page: resourcePage,
+            size: resourcePageSize,
+            sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
+            sortDir: RESOURCE_SORT_DIR.DESC,
+            tagIds: [parentTagId],
+            tagQueryLogicMode: 'AND',
+          });
+    const resourceNodes = result.list
+      .map((item: ResourceItem) =>
+        mapResourceItemToChildNode(item, parentTagId, parent.id, parent.scope)
+      )
+      .filter((node) => kinds.includes(node.type));
+    const resolvedPage = Math.max(1, result.page || resourcePage);
+    const resolvedTotal = Math.max(0, result.total || 0);
+    const resolvedTotalPage = Math.max(0, result.totalPage || 0);
+    const hasMore =
+      resolvedTotalPage > 0
+        ? resolvedPage < resolvedTotalPage
+        : (resolvedPage - 1) * resourcePageSize + resourceNodes.length < resolvedTotal;
+    return {
+      folderNodes,
+      resourceNodes,
+      folderTotal: directFolderTags.length,
+      resourceTotal: resolvedTotal,
+      total: directFolderTags.length + resolvedTotal,
+      ...(hasMore
+        ? {
+            nextCursor: encodeResourceCursor({
+              parentId: parent.id,
+              page: resolvedPage + 1,
+              pageSize: resourcePageSize,
+            }),
+          }
+        : {}),
+    };
   };
 
-  const getNodeGroupId = (nodeId: string): string | undefined => {
-    const node = nodeMap.get(nodeId);
-    if (node?.scope.type === 'group') return normalizeTagGroupId(node.scope.groupId);
-    const groupKey = nodeGroupKeyMap.get(nodeId);
-    if (groupKey) return resolveGroupIdFromKey(groupKey);
+  const getMountPath: IDriveService['getMountPath'] = async ({ location }: GetMountPathParams) => {
+    const { scope, mountTagId } = location;
+    const root = await getRoot({ rootId: scope.rootId, groupId: getGroupId(scope) });
+    if (root.tagId === mountTagId) return [root];
+    const groupId = getGroupId(scope);
+    await tagService.getRawTagTree(groupId);
+    const chain: TagTreeNode[] = [];
+    let current = tagService.getRawTagById(mountTagId, groupId);
+    if (!current) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_NOT_FOUND, {
+        nodeId: mountTagId,
+      });
+    }
+    while (current) {
+      if (scope.type === 'personal' && current.tagName === '/') break;
+      chain.unshift(current);
+      current = current.parentId ? tagService.getRawTagById(current.parentId, groupId) : undefined;
+    }
+    let parentId = root.id;
+    return [
+      root,
+      ...chain.map((tag) => {
+        const folder = mapFolder(tag, parentId, scope);
+        parentId = folder.id;
+        return folder;
+      }),
+    ];
+  };
+
+  const getNodePath: IDriveService['getNodePath'] = async ({
+    nodeId,
+    scope,
+  }: GetNodePathParams) => {
+    const root = await getRoot({ rootId: scope.rootId, groupId: getGroupId(scope) });
+    if (nodeId === root.id) return [root];
     const decoded = decodeNodeId(nodeId);
-    if (decoded.kind === 'root') return normalizeTagGroupId(decoded.groupId);
-    return undefined;
-  };
-
-  const resolveEffectiveGroupId = (nodeId: string, groupId?: string): string | undefined =>
-    normalizeTagGroupId(groupId) ?? getNodeGroupId(nodeId);
-
-  const getNodeOrThrow = (nodeId: string): DriveNode => {
-    const node = nodeMap.get(nodeId);
-    if (!node) {
+    if (decoded.kind !== 'folder') {
       throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_NOT_FOUND, { nodeId });
     }
-    return node;
+    return getMountPath({ location: { scope, mountTagId: decoded.tagId } });
   };
 
-  const isDescendantTag = (tagId: string, ancestorTagId: string, groupId?: string): boolean => {
-    let current = tagService.getRawTagById(tagId, groupId);
-    while (current) {
-      if (current.tagId === ancestorTagId) return true;
-      if (!current.parentId) return false;
-      current = tagService.getRawTagById(current.parentId, groupId);
+  const resolveResourceNode: IDriveService['resolveResourceNode'] = async ({
+    resource,
+    location,
+  }: ResolveResourceNodeParams) => {
+    const { scope, mountTagId } = location;
+    const groupId = getGroupId(scope);
+    const tagBind = resource.tagBinds?.find(
+      (bind) =>
+        normalizeTagGroupId(bind.groupId) === groupId &&
+        Object.prototype.hasOwnProperty.call(bind.tags ?? {}, mountTagId)
+    );
+    if (!tagBind) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_RESOURCE_TAG_INFO_MISSING, {
+        resourceId: resource.resourceId,
+        tagId: mountTagId,
+      });
     }
-    return false;
+    const path = await getMountPath({ location });
+    const parent = path.at(-1);
+    if (!parent) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_NOT_FOUND, {
+        nodeId: mountTagId,
+      });
+    }
+    const primaryTagId = tagBind.primaryTagId ?? Object.keys(tagBind.tags ?? {})[0];
+    return mapResourceItemToChildNode(resource, mountTagId, parent.id, scope, primaryTagId);
   };
 
-  const resolveParentTagId = async (
-    nodeId: string,
-    groupId?: string
-  ): Promise<{ parentTagId?: string; isVirtualRoot: boolean }> => {
-    const decoded = decodeNodeId(nodeId);
-    const effectiveGroupId =
-      decoded.kind === 'root'
-        ? (normalizeTagGroupId(decoded.groupId) ?? normalizeTagGroupId(groupId))
-        : resolveEffectiveGroupId(nodeId, groupId);
-    if (decoded.kind === 'root') {
-      if (effectiveGroupId) return { parentTagId: undefined, isVirtualRoot: true };
-      const personalRootTag = await getPersonalRootTag();
-      return { parentTagId: personalRootTag.tagId, isVirtualRoot: false };
+  const getSystemFolder: IDriveService['getSystemFolder'] = async ({
+    scope,
+    type,
+  }: GetDriveSystemFolderParams) => {
+    const notFoundCode =
+      type === 'trash'
+        ? FRONTEND_CLIENT_ERROR.DRIVE_TRASH_TAG_NOT_FOUND
+        : FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND;
+    if (scope.type !== 'personal') throw createClientError(notFoundCode);
+    const systemTagName = type === 'trash' ? DRIVE_TRASH_TAG_NAME : DRIVE_SHARED_TAG_NAME;
+    const roots = await tagService.getRawTagTree();
+    const queue = [...roots];
+    while (queue.length > 0) {
+      const tag = queue.shift();
+      if (!tag) continue;
+      if (tag.tagName === systemTagName) return mapFolder(tag, scope.rootId, scope);
+      queue.push(...(tag.children ?? []));
     }
-    if (decoded.kind === 'folder') return { parentTagId: decoded.tagId, isVirtualRoot: false };
-    return { parentTagId: undefined, isVirtualRoot: false };
+    throw createClientError(notFoundCode);
   };
 
-  const loadFolderNodes = async (
-    nodeId: string,
-    groupId?: string,
-    options?: { refresh?: boolean }
-  ): Promise<FolderNode[]> => {
-    const decoded = decodeNodeId(nodeId);
-    if (decoded.kind === 'root') {
-      const normalizedGroupId =
-        normalizeTagGroupId(decoded.groupId) ?? normalizeTagGroupId(groupId);
-      const rootNodeId = encodeRootNodeId(normalizedGroupId);
-      const scope = buildDriveNodeScope(normalizedGroupId);
-      if (normalizedGroupId) {
-        const roots = await readRawRoots(normalizedGroupId, options);
-        return orderDriveFolderNodes(
-          roots.filter(isVisibleFolderTag).map((tag) => mapTagToFolderNode(tag, rootNodeId, scope))
-        );
-      }
-      const personalRoot = await getPersonalRootTag(undefined, options);
-      const children = personalRoot.children ?? [];
-      return orderDriveFolderNodes(
-        children.filter(isVisibleFolderTag).map((tag) => mapTagToFolderNode(tag, rootNodeId, scope))
-      );
+  const assertActionScope = (nodes: DriveMutableNode[]): DriveNodeScope => {
+    if (nodes.length === 0) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'nodes' });
     }
+    const [first] = nodes;
+    if (nodes.some((node) => !sameScope(node.scope, first.scope))) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
+    }
+    return first.scope;
+  };
 
-    if (decoded.kind !== 'folder') return [];
-    const normalizedGroupId = resolveEffectiveGroupId(nodeId, groupId);
-    const scope = buildDriveNodeScope(normalizedGroupId);
-    await readRawRoots(normalizedGroupId, options);
-    const tag = tagService.getRawTagById(decoded.tagId, normalizedGroupId);
-    const children = tag?.children ?? [];
-    return orderDriveFolderNodes(
-      children
-        .filter(isVisibleFolderTag)
-        .map((child) => mapTagToFolderNode(child, encodeNodeId('folder', decoded.tagId), scope))
+  const assertNoSystemFolder = (nodes: DriveMutableNode[]): void => {
+    if (nodes.some((node) => node.type === 'folder' && node.systemType)) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_SELECTION_CONTAINS_SYSTEM_FOLDER);
+    }
+  };
+
+  const isDescendantOfFolder = (node: DriveMutableNode, folder: FolderNode): boolean => {
+    if (node.id === folder.id) return false;
+    if (node.type === 'folder') return node.ancestorTagIds.includes(folder.tagId);
+    if (node.mountTagId === folder.tagId) return true;
+    const groupId = getGroupId(folder.scope);
+    return getTagAncestors(node.mountTagId, groupId).includes(folder.tagId);
+  };
+
+  const normalizeActionNodes = (nodes: DriveMutableNode[]): DriveMutableNode[] => {
+    const byNodeId = new Map(nodes.map((node) => [node.id, node]));
+    const uniqueNodes = [...byNodeId.values()];
+    const folders = uniqueNodes.filter((node): node is FolderNode => node.type === 'folder');
+    return uniqueNodes.filter(
+      (node) => !folders.some((folder) => isDescendantOfFolder(node, folder))
     );
   };
 
-  const fetchResourceNodes = async (
-    nodeId: string,
-    groupId: string | undefined
-  ): Promise<Array<ResourceNode | LinkNode>> => {
-    const { parentTagId, isVirtualRoot } = await resolveParentTagId(nodeId, groupId);
-    if (!parentTagId || isVirtualRoot) {
-      return [];
-    }
-
-    const normalizedGroupId = normalizeTagGroupId(groupId);
-    const scope = buildDriveNodeScope(normalizedGroupId);
-    const nodes: Array<ResourceNode | LinkNode> = [];
-    let page = 1;
-
-    while (true) {
-      const listParams = {
-        page,
-        size: pageSize,
-        sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
-        sortDir: RESOURCE_SORT_DIR.DESC,
-        tagIds: [parentTagId],
-        tagQueryLogicMode: 'AND' as const,
-      };
-      const result = normalizedGroupId
-        ? await resourceService.getGroupResources({ ...listParams, groupId: normalizedGroupId })
-        : await resourceService.getUserResources(listParams);
-
-      for (const item of result.list) {
-        const childNode = mapResourceItemToChildNode(item, parentTagId, nodeId, scope);
-        resourceItemByNodeId.set(childNode.id, item);
-        nodes.push(childNode);
-      }
-
-      const reachedKnownTotal = result.total > 0 && nodes.length >= result.total;
-      const reachedKnownLastPage = result.totalPage > 0 && page >= result.totalPage;
-      const reachedShortPage = result.list.length < pageSize;
-      if (reachedKnownTotal || reachedKnownLastPage || reachedShortPage) {
-        break;
-      }
-      page += 1;
-    }
-
-    return nodes;
-  };
-
-  const fetchResourceNodePage = async (
-    nodeId: string,
-    groupId: string | undefined,
-    resourcePage = 1,
-    resourceSize = pageSize
-  ): Promise<Omit<ListNodeChildrenPageResult, 'folderNodes' | 'nodes'>> => {
-    const { parentTagId, isVirtualRoot } = await resolveParentTagId(nodeId, groupId);
-    const normalizedResourcePage = Math.max(1, Math.floor(resourcePage));
-    const normalizedResourceSize = Math.max(1, Math.floor(resourceSize));
-    if (!parentTagId || isVirtualRoot) {
-      return {
-        resourceNodes: [],
-        resourcePage: normalizedResourcePage,
-        resourceSize: normalizedResourceSize,
-        resourceTotal: 0,
-        resourceTotalPage: 0,
-        hasMoreResources: false,
-      };
-    }
-
-    const normalizedGroupId = normalizeTagGroupId(groupId);
-    const scope = buildDriveNodeScope(normalizedGroupId);
-    const listParams = {
-      page: normalizedResourcePage,
-      size: normalizedResourceSize,
-      sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
-      sortDir: RESOURCE_SORT_DIR.DESC,
-      tagIds: [parentTagId],
-      tagQueryLogicMode: 'AND' as const,
-    };
-    const result = normalizedGroupId
-      ? await resourceService.getGroupResources({ ...listParams, groupId: normalizedGroupId })
-      : await resourceService.getUserResources(listParams);
-    const resourceNodes = result.list.map((item) => {
-      const childNode = mapResourceItemToChildNode(item, parentTagId, nodeId, scope);
-      resourceItemByNodeId.set(childNode.id, item);
-      return childNode;
+  const groupResourcesById = (nodes: DriveResourceNode[]): Map<string, DriveResourceNode[]> => {
+    const groups = new Map<string, DriveResourceNode[]>();
+    nodes.forEach((node) => {
+      const group = groups.get(node.resourceId) ?? [];
+      group.push(node);
+      groups.set(node.resourceId, group);
     });
-    const resultPage = Math.max(1, Math.floor(result.page || normalizedResourcePage));
-    const resultTotal = Math.max(0, Math.floor(result.total || 0));
-    const resultTotalPage = Math.max(0, Math.floor(result.totalPage || 0));
-    const loadedCount = (resultPage - 1) * normalizedResourceSize + resourceNodes.length;
-    const hasMoreResources =
-      resultTotalPage > 0
-        ? resultPage < resultTotalPage
-        : resultTotal > 0
-          ? loadedCount < resultTotal
-          : resourceNodes.length >= normalizedResourceSize;
-
-    return {
-      resourceNodes,
-      resourcePage: resultPage,
-      resourceSize: normalizedResourceSize,
-      resourceTotal: resultTotal,
-      resourceTotalPage: resultTotalPage,
-      hasMoreResources,
-    };
+    return groups;
   };
 
-  const updateParentChildren = (parentId: string, children: DriveNode[]): void => {
-    const parent = nodeMap.get(parentId);
-    if (!parent || !isContainerNode(parent)) return;
-    parent.childrenIds = children.filter((node) => node.type !== 'loading').map((node) => node.id);
-    nodeMap.set(parentId, parent);
-  };
-
-  const listFolderChildren: IDriveService['listFolderChildren'] = async ({
-    nodeId,
-    groupId,
-    refresh,
-  }) => {
-    const effectiveGroupId = resolveEffectiveGroupId(nodeId, groupId);
-    const groupKey = resolveGroupKey(effectiveGroupId);
-    const folderNodes = await loadFolderNodes(nodeId, effectiveGroupId, { refresh });
-    trackNodes(folderNodes, groupKey);
-    updateParentChildren(nodeId, folderNodes);
-    return folderNodes;
-  };
-
-  const listNodeChildrenPage: IDriveService['listNodeChildrenPage'] = async ({
-    nodeId,
-    groupId,
-    resourcePage,
-    resourceSize,
-    includeFolders = true,
-    refresh,
-  }) => {
-    const effectiveGroupId = resolveEffectiveGroupId(nodeId, groupId);
-    const groupKey = resolveGroupKey(effectiveGroupId);
-    const [folderNodes, resourcePageResult] = await Promise.all([
-      includeFolders ? loadFolderNodes(nodeId, effectiveGroupId, { refresh }) : Promise.resolve([]),
-      fetchResourceNodePage(nodeId, effectiveGroupId, resourcePage, resourceSize),
-    ]);
-    const dedup = new Map<string, DriveNode>();
-    [...folderNodes, ...resourcePageResult.resourceNodes].forEach((node) =>
-      dedup.set(node.id, node)
+  const assertSingleMountPerResource = (nodes: DriveResourceNode[]): void => {
+    const containsMultipleMounts = [...groupResourcesById(nodes).values()].some(
+      (group) => new Set(group.map((node) => node.mountTagId)).size > 1
     );
-    const nodes = [...dedup.values()];
-
-    trackNodes(nodes, groupKey);
-    return {
-      ...resourcePageResult,
-      folderNodes,
-      nodes,
-    };
-  };
-
-  const ensureTrashTagId = async (groupId?: string): Promise<string> => {
-    let trashTagId = tagService.getTrashTagId(groupId);
-    if (trashTagId) return trashTagId;
-    await readRawRoots(groupId);
-    trashTagId = tagService.getTrashTagId(groupId);
-    if (!trashTagId) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_TRASH_TAG_NOT_FOUND);
+    if (containsMultipleMounts) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_MULTIPLE_MOUNTS_MOVE_UNSUPPORTED);
     }
-    return trashTagId;
   };
 
-  const movePersonalResourceNodeToTrash = async (source: ResourceNode): Promise<void> => {
-    const trashTagId = await ensureTrashTagId();
-    await resourceService.updateResourceTags({
-      resourceId: source.resourceId,
-      tagIds: [trashTagId],
-      primaryTagId: trashTagId,
-    });
-  };
-
-  const getTrashFolderNodeId: IDriveService['getTrashFolderNodeId'] = async (groupId) => {
-    await readRawRoots(groupId);
-    const trashTagId = tagService.getTrashTagId(groupId);
-    if (!trashTagId) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_TRASH_TAG_NOT_FOUND);
-    }
-    return encodeNodeId('folder', trashTagId);
-  };
-
-  const buildPathByFolderTag = async (
-    tagId: string,
-    groupId?: string
-  ): Promise<Array<RootNode | FolderNode>> => {
-    await readRawRoots(groupId);
-    const groupKey = resolveGroupKey(groupId);
-    const root = await getRootNode({ groupId });
-    const path: Array<RootNode | FolderNode> = [root];
-    const chain: TagTreeNode[] = [];
-    let current = tagService.getRawTagById(tagId, groupId);
-    while (current) {
-      if (
-        !resolveGroupIdFromKey(groupKey) &&
-        current.tagId === personalRootTagIdByGroup.get(groupKey)
-      ) {
-        break;
+  const buildResourceUnmountRounds = (
+    nodes: DriveResourceNode[]
+  ): Array<Record<string, string>> => {
+    const remainingByResourceId = new Map<string, DriveResourceNode[]>();
+    groupResourcesById(nodes).forEach((group, resourceId) => {
+      const primaryMount = group.find((node) => node.type === 'resource');
+      if (primaryMount) {
+        remainingByResourceId.set(resourceId, [primaryMount]);
+        return;
       }
-      chain.unshift(current);
-      if (!current.parentId) break;
-      current = tagService.getRawTagById(current.parentId, groupId);
-    }
-    let parentId: string = root.id;
-    chain.forEach((tag) => {
-      const node = mapTagToFolderNode(tag, parentId, root.scope);
-      parentId = node.id;
-      trackNode(node, groupKey);
-      path.push(node);
+      const uniqueMounts = new Map(group.map((node) => [node.mountTagId, node]));
+      remainingByResourceId.set(resourceId, [...uniqueMounts.values()]);
     });
-    return path;
+
+    const rounds: Array<Record<string, string>> = [];
+    while ([...remainingByResourceId.values()].some((group) => group.length > 0)) {
+      const round: Record<string, string> = {};
+      remainingByResourceId.forEach((group, resourceId) => {
+        const node = group.shift();
+        if (node) round[resourceId] = node.mountTagId;
+      });
+      rounds.push(round);
+    }
+    return rounds;
   };
 
-  const resolveResourceTagIds = (
-    source: Extract<DriveNode, { type: 'resource' | 'link' }>,
-    targetTagId: string
-  ): string[] => {
-    const sourceItem = resourceItemByNodeId.get(source.id);
-    if (!sourceItem) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_RESOURCE_TAG_INFO_MISSING);
+  const getTargetTagIdOrThrow = (target: DriveContainerNode): string => {
+    const tagId = target.tagId;
+    if (!tagId) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_TARGET_TAG_ID_MISSING);
     }
-
-    const currentTags = sourceItem.currentTags ?? {};
-    if (source.type === 'link') {
-      const primaryTagId = source.primaryTagId;
-      if (!primaryTagId) {
-        throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_RESOURCE_TAG_INFO_MISSING);
-      }
-      if (targetTagId === primaryTagId) {
-        throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_LINK_MOVE_TO_PRIMARY_TAG);
-      }
-      const linkTagIds = Object.keys(currentTags).filter(
-        (tagId) => tagId !== primaryTagId && tagId !== source.folderTagId && tagId !== targetTagId
-      );
-
-      // link 移动只替换辅助 tag，主 tag 仍保持在首位。
-      return [primaryTagId, ...linkTagIds, targetTagId];
+    if (target.type === 'folder' && target.systemType) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
     }
-
-    const linkTagIds = Object.keys(currentTags).filter(
-      (tagId) => tagId !== source.folderTagId && tagId !== targetTagId
-    );
-
-    // resource 移动替换主 tag，其余辅助 tag 保持不变。
-    return [targetTagId, ...linkTagIds];
+    return tagId;
   };
 
-  const moveResourceNode = async (
-    source: Extract<DriveNode, { type: 'resource' | 'link' }>,
-    targetTagId: string,
-    groupId?: string
-  ): Promise<void> => {
-    await resourceService.updateResourceTags({
-      resourceId: source.resourceId,
-      tagIds: resolveResourceTagIds(source, targetTagId),
-      groupId,
-    });
-  };
-
-  const resolveGroupResourceUnmountTagIds = (
-    source: Extract<DriveNode, { type: 'resource' | 'link' }>
-  ): string[] => {
-    const sourceItem = resourceItemByNodeId.get(source.id);
-    if (!sourceItem) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_RESOURCE_TAG_INFO_MISSING);
+  const assertValidMoveTarget = (folders: FolderNode[], target: DriveContainerNode): void => {
+    if (target.type === 'folder' && target.systemType) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
     }
-
-    if (source.type === 'resource') {
-      // 小组主挂载删除会移除该资源在当前小组下的全部挂载关系。
-      return [];
-    }
-
-    const primaryTagId = source.primaryTagId;
-    if (!primaryTagId) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_RESOURCE_TAG_INFO_MISSING);
-    }
-    const currentTags = sourceItem.currentTags ?? {};
-    const linkTagIds = Object.keys(currentTags).filter(
-      (tagId) => tagId !== primaryTagId && tagId !== source.folderTagId
-    );
-
-    return [primaryTagId, ...linkTagIds];
-  };
-
-  const resolveLinkTagIdsAfterUnmount = (
-    source: LinkNode,
-    removedTagIds: Set<string>
-  ): string[] => {
-    const sourceItem = resourceItemByNodeId.get(source.id);
-    if (!sourceItem) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_RESOURCE_TAG_INFO_MISSING);
-    }
-
-    const primaryTagId = source.primaryTagId;
-    if (!primaryTagId) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_RESOURCE_TAG_INFO_MISSING);
-    }
-
-    const currentTags = sourceItem.currentTags ?? {};
-    const linkTagIds = Object.keys(currentTags).filter(
-      (tagId) => tagId !== primaryTagId && !removedTagIds.has(tagId)
-    );
-
-    return [primaryTagId, ...linkTagIds];
-  };
-
-  const unmountGroupResourceNode = async (
-    source: Extract<DriveNode, { type: 'resource' | 'link' }>,
-    groupId: string
-  ): Promise<void> => {
-    await resourceService.updateResourceTags({
-      resourceId: source.resourceId,
-      tagIds: resolveGroupResourceUnmountTagIds(source),
-      groupId,
-    });
-  };
-
-  const removePersonalResourceNodePermanently = async (
-    source: Extract<DriveNode, { type: 'resource' | 'link' }>
-  ): Promise<void> => {
-    if (source.type === 'resource') {
-      await resourceService.removeResources({ resourceIds: [source.resourceId] });
-      return;
-    }
-
-    await resourceService.updateResourceTags({
-      resourceId: source.resourceId,
-      tagIds: resolveLinkTagIdsAfterUnmount(source, new Set([source.folderTagId])),
-    });
-  };
-
-  const collectFolderCascadeDeletePlan = async (
-    folder: FolderNode,
-    groupId: string | undefined,
-    plan: CascadeDeletePlan,
-    depth = 0
-  ): Promise<void> => {
-    const [folderChildren, resourceChildren] = await Promise.all([
-      loadFolderNodes(folder.id, groupId),
-      fetchResourceNodes(folder.id, groupId),
-    ]);
-
-    addTagIdToDeletePlan(plan, folder.tagId, depth);
-
-    for (const resource of resourceChildren) {
-      if (groupId) {
-        if (resource.type === 'resource') {
-          plan.groupResourceIdsToUnmount.add(resource.resourceId);
-        } else {
-          addLinkTagToUnmountPlan(plan, resource, resource.folderTagId);
-        }
-      } else if (resource.type === 'resource') {
-        plan.resourceIdsToDelete.add(resource.resourceId);
-      } else {
-        addLinkTagToUnmountPlan(plan, resource, resource.folderTagId);
-      }
-    }
-
-    await Promise.all(
-      folderChildren.map((child) => collectFolderCascadeDeletePlan(child, groupId, plan, depth + 1))
-    );
-  };
-
-  const executeCascadeDeletePlan = async (
-    plan: CascadeDeletePlan,
-    groupId?: string
-  ): Promise<void> => {
-    const resourceIdsToDelete = [...plan.resourceIdsToDelete];
-    const groupResourceIdsToUnmount = [...plan.groupResourceIdsToUnmount];
-    const linkUnmountEntries = [...plan.linkTagIdsToUnmount.entries()].filter(
-      ([resourceId]) =>
-        !plan.resourceIdsToDelete.has(resourceId) && !plan.groupResourceIdsToUnmount.has(resourceId)
-    );
-
-    await Promise.all([
-      resourceIdsToDelete.length > 0
-        ? resourceService.removeResources({ resourceIds: resourceIdsToDelete })
-        : Promise.resolve(),
-      Promise.all(
-        groupResourceIdsToUnmount.map((resourceId) =>
-          resourceService.updateResourceTags({ resourceId, tagIds: [], groupId })
-        )
-      ),
-      Promise.all(
-        linkUnmountEntries.map(([resourceId, entry]) =>
-          resourceService.updateResourceTags({
-            resourceId,
-            tagIds: resolveLinkTagIdsAfterUnmount(entry.source, entry.tagIds),
-            groupId,
-          })
-        )
-      ),
-    ]);
-
-    const depths = [...plan.tagIdsByDepth.keys()].sort((a, b) => b - a);
-    for (const depth of depths) {
-      const tagIds = [...(plan.tagIdsByDepth.get(depth) ?? [])];
-      await Promise.all(
-        tagIds.map((targetTagId) =>
-          tagService.deleteTag({
-            targetTagId,
-            groupId,
-          })
-        )
-      );
-    }
-  };
-
-  const removeFolderNodeCascade = async (source: FolderNode, groupId?: string): Promise<void> => {
-    const plan = createCascadeDeletePlan();
-    await collectFolderCascadeDeletePlan(source, groupId, plan);
-    await executeCascadeDeletePlan(plan, groupId);
-  };
-
-  const isTagInTrash = async (tagId: string): Promise<boolean> => {
-    await readRawRoots();
-    const trashTagId = await ensureTrashTagId();
-    return tagId === trashTagId || isDescendantTag(tagId, trashTagId);
-  };
-
-  const isNodeInPersonalTrash = async (
-    source: Extract<DriveNode, { type: 'folder' | 'resource' | 'link' }>
-  ): Promise<boolean> => {
-    if (source.type === 'folder') {
-      await readRawRoots();
-      const trashTagId = await ensureTrashTagId();
-      return source.tagId !== trashTagId && isDescendantTag(source.tagId, trashTagId);
-    }
-
-    return isTagInTrash(source.folderTagId);
-  };
-
-  const getNodePath: IDriveService['getNodePath'] = async ({ nodeId, groupId }) => {
-    const effectiveGroupId = resolveEffectiveGroupId(nodeId, groupId);
-    const decoded = decodeNodeId(nodeId);
-    if (decoded.kind === 'root') {
-      return [await getRootNode({ groupId: effectiveGroupId })];
-    }
-    if (decoded.kind === 'folder') {
-      return buildPathByFolderTag(decoded.tagId, effectiveGroupId);
-    }
-    if (decoded.kind === 'resource' || decoded.kind === 'link') {
-      return buildPathByFolderTag(decoded.parentTagId, effectiveGroupId);
-    }
-    return [await getRootNode({ groupId: effectiveGroupId })];
-  };
-
-  const getResourceNode: IDriveService['getResourceNode'] = async (params) => {
-    let resourcePage = 1;
-
-    while (true) {
-      const result = await fetchResourceNodePage(
-        params.parentNodeId,
-        params.groupId,
-        resourcePage,
-        pageSize
-      );
-      const matched = result.resourceNodes.find(
-        (node) =>
-          node.resourceId === params.resourceId && (!params.nodeId || node.id === params.nodeId)
-      );
-      if (matched) return matched;
-      if (!result.hasMoreResources) return undefined;
-      resourcePage += 1;
-    }
-  };
-
-  const createLink: IDriveService['createLink'] = async (params) => {
-    await ensureMoveRootTargetTracked(params);
-    const source = getNodeOrThrow(params.nodeId);
-    const target = getNodeOrThrow(params.targetFolderNodeId);
-    const groupId =
-      normalizeTagGroupId(params.groupId) ?? getNodeGroupId(source.id) ?? getNodeGroupId(target.id);
-
     if (
-      !groupId ||
-      source.type !== 'resource' ||
-      (target.type !== 'folder' && target.type !== 'root')
+      target.type === 'folder' &&
+      folders.some(
+        (folder) => folder.id === target.id || target.ancestorTagIds.includes(folder.tagId)
+      )
     ) {
       throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
     }
-    if (source.scope.rootId !== target.scope.rootId) {
+  };
+
+  const resourceIds = (nodes: DriveResourceNode[]): string[] =>
+    normalizeIds(nodes.map((node) => node.resourceId));
+
+  const moveNodes: IDriveService['moveNodes'] = async ({ nodes, target }: MoveNodesParams) => {
+    const normalizedNodes = normalizeActionNodes(nodes);
+    assertNoSystemFolder(normalizedNodes);
+    const scope = assertActionScope(normalizedNodes);
+    if (!sameScope(scope, target.scope)) {
       throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
     }
+    const groupId = getGroupId(scope);
+    const resources = normalizedNodes.filter(isResourceNode);
+    const folders = normalizedNodes.filter((node): node is FolderNode => node.type === 'folder');
+    assertValidMoveTarget(folders, target);
+    if (groupId) assertSingleMountPerResource(resources);
+    const movingResources = resources.filter((node) => node.mountTagId !== target.tagId);
+    const movingFolders = folders.filter((folder) => folder.parentId !== target.id);
+    const resourceTargetTagId =
+      movingResources.length > 0 ? getTargetTagIdOrThrow(target) : undefined;
+    const targetTagId = target.tagId;
+    let affectedCount = 0;
 
-    const targetTagId =
-      target.type === 'root' ? (target.canMountResources ? target.tagId : undefined) : target.tagId;
-    if (!targetTagId || targetTagId === source.folderTagId) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
-    }
-
-    const sourceItem = resourceItemByNodeId.get(source.id);
-    if (!sourceItem) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_RESOURCE_TAG_INFO_MISSING);
-    }
-    const currentTagIds = Object.keys(sourceItem.currentTags ?? {});
-    if (currentTagIds.includes(targetTagId)) {
-      return;
-    }
-
-    await resourceService.updateResourceTags({
-      resourceId: source.resourceId,
-      groupId,
-      tagIds: [
-        source.folderTagId,
-        ...currentTagIds.filter((id) => id !== source.folderTagId),
-        targetTagId,
-      ],
-    });
-    clearCache();
-  };
-
-  const createMoveNodeToFolderPlan = (params: MoveToFolderParams): MoveNodeToFolderPlan => {
-    const { nodeId, targetFolderNodeId } = params;
-    const source = getNodeOrThrow(nodeId);
-    const target = getNodeOrThrow(targetFolderNodeId);
-    const groupId =
-      normalizeTagGroupId(params.groupId) ??
-      getNodeGroupId(nodeId) ??
-      getNodeGroupId(targetFolderNodeId);
-
-    if (target.type !== 'folder' && target.type !== 'root') {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_TARGET_UNSUPPORTED_DROP);
-    }
-    if (source.scope.rootId !== target.scope.rootId) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
-    }
-
-    const targetTagId =
-      target.type === 'root' ? (target.canMountResources ? target.tagId : undefined) : target.tagId;
-
-    if (source.type === 'folder') {
-      if (source.systemType) {
-        throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
-      }
-      if (targetTagId && isDescendantTag(targetTagId, source.tagId, groupId)) {
-        throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
-      }
-      return { source, targetTagId, groupId };
-    }
-
-    if (isResourceNode(source) && targetTagId) {
-      return { source, targetTagId, groupId };
-    }
-
-    throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
-  };
-
-  const ensureMoveRootTargetTracked = async (
-    params: Pick<MoveToFolderParams, 'targetFolderNodeId' | 'groupId'>
-  ): Promise<void> => {
-    // 移动会清空节点缓存，路径状态可能仍保留尚未重新登记的抽象根节点。
-    if (nodeMap.has(params.targetFolderNodeId)) {
-      return;
-    }
-    const decodedTarget = decodeNodeId(params.targetFolderNodeId);
-    if (decodedTarget.kind !== 'root') {
-      return;
-    }
-    await getRootNode({ rootId: params.targetFolderNodeId, groupId: params.groupId });
-  };
-
-  const executeMoveNodeToFolderPlan = async (plan: MoveNodeToFolderPlan): Promise<void> => {
-    if (plan.source.type === 'folder') {
-      await tagService.moveTag({
-        targetTagId: plan.source.tagId,
-        newParentId: plan.targetTagId,
-        groupId: plan.groupId,
-      });
-      return;
-    }
-
-    if (isResourceNode(plan.source) && plan.targetTagId) {
-      await moveResourceNode(plan.source, plan.targetTagId, plan.groupId);
-      return;
-    }
-
-    throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
-  };
-
-  const moveNodeToFolder = async (
-    params: MoveToFolderParams,
-    options?: { clearCacheAfterMove?: boolean }
-  ): Promise<void> => {
-    await ensureMoveRootTargetTracked(params);
-    const plan = createMoveNodeToFolderPlan(params);
-    await executeMoveNodeToFolderPlan(plan);
-    if (options?.clearCacheAfterMove !== false) {
-      clearCache();
-    }
-  };
-
-  const resolveBatchMoveSourceIds = (params: {
-    nodeIds: string[];
-    targetFolderNodeId: string;
-  }): string[] => {
-    const sources = [...new Set(params.nodeIds)].map((nodeId) => getNodeOrThrow(nodeId));
-    if (sources.some((source) => source.type === 'folder' && source.systemType)) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_SELECTION_CONTAINS_SYSTEM_FOLDER);
-    }
-    if (sources.some((source) => source.id === params.targetFolderNodeId)) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
-    }
-
-    const sourceIdSet = new Set(sources.map((source) => source.id));
-    return sources
-      .filter((source) => {
-        let parentId = source.parentId;
-        while (parentId) {
-          if (sourceIdSet.has(parentId)) {
-            return false;
-          }
-          parentId = nodeMap.get(parentId)?.parentId ?? null;
-        }
-        return true;
-      })
-      .filter((source) => source.parentId !== params.targetFolderNodeId)
-      .map((source) => source.id);
-  };
-
-  const moveNodesToFolder: IDriveService['moveNodesToFolder'] = async (params) => {
-    await ensureMoveRootTargetTracked(params);
-    const sourceNodeIds = resolveBatchMoveSourceIds(params);
-    if (sourceNodeIds.length === 0) {
-      return 0;
-    }
-    const plans = sourceNodeIds.map((nodeId) =>
-      createMoveNodeToFolderPlan({
-        nodeId,
-        targetFolderNodeId: params.targetFolderNodeId,
-        groupId: params.groupId,
-      })
-    );
-
-    for (const plan of plans) {
-      await executeMoveNodeToFolderPlan(plan);
-    }
-    clearCache();
-    return plans.length;
-  };
-
-  const removeNode: IDriveService['removeNode'] = async (params) => {
-    const { nodeId } = params;
-    const source = getNodeOrThrow(nodeId);
-    const groupId = normalizeTagGroupId(params.groupId) ?? getNodeGroupId(nodeId);
-
-    if (groupId) {
-      if (source.type === 'folder') {
-        if (source.systemType) {
-          throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_DELETE);
-        }
-        await removeFolderNodeCascade(source, groupId);
-      } else if (isResourceNode(source)) {
-        await unmountGroupResourceNode(source, groupId);
+    if (movingResources.length > 0 && resourceTargetTagId) {
+      if (groupId) {
+        affectedCount += await resourceService.moveResourcesInGroup({
+          groupId,
+          resourceSourceTagMap: Object.fromEntries(
+            movingResources.map((node) => [node.resourceId, node.mountTagId])
+          ),
+          targetTagId: resourceTargetTagId,
+        });
       } else {
-        throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_DELETE);
+        const ids = resourceIds(movingResources);
+        affectedCount += await resourceService.setPersonalResourcesPathTag({
+          resourceIds: ids,
+          targetPathTagId: resourceTargetTagId,
+        });
       }
-      clearCache();
-      return;
     }
-
-    if (source.type === 'folder' && source.systemType) {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_DELETE);
-    } else if (source.type === 'folder' && (await isNodeInPersonalTrash(source))) {
-      await removeFolderNodeCascade(source);
-    } else if (isResourceNode(source) && (await isNodeInPersonalTrash(source))) {
-      await removePersonalResourceNodePermanently(source);
-    } else if (source.type === 'folder') {
-      const trashTagId = await ensureTrashTagId(groupId);
-      await tagService.moveTag({
-        targetTagId: source.tagId,
-        newParentId: trashTagId,
-        groupId,
-      });
-    } else if (source.type === 'link') {
-      await resourceService.updateResourceTags({
-        resourceId: source.resourceId,
-        tagIds: resolveLinkTagIdsAfterUnmount(source, new Set([source.folderTagId])),
-      });
-    } else if (source.type === 'resource') {
-      await movePersonalResourceNodeToTrash(source);
-    } else {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_DELETE);
+    if (movingFolders.length > 0) {
+      const ids = normalizeIds(movingFolders.map((folder) => folder.tagId));
+      await tagService.moveTags({ groupId, targetTagIds: ids, newParentId: targetTagId });
+      affectedCount += ids.length;
     }
-    clearCache();
+    return {
+      requestedCount: normalizedNodes.length,
+      affectedCount,
+    };
   };
 
-  const renameNode: IDriveService['renameNode'] = async (params) => {
-    const { nodeId, newName } = params;
-    const source = getNodeOrThrow(nodeId);
-    // 重命名必须以目标节点所属 scope 为准，避免侧栏切换作用域后将个人目录误提交到小组。
-    const groupId = source.scope.type === 'group' ? source.scope.groupId : undefined;
-    if (source.type === 'folder') {
-      if (source.systemType) {
+  const moveNodesToTrash: IDriveService['moveNodesToTrash'] = async ({
+    nodes,
+  }: MoveNodesToTrashParams) => {
+    const normalizedNodes = normalizeActionNodes(nodes);
+    assertNoSystemFolder(normalizedNodes);
+    const scope = assertActionScope(normalizedNodes);
+    if (scope.type !== 'personal') {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_DELETE);
+    }
+    const resources = normalizedNodes.filter(isResourceNode);
+    const folders = normalizedNodes.filter((node): node is FolderNode => node.type === 'folder');
+    let affectedCount = 0;
+    if (resources.length > 0) {
+      const ids = resourceIds(resources);
+      affectedCount += await resourceService.movePersonalResourcesToTrash({ resourceIds: ids });
+    }
+    if (folders.length > 0) {
+      const trash = await getSystemFolder({ scope, type: 'trash' });
+      const ids = normalizeIds(folders.map((folder) => folder.tagId));
+      await tagService.moveTags({ targetTagIds: ids, newParentId: trash.tagId });
+      affectedCount += ids.length;
+    }
+    return { requestedCount: normalizedNodes.length, affectedCount };
+  };
+
+  const removeNodesFromGroup: IDriveService['removeNodesFromGroup'] = async ({
+    nodes,
+  }: RemoveNodesFromGroupParams) => {
+    const normalizedNodes = normalizeActionNodes(nodes);
+    assertNoSystemFolder(normalizedNodes);
+    const scope = assertActionScope(normalizedNodes);
+    if (scope.type !== 'group') {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_DELETE);
+    }
+    const groupId = scope.groupId;
+    const resources = normalizedNodes.filter(isResourceNode);
+    const folders = normalizedNodes.filter((node): node is FolderNode => node.type === 'folder');
+    let affectedCount = 0;
+
+    for (const resourceSourceTagMap of buildResourceUnmountRounds(resources)) {
+      affectedCount += await resourceService.unmountResourcesToGroup({
+        groupId,
+        resourceSourceTagMap,
+      });
+    }
+    if (folders.length > 0) {
+      const ids = normalizeIds(folders.map((folder) => folder.tagId));
+      await tagService.removeTags({ groupId, targetTagIds: ids });
+      affectedCount += ids.length;
+    }
+    return { requestedCount: normalizedNodes.length, affectedCount };
+  };
+
+  const deleteTrashedNodes: IDriveService['deleteTrashedNodes'] = async ({
+    nodes,
+  }: DeleteTrashedNodesParams) => {
+    const normalizedNodes = normalizeActionNodes(nodes);
+    assertNoSystemFolder(normalizedNodes);
+    const scope = assertActionScope(normalizedNodes);
+    if (scope.type !== 'personal') {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_DELETE);
+    }
+    const trash = await getSystemFolder({ scope, type: 'trash' });
+    if (normalizedNodes.some((node) => !isDescendantOfFolder(node, trash))) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_DELETE);
+    }
+    const resources = normalizedNodes.filter(isResourceNode);
+    const folders = normalizedNodes.filter(
+      (node): node is FolderNode => node.type === 'folder' && node.id !== trash.id
+    );
+    let affectedCount = 0;
+    const ids = resourceIds(resources);
+    if (ids.length > 0) {
+      await resourceService.removeResources({ resourceIds: ids });
+      affectedCount += ids.length;
+    }
+    if (folders.length > 0) {
+      const tagIds = normalizeIds(folders.map((folder) => folder.tagId));
+      await tagService.removeTags({ targetTagIds: tagIds });
+      affectedCount += tagIds.length;
+    }
+    return { requestedCount: normalizedNodes.length, affectedCount };
+  };
+
+  const setPersonalResourcesLocation: IDriveService['setPersonalResourcesLocation'] = async ({
+    resourceIds: inputResourceIds,
+    target,
+  }: SetPersonalResourcesLocationParams) => {
+    const ids = normalizeIds(inputResourceIds);
+    if (target.scope.type !== 'personal') {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
+    }
+    const targetTagId = getTargetTagIdOrThrow(target);
+    let affectedCount = 0;
+    if (ids.length > 0) {
+      affectedCount = await resourceService.setPersonalResourcesPathTag({
+        resourceIds: ids,
+        targetPathTagId: targetTagId,
+      });
+    }
+    return { requestedCount: ids.length, affectedCount };
+  };
+
+  const addResourcesToGroup: IDriveService['addResourcesToGroup'] = async ({
+    resourceIds: inputResourceIds,
+    target,
+  }: AddResourcesToGroupParams) => {
+    if (target.scope.type !== 'group') {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
+    }
+    const ids = normalizeIds(inputResourceIds);
+    let affectedCount = 0;
+    if (ids.length > 0) {
+      affectedCount = await resourceService.mountResourcesToGroup({
+        resourceIds: ids,
+        groupId: target.scope.groupId,
+        targetTagId: target.tagId,
+      });
+    }
+    return { requestedCount: ids.length, affectedCount };
+  };
+
+  const createFolder: IDriveService['createFolder'] = async ({
+    parent,
+    name,
+  }: CreateFolderParams) => {
+    const tagName = name.trim();
+    if (!tagName) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'name' });
+    }
+    if (parent.type === 'folder' && parent.systemType) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_MOVE);
+    }
+    const tagId = await tagService.addTag({
+      groupId: getGroupId(parent.scope),
+      parentId: parent.tagId ?? '0',
+      tagName: parent.scope.type === 'personal' ? `/${tagName}` : tagName,
+      isPath: parent.scope.type === 'personal',
+    });
+    await tagService.getRawTagTree(getGroupId(parent.scope), { refresh: true });
+    const tag = tagService.getRawTagById(tagId, getGroupId(parent.scope));
+    if (!tag) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_NOT_FOUND, { nodeId: tagId });
+    }
+    return mapFolder(tag, parent.id, parent.scope);
+  };
+
+  const renameNode: IDriveService['renameNode'] = async ({ node, newName }: RenameNodeParams) => {
+    const name = newName.trim();
+    if (!name) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'newName' });
+    }
+    const groupId = getGroupId(node.scope);
+    if (node.type === 'folder') {
+      if (node.systemType) {
         throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_RENAME);
       }
       await tagService.updateTag({
-        targetTagId: source.tagId,
-        tagName: `/${newName}`,
         groupId,
+        targetTagId: node.tagId,
+        tagName: node.scope.type === 'personal' ? `/${name}` : name,
       });
-      clearCache();
       return;
     }
-    if (source.type === 'resource') {
-      await resourceService.renameResource({
-        resourceId: source.resourceId,
-        newName,
-      });
-      clearCache();
-      return;
-    }
-    if (source.type === 'link') {
+    if (node.type === 'link') {
       throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_LINK_UNSUPPORTED_RENAME);
+    }
+    if (node.type === 'resource') {
+      await resourceService.renameResource({ resourceId: node.resourceId, newName: name });
+      return;
     }
     throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_RENAME);
   };
 
-  const createFolder: IDriveService['createFolder'] = async (params) => {
-    const { parentId, name } = params;
-    const groupId = resolveEffectiveGroupId(parentId, params.groupId);
-    const decodedParent = decodeNodeId(parentId);
-    let targetParentTagId: string | undefined;
-    if (decodedParent.kind === 'root') {
-      const rootNode = nodeMap.get(parentId);
-      targetParentTagId =
-        rootNode?.type === 'root' && rootNode.canMountResources
-          ? rootNode.tagId
-          : groupId
-            ? undefined
-            : (await getPersonalRootTag()).tagId;
-    } else if (decodedParent.kind === 'folder') {
-      targetParentTagId = decodedParent.tagId;
-    } else {
-      throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_CREATE_FOLDER_ONLY);
-    }
-    const tagId = await tagService.addTag({
-      groupId,
-      parentId: targetParentTagId,
-      tagName: `/${name}`,
-    });
-    clearCache();
-    return tagId;
-  };
-
   return {
-    getRootNode,
-    getTrashFolderNodeId,
-    listFolderChildren,
-    listNodeChildrenPage,
+    getRoot,
+    getSystemFolder,
+    loadNodeChildren,
     getNodePath,
-    getResourceNode,
-    moveToFolder: moveNodeToFolder,
-    createLink,
-    moveNodesToFolder,
-    removeNode,
-    renameNode,
+    getMountPath,
+    resolveResourceNode,
     createFolder,
+    renameNode,
+    setPersonalResourcesLocation,
+    addResourcesToGroup,
+    moveNodes,
+    moveNodesToTrash,
+    removeNodesFromGroup,
+    deleteTrashedNodes,
   };
 };
+
+export const createDriveServices = createDriveService;

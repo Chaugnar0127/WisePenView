@@ -124,6 +124,7 @@ function DrawioLayoutConfig({
         resourceId,
         resourceName: displayResourceName,
         resourceIconType: 'drawio',
+        resourceInfo,
         currentActions,
         copyVersion,
         permissionResourceType: RESOURCE_KIND.DRAWIO,

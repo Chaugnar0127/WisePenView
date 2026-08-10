@@ -52,6 +52,7 @@ const resourceService = createResourceServices({
   groupService: groupService,
 });
 const agentService = createAgentServices({ userService: userService });
+const tagService = createTagServices();
 
 // Level 2：依赖已装配的领域服务
 const noteService = createNoteServices({ resourceService: resourceService });
@@ -59,7 +60,6 @@ const skillService = createSkillServices({
   resourceService: resourceService,
   userService: userService,
 });
-const tagService = createTagServices({ resourceService: resourceService });
 const chatService = createChatServices({
   groupService: groupService,
   resourceService: resourceService,

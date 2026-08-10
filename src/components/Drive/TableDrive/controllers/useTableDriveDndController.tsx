@@ -13,7 +13,11 @@ import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { isDriveActionTarget, isDriveSharedFolderNode } from '../../common/driveComponentModel';
+import {
+  isDriveActionTarget,
+  isDriveSharedFolderNode,
+  type DriveViewNode,
+} from '../../common/driveComponentModel';
 import type { DriveTableRow } from '../index.type';
 import { DriveDndRow, DriveDroppableBreadcrumb } from '../parts/DriveDnd';
 
@@ -21,8 +25,8 @@ interface UseTableDriveDndControllerParams {
   rowMap: Map<string, DriveTableRow>;
   pathNodes: DriveNode[];
   checkedRowKeys: Set<string>;
-  groupId?: string;
   onMoveSuccess: () => void;
+  onMoveError?: () => void;
 }
 
 /** 判断表格行是否允许作为拖拽源。 */
@@ -31,7 +35,9 @@ function isDriveDragSource(row: DriveTableRow): boolean {
 }
 
 /** 判断节点是否允许作为移动目标。 */
-function isDriveMoveTarget(node: DriveNode): boolean {
+function isDriveMoveTarget(
+  node: DriveViewNode
+): node is Extract<DriveNode, { type: 'root' | 'folder' }> {
   return (node.type === 'folder' || node.type === 'root') && !isDriveSharedFolderNode(node);
 }
 
@@ -39,8 +45,8 @@ function isDriveMoveTarget(node: DriveNode): boolean {
 function buildDriveNodeMap(
   rowMap: Map<string, DriveTableRow>,
   pathNodes: DriveNode[]
-): Map<string, DriveNode> {
-  const nodeMap = new Map<string, DriveNode>();
+): Map<string, DriveViewNode> {
+  const nodeMap = new Map<string, DriveViewNode>();
   rowMap.forEach((row) => {
     nodeMap.set(row.node.id, row.node);
   });
@@ -54,8 +60,8 @@ export function useTableDriveDndController({
   rowMap,
   pathNodes,
   checkedRowKeys,
-  groupId,
   onMoveSuccess,
+  onMoveError,
 }: UseTableDriveDndControllerParams) {
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
@@ -86,15 +92,21 @@ export function useTableDriveDndController({
       sourceRowIds: string[];
       targetFolderNodeId: string;
     }) => {
-      return driveService.moveNodesToFolder({
-        nodeIds: sourceRowIds,
-        targetFolderNodeId,
-        groupId,
-      });
+      const nodes = sourceRowIds
+        .map((nodeId) => rowMap.get(nodeId)?.node)
+        .filter(
+          (node): node is Extract<DriveNode, { type: 'folder' | 'resource' | 'link' }> =>
+            node != null && isDriveActionTarget(node)
+        );
+      const target = driveNodeMap.get(targetFolderNodeId);
+      if (!target || !isDriveMoveTarget(target)) {
+        return { requestedCount: 0, affectedCount: 0 };
+      }
+      return driveService.moveNodes({ nodes, target });
     },
     {
       manual: true,
-      onSuccess: (movedCount) => {
+      onSuccess: ({ affectedCount: movedCount }) => {
         if (movedCount === 0) return;
 
         onMoveSuccess();
@@ -105,6 +117,7 @@ export function useTableDriveDndController({
         }
       },
       onError: (error) => {
+        onMoveError?.();
         toast.danger(parseErrorMessage(error));
       },
     }
@@ -119,12 +132,11 @@ export function useTableDriveDndController({
 
     if (!isDriveDragSource(row)) return;
 
-    const sourceRowIds = (checkedRowKeys.has(row.id) ? [...checkedRowKeys] : [row.id]).filter(
-      (sourceRowId) => {
-        const sourceRow = rowMap.get(sourceRowId);
-        return sourceRow ? isDriveDragSource(sourceRow) : false;
-      }
-    );
+    const selectedSourceRowIds = checkedRowKeys.has(row.id) ? [...checkedRowKeys] : [row.id];
+    const sourceRowIds = selectedSourceRowIds.filter((sourceRowId) => {
+      const sourceRow = rowMap.get(sourceRowId);
+      return sourceRow ? isDriveDragSource(sourceRow) : false;
+    });
     if (sourceRowIds.length === 0) return;
 
     const nextDraggingRowKeys = new Set(sourceRowIds);

@@ -143,6 +143,7 @@ const mapAgentDetail = (params: {
   const version = params.bundle?.version ?? publishedVersion + 1;
   return {
     resourceId: params.resourceId,
+    resourceInfo: resource,
     title: resource?.resourceName ?? 'Agent',
     name: params.info?.agentInfo?.name ?? '',
     description: params.info?.agentInfo?.description ?? '',

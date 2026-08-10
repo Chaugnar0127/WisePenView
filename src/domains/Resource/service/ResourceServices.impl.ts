@@ -1,20 +1,25 @@
 import { ResourceItemApi } from '../apis/ResourceApi';
 import type { ListResourceItemsApiRequest } from '../apis/ResourceApi.type';
+import { ResourcePlacementApi } from '../apis/ResourcePlacementApi';
 import { ResourceServicesMap } from '../mapper/ResourceServices.map';
 import { useResourceDisplayNameStore } from '../store/useResourceDisplayNameStore';
 import type {
   GetGroupResourceRequest,
   GetUserResourcesRequest,
   IResourceService,
-  MountResourcesToGroupTagRequest,
+  MountResourcesToGroupRequest,
+  MovePersonalResourcesToTrashRequest,
+  MoveResourcesInGroupRequest,
   RemoveResourcesRequest,
   RenameResourceRequest,
+  ReplacePersonalNormalTagsRequest,
   ResourceListPage,
   SearchQueryRequest,
   SearchResultPage,
+  SetPersonalResourcesPathTagRequest,
+  UnmountResourcesToGroupRequest,
   UpdateResourceActionPermissionRequest,
   UpdateResourcePermissionSubjectsRequest,
-  UpdateResourceTagsRequest,
 } from './index.type';
 import {
   getResourcePermissionOverview,
@@ -49,23 +54,46 @@ const removeResources = async (params: RemoveResourcesRequest): Promise<void> =>
   await ResourceItemApi.removeResources(params);
 };
 
-const updateResourceTags = async (params: UpdateResourceTagsRequest): Promise<void> => {
-  await ResourceItemApi.changeResourceTags(params);
+const setPersonalResourcesPathTag = async (
+  params: SetPersonalResourcesPathTagRequest
+): Promise<number> => {
+  const request = ResourceServicesMap.mapSetPersonalResourcesPathTagRequest(params);
+  const data = await ResourcePlacementApi.setPersonalResourcesPathTag(request);
+  return ResourceServicesMap.mapResourcePlacementCountFromApi(data);
 };
 
-const uniqueNonEmptyIds = (ids: string[]): string[] =>
-  Array.from(new Set(ids.map((id) => id.trim()).filter(Boolean)));
+const movePersonalResourcesToTrash = async (
+  params: MovePersonalResourcesToTrashRequest
+): Promise<number> => {
+  const request = ResourceServicesMap.mapMovePersonalResourcesToTrashRequest(params);
+  const data = await ResourcePlacementApi.movePersonalResourcesToTrash(request);
+  return ResourceServicesMap.mapResourcePlacementCountFromApi(data);
+};
 
-const mountResourcesToGroupTag = async (params: MountResourcesToGroupTagRequest): Promise<void> => {
-  const resourceIds = uniqueNonEmptyIds(params.resourceIds);
-  const targetTagId = params.tagId.trim();
-  if (resourceIds.length === 0 || !targetTagId) return;
+const replacePersonalNormalTags = async (
+  params: ReplacePersonalNormalTagsRequest
+): Promise<number> => {
+  const request = ResourceServicesMap.mapReplacePersonalNormalTagsRequest(params);
+  const data = await ResourcePlacementApi.replacePersonalNormalTags(request);
+  return ResourceServicesMap.mapResourcePlacementCountFromApi(data);
+};
 
-  await ResourceItemApi.mountResourcesToGroupTag({
-    resourceIds,
-    groupId: params.groupId,
-    tagId: targetTagId,
-  });
+const mountResourcesToGroup = async (params: MountResourcesToGroupRequest): Promise<number> => {
+  const request = ResourceServicesMap.mapMountResourcesToGroupRequest(params);
+  const data = await ResourcePlacementApi.mountResourcesToGroup(request);
+  return ResourceServicesMap.mapResourcePlacementCountFromApi(data);
+};
+
+const unmountResourcesToGroup = async (params: UnmountResourcesToGroupRequest): Promise<number> => {
+  const request = ResourceServicesMap.mapUnmountResourcesToGroupRequest(params);
+  const data = await ResourcePlacementApi.unmountResourcesToGroup(request);
+  return ResourceServicesMap.mapResourcePlacementCountFromApi(data);
+};
+
+const moveResourcesInGroup = async (params: MoveResourcesInGroupRequest): Promise<number> => {
+  const request = ResourceServicesMap.mapMoveResourcesInGroupRequest(params);
+  const data = await ResourcePlacementApi.moveResourcesInGroup(request);
+  return ResourceServicesMap.mapResourcePlacementCountFromApi(data);
 };
 
 const updateResourceActionPermission = async (
@@ -92,8 +120,12 @@ export const createResourceServices = (deps: ResourceServicesDeps): IResourceSer
   getGroupResources,
   renameResource,
   removeResources,
-  updateResourceTags,
-  mountResourcesToGroupTag,
+  setPersonalResourcesPathTag,
+  movePersonalResourcesToTrash,
+  replacePersonalNormalTags,
+  mountResourcesToGroup,
+  unmountResourcesToGroup,
+  moveResourcesInGroup,
   updateResourceActionPermission,
   updateResourcePermissionSubjects,
   getResourcePermissionOverview: (params) => getResourcePermissionOverview(params, deps),

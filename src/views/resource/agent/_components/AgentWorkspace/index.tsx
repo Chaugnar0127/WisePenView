@@ -66,6 +66,7 @@ export default function AgentWorkspace({
         resourceId: agent.resourceId,
         resourceName: agent.title,
         resourceIconType: 'agent',
+        resourceInfo: agent.resourceInfo,
         currentActions: agent.currentActions,
         copyVersion: agent.version,
         permissionResourceType: RESOURCE_KIND.AGENT,

@@ -19,6 +19,7 @@ function DriveDeleteModal({
   groupId,
   onOpenChange,
   onSuccess,
+  onError,
 }: DriveDeleteModalProps) {
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
@@ -28,7 +29,11 @@ function DriveDeleteModal({
   const { loading, run: runDelete } = useRequest(
     async () => {
       if (!node) return;
-      await driveService.removeNode({ nodeId: node.id, groupId });
+      if (node.scope.type === 'group') {
+        await driveService.removeNodesFromGroup({ nodes: [node] });
+        return;
+      }
+      await driveService.moveNodesToTrash({ nodes: [node] });
     },
     {
       manual: true,
@@ -44,6 +49,7 @@ function DriveDeleteModal({
         onOpenChange(false);
       },
       onError: (error) => {
+        onError?.();
         toast.danger(parseErrorMessage(error));
       },
     }

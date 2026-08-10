@@ -1,7 +1,7 @@
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
-import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
+import type { DriveContainerNode, DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { Button } from '@heroui/react';
 import { useMemoizedFn } from 'ahooks';
 import { useState } from 'react';
@@ -19,7 +19,7 @@ interface ResourceTargetModalProps {
   confirmText?: string;
   isTargetSelectable?: (target: DriveSelectionItem) => boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (target: DriveSelectionItem) => void;
+  onConfirm: (target: DriveContainerNode) => void;
 }
 
 function ResourceTargetModal({
@@ -36,7 +36,7 @@ function ResourceTargetModal({
   onConfirm,
 }: ResourceTargetModalProps) {
   const { t } = useTranslation('common');
-  const [target, setTarget] = useState<DriveSelectionItem>();
+  const [target, setTarget] = useState<DriveContainerNode>();
   const isNavigatorNodeSelectable = useMemoizedFn((node: DriveNode) => {
     if (node.type !== 'root' && node.type !== 'folder') return false;
     const item: DriveSelectionItem = {
@@ -99,7 +99,12 @@ function ResourceTargetModal({
             disabled={submitting}
             dimUnselectableNodes={false}
             isNodeSelectable={isNavigatorNodeSelectable}
-            onChange={(items) => setTarget(items[0])}
+            onNodeChange={(nodes) => {
+              const node = nodes[0];
+              setTarget(
+                node && (node.type === 'root' || node.type === 'folder') ? node : undefined
+              );
+            }}
           />
         </div>
       </div>

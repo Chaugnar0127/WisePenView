@@ -45,7 +45,6 @@ const buildStressMockItems = (count: number): ResourceItem[] =>
       resourceType: 'pdf',
       ownerId: '1',
       size: 2048 + n * 100,
-      path: '/',
       currentTags: {},
     };
   });
@@ -173,12 +172,41 @@ const removeResources = async (_params: RemoveResourcesRequest): Promise<void> =
   await delay(150);
 };
 
-const updateResourceTags = async (): Promise<void> => {
+const countResourceIds = (resourceIds: string[]): number =>
+  new Set(resourceIds.map((resourceId) => resourceId.trim()).filter(Boolean)).size;
+
+const setPersonalResourcesPathTag: IResourceService['setPersonalResourcesPathTag'] = async (
+  params
+) => {
   await delay(150);
+  return countResourceIds(params.resourceIds);
 };
 
-const mountResourcesToGroupTag = async (): Promise<void> => {
+const movePersonalResourcesToTrash: IResourceService['movePersonalResourcesToTrash'] = async (
+  params
+) => {
   await delay(150);
+  return countResourceIds(params.resourceIds);
+};
+
+const replacePersonalNormalTags: IResourceService['replacePersonalNormalTags'] = async (params) => {
+  await delay(150);
+  return countResourceIds(params.resourceIds);
+};
+
+const mountResourcesToGroup: IResourceService['mountResourcesToGroup'] = async (params) => {
+  await delay(150);
+  return countResourceIds(params.resourceIds);
+};
+
+const unmountResourcesToGroup: IResourceService['unmountResourcesToGroup'] = async (params) => {
+  await delay(150);
+  return Object.keys(params.resourceSourceTagMap).length;
+};
+
+const moveResourcesInGroup: IResourceService['moveResourcesInGroup'] = async (params) => {
+  await delay(150);
+  return Object.keys(params.resourceSourceTagMap).length;
 };
 
 const updateResourceActionPermission = async (): Promise<void> => {
@@ -195,9 +223,6 @@ const getResourcePermissionOverview = async (
   params: GetResourcePermissionOverviewRequest
 ): Promise<ResourcePermissionOverview> => {
   await delay(100);
-  const resource = [...fullMockPersonalResourceList, ...fullMockGroupResourceList].find(
-    (item) => item.resourceId === params.resourceId
-  );
   const resourceId = params.resourceId;
   const resourceType = params.resourceType;
   const supportedActions = getSupportedResourcePermissionActions(resourceType);
@@ -289,8 +314,12 @@ export const ResourceServicesMock: IResourceService = {
   getGroupResources,
   renameResource,
   removeResources,
-  updateResourceTags,
-  mountResourcesToGroupTag,
+  setPersonalResourcesPathTag,
+  movePersonalResourcesToTrash,
+  replacePersonalNormalTags,
+  mountResourcesToGroup,
+  unmountResourcesToGroup,
+  moveResourcesInGroup,
   updateResourceActionPermission,
   updateResourcePermissionSubjects,
   getResourcePermissionOverview,

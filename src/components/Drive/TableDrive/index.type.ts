@@ -1,14 +1,13 @@
 import type { FolderTableRow } from '@/components/Table';
-import type { DriveNode } from '@/domains/Drive';
 import type { ReactNode } from 'react';
-import type { DriveScope } from '../common/driveComponentModel';
+import type { DriveScope, DriveViewNode } from '../common/driveComponentModel';
 
-/** TableDrive 行类型：DriveNode 本身（含 loading / 加载更多占位节点），可选挂 children */
-export type DriveRow = DriveNode & { children?: DriveRow[] };
+/** TableDrive 行类型：真实节点或组件分页占位节点，可选挂 children。 */
+export type DriveRow = DriveViewNode & { children?: DriveRow[] };
 
-/** FolderTable 展示行：保留原始 DriveNode，避免 UI 模型污染 service 模型 */
+/** FolderTable 展示行：保留原始节点，避免展示字段污染领域模型。 */
 export type DriveTableRow = FolderTableRow & {
-  node: DriveNode;
+  node: DriveViewNode;
   children?: DriveTableRow[];
 };
 

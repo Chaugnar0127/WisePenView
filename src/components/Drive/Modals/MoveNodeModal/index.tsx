@@ -1,5 +1,5 @@
 import { useDriveService } from '@/domains';
-import type { IDriveService } from '@/domains/Drive';
+import type { DriveContainerNode } from '@/domains/Drive';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
@@ -14,35 +14,6 @@ const getNodeName = (node: DriveActionTarget): string => {
   return '';
 };
 
-async function collectFolderSubtreeNodeIds(
-  driveService: IDriveService,
-  folderId: string,
-  groupId: string | undefined,
-  disabledNodeIds: Set<string>,
-  visitedFolderIds: Set<string>
-): Promise<void> {
-  if (visitedFolderIds.has(folderId)) return;
-  visitedFolderIds.add(folderId);
-  disabledNodeIds.add(folderId);
-
-  const children = await driveService.listFolderChildren({
-    nodeId: folderId,
-    groupId,
-  });
-  children.forEach((child) => disabledNodeIds.add(child.id));
-  await Promise.all(
-    children.map((child) =>
-      collectFolderSubtreeNodeIds(
-        driveService,
-        child.id,
-        groupId,
-        disabledNodeIds,
-        visitedFolderIds
-      )
-    )
-  );
-}
-
 function MoveNodeModal({
   isOpen,
   nodes,
@@ -51,48 +22,15 @@ function MoveNodeModal({
   isTrashView = false,
   onOpenChange,
   onSuccess,
+  onError,
 }: MoveNodeModalProps) {
   const { t } = useTranslation(['drive', 'common']);
   const driveService = useDriveService();
-  const nodeIdsKey = nodes.map((node) => node.id).join('\u0000');
   const effectiveRootId = nodes[0]?.scope.rootId ?? rootId;
   const effectiveGroupId = groupId ?? (nodes[0] ? getDriveScopeGroupId(nodes[0].scope) : undefined);
 
-  const { data: descendantNodeIds } = useRequest(
-    async (): Promise<Set<string>> => {
-      const descendantIds = new Set<string>();
-      const visitedFolderIds = new Set<string>();
-      await Promise.all(
-        nodes
-          .filter(
-            (node): node is Extract<DriveActionTarget, { type: 'folder' }> => node.type === 'folder'
-          )
-          .map((node) =>
-            collectFolderSubtreeNodeIds(
-              driveService,
-              node.id,
-              effectiveGroupId,
-              descendantIds,
-              visitedFolderIds
-            )
-          )
-      );
-      return descendantIds;
-    },
-    {
-      ready: isOpen && nodes.length > 0,
-      refreshDeps: [isOpen, nodeIdsKey, effectiveRootId, effectiveGroupId],
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
-    }
-  );
-
   const disabledTargetIds = (() => {
     const next = new Set(nodes.map((node) => node.id));
-    for (const nodeId of descendantNodeIds ?? []) {
-      next.add(nodeId);
-    }
     if (
       effectiveGroupId &&
       nodes.some((node) => node.type === 'resource' || node.type === 'link')
@@ -103,17 +41,14 @@ function MoveNodeModal({
   })();
 
   const { loading: moving, run: runMove } = useRequest(
-    async (selectedTargetId: string) => {
-      if (nodes.length === 0) return 0;
-      return await driveService.moveNodesToFolder({
-        nodeIds: nodes.map((node) => node.id),
-        targetFolderNodeId: selectedTargetId,
-        groupId: effectiveGroupId,
-      });
+    async (target: DriveContainerNode) => {
+      if (nodes.length === 0) return { requestedCount: 0, affectedCount: 0 };
+      return driveService.moveNodes({ nodes, target });
     },
     {
       manual: true,
-      onSuccess: (movedCount, [selectedTargetId]) => {
+      onSuccess: (result, [target]) => {
+        const movedCount = result.affectedCount;
         if (movedCount === 0) {
           toast.success(t('move.feedback.alreadyThere'));
           onOpenChange(false);
@@ -124,10 +59,11 @@ function MoveNodeModal({
             ? t('move.feedback.movedToDrive', { count: movedCount })
             : t('move.feedback.moved', { count: movedCount })
         );
-        onSuccess?.(selectedTargetId);
+        onSuccess?.(target);
         onOpenChange(false);
       },
       onError: (err) => {
+        onError?.();
         toast.danger(parseErrorMessage(err));
       },
     }
@@ -149,7 +85,7 @@ function MoveNodeModal({
       confirmText={t('actions.confirm', { ns: 'common' })}
       cancelText={t('actions.cancel', { ns: 'common' })}
       onOpenChange={onOpenChange}
-      onConfirm={(target) => runMove(target.nodeId)}
+      onConfirm={runMove}
     />
   );
 }

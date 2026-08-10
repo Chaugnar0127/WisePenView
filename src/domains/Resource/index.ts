@@ -4,7 +4,6 @@ export type {
   ResourceItem,
   ResourceTagBind,
   ResourceTagInfo,
-  ResourceUserInteraction,
 } from './entity/resource';
 export type { ResourceSkillSummary, SkillScopeType } from './entity/skill';
 export {
@@ -12,8 +11,6 @@ export {
   RESOURCE_PERMISSION_ACTION_ORDER,
   RESOURCE_SORT_BY,
   RESOURCE_SORT_DIR,
-  RESOURCE_TYPE,
-  SEARCH_RESOURCE_TYPE,
   SEARCH_SCOPE,
   TAG_QUERY_LOGIC_MODE,
   actionsToPermissionCode,
@@ -45,9 +42,12 @@ export type {
   GetResourcePermissionOverviewRequest,
   GetUserResourcesRequest,
   IResourceService,
-  MountResourcesToGroupTagRequest,
+  MountResourcesToGroupRequest,
+  MovePersonalResourcesToTrashRequest,
+  MoveResourcesInGroupRequest,
   RemoveResourcesRequest,
   RenameResourceRequest,
+  ReplacePersonalNormalTagsRequest,
   ResourceListPage,
   ResourcePermissionActionOption,
   ResourcePermissionGroupInfo,
@@ -58,11 +58,13 @@ export type {
   ResourcePermissionSubject,
   ResourcePermissionSubjectKind,
   ResourcePermissionUserInfo,
+  ResourceSourceTagMap,
   SearchHitItem,
   SearchQueryRequest,
   SearchResultPage,
+  SetPersonalResourcesPathTagRequest,
+  UnmountResourcesToGroupRequest,
   UpdateResourceActionPermissionRequest,
   UpdateResourcePermissionSubjectsRequest,
-  UpdateResourceTagsRequest,
 } from './service/index.type';
 export { resolveResourceIconType } from './utils/resolveResourceIconType';

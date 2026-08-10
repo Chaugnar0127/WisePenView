@@ -2,11 +2,9 @@ import { apiGet, apiPost } from '@/apis/request';
 import { serializeRepeatKeyQuery } from '@/apis/serializeRepeatKeyQuery';
 import type {
   ChangeResourceActionPermissionApiRequest,
-  ChangeResourceTagsApiRequest,
   GlobalSearchApiRequest,
   GlobalSearchApiResponse,
   ListResourceItemsApiRequest,
-  MountResourcesToGroupTagApiRequest,
   RemoveResourcesApiRequest,
   RenameResourceApiRequest,
   ResourceListPageApiResponse,
@@ -23,14 +21,6 @@ function listResources(req: ListResourceItemsApiRequest): Promise<ResourceListPa
 
 function renameResource(req: RenameResourceApiRequest): Promise<void> {
   return apiPost('/resource/item/renameResource', req);
-}
-
-function changeResourceTags(req: ChangeResourceTagsApiRequest): Promise<void> {
-  return apiPost('/resource/item/changeResourceTags', req);
-}
-
-function mountResourcesToGroupTag(req: MountResourcesToGroupTagApiRequest): Promise<void> {
-  return apiPost('/resource/item/mountResourcesToGroupTag', req);
 }
 
 function changeResourceActionPermission(
@@ -53,8 +43,6 @@ function globalSearch(req: GlobalSearchApiRequest): Promise<GlobalSearchApiRespo
 export const ResourceItemApi = {
   listResources,
   renameResource,
-  changeResourceTags,
-  mountResourcesToGroupTag,
   changeResourceActionPermission,
   removeResources,
   globalSearch,

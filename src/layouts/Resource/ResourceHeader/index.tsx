@@ -273,6 +273,7 @@ function ResourceHeader({
   resourceName,
   resourceType,
   resourceIconType,
+  resourceInfo,
   currentActions,
   copyVersion,
   permissionResourceType,
@@ -361,6 +362,7 @@ function ResourceHeader({
               resourceId={resourceId}
               resourceName={resourceName}
               resourceType={resourceType ?? permissionResourceType}
+              resourceInfo={resourceInfo}
               currentActions={currentActions}
               copyVersion={copyVersion}
               onResolve={(operations) => (

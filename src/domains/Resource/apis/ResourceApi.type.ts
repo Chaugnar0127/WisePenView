@@ -101,19 +101,6 @@ export interface RenameResourceApiRequest {
   newName: string;
 }
 
-export interface ChangeResourceTagsApiRequest {
-  resourceId: string;
-  tagIds: string[];
-  groupId?: string;
-  primaryTagId?: string;
-}
-
-export interface MountResourcesToGroupTagApiRequest {
-  resourceIds: string[];
-  groupId: string;
-  tagId: string;
-}
-
 export interface ChangeResourceActionPermissionApiRequest {
   resourceId: string;
   overrideGrantedActions?: Record<string, ResourceActionApiKey[] | null> | null;

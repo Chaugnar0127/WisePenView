@@ -22,7 +22,7 @@ import {
   useMarkdownNoteImport,
 } from '@/components/Note/useMarkdownNoteImport';
 import { useDriveService, useNoteService } from '@/domains';
-import type { DriveNodeScope } from '@/domains/Drive';
+import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { useOpenResource } from '@/hooks/useOpenResource';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
@@ -31,13 +31,15 @@ import { useRequest } from 'ahooks';
 import { useRef, useState, type ChangeEvent, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveActionTarget } from '../../common/driveComponentModel';
+import { resolveCurrentDriveContainer } from '../../common/driveComponentModel';
 import type { DriveTableRow, TableDriveActionConfig } from '../index.type';
 import type { CreateMenuItem } from '../parts/CreateMenu/index.type';
 
 interface UseTableDriveActionsControllerParams {
   currentNodeId: string;
   currentRows: DriveTableRow[];
-  checkedRowKeys: Set<string>;
+  selectedActionTargets: DriveActionTarget[];
+  pathNodes: DriveNode[];
   scope: DriveNodeScope;
   actions?: TableDriveActionConfig;
   disabled?: boolean;
@@ -81,7 +83,8 @@ const DEFAULT_TOOLBAR_CONFIG: Required<NonNullable<TableDriveActionConfig['toolb
 export function useTableDriveActionsController({
   currentNodeId,
   currentRows,
-  checkedRowKeys,
+  selectedActionTargets,
+  pathNodes,
   scope,
   actions,
   disabled = false,
@@ -97,19 +100,26 @@ export function useTableDriveActionsController({
   const driveService = useDriveService();
   const toolbarConfig = { ...DEFAULT_TOOLBAR_CONFIG, ...actions?.toolbar };
 
-  const { loading: batchDeleting, run: runBatchDelete } = useRequest(
+  const selectedNodes = selectedActionTargets;
+  const { loading: batchDeleting, run: executeBatchDelete } = useRequest(
     async () => {
-      await Promise.all(
-        [...checkedRowKeys].map((nodeId) => driveService.removeNode({ nodeId, groupId }))
-      );
+      if (selectedNodes.length === 0) return;
+      if (scope.type === 'group') {
+        await driveService.removeNodesFromGroup({ nodes: selectedNodes });
+        return;
+      }
+      await driveService.moveNodesToTrash({ nodes: selectedNodes });
     },
     {
       manual: true,
       onSuccess: () => {
-        toast.success(t('table.batchDeleted', { count: checkedRowKeys.size }));
+        toast.success(t('table.batchDeleted', { count: selectedNodes.length }));
         onNodeActionSuccess();
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
+      onError: (error) => {
+        refresh();
+        toast.danger(parseErrorMessage(error));
+      },
     }
   );
 
@@ -122,10 +132,21 @@ export function useTableDriveActionsController({
   const [renameTarget, setRenameTarget] = useState<DriveActionTarget | null>(null);
   const [moveNodes, setMoveNodes] = useState<DriveActionTarget[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
+  const [trashDeleteNodes, setTrashDeleteNodes] = useState<DriveActionTarget[]>([]);
+
+  const runBatchDelete = () => {
+    if (selectedNodes.length === 0) return;
+    if (isTrashView) {
+      setTrashDeleteNodes(selectedNodes);
+      return;
+    }
+    executeBatchDelete();
+  };
 
   const existingFolderNames = currentRows
     .filter((row) => row.node.type === 'folder')
     .map((row) => row.name.trim());
+  const resourceDriveLocation = mountTagId ? { scope, mountTagId } : undefined;
 
   const {
     fileInputRef: markdownFileInputRef,
@@ -140,7 +161,7 @@ export function useTableDriveActionsController({
         resourceId,
         resourceType: RESOURCE_KIND.NOTE,
         resourceName: title,
-        driveLocation: { scope, parentNodeId: currentNodeId },
+        driveLocation: resourceDriveLocation,
       });
     },
   });
@@ -166,7 +187,7 @@ export function useTableDriveActionsController({
         openResource({
           resourceId,
           resourceType: RESOURCE_KIND.NOTE,
-          driveLocation: { scope, parentNodeId: currentNodeId },
+          driveLocation: resourceDriveLocation,
         });
       },
       onError: (err) => {
@@ -186,7 +207,7 @@ export function useTableDriveActionsController({
     openResource({
       resourceId: createdId,
       resourceType: type,
-      driveLocation: { scope, parentNodeId: currentNodeId },
+      driveLocation: resourceDriveLocation,
     });
   };
 
@@ -269,8 +290,7 @@ export function useTableDriveActionsController({
         <DriveCreateModal
           type={driveCreateType}
           isOpen
-          parentId={currentNodeId}
-          groupId={groupId}
+          parent={resolveCurrentDriveContainer(currentNodeId, pathNodes)}
           pathTagId={mountTagId}
           existingFolderNames={existingFolderNames}
           onOpenChange={(open) => {
@@ -282,7 +302,6 @@ export function useTableDriveActionsController({
       <RenameNodeModal
         isOpen={Boolean(renameTarget)}
         node={renameTarget}
-        groupId={groupId}
         onOpenChange={(open) => {
           if (!open) setRenameTarget(null);
         }}
@@ -298,13 +317,19 @@ export function useTableDriveActionsController({
           if (!open) setMoveNodes([]);
         }}
         onSuccess={onNodeActionSuccess}
+        onError={refresh}
       />
       {isTrashView ? (
         <TrashDeleteModal
-          isOpen={Boolean(deleteTarget)}
-          node={deleteTarget}
+          isOpen={Boolean(deleteTarget) || trashDeleteNodes.length > 0}
+          nodes={
+            trashDeleteNodes.length > 0 ? trashDeleteNodes : deleteTarget ? [deleteTarget] : []
+          }
           onOpenChange={(open) => {
-            if (!open) setDeleteTarget(null);
+            if (!open) {
+              setDeleteTarget(null);
+              setTrashDeleteNodes([]);
+            }
           }}
           onSuccess={onNodeActionSuccess}
         />
@@ -317,6 +342,7 @@ export function useTableDriveActionsController({
             if (!open) setDeleteTarget(null);
           }}
           onSuccess={onNodeActionSuccess}
+          onError={refresh}
         />
       )}
     </>
@@ -333,7 +359,7 @@ export function useTableDriveActionsController({
       openResource({
         resourceId: pendingNewNoteId,
         resourceType: RESOURCE_KIND.NOTE,
-        driveLocation: { scope, parentNodeId: currentNodeId },
+        driveLocation: resourceDriveLocation,
       });
       return;
     }

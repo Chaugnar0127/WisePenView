@@ -1,9 +1,9 @@
 import AppModal from '@/components/Overlay/AppModal';
+import type { DriveContainerNode } from '@/domains/Drive';
 import { Button } from '@heroui/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DriveNavigator from '../../DriveNavigator';
-import type { DriveSelectionItem } from '../../common/driveComponentModel';
 import type { DriveFolderPickerModalProps } from './index.type';
 import styles from './style.module.less';
 
@@ -22,7 +22,7 @@ function DriveFolderPickerDialog({
   onConfirm,
 }: DriveFolderPickerModalProps) {
   const { t } = useTranslation('common');
-  const [selectedTarget, setSelectedTarget] = useState<DriveSelectionItem>();
+  const [selectedTarget, setSelectedTarget] = useState<DriveContainerNode>();
 
   const handleOpenChange = (open: boolean) => {
     if (!open && isSubmitting) return;
@@ -73,7 +73,12 @@ function DriveFolderPickerDialog({
             disabledNodeIds={disabledNodeIds}
             isNodeSelectable={isNodeSelectable}
             disabled={isSubmitting}
-            onChange={(selected) => setSelectedTarget(selected[0])}
+            onNodeChange={(selected) => {
+              const node = selected[0];
+              setSelectedTarget(
+                node && (node.type === 'root' || node.type === 'folder') ? node : undefined
+              );
+            }}
           />
         </div>
       </div>

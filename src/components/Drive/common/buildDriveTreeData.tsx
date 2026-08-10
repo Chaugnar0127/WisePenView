@@ -1,7 +1,7 @@
 import type { DataNode } from '@/components/Tree';
 import type { DriveNode } from '@/domains/Drive';
 import type { ReactNode } from 'react';
-import type { DriveItemKind } from './driveComponentModel';
+import type { DriveItemKind, DriveViewNode } from './driveComponentModel';
 
 interface DriveNodeSelectionOptions {
   selectableTypes: Set<DriveItemKind>;
@@ -14,14 +14,14 @@ interface BuildDriveTreeDataOptions extends DriveNodeSelectionOptions {
   renderableTypes: Set<DriveItemKind>;
   dimUnselectableNodes?: boolean;
   interactiveLoadingNodes?: boolean;
-  getTreeKey: (node: DriveNode) => string;
-  renderTitle: (node: DriveNode) => ReactNode;
+  getTreeKey: (node: DriveViewNode) => string;
+  renderTitle: (node: DriveViewNode) => ReactNode;
 }
 
 export function buildDriveTreeData(
-  nodes: DriveNode[],
+  nodes: DriveViewNode[],
   options: BuildDriveTreeDataOptions,
-  nodeMap: Map<string, DriveNode>
+  nodeMap: Map<string, DriveViewNode>
 ): DataNode[] {
   const result: DataNode[] = [];
   for (const node of nodes) {
@@ -51,7 +51,7 @@ export function replaceDriveTreeNodeChildren(
 }
 
 export function isDriveNodeSelectable(
-  node: DriveNode,
+  node: DriveViewNode,
   options: DriveNodeSelectionOptions
 ): boolean {
   return (
@@ -75,7 +75,7 @@ function resolveNodeState(node: DriveNode, options: BuildDriveTreeDataOptions) {
 }
 
 function toTreeDataNode(
-  node: DriveNode,
+  node: DriveViewNode,
   key: string,
   options: BuildDriveTreeDataOptions
 ): DataNode {

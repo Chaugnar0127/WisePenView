@@ -17,13 +17,7 @@ function getDefaultName(node: DriveActionTarget | null): string {
   return node.title;
 }
 
-function RenameNodeModalContent({
-  isOpen,
-  node,
-  groupId,
-  onOpenChange,
-  onSuccess,
-}: RenameNodeModalProps) {
+function RenameNodeModalContent({ isOpen, node, onOpenChange, onSuccess }: RenameNodeModalProps) {
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
   const [name, setName] = useState(getDefaultName(node));
@@ -32,7 +26,7 @@ function RenameNodeModalContent({
   const { loading, run: runRenameNode } = useRequest(
     async (trimmed: string) => {
       if (!node) return;
-      await driveService.renameNode({ nodeId: node.id, newName: trimmed, groupId });
+      await driveService.renameNode({ node, newName: trimmed });
     },
     {
       manual: true,

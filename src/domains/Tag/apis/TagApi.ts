@@ -4,8 +4,8 @@ import type {
   ChangeTagApiRequest,
   GetTagTreeApiRequest,
   GetTagTreeApiResponse,
-  MoveTagApiRequest,
-  RemoveTagApiRequest,
+  MoveTagsApiRequest,
+  RemoveTagsApiRequest,
 } from './TagApi.type';
 
 function getTagTree(req?: GetTagTreeApiRequest): Promise<GetTagTreeApiResponse> {
@@ -20,18 +20,18 @@ function changeTag(req: ChangeTagApiRequest): Promise<void> {
   return apiPost('/resource/tag/changeTag', req);
 }
 
-function removeTag(req: RemoveTagApiRequest): Promise<void> {
-  return apiPost('/resource/tag/removeTag', req);
+function removeTags(req: RemoveTagsApiRequest): Promise<void> {
+  return apiPost('/resource/tag/removeTags', req);
 }
 
-function moveTag(req: MoveTagApiRequest): Promise<void> {
-  return apiPost('/resource/tag/moveTag', req);
+function moveTags(req: MoveTagsApiRequest): Promise<void> {
+  return apiPost('/resource/tag/moveTags', req);
 }
 
 export const TagApi = {
   getTagTree,
   addTag,
   changeTag,
-  removeTag,
-  moveTag,
+  removeTags,
+  moveTags,
 };

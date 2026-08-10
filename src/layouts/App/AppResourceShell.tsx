@@ -15,11 +15,11 @@ import {
 } from '@/layouts/_common/SystemResizable';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import { useResourceChatProtocolStore } from '@/layouts/Resource/_store/useResourceChatProtocolStore';
-import { useResourceNavigationStore } from '@/layouts/Resource/_store/useResourceNavigationStore';
 import ResourceFrame from '@/layouts/Resource/ResourceFrame';
 import ResourceShellHeader from '@/layouts/Resource/ResourceShellHeader';
 import { useResourceBreadcrumb } from '@/layouts/Resource/useResourceBreadcrumb';
 import { useResourceHeaderEndReserve } from '@/layouts/Resource/useResourceHeaderEndReserve';
+import { parseResourceDriveLocation } from '@/utils/navigation/resourceRoute';
 import { normalizeResourceKind, resolveResourceViewer } from '@/utils/navigation/resourceTarget';
 import ResourceSidePanelActions from '@/views/resource/_components/ResourceSidePanel/Actions';
 import {
@@ -91,9 +91,13 @@ function AppResourceShell({
       resourceId,
       resourceType,
       viewer,
+      driveLocation: parseResourceDriveLocation(new URLSearchParams(location.search)),
     };
   })();
-  const resourceBreadcrumbItems = useResourceBreadcrumb(routeContext.resourceId);
+  const resourceBreadcrumbItems = useResourceBreadcrumb(
+    routeContext.resourceId,
+    routeContext.driveLocation
+  );
   const chatPanelOpen = !chatPanelCollapsed;
   const chatPanelSize = chatPanelOpen ? clampWorkspaceChatPanelWidth(chatPanelWidth) : 0;
 
@@ -107,7 +111,6 @@ function AppResourceShell({
     hostId: DEFAULT_RESOURCE_HOST_ID,
     layoutConfig,
     routeContext,
-    getNavigationScope: () => useResourceNavigationStore.getState().location.scope,
     openResource,
     setLayoutConfig: setLayoutConfigState,
     resetLayoutConfig,

@@ -2,7 +2,7 @@ import type { DriveActionTarget } from '../../common/driveComponentModel';
 
 export interface TrashDeleteModalProps {
   isOpen: boolean;
-  node: DriveActionTarget | null;
+  nodes: DriveActionTarget[];
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }

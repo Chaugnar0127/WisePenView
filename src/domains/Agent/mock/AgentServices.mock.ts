@@ -4,6 +4,12 @@ import type { IAgentService } from '../service/index.type';
 
 const mockAgent: AgentDetail = {
   resourceId: 'mock-agent',
+  resourceInfo: {
+    resourceId: 'mock-agent',
+    resourceName: '研究助手',
+    resourceType: 'agent',
+    ownerInfo: {},
+  },
   title: '研究助手',
   name: '',
   description: '',
@@ -21,7 +27,12 @@ export const AgentServicesMock: IAgentService = {
     return mockAgent.resourceId;
   },
   async getAgentDetail(resourceId) {
-    return { ...structuredClone(mockAgent), resourceId };
+    const agent = structuredClone(mockAgent);
+    return {
+      ...agent,
+      resourceId,
+      resourceInfo: agent.resourceInfo ? { ...agent.resourceInfo, resourceId } : undefined,
+    };
   },
   async saveAgentDraft({ name, description, spec }) {
     mockAgent.name = name ?? '';

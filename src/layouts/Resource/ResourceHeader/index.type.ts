@@ -2,6 +2,7 @@ import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import type {
   ResourceAction,
   ResourceIconType,
+  ResourceItem,
   ResourcePermissionResourceType,
 } from '@/domains/Resource';
 import type { LucideIcon } from 'lucide-react';
@@ -40,6 +41,7 @@ export interface ResourceHeaderConfig {
   resourceName: string;
   resourceType?: string;
   resourceIconType?: ResourceIconType;
+  resourceInfo?: ResourceItem;
   currentActions?: ResourceAction[] | null;
   copyVersion?: number;
   permissionResourceType: ResourcePermissionResourceType;

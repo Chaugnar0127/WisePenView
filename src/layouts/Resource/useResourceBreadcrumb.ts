@@ -4,35 +4,31 @@ import {
 } from '@/components/Drive/common/driveComponentModel';
 import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { useDriveService, useGroupService } from '@/domains';
+import type { DriveResourceLocation } from '@/domains/Drive';
 import { buildDrivePath } from '@/utils/navigation/driveRoute';
 import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
-import { useResourceNavigationStore } from './_store/useResourceNavigationStore';
 
-export function useResourceBreadcrumb(resourceId?: string) {
+export function useResourceBreadcrumb(resourceId?: string, driveLocation?: DriveResourceLocation) {
   const { t } = useTranslation('workspace');
   const driveService = useDriveService();
   const groupService = useGroupService();
-  const location = useResourceNavigationStore((state) => state.location);
-  const resourceLocation = location.resource;
-  const hasMatchingLocation = Boolean(resourceId && resourceLocation?.resourceId === resourceId);
-  const groupId = getDriveScopeGroupId(location.scope);
+  const scope = driveLocation?.scope;
+  const groupId = scope ? getDriveScopeGroupId(scope) : undefined;
+  const mountTagId = driveLocation?.mountTagId;
 
   const { data } = useRequest(
     async () => {
-      const activeResourceLocation = resourceLocation!;
+      const activeLocation = driveLocation!;
       const [pathNodes, group] = await Promise.all([
-        driveService.getNodePath({
-          nodeId: activeResourceLocation.parentNodeId,
-          groupId,
-        }),
+        driveService.getMountPath({ location: activeLocation }),
         groupId ? groupService.fetchGroupBaseInfo(groupId) : Promise.resolve(undefined),
       ]);
 
       return {
-        resourceId: activeResourceLocation.resourceId,
-        parentNodeId: activeResourceLocation.parentNodeId,
-        scopeRootId: location.scope.rootId,
+        resourceId,
+        mountTagId: activeLocation.mountTagId,
+        scopeRootId: activeLocation.scope.rootId,
         items: pathNodes.map<AppBreadcrumbItem>((node, index) => ({
           key: node.id,
           label:
@@ -40,28 +36,22 @@ export function useResourceBreadcrumb(resourceId?: string) {
               ? group?.groupName ||
                 (groupId ? t('breadcrumb.unnamedGroup') : t('breadcrumb.personalDrive'))
               : getDriveNodeLabel(node),
-          to: buildDrivePath({ scope: location.scope, nodeId: node.id }),
+          to: buildDrivePath({ scope: activeLocation.scope, nodeId: node.id }),
         })),
       };
     },
     {
-      ready: hasMatchingLocation,
-      refreshDeps: [
-        resourceId,
-        resourceLocation?.resourceId,
-        resourceLocation?.parentNodeId,
-        location.scope.rootId,
-        groupId,
-        t,
-      ],
+      ready: Boolean(resourceId && driveLocation),
+      refreshDeps: [resourceId, mountTagId, scope?.rootId, groupId, t],
     }
   );
 
   const items =
-    hasMatchingLocation &&
+    resourceId &&
+    driveLocation &&
     data?.resourceId === resourceId &&
-    data?.parentNodeId === resourceLocation?.parentNodeId &&
-    data?.scopeRootId === location.scope.rootId
+    data?.mountTagId === driveLocation.mountTagId &&
+    data?.scopeRootId === driveLocation.scope.rootId
       ? data.items
       : [];
 

@@ -191,7 +191,7 @@ const zhCNResource = {
       all: '全部权限',
       inherited: '继承自标签',
       none: '无权限',
-      multiple: '{{first}} 等 {{count}} 个权限',
+      multiple: '{{count}} 个权限',
     },
     userFallback: '用户 {{userId}}',
     groupFallback: '小组 {{groupId}}',

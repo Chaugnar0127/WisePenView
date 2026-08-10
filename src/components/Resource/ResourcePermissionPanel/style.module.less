@@ -32,9 +32,13 @@
 }
 
 .subjectDescription {
+  min-width: 0;
+  overflow: hidden;
   color: var(--muted);
   font-size: var(--font-size-sm);
   line-height: var(--line-height-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .subjectList {
@@ -154,10 +158,10 @@
 
 .permissionButton {
   width: auto;
-  min-width: 118px;
+  min-width: 0;
   max-width: 168px;
   flex-shrink: 0;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--space-2xs);
   padding-inline: var(--space-xs);
   color: var(--muted);

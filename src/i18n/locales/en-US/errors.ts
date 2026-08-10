@@ -50,7 +50,6 @@ const enUSErrors = {
     '137': 'Failed to read the file.',
     '138': 'Failed to copy: resource ID was not returned.',
     '139': 'The target folder information is incomplete. Refresh and try again.',
-    '140': 'Configuring Agent resource permissions is not supported yet.',
     '141': 'The file access credential is invalid. Please try again.',
     '142': 'Your sign-in state changed. Please try again.',
     '143': 'Microphone permission was not granted.',

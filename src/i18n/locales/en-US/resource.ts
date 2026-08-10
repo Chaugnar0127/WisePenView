@@ -191,7 +191,7 @@ const enUSResource = {
       all: 'Full access',
       inherited: 'Inherited from tag',
       none: 'No access',
-      multiple: '{{first}} and {{count}} permissions',
+      multiple: '{{count}} permissions',
     },
     userFallback: 'User {{userId}}',
     groupFallback: 'Group {{groupId}}',

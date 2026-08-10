@@ -215,7 +215,12 @@ function UserSearchCombobox({
           />
         </TextField>
         {submitLabel ? (
-          <Button variant="secondary" isDisabled={disabled || loading} onPress={handleSubmit}>
+          <Button
+            variant="secondary"
+            className={styles.submitButton}
+            isDisabled={disabled || loading}
+            onPress={handleSubmit}
+          >
             {submitIcon}
             {submitLabel}
           </Button>

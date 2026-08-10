@@ -16,6 +16,7 @@ import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
 import AppError from '@/views/app/error/AppError';
+import ResourceNotFound from '@/views/app/error/ResourceNotFound';
 import RouteError from '@/views/app/error/RouteError';
 import ScopedRouteNotFound from '@/views/app/error/ScopedRouteNotFound';
 import AuthenticatedRouteGuard from '@/views/app/guard/AuthenticatedRouteGuard';
@@ -421,6 +422,10 @@ const router = createHashRouter([
         ),
       },
     ],
+  },
+  {
+    path: '*',
+    element: <ResourceNotFound />,
   },
 ]);
 

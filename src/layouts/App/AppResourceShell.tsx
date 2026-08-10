@@ -214,6 +214,7 @@ function AppResourceShell({
         </SystemResizablePanel>
 
         <SystemResizableHandle
+          withHandle={chatPanelOpen}
           className={clsx(styles.resizeHandle, !chatPanelOpen && styles.resizeHandleCollapsed)}
           disabled={!chatPanelOpen}
           aria-label={t('shell.resizeChatPanel')}

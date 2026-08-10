@@ -119,6 +119,7 @@ const zhCNChat = {
   message: {
     welcome: {
       title: '今天想要做点什么？',
+      titleWithName: '{{name}}，今天想要做点什么？',
     },
     conversationLoading: '加载对话中...',
     scrollToBottom: '滚动到底部',

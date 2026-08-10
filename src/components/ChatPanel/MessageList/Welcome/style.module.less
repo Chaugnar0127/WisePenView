@@ -3,9 +3,20 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--space-md);
   width: 100%;
   box-sizing: border-box;
   text-align: center;
+}
+
+.logo {
+  display: block;
+  flex: 0 0 auto;
+  width: var(--layout-welcome-icon-size, 3.75rem);
+  height: var(--layout-welcome-icon-size, 3.75rem);
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
 }
 
 .title {
@@ -20,6 +31,10 @@
 }
 
 :global(html[data-layout-height='short']) {
+  .wrapper {
+    gap: var(--space-sm);
+  }
+
   .title {
     letter-spacing: 0.03em;
   }

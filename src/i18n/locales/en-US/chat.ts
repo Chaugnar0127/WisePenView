@@ -121,6 +121,7 @@ const enUSChat = {
   message: {
     welcome: {
       title: 'What would you like to do today?',
+      titleWithName: '{{name}}, what would you like to do today?',
     },
     conversationLoading: 'Loading conversation...',
     scrollToBottom: 'Scroll to bottom',

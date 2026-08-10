@@ -43,6 +43,7 @@ import styles from './AppLayout.module.less';
 import AppResourceShell from './AppResourceShell';
 
 const APP_LAYOUT_PANEL_GROUP_ID = 'app-layout-panels';
+const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
 
 type AppMainColumnProps = {
   isDesktop: boolean;
@@ -240,7 +241,6 @@ function AppLayout() {
 
   const handleSidebarResize = (panelSize: PanelSize) => {
     if (sidebarCollapsed || isMotionLockedRef.current) return;
-    setLiveSidebarWidthPx(panelSize.inPixels);
     pendingSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
   };
 
@@ -270,6 +270,7 @@ function AppLayout() {
         id={APP_LAYOUT_PANEL_GROUP_ID}
         orientation="horizontal"
         className={styles.panelGroup}
+        resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
         onLayoutChanged={handleLayoutChanged}
       >
         <SystemResizablePanel

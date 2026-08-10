@@ -46,9 +46,10 @@
   flex: 0 0 auto;
   height: 100%;
   min-height: 0;
-  width: var(--sidebar-slide-width);
-  min-width: var(--sidebar-slide-width);
-  max-width: var(--sidebar-slide-width);
+  /* 拖拽时跟随面板本身，避免 React 状态延迟导致左边缘抖动 */
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
   contain: layout paint;
 }
 
@@ -56,6 +57,14 @@
  * 收起到位后再藏内容、露出窄轨：只靠 data-sidebar-motion，禁止收尾 setState 挂载 chrome。
  * 开合过程中保持 slide 可见（clip），避免空轨收缩。
  */
+.panelGroup[data-sidebar-motion='true'] {
+  .sidebarSlideFrame {
+    width: var(--sidebar-slide-width);
+    min-width: var(--sidebar-slide-width);
+    max-width: var(--sidebar-slide-width);
+  }
+}
+
 .panelGroup:not([data-sidebar-motion='true']) {
   .sidebarSlideHostCollapsed {
     visibility: hidden;

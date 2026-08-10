@@ -72,6 +72,7 @@ const zhCNResource = {
     unlike: '取消点赞',
     delete: '删除评论',
     removeImage: '移除图片 {{name}}',
+    insertEmoji: '插入表情',
     addImage: '添加图片',
     publish: '发布评论',
     collapseReplies: '收起回复',

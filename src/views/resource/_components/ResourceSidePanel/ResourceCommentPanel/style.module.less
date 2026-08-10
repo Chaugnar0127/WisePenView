@@ -251,8 +251,7 @@
   color: var(--muted);
 }
 
-.commentImages,
-.pendingImages {
+.commentImages {
   display: flex;
   min-width: 0;
   flex-wrap: wrap;
@@ -260,8 +259,7 @@
   margin-top: var(--space-sm);
 }
 
-.commentImageButton,
-.pendingImage {
+.commentImageButton {
   position: relative;
   display: block;
   width: calc(var(--control-height) + var(--space-md));
@@ -278,24 +276,10 @@
   cursor: zoom-in;
 }
 
-.commentImageButton img,
-.pendingImage img {
+.commentImageButton img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.removeImageButton {
-  position: absolute;
-  top: var(--space-2xs);
-  right: var(--space-2xs);
-  min-width: calc(var(--space-md) + var(--space-2xs));
-  width: calc(var(--space-md) + var(--space-2xs));
-  height: calc(var(--space-md) + var(--space-2xs));
-  padding: 0;
-  border-radius: var(--radius-sm);
-  color: var(--surface);
-  background: color-mix(in srgb, var(--foreground) 65%, transparent);
 }
 
 .commentActions {
@@ -390,59 +374,6 @@
 
 .composer {
   min-width: 0;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  background: var(--surface);
-  box-shadow: var(--card-shadow);
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-}
-
-.composer:focus-within {
-  border-color: var(--accent-softer);
-  box-shadow: 0 0 0 2px var(--accent-soft);
-}
-
-.composerTextarea {
-  width: 100%;
-  min-height: calc(1.6em + 16px);
-  max-height: calc(16em + 16px);
-  overflow-y: auto;
-  resize: none !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: var(--space-xs) 0 !important;
-  color: var(--foreground);
-  field-sizing: content;
-  font-size: var(--font-size-base);
-  line-height: 1.6;
-
-  &::placeholder {
-    color: var(--field-placeholder);
-  }
-}
-
-.composerActions,
-.composerPrimaryActions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
-.composerActions {
-  min-height: var(--control-height);
-  justify-content: space-between;
-}
-
-.composerPrimaryActions {
-  margin-left: auto;
-}
-
-.imageInput {
-  display: none;
 }
 
 .loadMoreButton {

@@ -72,6 +72,7 @@ const enUSResource = {
     unlike: 'Unlike',
     delete: 'Delete comment',
     removeImage: 'Remove image {{name}}',
+    insertEmoji: 'Insert emoji',
     addImage: 'Add image',
     publish: 'Post comment',
     collapseReplies: 'Collapse replies',

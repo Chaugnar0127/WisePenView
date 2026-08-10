@@ -23,7 +23,7 @@ interface GetUserInfoApiResponseUserInfo {
   email: string | null;
   mobile: string | null;
   verificationMode: UserVerificationMode | null;
-  status: UserStatusApiValue;
+  userStatus: UserStatusApiValue;
 }
 
 interface GetUserInfoApiResponseUserProfile {

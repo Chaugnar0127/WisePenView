@@ -1,8 +1,8 @@
 import type { AdminMessage, User, UserAccountProfile, UserSearchUser } from '@/domains/User';
 import { normalizeId } from '@/utils/normalize/normalizeId';
 import type {
-  AdminMessageApiModel,
   AddFeedbackApiRequest,
+  AdminMessageApiModel,
   ChangeUserInfoApiRequest,
   ChangeUserProfileApiRequest,
   CheckEmailVerifyApiRequest,
@@ -16,6 +16,7 @@ import type {
   SearchUserApiRequest,
   UserSearchUserApiResponse,
 } from '../apis/UserApi.type';
+import { FEEDBACK_TYPE, type FeedbackType } from '../enum';
 import type {
   ConfirmEmailVerifyRequest,
   FudanUISVerifyStatusData,
@@ -29,7 +30,6 @@ import type {
   SubmitFeedbackRequest,
   UpdateUserInfoRequest,
 } from '../service/index.type';
-import { FEEDBACK_TYPE, type FeedbackType } from '../enum';
 import {
   mapDegreeLevelToApi,
   mapSexToApi,
@@ -59,7 +59,7 @@ const mapAccountProfileFromApi = (data: GetUserInfoApiResponse): UserAccountProf
       email: userInfo.email ?? undefined,
       mobile: userInfo.mobile ?? undefined,
       verificationMode: userInfo.verificationMode,
-      status: normalizeUserStatusFromApi(userInfo.status),
+      status: normalizeUserStatusFromApi(userInfo.userStatus),
     },
     userProfile: {
       sex: normalizeSexFromApi(userProfile.sex),
@@ -187,7 +187,8 @@ const mapPublishMessageRequest = (params: PublishMessageRequest): PublishMessage
   extra: params.extra,
 });
 
-const hasFeedbackType = (types: FeedbackType[], type: FeedbackType): boolean => types.includes(type);
+const hasFeedbackType = (types: FeedbackType[], type: FeedbackType): boolean =>
+  types.includes(type);
 
 const mapSubmitFeedbackRequest = (params: SubmitFeedbackRequest): AddFeedbackApiRequest => ({
   content: params.content,

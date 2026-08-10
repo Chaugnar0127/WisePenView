@@ -10,7 +10,7 @@
     "email": null,
     "mobile": "13800138000",
     "verificationMode": null,
-    "status": "UNIDENTIFIED"
+    "userStatus": "UNIDENTIFIED"
   },
   "userProfile": {
     "sex": "MALE",

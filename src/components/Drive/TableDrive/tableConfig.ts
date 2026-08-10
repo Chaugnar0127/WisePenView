@@ -1,8 +1,11 @@
 import type { FolderTableColumn } from '@/components/Table';
+import type { UserDisplayBase } from '@/domains/User';
 import { formatFileSize } from '@/utils/format/formatFileSize';
 import type { TFunction } from 'i18next';
 import { getDriveNodeLabel, isDriveSharedFolderNode } from '../common/driveComponentModel';
 import type { DriveRow, DriveTableRow } from './index.type';
+
+const getDriveCreatorName = (user?: UserDisplayBase): string => user?.nickname?.trim() || '—';
 
 export function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTableRow {
   if (node.type === 'loading') {
@@ -114,11 +117,12 @@ export const buildDriveTableColumns = (
       label: t('table.columns.creator'),
       width: 'md',
       allowsSorting: true,
-      getSortValue: (row) => (row.node.type === 'folder' ? row.node.tagCreator : undefined),
+      getSortValue: (row) =>
+        row.node.type === 'folder' ? getDriveCreatorName(row.node.creatorInfo) : undefined,
       renderCell: (row) =>
         row.entryType === 'loading' || row.node.type !== 'folder'
           ? ''
-          : (row.node.tagCreator ?? '—'),
+          : getDriveCreatorName(row.node.creatorInfo),
     });
   }
 

@@ -1,0 +1,198 @@
+@import '@/layouts/_common/a11y/focusRing.less';
+
+.popover {
+  min-width: 0;
+  max-width: calc(100vw - var(--space-xl, 32px));
+  padding: 0;
+  border: 1px solid var(--border-light, var(--border));
+  border-radius: var(--app-radius-popover, min(32px, var(--radius-3xl))) !important;
+  overflow: clip;
+  color: var(--overlay-foreground, var(--foreground));
+  background: var(--overlay, var(--surface));
+  box-shadow: var(--overlay-shadow, var(--card-shadow));
+}
+
+.popoverBodyDefault {
+  padding: var(--app-popover-content-padding, var(--space-xs, 8px));
+}
+
+.menu {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs, 4px);
+  padding: 0;
+  background: transparent;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-xs, 8px);
+  min-width: 0;
+  padding: var(--space-sm, 12px) var(--space-sm, 12px);
+  border-bottom: 1px solid var(--separator);
+  color: var(--overlay-foreground, var(--foreground));
+}
+
+.headerIcon,
+.headerAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.headerText {
+  display: block;
+  min-width: 0;
+}
+
+.headerTitle {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--font-size-sm, 14px);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-sm, 20px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerDescription {
+  display: block;
+  min-width: 0;
+  margin-top: var(--space-2xs, 4px);
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--font-size-xs, 12px);
+  line-height: var(--line-height-xs, 16px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.divider {
+  height: 1px;
+  margin: var(--space-2xs, 4px) 0;
+  background: var(--separator);
+}
+
+.section {
+  min-width: 0;
+}
+
+.sectionWithDivider {
+  padding-top: var(--space-2xs, 4px);
+  border-top: 1px solid var(--separator);
+}
+
+.sectionWithDivider:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.sectionTitle {
+  display: block;
+  padding: var(--space-2xs, 4px) var(--space-xs, 8px);
+  color: var(--muted);
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-xs, 16px);
+}
+
+.item {
+  width: 100%;
+  min-height: var(--control-height, 36px);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-xs, 8px);
+  padding: 0 var(--space-sm, 12px);
+  border-radius: var(--app-radius-popover-item, var(--radius-xl)) !important;
+  color: var(--overlay-foreground, var(--foreground));
+  font-size: var(--font-size-sm, 14px);
+  line-height: var(--line-height-sm, 20px);
+  outline: none;
+}
+
+.item[data-hovered],
+.item[data-focus-visible],
+.item[data-focus-visible='true'],
+.item[data-open] {
+  .clearHeroFocusRing();
+  color: var(--foreground);
+  background: var(--accent-soft) !important;
+}
+
+.item[data-selected],
+.item[data-selected='true'] {
+  color: var(--foreground);
+  background: var(--accent-soft);
+}
+
+.dangerItem,
+.dangerItem:global(.menu-item--danger) {
+  color: var(--danger-text);
+}
+
+.dangerItem[data-hovered],
+.dangerItem[data-focus-visible],
+.dangerItem[data-focus-visible='true'],
+.dangerItem:global(.menu-item--danger)[data-hovered],
+.dangerItem:global(.menu-item--danger)[data-focus-visible],
+.dangerItem:global(.menu-item--danger)[data-focus-visible='true'] {
+  color: var(--danger-text);
+  background: var(--danger-soft) !important;
+}
+
+.itemIcon,
+.itemTrailing,
+.submenuIndicator {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.itemIcon {
+  width: var(--control-height-sm, 28px);
+  height: var(--control-height-sm, 28px);
+  color: var(--muted);
+}
+
+.itemText {
+  min-width: 0;
+}
+
+.itemLabel {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemDescription {
+  min-width: 0;
+  margin-top: 1px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--font-size-xs, 12px);
+  line-height: var(--line-height-xs, 16px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemTrailing {
+  gap: var(--space-xs, 8px);
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.shortcut {
+  color: var(--muted);
+  font-size: var(--font-size-xs, 12px);
+  line-height: var(--line-height-xs, 16px);
+}

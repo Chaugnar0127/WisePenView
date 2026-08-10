@@ -6,9 +6,9 @@ import { useChatService } from '@/domains';
 import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from '@/domains/Chat';
 import type { Group } from '@/domains/Group';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, ListBox, ListBoxItem, Skeleton, toast } from '@heroui/react';
+import { Button, ListBox, Skeleton, toast } from '@heroui/react';
 import { useInfiniteScroll, useLatest, useRequest } from 'ahooks';
-import { Bot, Check, Folder } from 'lucide-react';
+import { Bot, Folder } from 'lucide-react';
 import type { Key } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -161,6 +161,13 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   const getAgentLabel = (agent: ChatAgentOption): string =>
     agent.isDefault ? t('input.agentPicker.defaultAgent') : agent.label;
 
+  const handleMenuAction = (key: Key) => {
+    const agent = displayAgents.find((item) => item.agentId === key);
+    if (agent) {
+      handleSelect(agent);
+    }
+  };
+
   return (
     <>
       <AppPopover isOpen={open} onOpenChange={setOpen}>
@@ -170,71 +177,77 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
           tooltip={{ content: getAgentLabel(selectedAgent) }}
           overlayTrigger={<AppPopover.Trigger />}
         />
-        <AppPopover.Content placement="top" title={t('input.agentPicker.title')}>
-          <AppPopover.DeferredContent fallback={skeleton}>
-            {() =>
-              showSkeleton ? (
-                skeleton
-              ) : (
-                <div className={`${styles.popoverPanel} ${styles.popoverPanelAgent}`}>
-                  <ListBox
-                    aria-label={t('input.agentPicker.trigger')}
-                    selectionMode="single"
-                    selectedKeys={[selectedAgent.agentId]}
-                    className={styles.listBox}
-                  >
-                    {displayAgents.map((agent) => (
-                      <ListBoxItem
-                        key={agent.agentId}
-                        id={agent.agentId}
-                        textValue={getAgentLabel(agent)}
-                        onPress={() => handleSelect(agent)}
-                      >
-                        <span className={styles.agentItem}>
-                          <span className={styles.agentMain}>
-                            <Bot size={14} />
-                            <span>{getAgentLabel(agent)}</span>
-                          </span>
-                          {agent.source === 'CURRENT_DRAFT' ? (
-                            <span className={styles.agentMeta}>
-                              {t('input.agentPicker.currentDraft')}
-                            </span>
-                          ) : agent.agentType === 'GROUP' && agent.groupName ? (
-                            <span className={styles.agentMeta}>{agent.groupName}</span>
-                          ) : null}
-                          {selectedAgent.agentId === agent.agentId ? (
-                            <Check size={14} className={styles.checkIcon} />
+        <AppPopover.Content
+          placement="top"
+          title={t('input.agentPicker.title')}
+          bodyPadding="none"
+          classNames={{ header: styles.compactPopoverHeader }}
+        >
+          {showSkeleton ? (
+            skeleton
+          ) : (
+            <div className={styles.popoverPanelAgent}>
+              <ListBox
+                aria-label={t('input.agentPicker.trigger')}
+                selectionMode="single"
+                selectedKeys={new Set([selectedAgent.agentId])}
+                className={styles.listBox}
+                onAction={handleMenuAction}
+              >
+                {displayAgents.map((agent) => {
+                  const description =
+                    agent.source === 'CURRENT_DRAFT'
+                      ? t('input.agentPicker.currentDraft')
+                      : agent.agentType === 'GROUP' && agent.groupName
+                        ? agent.groupName
+                        : null;
+                  return (
+                    <ListBox.Item
+                      key={agent.agentId}
+                      id={agent.agentId}
+                      textValue={getAgentLabel(agent)}
+                      className={styles.listBoxItem}
+                    >
+                      <span className={styles.listItemContent}>
+                        <span className={styles.listItemLeading}>
+                          <Bot size={14} aria-hidden="true" />
+                        </span>
+                        <span className={styles.listItemText}>
+                          <span className={styles.listItemLabel}>{getAgentLabel(agent)}</span>
+                          {description ? (
+                            <span className={styles.listItemDescription}>{description}</span>
                           ) : null}
                         </span>
-                      </ListBoxItem>
-                    ))}
-                  </ListBox>
-                  {hasMorePersonalAgents ? (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className={styles.popoverLoadMore}
-                      isDisabled={loadingMorePersonal}
-                      onPress={loadMorePersonal}
-                    >
-                      {t('session.loadMore')}
-                    </Button>
-                  ) : null}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className={styles.agentGroupAction}
-                    onPress={handleOpenGroupModal}
-                  >
-                    <span className={styles.agentGroupTitle}>
-                      <Folder size={14} color="var(--resource-icon-folder)" />
-                      <span>{t('input.agentPicker.selectFromGroup')}</span>
-                    </span>
-                  </Button>
-                </div>
-              )
-            }
-          </AppPopover.DeferredContent>
+                        <ListBox.ItemIndicator />
+                      </span>
+                    </ListBox.Item>
+                  );
+                })}
+              </ListBox>
+            </div>
+          )}
+          {hasMorePersonalAgents ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              className={styles.popoverLoadMore}
+              isDisabled={loadingMorePersonal}
+              onPress={loadMorePersonal}
+            >
+              {t('session.loadMore')}
+            </Button>
+          ) : null}
+          <Button
+            size="sm"
+            variant="ghost"
+            className={styles.agentGroupAction}
+            onPress={handleOpenGroupModal}
+          >
+            <span className={styles.agentGroupTitle}>
+              <Folder size={14} color="var(--resource-icon-folder)" />
+              <span>{t('input.agentPicker.selectFromGroup')}</span>
+            </span>
+          </Button>
         </AppPopover.Content>
       </AppPopover>
       <GroupAgentPickerModal

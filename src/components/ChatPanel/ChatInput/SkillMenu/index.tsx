@@ -3,9 +3,10 @@ import { AppPopover } from '@/components/Overlay';
 import { useChatService } from '@/domains';
 import { buildSkillMenuSections } from '@/domains/Chat';
 import { parseErrorMessage } from '@/utils/error';
-import { ListBox, ListBoxItem, Skeleton, toast } from '@heroui/react';
+import { Button, Header, ListBox, ListBoxSection, Skeleton, toast } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { Check, Settings, Sparkles, Wrench } from 'lucide-react';
+import { Settings, Sparkles, Wrench } from 'lucide-react';
+import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
@@ -83,6 +84,7 @@ function SkillMenu() {
   const externalItems =
     externalSection?.items.filter((item) => item.kind === 'external-skill') ?? [];
   const selectedOptionCount = selectedSkills.length + selectedTools.length;
+  const selectedMenuKeys = new Set([...selectedSkillIds, ...selectedToolIds]);
   const skeleton = <SkillMenuSkeleton ariaLabel={t('input.skillMenu.loadingAria')} />;
 
   function handleToggleSkill(skillId: string): void {
@@ -100,6 +102,20 @@ function SkillMenu() {
   function handleSelectOther(): void {
     setSkillMenuOpen(false);
     setOtherSkillModalOpen(true);
+  }
+
+  function handleMenuAction(key: Key): void {
+    if (primarySection?.items.some((item) => item.key === key)) {
+      handleToggleSkill(String(key));
+      return;
+    }
+    if (externalItems.some((item) => item.key === key)) {
+      removeSkill(String(key));
+      return;
+    }
+    if (toolSection?.items.some((item) => item.key === key)) {
+      handleToggleTool(String(key));
+    }
   }
 
   function getSkillSourceText(skillId: string): string | null {
@@ -125,119 +141,117 @@ function SkillMenu() {
           overlayTrigger={<AppPopover.Trigger />}
         />
       </span>
-      <AppPopover.Content placement="top" title={t('input.skillMenu.title')}>
-        <AppPopover.DeferredContent fallback={skeleton}>
-          {() =>
-            showSkeleton ? (
-              skeleton
-            ) : (
-              <div className={`${styles.popoverPanel} ${styles.popoverPanelScrollable}`}>
-                {primarySection && primarySection.items.length > 0 ? (
-                  <ListBox
-                    aria-label={t('input.skillMenu.selectSkill')}
-                    selectionMode="multiple"
-                    selectedKeys={selectedSkillIds}
-                    className={styles.listBox}
-                  >
-                    {primarySection.items.map((item) => (
-                      <ListBoxItem
-                        key={item.key}
-                        id={item.key}
-                        textValue={item.label}
-                        onPress={() => handleToggleSkill(item.key)}
-                      >
-                        <span className={styles.listItemContent}>
-                          <Sparkles size={16} />
-                          <span>{item.label}</span>
-                          {selectedSkillIds.includes(item.key) ? (
-                            <Check size={14} className={styles.checkIcon} />
+      <AppPopover.Content
+        placement="top"
+        title={t('input.skillMenu.title')}
+        bodyPadding="none"
+        classNames={{ header: styles.compactPopoverHeader }}
+      >
+        {showSkeleton ? (
+          skeleton
+        ) : (
+          <div className={styles.popoverPanelScrollable}>
+            <ListBox
+              aria-label={t('input.skillMenu.configure')}
+              selectionMode="multiple"
+              selectedKeys={selectedMenuKeys}
+              className={styles.listBox}
+              onAction={handleMenuAction}
+            >
+              {primarySection && primarySection.items.length > 0 ? (
+                <ListBoxSection id="primary-skills">
+                  {primarySection.items.map((item) => (
+                    <ListBox.Item
+                      key={item.key}
+                      id={item.key}
+                      textValue={item.label}
+                      className={styles.listBoxItem}
+                    >
+                      <span className={styles.listItemContent}>
+                        <span className={styles.listItemLeading}>
+                          <Sparkles size={16} aria-hidden="true" />
+                        </span>
+                        <span className={styles.listItemText}>
+                          <span className={styles.listItemLabel}>{item.label}</span>
+                        </span>
+                        <ListBox.ItemIndicator />
+                      </span>
+                    </ListBox.Item>
+                  ))}
+                </ListBoxSection>
+              ) : null}
+
+              {externalItems.length > 0 ? (
+                <ListBoxSection id="external-skills" className={styles.listBoxSection}>
+                  <Header className={styles.listBoxSectionTitle}>
+                    {t('input.skillMenu.otherTitle')}
+                  </Header>
+                  {externalItems.map((item) => (
+                    <ListBox.Item
+                      key={item.key}
+                      id={item.key}
+                      textValue={item.label}
+                      className={styles.listBoxItem}
+                    >
+                      <span className={styles.listItemContent}>
+                        <span className={styles.listItemLeading}>
+                          <Sparkles size={16} aria-hidden="true" />
+                        </span>
+                        <span className={styles.listItemText}>
+                          <span className={styles.listItemLabel}>{item.label}</span>
+                          {getSkillSourceText(item.key) ? (
+                            <span className={styles.listItemDescription}>
+                              {getSkillSourceText(item.key)}
+                            </span>
                           ) : null}
                         </span>
-                      </ListBoxItem>
-                    ))}
-                  </ListBox>
-                ) : null}
+                        <ListBox.ItemIndicator />
+                      </span>
+                    </ListBox.Item>
+                  ))}
+                </ListBoxSection>
+              ) : null}
 
-                {externalItems.length > 0 ? (
-                  <>
-                    <div className={styles.popoverTitle}>{t('input.skillMenu.otherTitle')}</div>
-                    <ListBox
-                      aria-label={t('input.skillMenu.selectedOtherAria')}
-                      selectionMode="multiple"
-                      selectedKeys={externalItems.map((item) => item.key)}
-                      className={styles.listBox}
+              {toolSection && toolSection.items.length > 0 ? (
+                <ListBoxSection id="tools" className={styles.listBoxSection}>
+                  <Header className={styles.listBoxSectionTitle}>
+                    {t('input.skillMenu.toolsTitle')}
+                  </Header>
+                  {toolSection.items.map((item) => (
+                    <ListBox.Item
+                      key={item.key}
+                      id={item.key}
+                      textValue={item.label}
+                      className={styles.listBoxItem}
                     >
-                      {externalItems.map((item) => (
-                        <ListBoxItem
-                          key={item.key}
-                          id={item.key}
-                          textValue={item.label}
-                          onPress={() => removeSkill(item.key)}
-                        >
-                          <span className={styles.listItemContent}>
-                            <Sparkles size={16} />
-                            <span>
-                              {item.label}
-                              {getSkillSourceText(item.key) ? (
-                                <span className={styles.skillMenuSourceText}>
-                                  {getSkillSourceText(item.key)}
-                                </span>
-                              ) : null}
-                            </span>
-                            <Check size={14} className={styles.checkIcon} />
-                          </span>
-                        </ListBoxItem>
-                      ))}
-                    </ListBox>
-                  </>
-                ) : null}
+                      <span className={styles.listItemContent}>
+                        <span className={styles.listItemLeading}>
+                          <Wrench size={16} aria-hidden="true" />
+                        </span>
+                        <span className={styles.listItemText}>
+                          <span className={styles.listItemLabel}>{item.label}</span>
+                        </span>
+                        <ListBox.ItemIndicator />
+                      </span>
+                    </ListBox.Item>
+                  ))}
+                </ListBoxSection>
+              ) : null}
+            </ListBox>
 
-                <ListBox
-                  aria-label={t('input.skillMenu.selectOther')}
-                  selectionMode="none"
-                  className={styles.listBox}
-                  onAction={handleSelectOther}
-                >
-                  <ListBoxItem id="select-other-skill" textValue={t('input.skillMenu.selectOther')}>
-                    <span className={styles.listItemContent}>
-                      <Sparkles size={16} />
-                      <span>{t('input.skillMenu.selectOther')}</span>
-                    </span>
-                  </ListBoxItem>
-                </ListBox>
-
-                {toolSection && toolSection.items.length > 0 ? (
-                  <>
-                    <div className={styles.popoverTitle}>{t('input.skillMenu.toolsTitle')}</div>
-                    <ListBox
-                      aria-label={t('input.skillMenu.selectTools')}
-                      selectionMode="multiple"
-                      selectedKeys={selectedToolIds}
-                      className={styles.listBox}
-                    >
-                      {toolSection.items.map((item) => (
-                        <ListBoxItem
-                          key={item.key}
-                          id={item.key}
-                          textValue={item.label}
-                          onPress={() => handleToggleTool(item.key)}
-                        >
-                          <span className={styles.listItemContent}>
-                            <Wrench size={16} />
-                            <span>{item.label}</span>
-                            {selectedToolIds.includes(item.key) ? (
-                              <Check size={14} className={styles.checkIcon} />
-                            ) : null}
-                          </span>
-                        </ListBoxItem>
-                      ))}
-                    </ListBox>
-                  </>
-                ) : null}
-              </div>
-            )
-          }
-        </AppPopover.DeferredContent>
+            <Button
+              size="sm"
+              variant="ghost"
+              className={styles.agentGroupAction}
+              onPress={handleSelectOther}
+            >
+              <span className={styles.agentGroupTitle}>
+                <Sparkles size={14} aria-hidden="true" />
+                <span>{t('input.skillMenu.selectOther')}</span>
+              </span>
+            </Button>
+          </div>
+        )}
       </AppPopover.Content>
     </AppPopover>
   );

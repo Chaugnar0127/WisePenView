@@ -683,24 +683,23 @@ html[data-color-scheme='lavender'] {
   --danger-hover: var(--red-10);
 
   /*
-   * AI Diff：选中 6 / 边框 7；未选中约 70%×3 + 30%×2（teal / ruby）。
-   * 浅阶跟 surface mix、深阶跟 foreground mix，阅读模式打开时一并降饱和。
+   * AI Diff
    */
   --diff-added: color-mix(
     in oklab,
-    color-mix(in oklab, var(--teal-3) 70%, var(--teal-2) 30%)
+    color-mix(in oklab, var(--green-3) 70%, var(--green-2) 30%)
       calc(100% - var(--palette-accent-surface-neutral-mix)),
     var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
   );
   --diff-added-border: color-mix(
     in oklab,
-    var(--teal-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
+    var(--green-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
     var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
   );
   --diff-added-fg: var(--palette-neutral-12);
   --diff-added-selected: color-mix(
     in oklab,
-    var(--teal-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
+    var(--green-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
     var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
   );
   --diff-removed: color-mix(

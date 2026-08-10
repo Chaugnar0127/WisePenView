@@ -260,5 +260,6 @@ export const getLayoutScaleCssVars = (
     '--chat-input-card-padding-block': isShort ? '8px' : '12px',
     '--chat-input-container-padding-block': isShort ? '4px' : '8px',
     '--layout-welcome-title-size': isShort ? '1.5rem' : '2rem',
+    '--layout-welcome-icon-size': isShort ? '2.75rem' : '3.75rem',
   };
 };

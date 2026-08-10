@@ -12,13 +12,13 @@ import { AiDiffBulkActions } from '../engines/aiDiff/BulkActions';
 import { NoteEditorReadOnlyProvider } from '../engines/editor/readOnly';
 import type { CustomBlockNoteProps } from '../index.type';
 import { NoteEmojiPickerPopover } from '../plugins/EmojiPlugin/EmojiPickerPopover';
+import NoteTableHandles from '../plugins/TablePlugin/ui/tableHandles';
 import { notePluginRegistry, type CustomBlockNoteEditor } from '../registry/noteEditorComposition';
 import type { NoteEditorRuntimeCoordinator } from '../registry/useNoteEditorRuntimeCoordinator';
 import { useNoteInteractionStore } from '../runtime/noteInteractionStore';
 import styles from '../style.module.less';
 import NoteSideMenu from './sideMenu';
 import NoteSlashMenu from './slashMenu';
-import NoteTableHandles from './tableHandles';
 import NoteToolbar from './toolbar';
 
 function NoteFindBar({

@@ -1,5 +1,5 @@
+import { getSafeTableCellSelection } from '@/components/Note/CustomBlockNote/plugins/TablePlugin/ui/tableHandles/safe';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
-import { getSafeTableCellSelection } from '@/components/Note/CustomBlockNote/ui/tableHandles/safe';
 import {
   blockHasType,
   defaultProps,

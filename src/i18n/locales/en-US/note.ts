@@ -223,6 +223,8 @@ const enUSNote = {
     unsetHeaderColumn: 'Remove header column',
     insertRow: 'Insert row',
     insertColumn: 'Insert column',
+    deleteRow: 'Delete row',
+    deleteColumn: 'Delete column',
     selectRow: 'Select row {{index}}',
     selectColumn: 'Select column {{index}}',
     headerRow: 'Header row',

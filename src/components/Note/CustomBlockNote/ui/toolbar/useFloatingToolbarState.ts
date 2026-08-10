@@ -4,6 +4,7 @@ import { useLatest, useMemoizedFn, useMount, useUnmount } from 'ahooks';
 import { useEffect, useRef, useState } from 'react';
 
 import { getRootDomSelection } from '@/components/Note/CustomBlockNote/engines/editor/dom';
+import { getTableCellSelectionRect } from '@/components/Note/CustomBlockNote/plugins/TablePlugin/ui/selection';
 import type { CustomBlockNoteEditor } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
 
 type FloatingToolbarGeometry = {
@@ -66,6 +67,10 @@ function getSafeToolbarState(
   const { selection, doc } = view.state;
   if (selection.empty) {
     return getDomSelectionToolbarState(view);
+  }
+  const tableCellSelectionRect = getTableCellSelectionRect(view);
+  if (tableCellSelectionRect) {
+    return mapViewportRectToToolbarState(tableCellSelectionRect);
   }
   if (!(selection instanceof TextSelection)) {
     return { visible: false, left: 0, top: 0 };

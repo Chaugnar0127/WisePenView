@@ -13,6 +13,7 @@ interface ToolbarButtonProps extends ButtonGroupChildProps {
   isDisabled?: boolean;
   isActive?: boolean;
   className?: string;
+  onHoverChange?: ComponentProps<typeof Button>['onHoverChange'];
   onPress?: () => void;
   overlayTrigger?: ReactElement;
 }
@@ -23,6 +24,7 @@ export function ToolbarButton({
   isDisabled,
   isActive,
   className,
+  onHoverChange,
   onPress,
   overlayTrigger,
   __button_group_child: isButtonGroupChild,
@@ -37,6 +39,7 @@ export function ToolbarButton({
       isIconOnly
       size="sm"
       variant="ghost"
+      onHoverChange={onHoverChange}
       onMouseDown={stopToolbarMouseDown}
       onPress={onPress}
     >

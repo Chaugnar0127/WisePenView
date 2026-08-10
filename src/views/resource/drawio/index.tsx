@@ -17,9 +17,9 @@ import {
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
 import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useMemoizedFn, useRequest } from 'ahooks';
 import { History, Save } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState, type DependencyList, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useDrawioEditorSession } from './_hooks/useDrawioEditorSession';
@@ -101,6 +101,7 @@ function DrawioLayoutConfig({
   onResourceChanged,
   titleMeta,
   actions,
+  layoutDeps,
 }: {
   children: ReactNode;
   resourceId?: string;
@@ -113,6 +114,7 @@ function DrawioLayoutConfig({
   onResourceChanged?: () => unknown | Promise<unknown>;
   titleMeta?: ReactNode;
   actions?: ReactNode;
+  layoutDeps?: DependencyList;
 }) {
   const { t } = useTranslation('workspace');
   const displayResourceName = resourceName ?? t('drawio.defaultName');
@@ -138,7 +140,6 @@ function DrawioLayoutConfig({
   useResourceHostLayoutConfig(
     () => frameConfig,
     [
-      actions,
       copyVersion,
       currentActions,
       onPermissionSuccess,
@@ -147,7 +148,7 @@ function DrawioLayoutConfig({
       resourceId,
       resourceInfo,
       displayResourceName,
-      titleMeta,
+      ...(layoutDeps ?? []),
     ]
   );
 
@@ -252,10 +253,10 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     manual: true,
   });
 
-  const handleOpenVersions = () => {
+  const handleOpenVersions = useMemoizedFn(() => {
     setVersionOpen(true);
     runLoadVersions();
-  };
+  });
 
   const titleMeta = (
     <>
@@ -295,6 +296,15 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
       ) : null}
     </div>
   );
+  const layoutDeps = [
+    canEdit,
+    canViewVersions,
+    currentUser?.id,
+    currentVersion,
+    editorLoaded,
+    i18n.resolvedLanguage,
+    saveState,
+  ];
 
   return (
     <DrawioLayoutConfig
@@ -308,6 +318,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
       onResourceChanged={onRefreshDrawioInfo}
       titleMeta={titleMeta}
       actions={headerActions}
+      layoutDeps={layoutDeps}
     >
       <div className={styles.content}>
         <iframe
@@ -363,6 +374,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
       refreshDeps: [resourceId],
     }
   );
+  const refreshDrawioInfoStable = useMemoizedFn(refreshDrawioInfo);
 
   useRequest(() => interactService.recordResourceRead(resourceId as string), {
     ready: Boolean(resourceId),
@@ -449,7 +461,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
       key={drawioSessionKey}
       resourceId={resourceId}
       data={data}
-      onRefreshDrawioInfo={refreshDrawioInfo}
+      onRefreshDrawioInfo={refreshDrawioInfoStable}
     />
   );
 }

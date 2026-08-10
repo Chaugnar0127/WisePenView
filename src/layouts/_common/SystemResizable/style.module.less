@@ -19,7 +19,7 @@
 
 .handle {
   position: relative;
-  z-index: 1;
+  z-index: 20;
   display: flex;
   flex: 0 0 1px !important;
   width: 1px;
@@ -33,37 +33,35 @@
   background: var(--border-light);
   outline: none;
   cursor: col-resize;
+  transition: background-color 0.16s ease;
+}
+
+.handleCollapsed {
+  flex: 0 0 0 !important;
+  flex-basis: 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden;
 }
 
 .handle::after {
   content: '';
   position: absolute;
-  inset: 0 -2px;
+  inset: 0 -6px;
 }
 
 .handle:hover,
-.handle:focus-visible,
+.handle:focus-visible {
+  background: var(--border-tertiary, var(--border));
+}
+
 .handle[data-separator='active'] {
-  background: var(--border);
+  background: color-mix(in srgb, var(--foreground) 22%, var(--border));
 }
 
 .handle:focus-visible {
   box-shadow: 0 0 0 1px var(--accent);
-}
-
-/* 仍占 1px 分隔线；指示条向右侧面板内收，不侵入主内容 */
-.handleWithGrip {
-  background: var(--border-light);
-}
-
-.handleWithGrip::after {
-  inset: 0 -6px;
-}
-
-.handleWithGrip:hover,
-.handleWithGrip:focus-visible,
-.handleWithGrip[data-separator='active'] {
-  background: var(--border);
 }
 
 .handle[aria-disabled='true'] {
@@ -85,55 +83,5 @@
 }
 
 .handle[aria-orientation='horizontal']::after {
-  inset: -2px 0;
-}
-
-.handleWithGrip[aria-orientation='horizontal']::after {
   inset: -6px 0;
-}
-
-.handleGrip {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 3px;
-  height: 28px;
-  flex-shrink: 0;
-  border: 0;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--muted) 55%, transparent);
-  /* 默认隐藏；悬停/拖拽时淡入并往面板内侧收 */
-  transform: translateX(6px);
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.16s ease,
-    background-color 0.16s ease,
-    height 0.16s ease,
-    transform 0.16s ease;
-}
-
-.handleWithGrip:hover .handleGrip,
-.handleWithGrip:focus-visible .handleGrip,
-.handleWithGrip[data-separator='active'] .handleGrip {
-  height: 36px;
-  opacity: 1;
-  transform: translateX(6px);
-  background: color-mix(in srgb, var(--muted) 78%, transparent);
-}
-
-.handle[aria-orientation='horizontal'] .handleGrip {
-  width: 28px;
-  height: 3px;
-  transform: translateY(6px);
-  opacity: 0;
-}
-
-.handleWithGrip[aria-orientation='horizontal']:hover .handleGrip,
-.handleWithGrip[aria-orientation='horizontal']:focus-visible .handleGrip,
-.handleWithGrip[aria-orientation='horizontal'][data-separator='active'] .handleGrip {
-  width: 36px;
-  height: 3px;
-  opacity: 1;
-  transform: translateY(6px);
 }

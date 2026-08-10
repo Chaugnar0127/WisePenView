@@ -17,6 +17,7 @@ import {
   SIDEBAR_MIN_WIDTH,
 } from '@/layouts/_common/Sidebar/sidebarLayoutConfig';
 import {
+  RESIZE_TARGET_MINIMUM_SIZE,
   SystemResizableHandle,
   SystemResizablePanel,
   SystemResizablePanelGroup,
@@ -43,7 +44,6 @@ import styles from './AppLayout.module.less';
 import AppResourceShell from './AppResourceShell';
 
 const APP_LAYOUT_PANEL_GROUP_ID = 'app-layout-panels';
-const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
 
 type AppMainColumnProps = {
   isDesktop: boolean;
@@ -328,7 +328,7 @@ function AppLayout() {
         </SystemResizablePanel>
 
         <SystemResizableHandle
-          className={clsx(styles.resizeHandle, sidebarCollapsed && styles.resizeHandleCollapsed)}
+          collapsed={sidebarCollapsed}
           disabled={sidebarCollapsed}
           aria-label={t('navigation.resizeSidebar')}
         />

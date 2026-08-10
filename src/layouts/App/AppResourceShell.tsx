@@ -9,6 +9,7 @@ import {
 } from '@/constants/layoutScale';
 import { useOpenResource } from '@/hooks/useOpenResource';
 import {
+  RESIZE_TARGET_MINIMUM_SIZE,
   SystemResizableHandle,
   SystemResizablePanel,
   SystemResizablePanelGroup,
@@ -28,7 +29,6 @@ import {
   type ResourceHostContextValue,
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
-import clsx from 'clsx';
 import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
@@ -39,8 +39,6 @@ import type {
 } from 'react-resizable-panels';
 import { useLocation, useParams } from 'react-router-dom';
 import styles from './AppResourceShell.module.less';
-
-const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
 
 interface AppResourceShellProps {
   children: ReactNode;
@@ -214,8 +212,7 @@ function AppResourceShell({
         </SystemResizablePanel>
 
         <SystemResizableHandle
-          withHandle={chatPanelOpen}
-          className={clsx(styles.resizeHandle, !chatPanelOpen && styles.resizeHandleCollapsed)}
+          collapsed={!chatPanelOpen}
           disabled={!chatPanelOpen}
           aria-label={t('shell.resizeChatPanel')}
         />

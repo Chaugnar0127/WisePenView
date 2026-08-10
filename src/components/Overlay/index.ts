@@ -6,6 +6,8 @@ export { default as AppDisplayDialog } from './AppDisplayDialog';
 export type * from './AppDisplayDialog/index.type';
 export { default as AppFormDialog } from './AppFormDialog';
 export type * from './AppFormDialog/index.type';
+export { default as AppMenu } from './AppMenu';
+export type * from './AppMenu/index.type';
 export { default as AppModal } from './AppModal';
 export type * from './AppModal/index.type';
 export { default as AppPopover } from './AppPopover';

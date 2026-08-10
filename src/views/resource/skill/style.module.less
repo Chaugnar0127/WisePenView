@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .pageWrap {
   min-height: 0;
   min-width: 0;
@@ -113,8 +115,8 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
+  .appSubtleScrollbarStable();
   padding: var(--space-sm);
-  scrollbar-gutter: stable;
 }
 
 .treeWrapDragOver {
@@ -246,6 +248,7 @@
   height: 100%;
   min-height: 0;
   overflow: auto;
+  .appSubtleScrollbarStable();
   background: var(--surface);
 }
 
@@ -293,6 +296,7 @@
   width: min(100%, 800px);
   padding: 30px clamp(32px, 6%, 96px) 42px;
   overflow: auto;
+  .appSubtleScrollbarStable();
 }
 
 .configFormHint {
@@ -327,6 +331,7 @@
   );
   field-sizing: content;
   overflow-y: auto;
+  .appSubtleScrollbar();
   resize: vertical;
 }
 

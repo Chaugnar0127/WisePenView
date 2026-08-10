@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .modalFormPadding {
   padding: var(--space-lg) 0;
 }
@@ -166,6 +168,7 @@
   min-height: 40px;
   max-height: 72px;
   overflow: auto;
+  .appSubtleScrollbar();
   box-sizing: border-box;
   border: 1px solid var(--app-input-slot-border);
   background-color: var(--app-input-slot-bg);
@@ -259,6 +262,7 @@
   flex-direction: column;
   gap: 6px;
   overflow: auto;
+  .appSubtleScrollbar();
   padding-right: 2px;
 }
 
@@ -319,6 +323,7 @@
   min-height: 0;
   max-height: 320px;
   overflow: auto;
+  .appSubtleScrollbar();
   padding: 6px;
 }
 
@@ -388,6 +393,7 @@
   align-items: flex-start;
   gap: 4px;
   overflow: auto;
+  .appSubtleScrollbar();
 }
 
 .selectedTag {

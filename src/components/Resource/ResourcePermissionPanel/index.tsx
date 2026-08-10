@@ -58,11 +58,10 @@ const formatActionSummary = (
   if (actions.length === 0) {
     return t('permission.summary.none');
   }
-  const first = actions[0];
-  return t('permission.summary.multiple', {
-    first: getActionLabel(first, options),
-    count: actions.length,
-  });
+  if (actions.length === 1) {
+    return getActionLabel(actions[0], options);
+  }
+  return t('permission.summary.multiple', { count: actions.length });
 };
 
 function SubjectPermissionPopover({

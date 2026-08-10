@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .editorShell {
   display: flex;
   width: 100%;
@@ -48,6 +50,7 @@
 .editorNav {
   min-height: 0;
   overflow-y: auto;
+  .appSubtleScrollbarStable();
   padding: 20px 12px;
   border-right: 1px solid var(--border);
   background: var(--surface);
@@ -113,6 +116,7 @@
 .editorScroll {
   min-height: 0;
   overflow: auto;
+  .appSubtleScrollbarStable();
   background: var(--surface);
   scroll-behavior: smooth;
 }
@@ -281,6 +285,7 @@
   min-height: calc(3 * var(--line-height-base) + 18px);
   max-height: calc(5 * var(--line-height-base) + 18px);
   overflow-y: auto;
+  .appSubtleScrollbar();
   resize: none;
   field-sizing: content;
 }

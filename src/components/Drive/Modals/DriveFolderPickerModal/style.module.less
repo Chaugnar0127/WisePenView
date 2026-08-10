@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -13,6 +15,7 @@
 .treeWrap {
   max-height: 320px;
   overflow: auto;
+  .appSubtleScrollbar();
   padding: var(--space-2xs);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

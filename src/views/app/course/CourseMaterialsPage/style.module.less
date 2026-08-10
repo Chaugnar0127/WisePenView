@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .page {
   --course-workflow-gutter: clamp(var(--space-xl), 5vw, 64px);
   display: flex;
@@ -27,12 +29,12 @@
   margin: var(--space-xs) 0 0;
   color: var(--muted);
 }
-
 .driveArea {
   min-width: 0;
   min-height: 0;
   flex: 1;
   overflow: auto;
+  .appSubtleScrollbarStable();
 }
 
 @media (max-width: 760px) {

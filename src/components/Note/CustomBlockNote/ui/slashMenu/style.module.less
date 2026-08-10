@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .host {
   display: contents;
 }
@@ -89,6 +91,7 @@
   z-index: 2;
   max-height: var(--note-slash-menu-effective-max-height);
   overflow-y: auto;
+  .appSubtleScrollbar();
   overscroll-behavior: contain;
 }
 

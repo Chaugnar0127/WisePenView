@@ -55,34 +55,9 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  .appSubtleScrollbar();
-  scrollbar-color: transparent transparent;
+  .appSubtleScrollbarAutoHide();
   border: none;
   outline: none;
-
-  &::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    transition: background-color 200ms ease;
-  }
-
-  &:hover {
-    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-
-    &::-webkit-scrollbar {
-      width: var(--scrollbar-size, 8px);
-      height: var(--scrollbar-size, 8px);
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background-color: var(--scrollbar-thumb);
-      background-clip: content-box;
-    }
-  }
 }
 
 .collapsedContent {
@@ -140,6 +115,9 @@
   font-size: var(--font-size-sm);
   line-height: var(--line-height-base);
   position: relative;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -148,7 +126,8 @@
   overflow: hidden;
 
   &:hover {
-    background: var(--accent-soft);
+    color: var(--foreground);
+    background: var(--item-hover);
   }
 }
 
@@ -158,9 +137,14 @@
 }
 
 .active {
-  background: var(--accent-soft);
-  color: var(--foreground);
+  color: var(--accent-text-strong);
+  background: var(--item-selected);
   font-weight: var(--font-weight-medium);
+
+  &:hover {
+    color: var(--accent-text-strong);
+    background: var(--item-selected-hover);
+  }
 
   &::before {
     content: '';

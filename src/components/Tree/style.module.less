@@ -132,7 +132,7 @@
 
     &:hover {
       color: var(--foreground);
-      background: var(--surface-tertiary);
+      background: var(--item-hover);
     }
   }
 
@@ -143,7 +143,13 @@
 
 .selected .content {
   color: var(--accent-text-strong);
-  background: var(--accent-selected);
+  background: var(--item-selected);
+  font-weight: var(--font-weight-semibold);
+
+  &:hover {
+    color: var(--accent-text-strong);
+    background: var(--item-selected-hover);
+  }
 }
 
 .title {

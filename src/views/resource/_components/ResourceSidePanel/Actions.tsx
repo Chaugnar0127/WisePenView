@@ -2,7 +2,6 @@ import AppIconButton from '@/components/Button/AppIconButton';
 import { MessageSquareText, MessagesSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useResourceSidePanelStore } from '../../_store/useResourceSidePanelStore';
-import styles from './style.module.less';
 
 interface ResourceSidePanelActionsProps {
   resourceId: string;
@@ -20,7 +19,7 @@ function ResourceSidePanelActions({
   const toggleMode = useResourceSidePanelStore((state) => state.toggleMode);
 
   return (
-    <div className={styles.actions}>
+    <>
       {inlineCommentAvailable ? (
         <AppIconButton
           icon={<MessageSquareText size={18} aria-hidden="true" />}
@@ -55,7 +54,7 @@ function ResourceSidePanelActions({
         }}
         onPress={() => toggleMode(resourceId, 'comment')}
       />
-    </div>
+    </>
   );
 }
 

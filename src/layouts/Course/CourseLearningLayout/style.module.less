@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .root {
   position: relative;
   box-sizing: border-box;
@@ -170,6 +172,7 @@
   min-height: 0;
   flex: 1;
   overflow-y: auto;
+  .appSubtleScrollbarStable();
   padding: 0 var(--space-sm) var(--space-md);
 }
 
@@ -187,10 +190,26 @@
     width: 100%;
     padding-right: 0;
     border-radius: var(--radius-md, 6px);
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
 
     &:hover,
     &:focus-within {
-      background: var(--accent-soft);
+      color: var(--foreground);
+      background: var(--item-hover);
+    }
+  }
+
+  :global(.wisepen-tree__item[aria-selected='true']) {
+    color: var(--accent-text-strong);
+    background: var(--item-selected);
+    font-weight: var(--font-weight-semibold);
+
+    &:hover,
+    &:focus-within {
+      color: var(--accent-text-strong);
+      background: var(--item-selected-hover);
     }
   }
 
@@ -369,6 +388,7 @@
   max-height: 360px;
   padding: var(--space-sm);
   overflow-y: auto;
+  .appSubtleScrollbar();
   border: 1px solid var(--border);
   border-radius: var(--radius-md, 6px);
 
@@ -472,6 +492,7 @@
   align-content: center;
   padding: var(--space-xl);
   overflow-y: auto;
+  .appSubtleScrollbar();
   color: var(--muted);
   text-align: center;
 }
@@ -501,19 +522,6 @@
   height: 100%;
   overflow: hidden;
   background: var(--surface);
-}
-
-.resizeHandle {
-  z-index: 20;
-}
-
-.resizeHandleCollapsed {
-  flex: 0 0 0 !important;
-  flex-basis: 0 !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  overflow: hidden;
 }
 
 @media (max-width: 760px) {

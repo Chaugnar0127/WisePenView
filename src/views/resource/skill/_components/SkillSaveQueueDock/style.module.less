@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .queueDock {
   flex: 0 0 auto;
   position: relative;
@@ -143,7 +145,7 @@
 
 .queueBody {
   overflow: auto;
-  scrollbar-gutter: stable;
+  .appSubtleScrollbarAutoHide();
 }
 
 .emptyItem {

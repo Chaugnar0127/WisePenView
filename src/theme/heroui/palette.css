@@ -637,13 +637,18 @@ html[data-color-scheme='lavender'] {
   --resource-icon-loading: var(--muted);
 
   --sidebar-surface: var(--palette-accent-2);
-  --sidebar-item-hover: var(--palette-accent-3);
-  --sidebar-item-selected: color-mix(
+
+  --item-hover: var(--palette-accent-3);
+  --item-selected: color-mix(
     in oklab,
     var(--palette-accent-3) 60%,
     var(--palette-accent-4)
   );
-  --sidebar-item-selected-hover: var(--palette-accent-5);
+  --item-selected-hover: var(--palette-accent-5);
+
+  --sidebar-item-hover: var(--item-hover);
+  --sidebar-item-selected: var(--item-selected);
+  --sidebar-item-selected-hover: var(--item-selected-hover);
 
   --info: var(--blue-9);
   --info-foreground: var(--snow);
@@ -833,6 +838,9 @@ html[data-color-scheme] :is(.light, .dark, .default):not(html):not(:root) {
   --sidebar-item-hover: inherit;
   --sidebar-item-selected: inherit;
   --sidebar-item-selected-hover: inherit;
+  --item-hover: inherit;
+  --item-selected: inherit;
+  --item-selected-hover: inherit;
   --paper: inherit;
   --canvas: inherit;
   --header-surface: inherit;

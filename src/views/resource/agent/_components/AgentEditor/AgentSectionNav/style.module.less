@@ -1,6 +1,9 @@
+@import '@/styles/scrollbar.module.less';
+
 .nav {
   min-height: 0;
   overflow-y: auto;
+  .appSubtleScrollbarStable();
   padding: 20px 12px;
   border-right: 1px solid var(--border);
   background: var(--surface);
@@ -48,9 +51,14 @@
 }
 
 .nav button.active {
-  color: var(--accent-text);
-  background: var(--accent-soft);
+  color: var(--accent-text-strong);
+  background: var(--item-selected);
   font-weight: var(--font-weight-semibold);
+
+  &:hover {
+    color: var(--accent-text-strong);
+    background: var(--item-selected-hover);
+  }
 
   &::before {
     background: var(--accent);

@@ -1,12 +1,10 @@
-import { RESOURCE_SIDE_PANEL_MIN_WIDTH as RESOURCE_SIDE_PANEL_MIN_WIDTH_PX } from '@/constants/layoutScale';
+import { clampResourceSidePanelWidth } from '@/constants/layoutScale';
 import { registerStore } from '@/store/lifecycle';
 import { createStoreJSONStorage } from '@/store/persistence';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export const RESOURCE_SIDE_PANEL_DEFAULT_WIDTH = 360;
-export const RESOURCE_SIDE_PANEL_MIN_WIDTH = RESOURCE_SIDE_PANEL_MIN_WIDTH_PX;
-export const RESOURCE_SIDE_PANEL_MAX_WIDTH = 560;
 
 export type ResourceSidePanelMode = 'closed' | 'inlineComment' | 'comment';
 
@@ -23,13 +21,6 @@ const DEFAULT_STATE = {
   width: RESOURCE_SIDE_PANEL_DEFAULT_WIDTH,
 };
 
-function normalizeWidth(width: number): number {
-  return Math.min(
-    Math.max(Math.round(width), RESOURCE_SIDE_PANEL_MIN_WIDTH),
-    RESOURCE_SIDE_PANEL_MAX_WIDTH
-  );
-}
-
 export const useResourceSidePanelStore = create<ResourceSidePanelState>()(
   persist(
     (set, get) => ({
@@ -44,7 +35,7 @@ export const useResourceSidePanelStore = create<ResourceSidePanelState>()(
         get().setMode(resourceId, currentMode === mode ? 'closed' : mode);
       },
       setWidth: (width) => {
-        const nextWidth = normalizeWidth(width);
+        const nextWidth = clampResourceSidePanelWidth(width);
         set((state) => (state.width === nextWidth ? state : { width: nextWidth }));
       },
     }),
@@ -59,7 +50,7 @@ export const useResourceSidePanelStore = create<ResourceSidePanelState>()(
         return {
           ...current,
           ...stored,
-          width: normalizeWidth(stored?.width ?? current.width),
+          width: clampResourceSidePanelWidth(stored?.width ?? current.width),
           modeByResourceId: current.modeByResourceId,
         };
       },

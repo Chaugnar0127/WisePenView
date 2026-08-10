@@ -17,6 +17,7 @@ import {
   SIDEBAR_MIN_WIDTH,
 } from '@/layouts/_common/Sidebar/sidebarLayoutConfig';
 import {
+  RESIZE_TARGET_MINIMUM_SIZE,
   SystemResizableHandle,
   SystemResizablePanel,
   SystemResizablePanelGroup,
@@ -240,7 +241,6 @@ function AppLayout() {
 
   const handleSidebarResize = (panelSize: PanelSize) => {
     if (sidebarCollapsed || isMotionLockedRef.current) return;
-    setLiveSidebarWidthPx(panelSize.inPixels);
     pendingSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
   };
 
@@ -270,6 +270,7 @@ function AppLayout() {
         id={APP_LAYOUT_PANEL_GROUP_ID}
         orientation="horizontal"
         className={styles.panelGroup}
+        resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
         onLayoutChanged={handleLayoutChanged}
       >
         <SystemResizablePanel
@@ -327,7 +328,7 @@ function AppLayout() {
         </SystemResizablePanel>
 
         <SystemResizableHandle
-          className={clsx(styles.resizeHandle, sidebarCollapsed && styles.resizeHandleCollapsed)}
+          collapsed={sidebarCollapsed}
           disabled={sidebarCollapsed}
           aria-label={t('navigation.resizeSidebar')}
         />

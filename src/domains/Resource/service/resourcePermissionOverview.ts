@@ -1,3 +1,4 @@
+import { AgentApi } from '@/domains/Agent/apis/AgentApi';
 import { DocumentApi } from '@/domains/Document/apis/DocumentApi';
 import type { GroupBaseInfo, IGroupService } from '@/domains/Group';
 import { NoteApi } from '@/domains/Note/apis/NoteApi';
@@ -5,7 +6,6 @@ import { SkillApi } from '@/domains/Skill/apis/SkillApi';
 import type { TagTreeNode } from '@/domains/Tag';
 import { TagApi } from '@/domains/Tag/apis/TagApi';
 import { TagServicesMap } from '@/domains/Tag/mapper/TagServices.map';
-import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { type ResourceAction } from '../enum';
 import { ResourceServicesMap } from '../mapper/ResourceServices.map';
 import type {
@@ -83,8 +83,12 @@ const getPermissionResourceInfo = async (params: GetResourcePermissionOverviewRe
         data?.resourceInfo ?? { resourceId: params.resourceId, resourceName: '', ownerInfo: {} }
       );
     }
-    case 'agent':
-      throw createClientError(FRONTEND_CLIENT_ERROR.RESOURCE_AGENT_PERMISSION_UNSUPPORTED);
+    case 'agent': {
+      const data = await AgentApi.getAgentInfo(params.resourceId);
+      return (
+        data?.resourceInfo ?? { resourceId: params.resourceId, resourceName: '', ownerInfo: {} }
+      );
+    }
   }
 };
 

@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .attachment {
   position: relative;
   display: flex;
@@ -238,11 +240,7 @@
   padding-block: 4px;
   scroll-padding-inline: 4px;
   scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  .appSubtleScrollbarAutoHide();
 
   > [data-slot='attachment'] {
     flex: none;

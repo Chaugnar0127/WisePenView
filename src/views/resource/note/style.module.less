@@ -123,14 +123,7 @@
   flex-direction: column;
   overflow: auto;
   padding: var(--space-lg);
-  .appSubtleScrollbar();
-  scrollbar-color: transparent transparent;
-
-  &::-webkit-scrollbar-thumb,
-  &:hover::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    transition: background-color 200ms ease;
-  }
+  .appSubtleScrollbarAutoHide();
 
   &.mainColScrolling {
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);

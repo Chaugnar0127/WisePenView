@@ -70,6 +70,11 @@ const enUSChat = {
       currentDraft: 'Current draft',
       defaultAgent: 'Default Agent',
       loadingAria: 'Loading agents',
+      selectFromGroup: 'Select from group',
+      groupModalTitle: 'Select Agent from group',
+      groupHint: 'Expand a group, then choose one of its Agents',
+      groupLoading: 'Loading groups',
+      groupFallback: 'Group',
     },
     skillMenu: {
       title: 'Skills',

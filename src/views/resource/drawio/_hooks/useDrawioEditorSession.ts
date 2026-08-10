@@ -1,7 +1,7 @@
 import type { INoteService } from '@/domains/Note';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useEventListener, useUnmount } from 'ahooks';
+import { useEventListener, useMemoizedFn, useUnmount } from 'ahooks';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -79,7 +79,7 @@ export function useDrawioEditorSession({
     }
   };
 
-  const requestSave = () => {
+  const requestSave = useMemoizedFn(() => {
     if (!canEdit) {
       toast.danger(t('drawio.noEditPermission'));
       return;
@@ -102,7 +102,7 @@ export function useDrawioEditorSession({
       setSaveState('failed');
       toast.danger(t('drawio.saveRetry'));
     }, 10000);
-  };
+  });
 
   const handleMessage = (event: MessageEvent) => {
     if (event.origin !== drawioOrigin) return;

@@ -61,6 +61,7 @@ export const WORKSPACE_INNER_WITH_CHAT_MIN_WIDTH =
 
 /** 评论/批注栏默认最小宽（过窄时线程/排序条易挤坏） */
 export const RESOURCE_SIDE_PANEL_MIN_WIDTH = 320;
+export const RESOURCE_SIDE_PANEL_MAX_WIDTH = 560;
 
 /**
  * 笔记 + 评论/批注同时打开时的下限。
@@ -195,6 +196,12 @@ export const clampSidebarWidth = (width: number): number =>
 
 export const clampWorkspaceChatPanelWidth = (width: number): number =>
   Math.min(Math.max(Math.round(width), CHAT_PANEL_MIN_WIDTH), WORKSPACE_CHAT_PANEL_MAX_WIDTH);
+
+export const clampResourceSidePanelWidth = (width: number): number =>
+  Math.min(
+    Math.max(Math.round(width), RESOURCE_SIDE_PANEL_MIN_WIDTH),
+    RESOURCE_SIDE_PANEL_MAX_WIDTH
+  );
 
 export interface LayoutScaleCssVarOptions {
   widthDensity?: LayoutDensity;

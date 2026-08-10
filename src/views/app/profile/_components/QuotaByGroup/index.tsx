@@ -3,7 +3,7 @@ import { DataTable, type DataTableColumn } from '@/components/Table';
 import { useQuotaService } from '@/domains';
 import { parseErrorMessage } from '@/utils/error';
 import { toast, type SortDescriptor } from '@heroui/react';
-import { usePagination } from 'ahooks';
+import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { QuotaByGroupProps, UserGroupQuota } from './index.type';
@@ -13,37 +13,79 @@ type QuotaRecord = UserGroupQuota & { key: string };
 
 const DEFAULT_PAGE_SIZE = 10;
 
+interface QuotaPageData {
+  quotas: UserGroupQuota[];
+  total: number;
+  currentPage: number;
+}
+
+const INITIAL_QUOTA_PAGE_DATA: QuotaPageData = {
+  quotas: [],
+  total: 0,
+  currentPage: 0,
+};
+
 function QuotaByGroup({ pagination }: QuotaByGroupProps) {
   const { t } = useTranslation('group');
   const quotaService = useQuotaService();
-  const {
-    data: quotaData,
-    loading,
-    pagination: {
-      current: currentPage = 1,
-      pageSize = pagination?.defaultPageSize ?? DEFAULT_PAGE_SIZE,
-      onChange,
+  const pageSize = pagination?.defaultPageSize ?? DEFAULT_PAGE_SIZE;
+  const [quotaPageData, setQuotaPageData] = useState<QuotaPageData>(INITIAL_QUOTA_PAGE_DATA);
+
+  const fetchQuotaPage = async (page: number): Promise<QuotaPageData> => {
+    const { quotas, total } = await quotaService.fetchUserGroupQuotas(page, pageSize);
+    return { quotas, total, currentPage: page };
+  };
+
+  const { loading } = useRequest(() => fetchQuotaPage(1), {
+    refreshDeps: [quotaService, pageSize],
+    onBefore: () => {
+      setQuotaPageData(INITIAL_QUOTA_PAGE_DATA);
     },
-  } = usePagination(
-    async ({ current, pageSize: nextPageSize }) => {
-      const { quotas, total } = await quotaService.fetchUserGroupQuotas(current, nextPageSize);
-      return { list: quotas, total };
+    onSuccess: (data) => {
+      setQuotaPageData(data);
+    },
+    onError: (error: unknown) => {
+      toast.danger(parseErrorMessage(error));
+    },
+  });
+
+  const hasMore =
+    quotaPageData.currentPage > 0 && quotaPageData.currentPage * pageSize < quotaPageData.total;
+
+  const { loading: loadingMore, run: loadMore } = useRequest(
+    async (): Promise<QuotaPageData> => {
+      const canLoadMore =
+        quotaPageData.currentPage > 0 && quotaPageData.currentPage * pageSize < quotaPageData.total;
+      if (!canLoadMore) {
+        return quotaPageData;
+      }
+
+      const nextPageData = await fetchQuotaPage(quotaPageData.currentPage + 1);
+      return {
+        quotas: [...quotaPageData.quotas, ...nextPageData.quotas],
+        total: nextPageData.total,
+        currentPage: nextPageData.currentPage,
+      };
     },
     {
-      defaultCurrent: 1,
-      defaultPageSize: pagination?.defaultPageSize ?? DEFAULT_PAGE_SIZE,
+      manual: true,
+      onSuccess: (data) => {
+        setQuotaPageData(data);
+      },
       onError: (error: unknown) => {
         toast.danger(parseErrorMessage(error));
       },
     }
   );
 
-  const quotas: UserGroupQuota[] = quotaData?.list ?? [];
-  const total = quotaData?.total ?? 0;
-  const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const end = Math.min(currentPage * pageSize, total);
-
-  const dataSource = quotas.map((quota) => ({ ...quota, key: quota.groupId || quota.groupName }));
+  const total = quotaPageData.total;
+  const dataSource = quotaPageData.quotas.map((quota) => ({
+    ...quota,
+    key: quota.groupId || quota.groupName,
+  }));
+  const loadedCount = dataSource.length;
+  const start = loadedCount === 0 ? 0 : 1;
+  const end = Math.min(loadedCount, total);
 
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'groupName',
@@ -96,11 +138,10 @@ function QuotaByGroup({ pagination }: QuotaByGroupProps) {
         sortDescriptor={sortDescriptor}
         onSortChange={setSortDescriptor}
         summary={summary}
-        pagination={{
-          total,
-          current: currentPage,
-          pageSize,
-          onChange,
+        loadMore={{
+          hasMore,
+          loading: loadingMore,
+          onLoadMore: loadMore,
         }}
       />
     </div>

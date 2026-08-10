@@ -68,6 +68,11 @@ const zhCNChat = {
       currentDraft: '当前草稿',
       defaultAgent: '默认 Agent',
       loadingAria: '正在加载 Agent 列表',
+      selectFromGroup: '从组内选择',
+      groupModalTitle: '从小组选择 Agent',
+      groupHint: '先展开小组，再选择其中的 Agent',
+      groupLoading: '正在加载小组列表',
+      groupFallback: '小组',
     },
     skillMenu: {
       title: 'Skill',

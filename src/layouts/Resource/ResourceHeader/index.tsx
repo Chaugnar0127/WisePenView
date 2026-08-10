@@ -1,11 +1,10 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import EntryIcon from '@/components/Icons/EntryIcon';
 import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
-import { AppPopover } from '@/components/Overlay';
+import { AppMenu } from '@/components/Overlay';
 import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import { useUserService } from '@/domains';
 import { normalizeId } from '@/utils/normalize/normalizeId';
-import { Dropdown } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import {
   ChevronRight,
@@ -124,64 +123,67 @@ function ResourceHeaderMore({
   };
 
   return (
-    <Dropdown>
+    <AppMenu>
       <AppIconButton
         icon={<Ellipsis className={styles.moreIcon} size={22} aria-hidden="true" />}
         label={t('header.more')}
         size="sm"
         isDisabled={isDisabled || isMenuPending}
         aria-busy={isPending || undefined}
-        overlayTrigger={<Dropdown.Trigger />}
+        overlayTrigger={<AppMenu.Trigger />}
       />
-      <Dropdown.Popover placement="bottom end" className={styles.popover}>
-        <AppPopover.Header>{t('header.moreActions')}</AppPopover.Header>
-        <Dropdown.Menu aria-label={t('header.menuAria')} onAction={handleAction}>
+      <AppMenu.Popover placement="bottom end" className={styles.popover} bodyPadding="none">
+        <AppMenu.Menu
+          aria-label={t('header.menuAria')}
+          className={styles.moreMenu}
+          onAction={handleAction}
+        >
           {operations.onOpenOriginal ? (
-            <Dropdown.Section>
-              <Dropdown.Item id="open-original" textValue={t('header.openOriginal')}>
+            <AppMenu.Section>
+              <AppMenu.Item id="open-original" textValue={t('header.openOriginal')}>
                 <ResourceHeaderMenuItemContent
                   icon={ExternalLink}
                   label={t('header.openOriginal')}
                 />
-              </Dropdown.Item>
-            </Dropdown.Section>
+              </AppMenu.Item>
+            </AppMenu.Section>
           ) : null}
           {operations.onCopy ? (
-            <Dropdown.Section>
-              <Dropdown.Item id="create-copy" textValue={t('header.createCopy')}>
+            <AppMenu.Section>
+              <AppMenu.Item id="create-copy" textValue={t('header.createCopy')}>
                 <ResourceHeaderMenuItemContent icon={Copy} label={t('header.createCopy')} />
-              </Dropdown.Item>
-            </Dropdown.Section>
+              </AppMenu.Item>
+            </AppMenu.Section>
           ) : null}
           {operations.onCreateLink || operations.onMove || operations.onShare ? (
-            <Dropdown.Section>
+            <AppMenu.Section>
               {operations.onCreateLink ? (
-                <Dropdown.Item id="add-link" textValue={t('header.addLink')}>
+                <AppMenu.Item id="add-link" textValue={t('header.addLink')}>
                   <ResourceHeaderMenuItemContent icon={Link2} label={t('header.addLink')} />
-                </Dropdown.Item>
+                </AppMenu.Item>
               ) : null}
               {operations.onMove ? (
-                <Dropdown.Item id="move-to" textValue={t('header.moveTo')}>
+                <AppMenu.Item id="move-to" textValue={t('header.moveTo')}>
                   <ResourceHeaderMenuItemContent icon={FolderInput} label={t('header.moveTo')} />
-                </Dropdown.Item>
+                </AppMenu.Item>
               ) : null}
               {operations.onShare ? (
-                <Dropdown.Item id="share-to" textValue={t('header.shareToGroup')}>
+                <AppMenu.Item id="share-to" textValue={t('header.shareToGroup')}>
                   <ResourceHeaderMenuItemContent icon={Share2} label={t('header.shareToGroup')} />
-                </Dropdown.Item>
+                </AppMenu.Item>
               ) : null}
-            </Dropdown.Section>
+            </AppMenu.Section>
           ) : null}
           {canManagePermission ? (
-            <Dropdown.Section>
-              <Dropdown.Item id="permission" textValue={t('header.permission')}>
+            <AppMenu.Section>
+              <AppMenu.Item id="permission" textValue={t('header.permission')}>
                 <ResourceHeaderMenuItemContent icon={ShieldCheck} label={t('header.permission')} />
-              </Dropdown.Item>
-            </Dropdown.Section>
+              </AppMenu.Item>
+            </AppMenu.Section>
           ) : null}
           {menu?.showInlineCommentHistory ? (
-            <Dropdown.Section>
-              <Dropdown.Item
+            <AppMenu.Section>
+              <AppMenu.Item
                 id="comment-history"
                 textValue={t('header.inlineCommentHistory')}
                 isDisabled={!menu.onInlineCommentHistory}
@@ -190,81 +192,78 @@ function ResourceHeaderMore({
                   icon={MessageSquare}
                   label={t('header.inlineCommentHistory')}
                 />
-              </Dropdown.Item>
-            </Dropdown.Section>
+              </AppMenu.Item>
+            </AppMenu.Section>
           ) : null}
           {menu?.onSearch ? (
-            <Dropdown.Section>
-              <Dropdown.Item id="search" textValue={t('header.fullTextSearch')}>
+            <AppMenu.Section>
+              <AppMenu.Item id="search" textValue={t('header.fullTextSearch')}>
                 <ResourceHeaderMenuItemContent icon={Search} label={t('header.fullTextSearch')} />
-              </Dropdown.Item>
-            </Dropdown.Section>
+              </AppMenu.Item>
+            </AppMenu.Section>
           ) : null}
           {menu?.actions?.length ? (
-            <Dropdown.Section>
+            <AppMenu.Section>
               {menu.actions.map((action) => (
-                <Dropdown.Item key={action.id} id={action.id} textValue={action.label}>
+                <AppMenu.Item key={action.id} id={action.id} textValue={action.label}>
                   <ResourceHeaderMenuItemContent icon={action.icon} label={action.label} />
-                </Dropdown.Item>
+                </AppMenu.Item>
               ))}
-            </Dropdown.Section>
+            </AppMenu.Section>
           ) : null}
           {menu?.onPrint || menu?.download ? (
-            <Dropdown.Section>
+            <AppMenu.Section>
               {menu.onPrint ? (
-                <Dropdown.Item id="print" textValue={menu.printLabel ?? t('header.print')}>
+                <AppMenu.Item id="print" textValue={menu.printLabel ?? t('header.print')}>
                   <ResourceHeaderMenuItemContent
                     icon={menu.printIcon ?? Printer}
                     label={menu.printLabel ?? t('header.print')}
                   />
-                </Dropdown.Item>
+                </AppMenu.Item>
               ) : null}
               {menu.download ? (
-                <Dropdown.Item id="download" textValue={menu.download.label}>
+                <AppMenu.Item id="download" textValue={menu.download.label}>
                   <ResourceHeaderMenuItemContent icon={Download} label={menu.download.label} />
-                </Dropdown.Item>
+                </AppMenu.Item>
               ) : null}
-            </Dropdown.Section>
+            </AppMenu.Section>
           ) : null}
           {menu?.advanced ? (
-            <Dropdown.Section>
-              <Dropdown.SubmenuTrigger>
-                <Dropdown.Item id="advanced" textValue={t('header.advanced')}>
+            <AppMenu.Section>
+              <AppMenu.SubmenuTrigger>
+                <AppMenu.Item id="advanced" textValue={t('header.advanced')}>
                   <ResourceHeaderMenuItemContent
                     icon={Settings2}
                     label={t('header.advanced')}
-                    trailing={<Dropdown.SubmenuIndicator />}
+                    trailing={<AppMenu.SubmenuIndicator />}
                   />
-                </Dropdown.Item>
-                <Dropdown.Popover
+                </AppMenu.Item>
+                <AppMenu.Popover
                   placement="right top"
                   className={`${styles.popover} ${styles.advancedPopover}`}
+                  bodyPadding="none"
                 >
-                  <div className={styles.advancedPanel}>
-                    <AppPopover.Header>{t('header.advancedSettings')}</AppPopover.Header>
-                    {menu.advanced}
-                  </div>
-                </Dropdown.Popover>
-              </Dropdown.SubmenuTrigger>
-            </Dropdown.Section>
+                  <div className={styles.advancedPanel}>{menu.advanced}</div>
+                </AppMenu.Popover>
+              </AppMenu.SubmenuTrigger>
+            </AppMenu.Section>
           ) : null}
           {operations.onDelete ? (
-            <Dropdown.Section>
-              <Dropdown.Item
+            <AppMenu.Section>
+              <AppMenu.DangerItem
                 id="delete"
                 textValue={operations.deleteLabel ?? t('header.deleteFile')}
-                variant="danger"
               >
                 <ResourceHeaderMenuItemContent
                   icon={Trash2}
                   label={operations.deleteLabel ?? t('header.deleteFile')}
                 />
-              </Dropdown.Item>
-            </Dropdown.Section>
+              </AppMenu.DangerItem>
+            </AppMenu.Section>
           ) : null}
-        </Dropdown.Menu>
-      </Dropdown.Popover>
-    </Dropdown>
+        </AppMenu.Menu>
+      </AppMenu.Popover>
+    </AppMenu>
   );
 }
 
@@ -355,45 +354,49 @@ function ResourceHeader({
           {titleMeta ? <span className={styles.titleMeta}>{titleMeta}</span> : null}
         </div>
         <div className={styles.actions}>
-          {leadingActions}
-          {actions}
-          {resourceId ? (
-            <ResourceHeaderOperations
-              resourceId={resourceId}
-              resourceName={resourceName}
-              resourceType={resourceType ?? permissionResourceType}
-              resourceInfo={resourceInfo}
-              currentActions={currentActions}
-              copyVersion={copyVersion}
-              onResolve={(operations) => (
-                <ResourceHeaderMore
-                  menu={moreMenu}
-                  operations={operations}
-                  canManagePermission={canManagePermission}
-                  isDisabled={isDisabled}
-                  onOpenPermission={() => setIsPermissionModalOpen(true)}
+          {leadingActions ? <div className={styles.actionGroup}>{leadingActions}</div> : null}
+          {actions ? <div className={styles.actionGroup}>{actions}</div> : null}
+          {resourceId || trailingActions || onToggleChatPanel ? (
+            <div className={styles.actionGroup}>
+              {resourceId ? (
+                <ResourceHeaderOperations
+                  resourceId={resourceId}
+                  resourceName={resourceName}
+                  resourceType={resourceType ?? permissionResourceType}
+                  resourceInfo={resourceInfo}
+                  currentActions={currentActions}
+                  copyVersion={copyVersion}
+                  onResolve={(operations) => (
+                    <ResourceHeaderMore
+                      menu={moreMenu}
+                      operations={operations}
+                      canManagePermission={canManagePermission}
+                      isDisabled={isDisabled}
+                      onOpenPermission={() => setIsPermissionModalOpen(true)}
+                    />
+                  )}
                 />
-              )}
-            />
-          ) : null}
-          {trailingActions}
-          {onToggleChatPanel ? (
-            <AppIconButton
-              icon={
-                chatPanelCollapsed ? (
-                  <PanelRightOpen size={18} aria-hidden="true" />
-                ) : (
-                  <PanelRightClose size={18} aria-hidden="true" />
-                )
-              }
-              label={
-                chatPanelCollapsed
-                  ? t('panel.expand', { ns: 'chat' })
-                  : t('panel.collapse', { ns: 'chat' })
-              }
-              size="sm"
-              onPress={onToggleChatPanel}
-            />
+              ) : null}
+              {trailingActions}
+              {onToggleChatPanel ? (
+                <AppIconButton
+                  icon={
+                    chatPanelCollapsed ? (
+                      <PanelRightOpen size={18} aria-hidden="true" />
+                    ) : (
+                      <PanelRightClose size={18} aria-hidden="true" />
+                    )
+                  }
+                  label={
+                    chatPanelCollapsed
+                      ? t('panel.expand', { ns: 'chat' })
+                      : t('panel.collapse', { ns: 'chat' })
+                  }
+                  size="sm"
+                  onPress={onToggleChatPanel}
+                />
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

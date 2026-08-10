@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .container {
   flex-shrink: 0;
   padding: var(--chat-input-container-padding-block, var(--space-sm)) 0 var(--space-2xs);
@@ -46,31 +48,9 @@
     gap: var(--space-xs);
     overflow-x: auto;
     overflow-y: hidden;
+    .appSubtleScrollbar();
     padding-block: var(--space-2xs) var(--space-xs);
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin !important;
-    scrollbar-color: var(--scrollbar-thumb) transparent !important;
-
-    &::-webkit-scrollbar {
-      display: block !important;
-      width: 1px !important;
-      height: 1px !important;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent !important;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      border: 0 !important;
-      border-radius: 999px;
-      background: var(--scrollbar-thumb) !important;
-      background-clip: border-box !important;
-    }
-
-    &:hover::-webkit-scrollbar-thumb {
-      background: var(--scrollbar-thumb-hover) !important;
-    }
   }
 }
 
@@ -119,6 +99,7 @@
   min-height: calc(1.6em + 16px);
   max-height: var(--chat-input-textarea-max-height, calc(16em + 16px));
   overflow-y: auto;
+  .appSubtleScrollbar();
   resize: none !important;
   field-sizing: content;
   border: none !important;
@@ -224,70 +205,110 @@
 
 .popoverPanelScrollable {
   box-sizing: border-box;
-  width: 260px;
+  width: min(320px, calc(100vw - var(--space-xl, 32px)));
   height: min(360px, 70vh);
   max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding-inline: 0;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) transparent;
+  .appSubtleScrollbar();
+}
 
-  &::-webkit-scrollbar {
-    width: 1px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: var(--scrollbar-thumb);
-  }
-
-  &:hover::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb-hover);
-  }
+.compactPopoverHeader {
+  padding-inline: var(--space-sm, 12px);
 }
 
 .modelMenu {
   width: 320px;
 }
 
-.deferredPopoverPanel {
-  box-sizing: border-box;
-  min-width: 220px;
-  min-height: 72px;
-  padding: var(--space-xs);
-  background: var(--surface);
-}
-
-.deferredSkillMenuPanel {
-  width: 260px;
-  height: min(360px, 70vh);
-  max-height: 420px;
-  min-height: 0;
-}
-
-.deferredAgentMenuPanel {
-  box-sizing: border-box;
-  width: 240px;
-  min-height: 96px;
-}
-
-.deferredModelMenu {
-  width: 320px;
-  min-height: 112px;
-}
-
 .popoverPanelAgent {
   box-sizing: border-box;
   width: 240px;
   max-height: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding-inline: 0;
   overflow-y: auto;
+  .appSubtleScrollbar();
 }
 
 .popoverPanelAgentSkeleton {
   min-height: 96px;
+}
+
+.listBox {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  background: transparent;
+}
+
+.listBoxItem {
+  width: 100%;
+  border-radius: var(--app-radius-popover-item, var(--radius-xl));
+}
+
+.listBoxSection {
+  min-width: 0;
+}
+
+.listBoxSectionTitle {
+  display: block;
+  padding: var(--space-2xs) var(--space-sm);
+  color: var(--muted);
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-xs, 16px);
+}
+
+.listItemContent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+  min-width: 0;
+}
+
+.listItemLeading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.listItemText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.listItemLabel,
+.listItemDescription {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listItemLabel {
+  color: var(--overlay-foreground, var(--foreground));
+  font-size: var(--font-size-sm, 14px);
+  line-height: var(--line-height-sm, 20px);
+}
+
+.listItemDescription {
+  color: var(--muted);
+  font-size: var(--font-size-xs, 12px);
+  line-height: var(--line-height-xs, 16px);
 }
 
 .popoverSkeletonList {
@@ -334,75 +355,10 @@
   max-width: 88%;
 }
 
-.popoverTitle {
-  padding: var(--space-2xs) var(--space-xs);
-  color: var(--muted);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
 .popoverLoadMore {
   width: 100%;
   margin-top: var(--space-2xs);
   color: var(--muted);
-}
-
-.listBox {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xs);
-  background: transparent;
-
-  :global(.list-box-item) {
-    border-radius: var(--radius-xl);
-  }
-}
-
-.listItemContent,
-.agentItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  width: 100%;
-  min-width: 0;
-}
-
-.listItemContent > :global(svg),
-.agentMain > :global(svg) {
-  flex-shrink: 0;
-}
-
-.listItemContent > span,
-.agentMain > span {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.checkIcon {
-  flex-shrink: 0;
-  margin-left: auto;
-  color: var(--accent-text);
-}
-
-.switchRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  min-height: 34px;
-  padding: 6px var(--space-sm);
-  border-top: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  color: var(--muted);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-
-  input {
-    flex-shrink: 0;
-    accent-color: var(--accent);
-  }
 }
 
 .toolButtonWrap {
@@ -427,35 +383,10 @@
   pointer-events: none;
 }
 
-.skillMenuSourceText {
-  color: var(--muted);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-regular);
-}
-
-.agentItem {
-  justify-content: space-between;
-  width: 220px;
-}
-
-.agentMain {
-  display: inline-flex;
-  align-items: center;
-  flex: 1;
-  gap: var(--space-xs);
-  min-width: 0;
-  overflow: hidden;
-}
-
-.agentMeta {
-  flex-shrink: 0;
-  max-width: 72px;
-  margin-left: auto;
-  overflow: hidden;
-  color: var(--muted);
-  font-size: var(--font-size-sm);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.agentGroupAction {
+  justify-content: flex-start;
+  width: 100%;
+  margin-top: var(--space-xs);
 }
 
 .agentGroupTreeWrap {
@@ -483,6 +414,29 @@
     min-height: 24px;
     border-radius: var(--radius-lg);
   }
+}
+
+.agentGroupModalBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.agentGroupModalHint {
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+}
+
+.agentGroupModalTree {
+  min-height: 240px;
+  max-height: min(52vh, 460px);
+  overflow: auto;
+  .appSubtleScrollbar();
+  padding: var(--space-xs);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  background: var(--background);
 }
 
 .agentGroupTitle,

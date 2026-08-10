@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .pickerBody {
   display: flex;
   flex-direction: column;
@@ -14,21 +16,33 @@
 .collectionList {
   max-height: 240px;
   overflow-y: auto;
+  .appSubtleScrollbar();
 }
 
 .collectionItem {
   min-height: 36px;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-xl);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.collectionItem:hover:not([data-selected='true']),
+.collectionItem[data-hovered='true']:not([data-selected='true']) {
+  color: var(--foreground);
+  background: var(--item-hover);
 }
 
 .collectionItem[data-selected='true'],
 .collectionItem[data-selected='true']:hover {
-  background: var(--accent-softer);
+  color: var(--accent-text-strong);
+  background: var(--item-selected);
 }
 
 .collectionItem[data-selected='true'][data-hovered='true'] {
-  background: var(--accent-soft);
+  color: var(--accent-text-strong);
+  background: var(--item-selected-hover);
 }
 
 .collectionContent {

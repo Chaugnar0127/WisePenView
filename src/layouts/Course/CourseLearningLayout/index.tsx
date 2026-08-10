@@ -6,6 +6,7 @@ import {
 } from '@/components/ChatPanel/ResourceChatProtocol';
 import { COURSE_ROLE } from '@/domains/Course';
 import {
+  RESIZE_TARGET_MINIMUM_SIZE,
   SystemResizableHandle,
   SystemResizablePanel,
   SystemResizablePanelGroup,
@@ -25,7 +26,6 @@ import { useCourseChatDockController } from './controllers/useCourseChatDockCont
 import { useCourseLearningNavigationController } from './controllers/useCourseLearningNavigationController';
 import styles from './style.module.less';
 
-const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
 const COURSE_LEARNING_MAIN_MIN_WIDTH = 700;
 
 function CourseLearningLayout() {
@@ -177,7 +177,7 @@ function CourseLearningLayout() {
       </SystemResizablePanel>
 
       <SystemResizableHandle
-        className={clsx(styles.resizeHandle, !chatDock.open && styles.resizeHandleCollapsed)}
+        collapsed={!chatDock.open}
         disabled={!chatDock.open}
         aria-label={t('learning.resizeChat')}
       />

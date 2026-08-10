@@ -1,5 +1,10 @@
-import { NOTE_EDITOR_MIN_WIDTH } from '@/constants/layoutScale';
 import {
+  NOTE_EDITOR_MIN_WIDTH,
+  RESOURCE_SIDE_PANEL_MAX_WIDTH,
+  RESOURCE_SIDE_PANEL_MIN_WIDTH,
+} from '@/constants/layoutScale';
+import {
+  RESIZE_TARGET_MINIMUM_SIZE,
   SystemResizableHandle,
   SystemResizablePanel,
   SystemResizablePanelGroup,
@@ -15,15 +20,9 @@ import type {
   PanelSize,
 } from 'react-resizable-panels';
 import type { ResourceHostSidePanelConfig } from '../../ResourceHostContext';
-import {
-  RESOURCE_SIDE_PANEL_MAX_WIDTH,
-  RESOURCE_SIDE_PANEL_MIN_WIDTH,
-  useResourceSidePanelStore,
-} from '../../_store/useResourceSidePanelStore';
+import { useResourceSidePanelStore } from '../../_store/useResourceSidePanelStore';
 import ResourceCommentPanel from './ResourceCommentPanel';
 import styles from './style.module.less';
-
-const RESIZE_TARGET_MINIMUM_SIZE = { fine: 16, coarse: 32 };
 
 interface ResourceSidePanelProps {
   resourceId: string;
@@ -90,8 +89,7 @@ function ResourceSidePanel({ resourceId, config, children }: ResourceSidePanelPr
         </SystemResizablePanel>
 
         <SystemResizableHandle
-          withHandle={open}
-          className={clsx(styles.resizeHandle, !open && styles.resizeHandleCollapsed)}
+          collapsed={!open}
           disabled={!open}
           aria-label={t('sidePanel.resize')}
         />

@@ -1,4 +1,7 @@
-import { SIDEBAR_MAX_WIDTH } from '@/layouts/_common/Sidebar/sidebarLayoutConfig';
+import {
+  SIDEBAR_MAX_WIDTH,
+  SIDEBAR_MIN_WIDTH,
+} from '@/layouts/_common/Sidebar/sidebarLayoutConfig';
 import { useEffect, useRef, type RefObject } from 'react';
 
 export const SIDEBAR_COLLAPSE_DURATION_MS = 220;
@@ -7,6 +10,7 @@ interface UseSidebarCollapseMotionOptions {
   collapsed: boolean;
   expandedWidth: number;
   collapsedWidth: number;
+  minSize?: number;
   maxSize?: number;
   /** panel group 上挂 data-sidebar-motion，供 CSS 显隐窄轨 */
   panelGroupId?: string;
@@ -25,6 +29,7 @@ export function useSidebarCollapseMotion({
   collapsed,
   expandedWidth,
   collapsedWidth,
+  minSize = SIDEBAR_MIN_WIDTH,
   maxSize = SIDEBAR_MAX_WIDTH,
   panelGroupId,
 }: UseSidebarCollapseMotionOptions): SidebarCollapseMotion {
@@ -50,7 +55,7 @@ export function useSidebarCollapseMotion({
 
   return {
     panelSize: collapsed ? collapsedWidth : expandedWidth,
-    minSize: 0,
+    minSize: collapsed ? 0 : minSize,
     maxSize,
     isMotionLockedRef,
     notifyAnimationComplete: () => {

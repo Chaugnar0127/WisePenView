@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import { CircleAlert } from 'lucide-react';
 
 import { Popover } from '../Popover';
@@ -17,7 +17,7 @@ function AppPopoverHeader({
 
   return (
     <div
-      className={clsx(styles.header, variant === 'danger' && styles.dangerHeader, className)}
+      className={cn(styles.header, variant === 'danger' && styles.dangerHeader, className)}
       {...props}
     >
       {resolvedIcon ? (
@@ -42,24 +42,24 @@ function AppPopoverContent({
 }: AppPopoverContentProps) {
   return (
     <Popover.Content
-      className={clsx(styles.content, variant === 'danger' && styles.dangerContent, className)}
+      className={cn(styles.content, variant === 'danger' && styles.dangerContent, className)}
       {...props}
     >
       {showArrow ? <Popover.Arrow className={classNames?.arrow} /> : null}
-      <Popover.Dialog className={clsx(styles.dialog, classNames?.dialog)}>
+      <Popover.Dialog className={cn(styles.dialog, classNames?.dialog)}>
         {title != null ? (
           <AppPopoverHeader
             variant={variant}
             className={classNames?.header}
             icon={variant === 'danger' ? undefined : false}
           >
-            <Popover.Heading className={clsx(styles.heading, classNames?.heading)}>
+            <Popover.Heading className={cn(styles.heading, classNames?.heading)}>
               {title}
             </Popover.Heading>
           </AppPopoverHeader>
         ) : null}
         <div
-          className={clsx(
+          className={cn(
             styles.body,
             bodyPadding === 'none' && styles.bodyWithoutPadding,
             classNames?.body

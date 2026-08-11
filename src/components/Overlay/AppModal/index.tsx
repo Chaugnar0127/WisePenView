@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import type { ReactNode } from 'react';
 
 import { Modal } from '../Modal';
@@ -6,11 +6,11 @@ import type { AppModalBodyProps, AppModalFooterProps, AppModalProps } from './in
 import styles from './style.module.less';
 
 function AppModalBody({ className, ...props }: AppModalBodyProps) {
-  return <Modal.Body className={clsx(styles.body, className)} {...props} />;
+  return <Modal.Body className={cn(styles.body, className)} {...props} />;
 }
 
 function AppModalFooter({ className, ...props }: AppModalFooterProps) {
-  return <Modal.Footer className={clsx(styles.footer, className)} {...props} />;
+  return <Modal.Footer className={cn(styles.footer, className)} {...props} />;
 }
 
 function AppModalRoot({
@@ -56,20 +56,20 @@ function AppModalRoot({
         <Modal.Container
           size={size}
           placement={placement}
-          className={clsx(styles.container, containerClassName, classNames?.container)}
+          className={cn(styles.container, containerClassName, classNames?.container)}
         >
           <Modal.Dialog
-            className={clsx(styles.dialog, className, dialogClassName, classNames?.dialog)}
+            className={cn(styles.dialog, className, dialogClassName, classNames?.dialog)}
           >
             {title || description ? (
-              <Modal.Header className={clsx(styles.header, headerClassName, classNames?.header)}>
+              <Modal.Header className={cn(styles.header, headerClassName, classNames?.header)}>
                 {title ? (
-                  <Modal.Heading className={clsx(styles.heading, classNames?.heading)}>
+                  <Modal.Heading className={cn(styles.heading, classNames?.heading)}>
                     {title}
                   </Modal.Heading>
                 ) : null}
                 {description ? (
-                  <div className={clsx(styles.description, classNames?.description)}>
+                  <div className={cn(styles.description, classNames?.description)}>
                     {description}
                   </div>
                 ) : null}
@@ -79,13 +79,13 @@ function AppModalRoot({
             {contentMode === 'dialog' ? (
               children
             ) : (
-              <AppModalBody className={clsx(bodyClassName, classNames?.body)}>
+              <AppModalBody className={cn(bodyClassName, classNames?.body)}>
                 {children}
               </AppModalBody>
             )}
 
             {shouldRenderFooter ? (
-              <AppModalFooter className={clsx(footerClassName, classNames?.footer)}>
+              <AppModalFooter className={cn(footerClassName, classNames?.footer)}>
                 {footerContent}
               </AppModalFooter>
             ) : null}

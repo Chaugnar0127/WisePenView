@@ -1,7 +1,7 @@
 import { AppButton } from '@/components/Button';
 import { Form } from '@heroui/react';
 
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import type { FormEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -104,43 +104,41 @@ function AppFormDialog({
       deferContent={deferContent}
     >
       <Modal.Backdrop
-        className={clsx(backdropClassName, classNames?.backdrop)}
+        className={cn(backdropClassName, classNames?.backdrop)}
         isDismissable={canDismiss}
         isKeyboardDismissDisabled={!canDismiss}
       >
         <Modal.Container
           size={size}
           placement={placement}
-          className={clsx(styles.container, containerClassName, classNames?.container)}
+          className={cn(styles.container, containerClassName, classNames?.container)}
         >
           <Modal.Dialog
-            className={clsx(styles.dialog, className, dialogClassName, classNames?.dialog)}
+            className={cn(styles.dialog, className, dialogClassName, classNames?.dialog)}
           >
             <div className={styles.formCapture} onSubmitCapture={handleSubmitCapture}>
               <Form
                 id={formId}
-                className={clsx(styles.form, formClassName, classNames?.form)}
+                className={cn(styles.form, formClassName, classNames?.form)}
                 onSubmit={handleSubmit}
               >
-                <Modal.Header className={clsx(styles.header, headerClassName, classNames?.header)}>
-                  <Modal.Heading className={clsx(styles.heading, classNames?.heading)}>
+                <Modal.Header className={cn(styles.header, headerClassName, classNames?.header)}>
+                  <Modal.Heading className={cn(styles.heading, classNames?.heading)}>
                     {title}
                   </Modal.Heading>
                   {description ? (
-                    <div className={clsx(styles.description, classNames?.description)}>
+                    <div className={cn(styles.description, classNames?.description)}>
                       {description}
                     </div>
                   ) : null}
                 </Modal.Header>
 
-                <Modal.Body className={clsx(styles.body, bodyClassName, classNames?.body)}>
+                <Modal.Body className={cn(styles.body, bodyClassName, classNames?.body)}>
                   {children}
                 </Modal.Body>
 
                 {footerContent != null ? (
-                  <Modal.Footer
-                    className={clsx(styles.footer, footerClassName, classNames?.footer)}
-                  >
+                  <Modal.Footer className={cn(styles.footer, footerClassName, classNames?.footer)}>
                     {footerContent}
                   </Modal.Footer>
                 ) : null}

@@ -8,8 +8,8 @@ import { IDENTITY } from '@/domains/User';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
+import { cn } from '@/utils/cn';
 import { useMount } from 'ahooks';
-import clsx from 'clsx';
 import {
   ChartPie,
   Home,
@@ -64,7 +64,7 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
     const handleLogin = () => navigate(appAuth.loginPath);
 
     return (
-      <div className={clsx(styles.profile, !collapsed && styles.expanded)}>
+      <div className={cn(styles.profile, !collapsed && styles.expanded)}>
         {collapsed ? (
           <button
             type="button"
@@ -241,7 +241,7 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
 
   return (
     <>
-      <div className={clsx(styles.profile, !collapsed && styles.expanded)}>
+      <div className={cn(styles.profile, !collapsed && styles.expanded)}>
         {collapsed ? (
           <AppMenu>
             <AppMenu.Trigger aria-label={t('userMenu.openAria')} className={styles.avatarTrigger}>

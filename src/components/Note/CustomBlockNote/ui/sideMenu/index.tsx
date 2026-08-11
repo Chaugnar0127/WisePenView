@@ -36,6 +36,7 @@ import {
 import { SlashMenuDropdownItems } from '@/components/Note/CustomBlockNote/ui/slashMenu/slashMenuView';
 import { AppMenu } from '@/components/Overlay';
 import { copyText } from '@/utils/browser/copyText';
+import { cn } from '@/utils/cn';
 import { blockHasType, defaultProps, editorHasBlockWithType } from '@blocknote/core';
 import { SideMenuExtension, SuggestionMenu } from '@blocknote/core/extensions';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
@@ -46,7 +47,6 @@ import {
   useExtensionState,
 } from '@blocknote/react';
 import { useEventListener } from 'ahooks';
-import clsx from 'clsx';
 import {
   AlignCenter,
   AlignLeft,
@@ -623,7 +623,7 @@ function CustomSideMenu({
 
   return (
     <div
-      className={clsx('bn-side-menu', styles.sideMenu)}
+      className={cn('bn-side-menu', styles.sideMenu)}
       data-block-type={block.type}
       data-interaction-hidden={hiddenByTextInteraction && !dragging ? 'true' : undefined}
       {...Object.fromEntries(
@@ -646,7 +646,7 @@ function CustomSideMenu({
         <div className={styles.dragHandleWrapper}>
           <button
             type="button"
-            className={clsx(styles.sideMenuButton, styles.dragHandleButton)}
+            className={cn(styles.sideMenuButton, styles.dragHandleButton)}
             draggable="true"
             aria-label={t('sideMenu.blockMenu')}
             onClick={() => {

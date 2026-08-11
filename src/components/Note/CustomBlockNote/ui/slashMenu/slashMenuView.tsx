@@ -1,8 +1,8 @@
 import { AppMenu } from '@/components/Overlay';
 import i18n from '@/i18n';
+import { cn } from '@/utils/cn';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
 import { Header, ListBoxItem, ListBoxSection } from '@heroui/react';
-import clsx from 'clsx';
 import {
   Braces,
   CheckSquare,
@@ -91,7 +91,7 @@ function resolveSlashMenuIcon(item: DefaultReactSuggestionItem) {
 function SlashMenuItemContent({ item }: { item: DefaultReactSuggestionItem }) {
   return (
     <>
-      <span className={clsx(styles.icon, resolveSlashMenuIconColor(item))}>
+      <span className={cn(styles.icon, resolveSlashMenuIconColor(item))}>
         {resolveSlashMenuIcon(item)}
       </span>
       <span className={styles.label}>{resolveSlashMenuTitle(item)}</span>

@@ -2,7 +2,7 @@ import { AppButton, type AppButtonProps } from '@/components/Button';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { ToggleButton, Tooltip } from '@heroui/react';
 
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import { cloneElement, type ReactElement, type ReactNode } from 'react';
 import styles from '../style.module.less';
 import { stopToolbarMouseDown } from '../utils';
@@ -38,7 +38,7 @@ export function ToolbarButton({
       __button_group_child={isButtonGroupChild}
       aria-label={label}
       aria-pressed={isActive}
-      className={clsx(styles.toolbarButton, className)}
+      className={cn(styles.toolbarButton, className)}
       isDisabled={isDisabled}
       isIconOnly
       size="sm"

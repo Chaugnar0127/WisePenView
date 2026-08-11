@@ -5,8 +5,8 @@ import type { UserSearchUser } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
 import { TextField } from '@heroui/react';
 
+import { cn } from '@/utils/cn';
 import { useDebounceFn, useUnmount } from 'ahooks';
-import clsx from 'clsx';
 import type { KeyboardEvent } from 'react';
 import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -187,7 +187,7 @@ function UserSearchCombobox({
         type="button"
         role="option"
         aria-selected={selected}
-        className={clsx(styles.option, selected && styles.optionActive)}
+        className={cn(styles.option, selected && styles.optionActive)}
         onMouseEnter={() => setActiveOption({ keyword, index })}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => selectUser(user)}

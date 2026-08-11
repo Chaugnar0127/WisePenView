@@ -1,8 +1,8 @@
 'use client';
 
 import { Input } from '@/components/Input';
+import { cn } from '@/utils/cn';
 import { Header, ListBox, ListBoxItem, ListBoxSection, Separator } from '@heroui/react';
-import clsx from 'clsx';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Search } from 'lucide-react';
 import {
@@ -55,9 +55,9 @@ function CommandDialog({
     <CommandPrimitive.Dialog
       data-slot="command"
       data-keyboard-navigation={isKeyboardNavigating || undefined}
-      className={clsx(styles.command, className)}
-      overlayClassName={clsx(styles.dialogOverlay, overlayClassName)}
-      contentClassName={clsx(styles.dialogContent, contentClassName)}
+      className={cn(styles.command, className)}
+      overlayClassName={cn(styles.dialogOverlay, overlayClassName)}
+      contentClassName={cn(styles.dialogContent, contentClassName)}
       onKeyDownCapture={handleKeyDownCapture}
       onPointerMoveCapture={handlePointerMoveCapture}
       {...props}
@@ -82,7 +82,7 @@ function CommandInput({ className, onChange, onValueChange, ...props }: CommandI
       <Input
         {...props}
         fullWidth
-        className={clsx(styles.searchInput, className)}
+        className={cn(styles.searchInput, className)}
         onChange={handleChange}
       />
     </div>
@@ -101,7 +101,7 @@ function CommandList({
 }: CommandListProps) {
   return (
     <div ref={viewportRef} className={styles.listViewport}>
-      <ListBox selectionMode={selectionMode} className={clsx(styles.list, className)} {...props} />
+      <ListBox selectionMode={selectionMode} className={cn(styles.list, className)} {...props} />
     </div>
   );
 }
@@ -116,7 +116,7 @@ function CommandGroup({ children, className, heading, value, ...props }: Command
   const generatedId = useId();
   const id = value ?? generatedId;
   return (
-    <ListBoxSection key={id} id={id} className={clsx(styles.group, className)} {...props}>
+    <ListBoxSection key={id} id={id} className={cn(styles.group, className)} {...props}>
       {heading ? <Header className={styles.groupHeading}>{heading}</Header> : null}
       {children}
     </ListBoxSection>
@@ -150,14 +150,14 @@ function CommandItem({
       textValue={textValue ?? keywords?.[0] ?? value}
       isDisabled={disabled}
       onAction={() => onSelect?.(value)}
-      className={clsx(styles.item, className)}
+      className={cn(styles.item, className)}
       {...props}
     />
   );
 }
 
 function CommandSeparator({ className, ...props }: ComponentProps<typeof Separator>) {
-  return <Separator className={clsx(styles.separator, className)} {...props} />;
+  return <Separator className={cn(styles.separator, className)} {...props} />;
 }
 
 export { CommandDialog, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator };

@@ -1,5 +1,6 @@
 export * from './auth';
 export * from './browser';
+export * from './cn';
 export * from './codeHighlight';
 export * from './enum';
 export * from './error';

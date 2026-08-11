@@ -1,6 +1,6 @@
 'use client';
 
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import * as React from 'react';
 import styles from './marker.module.less';
 
@@ -15,7 +15,7 @@ function Marker({ className, variant = 'default', ...props }: MarkerProps) {
     <div
       data-slot="marker"
       data-variant={variant}
-      className={clsx(
+      className={cn(
         styles.marker,
         variant === 'border' && styles.variantBorder,
         variant === 'separator' && styles.variantSeparator,
@@ -31,14 +31,14 @@ function MarkerIcon({ className, ...props }: React.ComponentProps<'span'>) {
     <span
       data-slot="marker-icon"
       aria-hidden="true"
-      className={clsx(styles.icon, className)}
+      className={cn(styles.icon, className)}
       {...props}
     />
   );
 }
 
 function MarkerContent({ className, ...props }: React.ComponentProps<'span'>) {
-  return <span data-slot="marker-content" className={clsx(styles.content, className)} {...props} />;
+  return <span data-slot="marker-content" className={cn(styles.content, className)} {...props} />;
 }
 
 export { Marker, MarkerContent, MarkerIcon };

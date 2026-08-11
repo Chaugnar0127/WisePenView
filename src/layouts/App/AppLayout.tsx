@@ -30,7 +30,7 @@ import {
 } from '@/layouts/_common/useSidebarCollapseMotion';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import { memo, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
@@ -98,7 +98,7 @@ const AppMainColumn = memo(function AppMainColumn({
     >
       {isDesktop && !isResourceRoute ? (
         <header
-          className={clsx(
+          className={cn(
             styles.desktopHeader,
             hasTitleBarInset && titleBarInsetSide === 'start' && styles.titleBarInsetStart,
             hasTitleBarInset && titleBarInsetSide === 'end' && styles.titleBarInsetEnd
@@ -121,7 +121,7 @@ const AppMainColumn = memo(function AppMainColumn({
       <main
         id={MAIN_CONTENT_ID}
         tabIndex={-1}
-        className={clsx(
+        className={cn(
           styles.middleContent,
           isResourceRoute && styles.middleContentResource,
           contentContainer && styles.middleContentContained
@@ -129,7 +129,7 @@ const AppMainColumn = memo(function AppMainColumn({
       >
         {contentContainer ? (
           <div
-            className={clsx(
+            className={cn(
               styles.appPageContainer,
               contentContainer === 'fixed' && styles.appPageContainerFixed
             )}
@@ -280,7 +280,7 @@ function AppLayout() {
           minSize={sidebarMinSize}
           maxSize={sidebarMaxSize}
           groupResizeBehavior="preserve-pixel-size"
-          className={clsx(
+          className={cn(
             styles.leftSider,
             sidebarCollapsed && !desktopWindow.isDesktop && styles.webCollapsedSider
           )}
@@ -302,7 +302,7 @@ function AppLayout() {
             </header>
           ) : null}
           <div
-            className={clsx(
+            className={cn(
               styles.sidebarSlideHost,
               showWebCollapsedChrome && styles.sidebarSlideHostCollapsed
             )}

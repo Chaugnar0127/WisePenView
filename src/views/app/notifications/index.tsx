@@ -10,8 +10,8 @@ import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainT
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
 
+import { cn } from '@/utils/cn';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import clsx from 'clsx';
 import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -256,7 +256,7 @@ function NotificationsPage() {
                   key={message.messageId}
                   data-index={virtualItem.index}
                   ref={messageVirtualizer.measureElement}
-                  className={clsx(styles.messageItem, isSelected && styles.messageItemSelected)}
+                  className={cn(styles.messageItem, isSelected && styles.messageItemSelected)}
                 >
                   <div className={styles.messageSummary}>
                     <button
@@ -267,7 +267,7 @@ function NotificationsPage() {
                     >
                       <span className={styles.messageStatusLine}>
                         <span
-                          className={clsx(styles.statusDot, !isUnread && styles.statusDotRead)}
+                          className={cn(styles.statusDot, !isUnread && styles.statusDotRead)}
                           aria-hidden="true"
                         />
                         <span>{typeLabel}</span>

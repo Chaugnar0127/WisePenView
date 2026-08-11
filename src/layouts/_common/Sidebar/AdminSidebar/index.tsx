@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import SidebarHeader from '../_common/SidebarHeader';
 import UserProfile from '../_common/UserProfile';
 import shellStyles from '../_common/sidebarShell.module.less';
@@ -12,7 +12,7 @@ interface AdminSidebarProps {
 
 function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   return (
-    <div className={clsx(shellStyles.sider, collapsed && shellStyles.collapsed)}>
+    <div className={cn(shellStyles.sider, collapsed && shellStyles.collapsed)}>
       <SidebarHeader collapsed={collapsed} onToggle={onToggle} title="WisePen Admin" />
       <div className={styles.navBody}>
         <AdminHeaderNav collapsed={collapsed} />

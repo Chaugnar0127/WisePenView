@@ -6,8 +6,8 @@ import type { ChatSession, PageResult } from '@/domains/Chat';
 import { buildChatPath } from '@/utils/navigation/appRoute';
 import { ListBox, ListBoxItem, ListBoxSection } from '@heroui/react';
 
+import { cn } from '@/utils/cn';
 import { useInfiniteScroll, useMemoizedFn } from 'ahooks';
-import clsx from 'clsx';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -148,7 +148,7 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
                   key={session.id}
                   id={`session-${session.id}`}
                   textValue={session.title || t('session.untitled')}
-                  className={clsx(styles.sessionItem, styles.sessionItemWithActions)}
+                  className={cn(styles.sessionItem, styles.sessionItemWithActions)}
                   onPress={() => selectSession(session)}
                 >
                   <SessionMenuItem

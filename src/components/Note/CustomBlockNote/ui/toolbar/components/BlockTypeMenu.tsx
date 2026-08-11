@@ -6,8 +6,8 @@ import {
   type BlockTypeMenuItem,
 } from '@/components/Note/CustomBlockNote/ui/editorMenus/blockTypes';
 import { AppMenu } from '@/components/Overlay';
+import { cn } from '@/utils/cn';
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
-import clsx from 'clsx';
 import { Check, Heading } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
@@ -108,7 +108,7 @@ export function BlockTypeMenu(buttonGroupProps: ButtonGroupChildProps) {
                 id="more-headings"
                 textValue={t('editor.blockType.moreHeadings')}
                 selected={selectedInMoreHeading}
-                className={clsx(
+                className={cn(
                   styles.blockTypeMenuItem,
                   selectedInMoreHeading && styles.blockTypeMenuItemActive
                 )}

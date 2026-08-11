@@ -1,6 +1,6 @@
 import EntryIcon from '@/components/Icons/EntryIcon';
+import { cn } from '@/utils/cn';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
-import clsx from 'clsx';
 import {
   cloneElement,
   type DragEvent,
@@ -93,7 +93,7 @@ export function DriveDndRow({
     children as ReactElement<DriveDndRowElementProps>,
     {
       ref: setRowNodeRef,
-      className: clsx(childProps.className, styles.dndBodyRow),
+      className: cn(childProps.className, styles.dndBodyRow),
       'data-dragging': draggable.isDragging ? 'true' : undefined,
       'data-drive-dnd-drop-target': droppable.isOver ? 'true' : undefined,
       onMouseDownCapture: handleMouseDownCapture,

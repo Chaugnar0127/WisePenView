@@ -1,6 +1,6 @@
+import { cn } from '@/utils/cn';
 import { ADMIN_PAGE_CONFIGS } from '@/views/admin/pages';
 import { ListBox, ListBoxItem, ListBoxSection } from '@heroui/react';
-import clsx from 'clsx';
 import {
   Layers,
   List,
@@ -43,7 +43,7 @@ function AdminHeaderNav({ collapsed }: AdminHeaderNavProps) {
       aria-label={t('navigationAria')}
       selectionMode="single"
       selectedKeys={selectedKeys}
-      className={clsx(styles.headerMenu, collapsed && styles.headerMenuCollapsed)}
+      className={cn(styles.headerMenu, collapsed && styles.headerMenuCollapsed)}
     >
       <ListBoxSection id="admin-main-pages" className={styles.menuSection}>
         {MAIN_PAGE_KEYS.map((pageKey) => {
@@ -55,7 +55,7 @@ function AdminHeaderNav({ collapsed }: AdminHeaderNavProps) {
               key={pageKey}
               id={page.path}
               textValue={title}
-              className={clsx(styles.menuItem, collapsed && styles.menuItemCollapsed)}
+              className={cn(styles.menuItem, collapsed && styles.menuItemCollapsed)}
               onPress={() => navigate(page.path)}
             >
               <span className={styles.menuIcon}>
@@ -76,7 +76,7 @@ function AdminHeaderNav({ collapsed }: AdminHeaderNavProps) {
               key={pageKey}
               id={page.path}
               textValue={title}
-              className={clsx(styles.menuItem, collapsed && styles.menuItemCollapsed)}
+              className={cn(styles.menuItem, collapsed && styles.menuItemCollapsed)}
               onPress={() => navigate(page.path)}
             >
               <span className={styles.menuIcon}>

@@ -10,7 +10,7 @@ import {
 } from '@/utils/format/formatTime';
 import { Tooltip } from '@heroui/react';
 
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import { Heart, MessageCircle, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -115,7 +115,7 @@ function ResourceCommentItem({
                 <AppButton
                   variant="ghost"
                   size="sm"
-                  className={clsx(styles.commentActionIcon, liked && styles.likedButton)}
+                  className={cn(styles.commentActionIcon, liked && styles.likedButton)}
                   isDisabled={likePending}
                   aria-label={likeLabel}
                   onPress={() => void onLike(comment)}

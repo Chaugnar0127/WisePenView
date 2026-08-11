@@ -3,8 +3,8 @@ import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCur
 import { clearNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_HEADER_NAV_ITEMS } from '@/layouts/_common/Sidebar/appSidebarNavigation';
+import { cn } from '@/utils/cn';
 import { ListBox, ListBoxItem } from '@heroui/react';
-import clsx from 'clsx';
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -105,7 +105,7 @@ function AppHeaderNav() {
               textValue={label}
               aria-current={isActive ? 'page' : undefined}
               data-nav-active={isActive ? 'true' : undefined}
-              className={clsx(styles.menuItem, isActive && styles.menuItemActive)}
+              className={cn(styles.menuItem, isActive && styles.menuItemActive)}
             >
               <span className={styles.menuIcon}>
                 <Icon size={18} />

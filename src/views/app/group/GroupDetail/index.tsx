@@ -1,8 +1,10 @@
-import { AppButton } from '@/components/Button';
+import { AppButton, AppIconButton } from '@/components/Button';
 import { getGroupDisplayConfig } from '@/components/Group/GroupDisplayConfig';
+import InviteUserModal from '@/components/Group/MemberList/Modals/InviteUserModal';
 import { GROUP_TYPE } from '@/domains/Group';
 import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
 import { useGroupContext } from '@/layouts/Group/GroupContext';
+import PageHeader from '@/layouts/_common/PageHeader';
 import {
   APP_ROUTE_PATH,
   buildCoursePath,
@@ -13,11 +15,10 @@ import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 import { Link, Tabs } from '@heroui/react';
 
 import { linkVariants } from '@heroui/styles';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ArrowLeft, BookOpen, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
-import layout from '../style.module.less';
 import page from './style.module.less';
 
 export interface GroupDetailOutletContextValue {
@@ -39,7 +40,9 @@ function GroupDetail() {
   const routeMeta = useAppRouteMeta();
   const navigate = useNavigate();
   const [walletRefreshVersion, setWalletRefreshVersion] = useState(0);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const displayConfig = getGroupDisplayConfig(group.groupType, currentUserRole);
+  const ownerName = group.ownerInfo?.realName?.trim() || group.ownerInfo?.nickname?.trim() || '-';
   const activePage = GROUP_PAGE_BY_KEY[routeMeta?.pageKey ?? ''] ?? 'files';
   const tabs = [
     { key: 'files', label: t('detail.tabs.files') },
@@ -60,42 +63,55 @@ function GroupDetail() {
   ] satisfies Array<{ key: GroupRoutePage; label: string }>;
   const containerClassName =
     activePage === 'files'
-      ? `${layout.pageContainer} ${page.fixedPage}`
+      ? `${page.detailPage} ${page.fixedPage}`
       : activePage === 'settings'
-        ? `${layout.pageContainer} ${page.descriptionPage}`
-        : layout.pageContainer;
+        ? `${page.detailPage} ${page.descriptionPage}`
+        : page.detailPage;
 
   return (
     <div className={containerClassName}>
-      <div className={`${layout.pageHeaderWithActions} ${page.detailHeader}`}>
-        <div className={page.titleStack}>
-          <AppButton
-            className={page.backButton}
-            variant="ghost"
-            size="sm"
+      <PageHeader
+        leading={
+          <AppIconButton
+            icon={<ArrowLeft size={18} aria-hidden />}
+            label={t('detail.backToGroups')}
             onPress={() => navigate(APP_ROUTE_PATH.GROUPS)}
-          >
-            <ArrowLeft size={16} aria-hidden />
-            {t('detail.backToGroups')}
-          </AppButton>
-          <h1 className={layout.pageTitle}>{group.groupName}</h1>
-        </div>
-        {group.groupType === GROUP_TYPE.ADVANCED ? (
-          <RouterLink
-            className={`${linkVariants().base()} ${page.contextLink}`}
-            to={buildCoursePath(group.groupId, 'home')}
-          >
-            <Link.Icon className={`${linkVariants().icon()} ${page.contextLinkIcon}`}>
-              <BookOpen aria-hidden />
-            </Link.Icon>
-            {t('detail.goToCourse')}
-          </RouterLink>
-        ) : null}
-      </div>
+            tooltip={{ placement: 'bottom' }}
+          />
+        }
+        title={group.groupName}
+        subtitle={
+          <>
+            <span>{t('detail.creator')}</span> {ownerName}
+          </>
+        }
+        actions={
+          <>
+            {group.groupType === GROUP_TYPE.ADVANCED ? (
+              <RouterLink
+                className={`${linkVariants().base()} ${page.contextLink}`}
+                to={buildCoursePath(group.groupId, 'home')}
+              >
+                <Link.Icon className={`${linkVariants().icon()} ${page.contextLinkIcon}`}>
+                  <BookOpen aria-hidden />
+                </Link.Icon>
+                {t('detail.goToCourse')}
+              </RouterLink>
+            ) : null}
+            {displayConfig.canInviteMember ? (
+              <AppButton variant="primary" onPress={() => setIsInviteModalOpen(true)}>
+                <UserPlus size={16} aria-hidden />
+                {t('member.actions.invite')}
+              </AppButton>
+            ) : null}
+          </>
+        }
+        actionsClassName={page.headerActions}
+      />
 
       <Tabs
         variant="secondary"
-        className={`${underlineTabs.underlineTabs} ${layout.detailTabs}`}
+        className={`${underlineTabs.underlineTabs} ${page.detailTabs}`}
         selectedKey={activePage}
         onSelectionChange={(key) => {
           const nextPage = tabs.find((item) => item.key === String(key))?.key;
@@ -124,6 +140,11 @@ function GroupDetail() {
           }
         />
       </div>
+      <InviteUserModal
+        isOpen={isInviteModalOpen}
+        onOpenChange={setIsInviteModalOpen}
+        inviteCode={group.inviteCode}
+      />
     </div>
   );
 }

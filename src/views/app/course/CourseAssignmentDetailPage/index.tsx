@@ -6,6 +6,7 @@ import { COURSE_ASSIGNMENT_STATUS } from '@/domains/Course';
 import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
+import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { buildCourseAssignmentPath } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
 
@@ -16,7 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
 
 function CourseAssignmentDetailPage() {
-  const { t, i18n } = useTranslation('course');
+  const { t } = useTranslation('course');
   const { course, refreshCourse } = useCourseContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
@@ -72,13 +73,7 @@ function CourseAssignmentDetailPage() {
   }
 
   const submitted = data.status !== COURSE_ASSIGNMENT_STATUS.PENDING;
-  const deadline = new Date(data.deadline).toLocaleString(i18n.language, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const deadline = formatTimestampToDateTime(data.deadline);
 
   return (
     <div className={styles.page}>

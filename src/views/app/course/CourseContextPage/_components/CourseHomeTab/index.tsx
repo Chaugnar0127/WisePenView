@@ -5,6 +5,7 @@ import { COURSE_ROLE } from '@/domains/Course';
 import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
+import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import {
   buildCourseAssignmentPath,
   buildCourseLearningPath,
@@ -18,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './style.module.less';
 
 function CourseHomeTab() {
-  const { t, i18n } = useTranslation('course');
+  const { t } = useTranslation('course');
   const { course } = useCourseContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
@@ -28,14 +29,6 @@ function CourseHomeTab() {
   );
   const visibleAssignments = data?.pendingAssignments.slice(0, 2) ?? [];
   const visibleAnnouncements = data?.announcements.slice(0, 2) ?? [];
-
-  const formatDateTime = (value: string) =>
-    new Date(value).toLocaleString(i18n.language, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
 
   if (loading) {
     return (
@@ -116,7 +109,7 @@ function CourseHomeTab() {
                   </span>
                   <span className={styles.deadline}>
                     <CalendarClock size={15} aria-hidden />
-                    {formatDateTime(assignment.deadline)}
+                    {formatTimestampToDateTime(assignment.deadline)}
                   </span>
                 </button>
               ))}
@@ -148,7 +141,7 @@ function CourseHomeTab() {
                 <article key={announcement.announcementId} className={styles.announcement}>
                   <div>
                     <h3>{announcement.title}</h3>
-                    <time>{formatDateTime(announcement.publishTime)}</time>
+                    <time>{formatTimestampToDateTime(announcement.publishTime)}</time>
                   </div>
                   <p>{announcement.content}</p>
                 </article>

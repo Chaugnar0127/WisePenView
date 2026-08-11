@@ -7,6 +7,7 @@ import AppModal from '@/components/Overlay/AppModal';
 import type { InlineCommentItem, InlineCommentReactionGroup } from '@/domains/InlineComment';
 import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
+import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { Chip, toast } from '@heroui/react';
 
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -36,27 +37,9 @@ function hasVisibleContent(content: string): boolean {
   return Boolean(content.replace(/\u200B/g, '').trim());
 }
 
-function formatDateTime(timestamp: number, locale: string): string | undefined {
-  const date = new Date(timestamp);
-  if (!Number.isFinite(date.getTime())) return undefined;
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-}
-
 function formatRelativeTime(timestamp: number, locale: string): string | undefined {
   if (!Number.isFinite(new Date(timestamp).getTime())) return undefined;
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1_000));
-  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  if (elapsedSeconds < 60) return formatter.format(0, 'second');
-  const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-  if (elapsedMinutes < 60) return formatter.format(-elapsedMinutes, 'minute');
-  const elapsedHours = Math.floor(elapsedMinutes / 60);
-  if (elapsedHours < 24) return formatter.format(-elapsedHours, 'hour');
-  const elapsedDays = Math.floor(elapsedHours / 24);
-  if (elapsedDays < 7) return formatter.format(-elapsedDays, 'day');
-  return formatDateTime(timestamp, locale);
+  return formatRelativeTimestamp(timestamp, locale);
 }
 
 function formatReactionUsers(
@@ -110,7 +93,7 @@ function CommentItem({
     void changeReaction(emojiId);
   };
 
-  const formattedTime = formatDateTime(item.createdAt, locale) ?? t('inlineComment.timeUnknown');
+  const formattedTime = formatTimestampToDateTime(item.createdAt) || t('inlineComment.timeUnknown');
   const date = new Date(item.createdAt);
   const dateTime = Number.isFinite(date.getTime()) ? date.toISOString() : undefined;
 

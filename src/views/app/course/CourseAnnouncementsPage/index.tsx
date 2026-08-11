@@ -4,6 +4,7 @@ import { useCourseService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
+import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { Chip } from '@heroui/react';
 
 import { Bell, Pin } from 'lucide-react';
@@ -12,21 +13,12 @@ import sharedStyles from '../_styles/contextPage.module.less';
 import styles from './style.module.less';
 
 function CourseAnnouncementsPage() {
-  const { t, i18n } = useTranslation('course');
+  const { t } = useTranslation('course');
   const { course } = useCourseContext();
   const courseService = useCourseService();
   const { data, loading, error, refresh } = useApi(() =>
     courseService.listCourseAnnouncements(course.courseId)
   );
-
-  const formatDateTime = (value: string) =>
-    new Date(value).toLocaleString(i18n.language, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
 
   const announcements = data ?? [];
 
@@ -66,7 +58,7 @@ function CourseAnnouncementsPage() {
                     ) : null}
                   </div>
                   <time dateTime={announcement.publishTime}>
-                    {formatDateTime(announcement.publishTime)}
+                    {formatTimestampToDateTime(announcement.publishTime)}
                   </time>
                 </div>
                 <p>{announcement.content}</p>

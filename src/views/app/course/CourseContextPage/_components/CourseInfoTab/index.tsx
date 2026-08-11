@@ -1,6 +1,7 @@
 import { PieChart } from '@/components/Chart';
 import { formatCoursePeriodRange, getCoursePeriodTimeRange } from '@/domains/Course';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
+import { formatTimestampToDate } from '@/utils/format/formatTime';
 import {
   CalendarRange,
   ChartNoAxesColumnIncreasing,
@@ -13,17 +14,11 @@ import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
 function CourseInfoTab() {
-  const { t, i18n } = useTranslation('course');
+  const { t } = useTranslation('course');
   const { course } = useCourseContext();
-  const formatDate = (value: string) =>
-    new Date(value).toLocaleDateString(i18n.language, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   const coursePeriod =
     course.startAt && course.endAt
-      ? `${formatDate(course.startAt)} - ${formatDate(course.endAt)}`
+      ? `${formatTimestampToDate(course.startAt)} - ${formatTimestampToDate(course.endAt)}`
       : t('info.notSet');
   const totalTeachingWeeks =
     course.totalTeachingWeeks === undefined

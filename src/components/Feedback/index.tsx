@@ -18,12 +18,14 @@ const SPIN_SIZE_MAP: Record<SpinSize, HeroSpinnerSize> = {
 };
 
 interface LoadingStateProps {
+  /** 用于整块区域的加载状态，适合页面、列表或消息流占位。 */
   label?: ReactNode;
   size?: HeroSpinnerSize;
   className?: string;
 }
 
 interface SpinProps {
+  /** 用于内联图标或局部覆盖层加载；带 children 时渲染遮罩。 */
   size?: SpinSize;
   spinning?: boolean;
   tip?: ReactNode;

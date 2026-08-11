@@ -39,6 +39,13 @@ const heroUiInputPrimitiveImportRule = {
     '业务输入控件请使用 src/components/Input 下的 FormField、Input、TextArea 或 Select；底层输入原语只允许 Input 封装内部或明确特殊组件使用。',
 };
 
+const heroUiFeedbackPrimitiveImportRule = {
+  name: '@heroui/react',
+  importNames: ['Spinner'],
+  message:
+    '业务加载反馈请使用 src/components/Feedback 下的 Spin 或 LoadingState；底层 Spinner 只允许 Feedback 封装内部使用。',
+};
+
 const projectOverlayModalImportRule = {
   name: '@/components/Overlay',
   importNames: ['Modal'],
@@ -113,6 +120,7 @@ const buildRestrictedImportsRule = ({
   allowDirectAxios = false,
   allowDomainApiFunction = false,
   allowInputPrimitive = false,
+  allowFeedbackPrimitive = false,
   allowOverlayPrimitive = false,
   allowServiceFactory = false,
   allowServiceMock = false,
@@ -122,6 +130,7 @@ const buildRestrictedImportsRule = ({
     reactFcImportRule,
     ...(allowButtonPrimitive ? [] : [heroUiButtonPrimitiveImportRule]),
     ...(allowInputPrimitive ? [] : [heroUiInputPrimitiveImportRule]),
+    ...(allowFeedbackPrimitive ? [] : [heroUiFeedbackPrimitiveImportRule]),
     ...(allowOverlayPrimitive
       ? []
       : [heroUiOverlayPrimitiveImportRule, projectOverlayModalImportRule]),
@@ -393,6 +402,13 @@ export default defineConfig([
     files: ['electron/**/*.{ts,tsx}'],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+  {
+    // Feedback 封装内部允许直连 HeroUI Spinner，其它业务代码统一使用 Spin/LoadingState。
+    files: ['src/components/Feedback/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': buildRestrictedImportsRule({ allowFeedbackPrimitive: true }),
     },
   },
   {

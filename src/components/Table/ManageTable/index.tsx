@@ -1,4 +1,5 @@
 import AppIconButton from '@/components/Button/AppIconButton';
+import { Spin } from '@/components/Feedback';
 import {
   joinClassNames,
   resolveColumnAlign,
@@ -26,7 +27,7 @@ import TableBatchFooter from './parts/BatchFooter';
 import TableEditErrorToast from './parts/EditErrorToast';
 import styles from './style.module.less';
 
-import { Spinner, Table, type Selection } from '@heroui/react';
+import { Table, type Selection } from '@heroui/react';
 import { Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -161,7 +162,7 @@ function ManageTable<T extends object>({
       return (
         <div className={styles.inlineEditActions}>
           <AppIconButton
-            icon={<Spinner size="sm" />}
+            icon={<Spin size="small" />}
             label={t('aria.saving')}
             size="sm"
             variant="primary"

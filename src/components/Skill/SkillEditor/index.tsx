@@ -1,4 +1,4 @@
-import { Spinner } from '@heroui/react';
+import { Spin } from '@/components/Feedback';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useLatest } from 'ahooks';
 
@@ -107,7 +107,7 @@ function SkillEditor({
       theme="vs"
       loading={
         <div className={styles.loading}>
-          <Spinner />
+          <Spin />
         </div>
       }
     />

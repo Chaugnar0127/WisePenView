@@ -274,32 +274,29 @@ function ResourcePermissionModal({
         <div className={styles.state}>{parseErrorMessage(error)}</div>
       ) : policy ? (
         <div className={styles.content}>
-          <div className={styles.presetBar}>
-            <span className={styles.presetLabel}>{t('permission.editor.basedOnPreset')}</span>
-            <Tabs
-              variant="secondary"
-              aria-label={t('permission.editor.basedOnPreset')}
-              className={styles.presetTabs}
-              selectedKey={selectedPresetKey}
-              onSelectionChange={(key) =>
-                handlePresetChange(String(key) as ResourcePermissionPresetKey)
-              }
-            >
-              <Tabs.ListContainer className={styles.presetTabsListContainer}>
-                <Tabs.List
-                  className={styles.presetTabsList}
-                  aria-label={t('permission.editor.basedOnPreset')}
-                >
-                  {RESOURCE_PERMISSION_PRESETS.map((preset) => (
-                    <Tabs.Tab key={preset.key} id={preset.key} className={styles.presetTab}>
-                      {preset.label}
-                      <Tabs.Indicator />
-                    </Tabs.Tab>
-                  ))}
-                </Tabs.List>
-              </Tabs.ListContainer>
-            </Tabs>
-          </div>
+          <Tabs
+            variant="secondary"
+            aria-label={t('permission.editor.basedOnPreset')}
+            className={styles.presetTabs}
+            selectedKey={selectedPresetKey}
+            onSelectionChange={(key) =>
+              handlePresetChange(String(key) as ResourcePermissionPresetKey)
+            }
+          >
+            <Tabs.ListContainer className={styles.presetTabsListContainer}>
+              <Tabs.List
+                className={styles.presetTabsList}
+                aria-label={t('permission.editor.basedOnPreset')}
+              >
+                {RESOURCE_PERMISSION_PRESETS.map((preset) => (
+                  <Tabs.Tab key={preset.key} id={preset.key} className={styles.presetTab}>
+                    {preset.label}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs.ListContainer>
+          </Tabs>
           <div className={draftInconsistent ? styles.warning : styles.inheritHint}>
             {draftInconsistent
               ? t('permission.editor.inconsistent')

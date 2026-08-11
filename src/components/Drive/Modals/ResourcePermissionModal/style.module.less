@@ -1,5 +1,4 @@
 @import '@/styles/scrollbar.module.less';
-@import (reference) '@/styles/breakpoints.less';
 
 .content {
   display: flex;
@@ -8,25 +7,11 @@
   min-width: 0;
 }
 
-.presetBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  min-width: 0;
-}
-
-.presetLabel {
-  flex-shrink: 0;
-  color: var(--muted);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-sm);
-}
-
 .presetTabs {
-  flex: 0 1 auto;
+  width: fit-content;
   min-width: 0;
   max-width: 100%;
+  align-self: flex-start;
 }
 
 .presetTabsListContainer {
@@ -40,10 +25,10 @@
 .presetTab {
   flex: 0 0 auto;
   width: auto;
-  min-width: 56px;
+  min-width: 0;
   justify-content: center;
   overflow: hidden;
-  padding: 0 var(--space-sm);
+  padding: 0 var(--space-xs);
   font-size: var(--font-size-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -120,11 +105,4 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-@media (max-width: @breakpoint-sm) {
-  .presetBar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }

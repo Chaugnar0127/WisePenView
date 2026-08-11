@@ -1,12 +1,13 @@
+import { AppButton } from '@/components/Button';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
 import { useNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
 import { useChatService } from '@/domains';
 import type { ChatSession, PageResult } from '@/domains/Chat';
-import { parseErrorMessage } from '@/utils/error';
 import { buildChatPath } from '@/utils/navigation/appRoute';
-import { Button, ListBox, ListBoxItem, ListBoxSection, toast } from '@heroui/react';
+import { ListBox, ListBoxItem, ListBoxSection } from '@heroui/react';
+
+import { cn } from '@/utils/cn';
 import { useInfiniteScroll, useMemoizedFn } from 'ahooks';
-import clsx from 'clsx';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -54,7 +55,6 @@ const useSessionListGroup = () => {
         }
         setSessionPageResult(payload, payload.page > 1);
       },
-      onError: (err) => toast.danger(parseErrorMessage(err)),
     }
   );
 
@@ -148,7 +148,7 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
                   key={session.id}
                   id={`session-${session.id}`}
                   textValue={session.title || t('session.untitled')}
-                  className={clsx(styles.sessionItem, styles.sessionItemWithActions)}
+                  className={cn(styles.sessionItem, styles.sessionItemWithActions)}
                   onPress={() => selectSession(session)}
                 >
                   <SessionMenuItem
@@ -166,7 +166,7 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
                 textValue={hasMoreSessions ? t('session.loadMore') : t('session.noMore')}
                 className={styles.sessionItem}
               >
-                <Button
+                <AppButton
                   variant="secondary"
                   isDisabled={loadingMoreSessions}
                   className={styles.sessionLoadMoreBtn}
@@ -179,7 +179,7 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
                   }}
                 >
                   {hasMoreSessions ? t('session.loadMore') : t('session.noMore')}
-                </Button>
+                </AppButton>
               </ListBoxItem>
             )}
           </>

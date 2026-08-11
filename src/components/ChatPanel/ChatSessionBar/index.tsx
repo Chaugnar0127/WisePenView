@@ -1,9 +1,8 @@
 import { useChatService } from '@/domains';
 import type { ChatSession, PageResult } from '@/domains/Chat';
-import { parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
+import { cn } from '@/utils/cn';
+import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { useInfiniteScroll, useKeyPress } from 'ahooks';
-import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
 
@@ -15,23 +14,13 @@ interface ChatSessionBarProps {
 
 const SESSION_PAGE_SIZE = 20;
 
-const formatSessionTime = (session: ChatSession, locale: string): string => {
+const formatSessionTime = (session: ChatSession): string => {
   const timestamp = session.updatedAt || session.createdAt;
-  if (timestamp == null || timestamp === '') return '';
-  const timestampNumber = typeof timestamp === 'number' ? timestamp : Number(timestamp);
-  const date = Number.isFinite(timestampNumber)
-    ? new Date(timestampNumber)
-    : new Date(String(timestamp));
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
+  return formatTimestampToDateTime(timestamp);
 };
 
 function ChatSessionBar({ activeSessionId, onClose, onSelectSession }: ChatSessionBarProps) {
-  const { i18n, t } = useTranslation('chat');
-  const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
+  const { t } = useTranslation('chat');
   const chatService = useChatService();
   const {
     data: sessionPage,
@@ -47,7 +36,6 @@ function ChatSessionBar({ activeSessionId, onClose, onSelectSession }: ChatSessi
       }),
     {
       isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -77,14 +65,14 @@ function ChatSessionBar({ activeSessionId, onClose, onSelectSession }: ChatSessi
 
         {sessions.map((session) => {
           const title = session.title.trim() || t('session.untitled');
-          const time = formatSessionTime(session, locale) || t('session.noTime');
+          const time = formatSessionTime(session) || t('session.noTime');
           const active = session.id === activeSessionId;
 
           return (
             <button
               key={session.id}
               type="button"
-              className={clsx(styles.sessionItem, active && styles.sessionItemActive)}
+              className={cn(styles.sessionItem, active && styles.sessionItemActive)}
               onClick={() => onSelectSession(session)}
               aria-current={active ? 'page' : undefined}
             >

@@ -17,7 +17,7 @@
   --sidebar-tab-size: 32px;
   --sidebar-tab-pad-x: 7px;
   --sidebar-tab-pad-x-selected: 10px;
-  --sidebar-tab-label-gap: 6px;
+  --sidebar-tab-label-gap: var(--space-2xs-plus);
   --sidebar-tab-toolbar-nudge: 7px;
 
   display: flex;
@@ -48,7 +48,7 @@
   flex: 0 1 auto;
   min-width: 0;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-3xs);
   padding: 0;
   border: 0;
   background: transparent;
@@ -113,11 +113,11 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
 
     .tabLabel,
     .tabLabelInner {
-      transition-duration: 0.01ms;
+      transition-duration: var(--motion-duration-reduced);
       transition-delay: 0s;
     }
   }
@@ -286,13 +286,13 @@
   display: flex;
   align-items: center;
   border-radius: var(--radius-md);
-  padding: 0 var(--space-xs) 0 calc(var(--sidebar-content-inset, var(--space-lg)) - 8px);
+  padding: 0 var(--space-xs) 0 calc(var(--sidebar-content-inset, var(--space-lg)) - var(--space-xs));
   color: var(--muted);
   cursor: pointer;
   outline: none;
   transition:
-    background 0.2s ease,
-    color 0.2s ease;
+    background var(--motion-duration-mid) var(--motion-ease-standard),
+    color var(--motion-duration-mid) var(--motion-ease-standard);
 
   &:focus-visible,
   &:focus-visible:not(:focus),

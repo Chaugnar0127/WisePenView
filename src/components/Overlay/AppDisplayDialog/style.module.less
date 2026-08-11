@@ -19,7 +19,7 @@
   height: 32px;
   color: var(--muted);
   border: 0;
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--radius-md, var(--radius-md));
   background: transparent;
   cursor: pointer;
 }
@@ -32,7 +32,7 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs, 8px);
+  gap: var(--space-xs, var(--space-xs));
 }
 
 .headerWithCloseTrigger {
@@ -59,5 +59,5 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-sm, 12px);
+  gap: var(--space-sm, var(--space-sm));
 }

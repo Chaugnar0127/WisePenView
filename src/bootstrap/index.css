@@ -7,6 +7,7 @@
 @import '../theme/heroui/palette.css' layer(base);
 /* 与 HeroUI token 位于同一层，通过选择器明确覆盖主题。 */
 @import '../theme/heroui/wisepen.css' layer(base);
+@import './heroui-overrides.css' layer(components);
 
 @theme inline {
   --font-sans: var(--app-font-family);
@@ -163,8 +164,13 @@
   --animate-caret-blink: caret-blink 1.2s ease-out infinite;
 
   @keyframes skeleton {
+    0% {
+      background-position: 120% 0;
+    }
+
     100% {
       transform: translateX(200%);
+      background-position: -120% 0;
     }
   }
 
@@ -185,7 +191,7 @@
   .button:is(:disabled, [aria-disabled='true']) {
     opacity: 1;
     transform: none;
-    box-shadow: none;
+    box-shadow: var(--shadow-none);
   }
 
   .button:is(:disabled, [aria-disabled='true']).button--primary,
@@ -308,7 +314,7 @@
     &:focus-visible:not(:focus),
     &[data-focus-visible] {
       outline: none;
-      box-shadow: none;
+      box-shadow: var(--shadow-none);
       --tw-ring-shadow: 0 0 #0000;
       --tw-ring-offset-shadow: 0 0 #0000;
     }
@@ -388,41 +394,6 @@ html {
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
-  scrollbar-color: transparent transparent;
-  scrollbar-gutter: stable;
-  scrollbar-width: var(--scrollbar-width, thin);
-}
-
-html::-webkit-scrollbar {
-  width: var(--scrollbar-size, 8px);
-  height: var(--scrollbar-size, 8px);
-}
-
-html::-webkit-scrollbar-track {
-  background: var(--scrollbar-track, transparent);
-}
-
-html::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: var(--scrollbar-radius, 999px);
-  background: transparent;
-  background-clip: content-box;
-  transition: background-color 200ms ease;
-}
-
-html:hover {
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-}
-
-html:hover::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  background-clip: content-box;
-}
-
-html::-webkit-scrollbar-thumb:hover,
-html:hover::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-  background-clip: content-box;
 }
 
 #root {
@@ -489,53 +460,18 @@ html:hover::-webkit-scrollbar-thumb:hover {
   user-drag: none;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--motion-duration-reduced) !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: var(--motion-duration-reduced) !important;
+  }
+}
+
 @layer utilities {
-  .scrollbar-thin {
-    scrollbar-color: transparent transparent;
-    scrollbar-gutter: stable;
-    scrollbar-width: var(--scrollbar-width, thin);
-  }
-
-  .scrollbar-thin::-webkit-scrollbar {
-    width: var(--scrollbar-size, 8px);
-    height: var(--scrollbar-size, 8px);
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: var(--scrollbar-track, transparent);
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    border: 2px solid transparent;
-    border-radius: var(--scrollbar-radius, 999px);
-    background: transparent;
-    background-clip: content-box;
-    transition: background-color 200ms ease;
-  }
-
-  .scrollbar-thin:hover {
-    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  }
-
-  .scrollbar-thin:hover::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
-    background-clip: content-box;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover,
-  .scrollbar-thin:hover::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover);
-    background-clip: content-box;
-  }
-
-  .scrollbar-none {
-    scrollbar-width: none;
-  }
-
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
-
   .scrollbar-gutter-stable {
     scrollbar-gutter: stable;
   }
@@ -546,13 +482,5 @@ html:hover::-webkit-scrollbar-thumb:hover {
 
   .scroll-fade-b {
     mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 1.5rem), transparent 100%);
-  }
-
-  [data-slot='message-scroller-viewport'][data-autoscrolling] {
-    scrollbar-width: none;
-  }
-
-  [data-slot='message-scroller-viewport'][data-autoscrolling]::-webkit-scrollbar {
-    display: none;
   }
 }

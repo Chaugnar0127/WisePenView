@@ -3,6 +3,7 @@ import type { EnumKey } from '@/utils/enum';
 import {
   canEditSelectedMembers,
   canEditSelectedMembersForQuota,
+  isOwner,
   type EditableRole,
   type EditableRoleForQuota,
 } from '../../GroupDisplayConfig';
@@ -26,7 +27,7 @@ export function useMemberEditGuard(
   const { checkOwner = true, forQuota = false } = options;
 
   return (() => {
-    const memberContainsOwner = members.some((m) => m.role === 'OWNER');
+    const memberContainsOwner = members.some((m) => isOwner(m.role));
     const canEdit = forQuota
       ? canEditSelectedMembersForQuota(members, editableRoles as readonly EditableRoleForQuota[])
       : canEditSelectedMembers(members, editableRoles as readonly EditableRole[]);

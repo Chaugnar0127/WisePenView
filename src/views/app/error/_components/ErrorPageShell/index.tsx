@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -22,9 +22,9 @@ function ErrorPageShell({
   const { t } = useTranslation('errors');
 
   return (
-    <div className={clsx(styles.root, className)}>
+    <div className={cn(styles.root, className)}>
       <main className={styles.main}>
-        <div className={clsx(styles.content, styles[`size${size}`], contentClassName)}>
+        <div className={cn(styles.content, styles[`size${size}`], contentClassName)}>
           {children}
         </div>
       </main>

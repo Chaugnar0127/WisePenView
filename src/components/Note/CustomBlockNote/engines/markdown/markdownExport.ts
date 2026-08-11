@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 import type {
   BlockNoteEditor,
   BlockSchema,
@@ -10,10 +11,6 @@ import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import type { NotePluginRegistry } from '../../registry/types';
 import { resolveNoteAiDiffBlock } from '../aiDiff/contentState';
 import { readAiContentFromEditorState } from '../aiDiff/extension';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 function projectInlineContent(
   content: unknown,

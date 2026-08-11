@@ -1,6 +1,6 @@
 import ModelSelector from '@/components/ModelSelector';
 import { useChatService } from '@/domains';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
 import { useShallow } from 'zustand/react/shallow';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
 
@@ -15,7 +15,7 @@ function ModelPicker({ iconOnly = false }: { iconOnly?: boolean }) {
     }))
   );
   const { setModelOpen, setSelectedModelId } = store.getState();
-  const { loading } = useRequest(() => chatService.getModels(), {
+  const { loading } = useApi(() => chatService.getModels(), {
     onSuccess: (nextModels) => {
       const state = store.getState();
       state.setAvailableModels(nextModels);

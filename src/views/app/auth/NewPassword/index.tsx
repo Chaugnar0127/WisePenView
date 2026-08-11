@@ -1,17 +1,19 @@
 import { getCurrentRouteSearch } from '@/bootstrap/authContinuation';
+import { AppButton } from '@/components/Button';
 import { FormField, PasswordInput } from '@/components/Input';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useAuthService } from '@/domains';
 import type { NewPasswordRequest } from '@/domains/Auth';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button, Form, toast } from '@heroui/react';
-import { useMount, useRequest } from 'ahooks';
+import { Form, toast } from '@heroui/react';
+
+import { hasFieldErrors, runFieldValidation, type FieldErrors } from '@/utils/formValidation';
+import { useMount } from 'ahooks';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import auth from '../Auth.module.less';
-import { hasFieldErrors, runFieldValidation, type FieldErrors } from '../formValidation';
 
 type NewPasswordFormValues = Pick<NewPasswordRequest, 'newPassword'> & {
   confirmPassword: string;
@@ -37,16 +39,13 @@ function NewPassword() {
     setToken(queryToken);
   });
 
-  const { loading, run: submitNewPassword } = useRequest(
+  const { loading, run: submitNewPassword } = useApi(
     async (values: NewPasswordFormValues) =>
       authService.newPassword({ newPassword: values.newPassword, token }),
     {
       manual: true,
       onSuccess: () => {
         setSuccessModalOpen(true);
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -146,7 +145,7 @@ function NewPassword() {
         </FormField>
 
         <div className={auth.formActions}>
-          <Button
+          <AppButton
             variant="primary"
             size="lg"
             type="submit"
@@ -154,7 +153,7 @@ function NewPassword() {
             isDisabled={loading}
           >
             {t('newPassword.submit')}
-          </Button>
+          </AppButton>
           <div className={auth.centerLinks}>
             <Link to={APP_ROUTE_PATH.AUTH_LOGIN}>{t('newPassword.backToLogin')}</Link>
           </div>

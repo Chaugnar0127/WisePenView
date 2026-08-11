@@ -1,8 +1,9 @@
+import { AppButton } from '@/components/Button';
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
-import { Button } from '@heroui/react';
-import { useState } from 'react';
+import { usePickerSelection } from '@/components/Picker';
+
 import { useTranslation } from 'react-i18next';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
 import type { LocalResourcePayload } from '../index.type';
@@ -21,10 +22,13 @@ function mapDriveSelectionToDocRef(item: DriveSelectionItem): LocalResourcePaylo
 function DocumentPickerContent() {
   const { t } = useTranslation(['chat', 'common']);
   const { addDocRefs, setDocumentPickerOpen } = useChatInputStoreApi().getState();
-  const [selectedResources, setSelectedResources] = useState<LocalResourcePayload[]>([]);
+  const selection = usePickerSelection<LocalResourcePayload[]>({
+    initialValue: [],
+    getCount: (value) => value.length,
+  });
 
   function handleSelectionChange(items: DriveSelectionItem[]): void {
-    setSelectedResources(
+    selection.setValue(
       items
         .map((item) => mapDriveSelectionToDocRef(item))
         .filter((item): item is LocalResourcePayload => item != null)
@@ -32,12 +36,12 @@ function DocumentPickerContent() {
   }
 
   function handleClose(): void {
-    setSelectedResources([]);
+    selection.clear();
     setDocumentPickerOpen(false);
   }
 
   function handleConfirm(): void {
-    addDocRefs(selectedResources);
+    addDocRefs(selection.value);
     handleClose();
   }
 
@@ -59,16 +63,12 @@ function DocumentPickerContent() {
         </div>
       </AppModal.Body>
       <AppModal.Footer>
-        <Button variant="secondary" onPress={handleClose}>
+        <AppButton variant="secondary" onPress={handleClose}>
           {t('actions.cancel', { ns: 'common' })}
-        </Button>
-        <Button
-          variant="primary"
-          onPress={handleConfirm}
-          isDisabled={selectedResources.length === 0}
-        >
+        </AppButton>
+        <AppButton variant="primary" onPress={handleConfirm} isDisabled={!selection.canConfirm}>
           {t('actions.confirm', { ns: 'common' })}
-        </Button>
+        </AppButton>
       </AppModal.Footer>
     </>
   );
@@ -104,12 +104,12 @@ function DocumentPickerModal() {
               </div>
             </AppModal.Body>
             <AppModal.Footer>
-              <Button variant="secondary" onPress={() => setDocumentPickerOpen(false)}>
+              <AppButton variant="secondary" onPress={() => setDocumentPickerOpen(false)}>
                 {t('actions.cancel', { ns: 'common' })}
-              </Button>
-              <Button variant="primary" isDisabled>
+              </AppButton>
+              <AppButton variant="primary" isDisabled>
                 {t('actions.confirm', { ns: 'common' })}
-              </Button>
+              </AppButton>
             </AppModal.Footer>
           </>
         }

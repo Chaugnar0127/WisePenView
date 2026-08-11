@@ -1,4 +1,5 @@
 import AppAvatar from '@/components/Avatar';
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import type { ResourceComment } from '@/domains/Interact';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
@@ -7,8 +8,9 @@ import {
   formatTimestampToDateTime,
   parseTimestampToDate,
 } from '@/utils/format/formatTime';
-import { Button, Tooltip } from '@heroui/react';
-import clsx from 'clsx';
+import { Tooltip } from '@heroui/react';
+
+import { cn } from '@/utils/cn';
 import { Heart, MessageCircle, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -110,10 +112,10 @@ function ResourceCommentItem({
             />
             <Tooltip>
               <Tooltip.Trigger {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}>
-                <Button
+                <AppButton
                   variant="ghost"
                   size="sm"
-                  className={clsx(styles.commentActionIcon, liked && styles.likedButton)}
+                  className={cn(styles.commentActionIcon, liked && styles.likedButton)}
                   isDisabled={likePending}
                   aria-label={likeLabel}
                   onPress={() => void onLike(comment)}
@@ -122,7 +124,7 @@ function ResourceCommentItem({
                   {comment.likeCount > 0 ? (
                     <span className={styles.likeCount}>{comment.likeCount}</span>
                   ) : null}
-                </Button>
+                </AppButton>
               </Tooltip.Trigger>
               <Tooltip.Content>{likeLabel}</Tooltip.Content>
             </Tooltip>

@@ -5,7 +5,7 @@
   display: flex;
   min-height: 0;
   flex-direction: column;
-  padding: var(--space-xs, 8px);
+  padding: var(--space-xs, var(--space-xs));
   overflow-x: hidden;
   overflow-y: auto;
   background: transparent;
@@ -17,7 +17,7 @@
   font-size: var(--font-size-base, 14px);
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-base, 22px);
-  gap: var(--space-2xs, 4px);
+  gap: var(--space-2xs, var(--space-2xs));
 
   :global(.wisepen-tree__item) {
     min-height: 32px;
@@ -26,12 +26,12 @@
     padding-left: calc(
       var(--sidebar-content-inset, var(--space-lg)) - var(--space-xs, 8px)
     );
-    border-radius: var(--radius-md, 6px);
+    border-radius: var(--radius-md, var(--radius-md));
     color: var(--muted);
     box-sizing: border-box;
     transition:
-      color 0.16s ease,
-      background-color 0.16s ease;
+      color var(--motion-duration-fast) var(--motion-ease-standard),
+      background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
     &:hover,
     &:focus-within {
@@ -44,7 +44,7 @@
     min-height: 32px;
     flex: 1;
     min-width: 0;
-    padding: 0 var(--space-xs, 8px) 0 0;
+    padding: 0 var(--space-xs, var(--space-xs)) 0 0;
     color: inherit;
     background: transparent !important;
     border-radius: 0;
@@ -101,7 +101,7 @@
   justify-content: space-between;
   width: 100%;
   min-width: 0;
-  gap: var(--space-xs, 8px);
+  gap: var(--space-xs, var(--space-xs));
 }
 
 .nodeMain {
@@ -109,7 +109,7 @@
   align-items: center;
   flex: 1 1 auto;
   min-width: 0;
-  gap: var(--space-2xs, 4px);
+  gap: var(--space-2xs, var(--space-2xs));
 }
 
 .nodeIcon {

@@ -1,6 +1,8 @@
+import { AppButton } from '@/components/Button';
 import { FormField, TextArea } from '@/components/Input';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
-import { Button, Switch, Tabs } from '@heroui/react';
+import { Switch, Tabs } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GuidedPromptFields, SoulFieldKey } from '../../../../guidedPrompt';
@@ -113,7 +115,7 @@ export default function SystemPromptSection({ markdown, disabled, onMarkdownChan
                 <strong>Agent</strong>
                 <p>{t('prompt.agentDescription')}</p>
               </div>
-              <Button
+              <AppButton
                 className={styles.presetButton}
                 size="sm"
                 variant="secondary"
@@ -121,7 +123,7 @@ export default function SystemPromptSection({ markdown, disabled, onMarkdownChan
                 onPress={() => setRestoreOpen(true)}
               >
                 {t('prompt.restore')}
-              </Button>
+              </AppButton>
             </div>
             {textFields.map((field) => (
               <div key={field.key} className={styles.promptField}>

@@ -1,4 +1,5 @@
 import type { ResourceChatContext } from '@/components/ChatPanel/ResourceChatProtocol';
+import { cn } from '@/utils/cn';
 import type { ResourceTarget } from '@/utils/navigation/resourceTarget';
 import {
   ResourceHostContext,
@@ -8,7 +9,6 @@ import {
 } from '@/views/resource/ResourceHostContext';
 import ResourceRenderer from '@/views/resource/ResourceRenderer';
 import ResourceSidePanel from '@/views/resource/_components/ResourceSidePanel';
-import clsx from 'clsx';
 import styles from './style.module.less';
 
 interface CourseResourceHostProps {
@@ -63,8 +63,8 @@ function CourseResourceHost({
   return (
     <ResourceHostContext value={resourceHostContext}>
       <ResourceSidePanel resourceId={target.resourceId ?? ''} config={sidePanelConfig}>
-        <div className={clsx(styles.root, layoutConfig.className)}>
-          <div className={clsx(styles.body, layoutConfig.bodyClassName)}>
+        <div className={cn(styles.root, layoutConfig.className)}>
+          <div className={cn(styles.body, layoutConfig.bodyClassName)}>
             <ResourceRenderer target={target} onTargetChange={onTargetChange} onClose={onClose} />
           </div>
         </div>

@@ -1,9 +1,8 @@
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import SelectedMemberList from '@/components/SelectedMemberList';
 import { useGroupService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 import type { DeleteMemberModalProps } from './index.type';
 import { useMemberEditGuard } from './useMemberEditGuard';
@@ -19,7 +18,7 @@ function DeleteMemberModal({
 }: DeleteMemberModalProps) {
   const { t } = useTranslation('group');
   const groupService = useGroupService();
-  const { loading, run: runDeleteMembers } = useRequest(
+  const { loading, run: runDeleteMembers } = useApi(
     async () =>
       groupService.kickMembers({
         groupId,
@@ -31,9 +30,6 @@ function DeleteMemberModal({
         toast.success(t('member.delete.success', { count: memberIds.length }));
         onSuccess?.();
         onOpenChange(false);
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

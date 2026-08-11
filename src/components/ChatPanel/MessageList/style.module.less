@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   padding: 0;
-  .appSubtleScrollbarAutoHide();
+  .appSubtleScrollbar();
 }
 
 .scrollColumn {
@@ -61,17 +61,17 @@
 
 .scrollToBottomButton {
   bottom: calc(var(--chat-footer-scroll-offset, 132px) + var(--space-md)) !important;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--card-shadow);
   transition:
-    color 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    color var(--motion-duration-mid) var(--motion-ease-standard),
+    background var(--motion-duration-mid) var(--motion-ease-standard),
+    border-color var(--motion-duration-mid) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-mid) var(--motion-ease-standard);
 
   && {
     width: 32px;
@@ -116,7 +116,7 @@
   --history-nav-item-stagger: 0.016s;
 
   position: absolute;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
 }
 
 .historyNavigatorRail {
@@ -131,25 +131,25 @@
 
 .historyNavigatorRailTriggerWrap {
   position: relative;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   max-height: min(50vh, 280px);
   border-radius: var(--radius-sm);
   opacity: 1;
   transform: translateX(0);
   visibility: visible;
   transition:
-    opacity 0.12s ease,
-    transform 0.14s var(--history-nav-panel-ease),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--history-nav-panel-ease),
     visibility 0s linear 0s;
 
   @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
   }
 }
 
 .historyNavigatorRailTrigger {
   position: relative;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -166,14 +166,14 @@
   cursor: pointer;
   overflow-x: hidden;
   overflow-y: auto;
-  .appSubtleScrollbarAutoHide();
+  .appSubtleScrollbar();
   overscroll-behavior: contain;
   opacity: 1;
   transform: translateX(0);
   -ms-overflow-style: none;
   transition:
-    opacity 0.28s var(--history-nav-panel-ease),
-    transform 0.32s var(--history-nav-panel-ease),
+    opacity var(--motion-duration-mid) var(--history-nav-panel-ease),
+    transform var(--motion-duration-slow) var(--history-nav-panel-ease),
     visibility 0s linear 0s;
 
   &:focus-visible {
@@ -182,7 +182,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
   }
 }
 
@@ -192,9 +192,9 @@
   pointer-events: none;
   visibility: hidden;
   transition:
-    opacity 0.1s ease,
-    transform 0.12s var(--history-nav-panel-ease),
-    visibility 0s linear 0.1s;
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--history-nav-panel-ease),
+    visibility 0s linear var(--motion-duration-fast);
 }
 
 .historyNavigatorRailOpen .historyNavigatorRailTrigger {
@@ -217,14 +217,14 @@
   background: var(--border);
   transform-origin: right center;
   transition:
-    width 0.32s var(--history-nav-bar-ease),
-    height 0.32s var(--history-nav-bar-ease),
-    background-color 0.32s var(--history-nav-bar-ease),
-    transform 0.32s var(--history-nav-bar-ease),
-    opacity 0.24s ease;
+    width var(--motion-duration-slow) var(--history-nav-bar-ease),
+    height var(--motion-duration-slow) var(--history-nav-bar-ease),
+    background-color var(--motion-duration-slow) var(--history-nav-bar-ease),
+    transform var(--motion-duration-slow) var(--history-nav-bar-ease),
+    opacity var(--motion-duration-mid) var(--motion-ease-standard);
 
   @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
   }
 
   &:hover {
@@ -251,10 +251,10 @@
   position: absolute;
   right: 0;
   top: 50%;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2xs, 2px);
+  gap: var(--space-2xs, var(--space-3xs));
   width: max-content;
   min-width: var(--history-nav-panel-min-width, 148px);
   max-width: min(var(--history-nav-panel-max-width, 220px), calc(100vw - var(--space-2xl)));
@@ -271,7 +271,7 @@
   -webkit-backdrop-filter: blur(12px);
   overflow-x: hidden;
   overflow-y: auto;
-  .appSubtleScrollbarAutoHide();
+  .appSubtleScrollbar();
   overscroll-behavior: contain;
   -ms-overflow-style: none;
   transform-origin: right center;
@@ -283,7 +283,7 @@
     opacity var(--history-nav-panel-duration) var(--history-nav-panel-ease),
     transform var(--history-nav-panel-duration) var(--history-nav-panel-ease),
     visibility 0s linear var(--history-nav-panel-duration),
-    box-shadow var(--history-nav-panel-duration) ease;
+    box-shadow var(--history-nav-panel-duration) var(--motion-ease-standard);
   &[data-open='true'] {
     opacity: 1;
     visibility: visible;
@@ -293,11 +293,11 @@
       opacity var(--history-nav-panel-duration) var(--history-nav-panel-ease),
       transform var(--history-nav-panel-duration) var(--history-nav-panel-ease),
       visibility 0s linear 0s,
-      box-shadow var(--history-nav-panel-duration) ease;
+      box-shadow var(--history-nav-panel-duration) var(--motion-ease-standard);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
     transform: translateY(-50%);
 
     &[data-open='true'] {
@@ -327,8 +327,8 @@
   transform: translateX(14px);
   /* 关闭时快速收起，不拖慢 */
   transition:
-    opacity 0.08s ease,
-    transform 0.08s ease;
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
 
   .historyNavigatorBar {
     transition: none;
@@ -338,7 +338,7 @@
     opacity: 1;
     transform: translateX(0);
     transition:
-      opacity var(--history-nav-item-duration) ease-out,
+      opacity var(--history-nav-item-duration) var(--motion-ease-out),
       transform var(--history-nav-item-duration) var(--history-nav-panel-ease);
   }
 
@@ -354,7 +354,7 @@
   @media (prefers-reduced-motion: reduce) {
     opacity: 1;
     transform: none;
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
     transition-delay: 0s !important;
   }
 

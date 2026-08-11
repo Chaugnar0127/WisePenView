@@ -1,7 +1,9 @@
+import { AppButton } from '@/components/Button';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { copyText } from '@/utils/browser/copyText';
 import { buildInvitePath } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import { Copy, Link as LinkIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -63,21 +65,21 @@ function InviteUserModal({ isOpen, onOpenChange, inviteCode }: InviteUserModalPr
       footerClassName={styles.inviteFooter}
       actions={
         <div className={styles.inviteActions}>
-          <Button variant="primary" isDisabled={!inviteCode} onPress={handleCopyLink}>
+          <AppButton variant="primary" isDisabled={!inviteCode} onPress={handleCopyLink}>
             <LinkIcon size={16} aria-hidden="true" />
             {copiedTarget === 'link'
               ? t('member.invite.copiedAction')
               : t('member.invite.copyLink')}
-          </Button>
-          <Button variant="secondary" isDisabled={!inviteCode} onPress={handleCopyCode}>
+          </AppButton>
+          <AppButton variant="secondary" isDisabled={!inviteCode} onPress={handleCopyCode}>
             <Copy size={16} aria-hidden="true" />
             {copiedTarget === 'code'
               ? t('member.invite.copiedAction')
               : t('member.invite.copyCode')}
-          </Button>
-          <Button variant="secondary" onPress={handleClose}>
+          </AppButton>
+          <AppButton variant="secondary" onPress={handleClose}>
             {t('actions.close', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </div>
       }
     >

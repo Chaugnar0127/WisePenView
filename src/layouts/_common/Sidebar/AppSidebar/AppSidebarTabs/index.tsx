@@ -5,8 +5,8 @@ import SidebarCourse from '@/layouts/_common/Sidebar/CourseSidebar';
 import SidebarDrive from '@/layouts/_common/Sidebar/DriveSidebar/_components/SidebarDrive';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import CommandPaletteTrigger from '@/layouts/AppNavigation/CommandPaletteTrigger';
+import { cn } from '@/utils/cn';
 import { Tabs, Tooltip } from '@heroui/react';
-import clsx from 'clsx';
 import { BookOpen, FolderOpen, MessageSquare, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -135,7 +135,7 @@ function AppSidebarTabs() {
 
         <div className={styles.panelViewport}>
           <div
-            className={clsx(
+            className={cn(
               styles.panelTrack,
               selectedTab === SIDEBAR_VIEW_TAB.DRIVE && styles.panelTrackDrive,
               selectedTab === SIDEBAR_VIEW_TAB.COURSES && styles.panelTrackCourses
@@ -143,21 +143,21 @@ function AppSidebarTabs() {
           >
             <Tabs.Panel
               id={SIDEBAR_VIEW_TAB.SESSIONS}
-              className={clsx(styles.tabPanel, styles.sessionPanel)}
+              className={cn(styles.tabPanel, styles.sessionPanel)}
               shouldForceMount
             >
               <SessionListGroup selectedKeys={selectedKeys} refreshVersion={refreshVersion} />
             </Tabs.Panel>
             <Tabs.Panel
               id={SIDEBAR_VIEW_TAB.DRIVE}
-              className={clsx(styles.tabPanel, styles.drivePanel)}
+              className={cn(styles.tabPanel, styles.drivePanel)}
               shouldForceMount
             >
               <SidebarDrive />
             </Tabs.Panel>
             <Tabs.Panel
               id={SIDEBAR_VIEW_TAB.COURSES}
-              className={clsx(styles.tabPanel, styles.coursePanel)}
+              className={cn(styles.tabPanel, styles.coursePanel)}
               shouldForceMount
             >
               <SidebarCourse />

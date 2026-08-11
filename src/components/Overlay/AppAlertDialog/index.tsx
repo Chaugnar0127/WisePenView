@@ -1,8 +1,10 @@
-import { AlertDialog, Button } from '@heroui/react';
-import clsx from 'clsx';
+import { AppButton } from '@/components/Button';
+
+import { cn } from '@/utils/cn';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Modal } from '../Modal';
 import type {
   AppAlertDialogBodyProps,
   AppAlertDialogFooterProps,
@@ -21,11 +23,11 @@ const STATUS_MAP = {
 } satisfies Record<AppAlertDialogType, AppAlertDialogStatus>;
 
 function AppAlertDialogBody({ className, ...props }: AppAlertDialogBodyProps) {
-  return <AlertDialog.Body className={clsx(styles.body, className)} {...props} />;
+  return <Modal.Body className={cn(styles.body, className)} {...props} />;
 }
 
 function AppAlertDialogFooter({ className, ...props }: AppAlertDialogFooterProps) {
-  return <AlertDialog.Footer className={clsx(styles.footer, className)} {...props} />;
+  return <Modal.Footer className={cn(styles.footer, className)} {...props} />;
 }
 
 function AppAlertDialogRoot({
@@ -44,6 +46,8 @@ function AppAlertDialogRoot({
   isDismissable = false,
   size = 'sm',
   placement = 'center',
+  contentDelay,
+  deferContent,
   icon,
   actions,
   footer,
@@ -86,17 +90,17 @@ function AppAlertDialogRoot({
 
     return (
       <>
-        <Button variant="secondary" isDisabled={isConfirmLoading} onPress={handleCancel}>
+        <AppButton variant="secondary" isDisabled={isConfirmLoading} onPress={handleCancel}>
           {cancelText ?? t('actions.cancel')}
-        </Button>
-        <Button
+        </AppButton>
+        <AppButton
           variant={isDanger ? 'danger' : 'primary'}
           isDisabled={isConfirmDisabled || isConfirmLoading}
           aria-busy={isConfirmLoading || undefined}
           onPress={handleConfirm}
         >
           {confirmText ?? t('actions.confirm')}
-        </Button>
+        </AppButton>
       </>
     );
   };
@@ -104,67 +108,73 @@ function AppAlertDialogRoot({
   const footerContent = renderFooterContent();
 
   return (
-    <AlertDialog isOpen={isOpen} onOpenChange={handleOpenChange}>
-      <AlertDialog.Backdrop
-        className={clsx(backdropClassName, classNames?.backdrop)}
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+      contentDelay={contentDelay}
+      deferContent={deferContent}
+    >
+      <Modal.Backdrop
+        className={cn(backdropClassName, classNames?.backdrop)}
         isDismissable={canDismiss}
         isKeyboardDismissDisabled={!canDismiss}
       >
-        <AlertDialog.Container
+        <Modal.Container
           size={size}
           placement={placement}
-          className={clsx(styles.container, containerClassName, classNames?.container)}
+          className={cn(styles.container, containerClassName, classNames?.container)}
         >
-          <AlertDialog.Dialog
-            className={clsx(styles.dialog, className, dialogClassName, classNames?.dialog)}
+          <Modal.Dialog
+            className={cn(styles.dialog, className, dialogClassName, classNames?.dialog)}
           >
-            <AlertDialog.Header className={clsx(styles.header, classNames?.header)}>
+            <Modal.Header className={cn(styles.header, classNames?.header)}>
               {icon === false ? null : (
-                <AlertDialog.Icon
-                  status={status}
-                  className={clsx(styles.icon, classNames?.icon)}
+                <Modal.Icon
+                  className={cn(styles.icon, classNames?.icon)}
+                  data-status={status}
                   aria-hidden
                 >
                   {icon}
-                </AlertDialog.Icon>
+                </Modal.Icon>
               )}
               <div className={styles.headerContent}>
-                <AlertDialog.Heading className={clsx(styles.heading, classNames?.heading)}>
+                <Modal.Heading className={cn(styles.heading, classNames?.heading)}>
                   {title}
-                </AlertDialog.Heading>
+                </Modal.Heading>
                 {description ? (
-                  <div className={clsx(styles.description, classNames?.description)}>
+                  <div className={cn(styles.description, classNames?.description)}>
                     {description}
                   </div>
                 ) : null}
               </div>
-            </AlertDialog.Header>
+            </Modal.Header>
 
             {children != null ? (
-              <AppAlertDialogBody className={clsx(bodyClassName, classNames?.body)}>
+              <AppAlertDialogBody className={cn(bodyClassName, classNames?.body)}>
                 {children}
               </AppAlertDialogBody>
             ) : null}
 
             {footerContent != null && footerContent !== false ? (
-              <AppAlertDialogFooter className={clsx(footerClassName, classNames?.footer)}>
+              <AppAlertDialogFooter className={cn(footerClassName, classNames?.footer)}>
                 {footerContent}
               </AppAlertDialogFooter>
             ) : null}
-          </AlertDialog.Dialog>
-        </AlertDialog.Container>
-      </AlertDialog.Backdrop>
-    </AlertDialog>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
   );
 }
 
 export const AppAlertDialog = Object.assign(AppAlertDialogRoot, {
   Body: AppAlertDialogBody,
-  CloseTrigger: AlertDialog.CloseTrigger,
+  CloseTrigger: Modal.CloseTrigger,
+  DeferredContent: Modal.DeferredContent,
   Footer: AppAlertDialogFooter,
-  Header: AlertDialog.Header,
-  Heading: AlertDialog.Heading,
-  Icon: AlertDialog.Icon,
+  Header: Modal.Header,
+  Heading: Modal.Heading,
+  Icon: Modal.Icon,
 });
 
 export default AppAlertDialog;

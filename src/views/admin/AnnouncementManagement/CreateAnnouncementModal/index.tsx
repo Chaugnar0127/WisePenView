@@ -1,9 +1,9 @@
+import { FormField, Input, Select, TextArea } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import { useUserService } from '@/domains';
 import type { PublishMessageDeliveryScope, PublishMessageType } from '@/domains/User';
-import { parseErrorMessage } from '@/utils/error';
-import { Input, Label, ListBox, Select, TextArea, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { ListBox, toast } from '@heroui/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -84,7 +84,7 @@ function CreateAnnouncementModal({
     onOpenChange(false);
   };
 
-  const { loading: submitting, run: runPublishMessage } = useRequest(
+  const { loading: submitting, run: runPublishMessage } = useApi(
     async (values: AnnouncementFormValues) => {
       const receiverUserIds = parseReceiverUserIds(values.receiverUserIds);
       await userService.publishMessage({
@@ -103,9 +103,6 @@ function CreateAnnouncementModal({
         reset();
         onOpenChange(false);
         onSuccess?.();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -154,19 +151,20 @@ function CreateAnnouncementModal({
       placement="center"
     >
       <div className={styles.form}>
-        <TextField
+        <FormField
+          label={t('announcement.publish.titleLabel')}
           aria-label={t('announcement.publish.titleLabel')}
           value={formValues.title}
           onChange={(value) => updateFormValue('title', value)}
           isDisabled={submitting}
           isRequired
         >
-          <Label>{t('announcement.publish.titleLabel')}</Label>
           <Input placeholder={t('announcement.publish.titlePlaceholder')} autoFocus />
-        </TextField>
+        </FormField>
 
         <div className={styles.twoColumnFields}>
           <Select
+            label={t('announcement.publish.typeLabel')}
             aria-label={t('announcement.publish.typeLabel')}
             value={formValues.messageType}
             onChange={(value) => {
@@ -176,7 +174,6 @@ function CreateAnnouncementModal({
             isDisabled={formValues.deliveryScope === 'ALL_USERS' || submitting}
             isRequired
           >
-            <Label>{t('announcement.publish.typeLabel')}</Label>
             <Select.Trigger>
               <Select.Value />
               <Select.Indicator />
@@ -194,6 +191,7 @@ function CreateAnnouncementModal({
           </Select>
 
           <Select
+            label={t('announcement.publish.scopeLabel')}
             aria-label={t('announcement.publish.scopeLabel')}
             value={formValues.deliveryScope}
             onChange={(value) => {
@@ -207,7 +205,6 @@ function CreateAnnouncementModal({
             isDisabled={submitting}
             isRequired
           >
-            <Label>{t('announcement.publish.scopeLabel')}</Label>
             <Select.Trigger>
               <Select.Value />
               <Select.Indicator />
@@ -225,38 +222,38 @@ function CreateAnnouncementModal({
           </Select>
         </div>
 
-        <TextField
+        <FormField
+          label={t('announcement.publish.contentLabel')}
           aria-label={t('announcement.publish.contentLabel')}
           value={formValues.content}
           onChange={(value) => updateFormValue('content', value)}
           isDisabled={submitting}
           isRequired
         >
-          <Label>{t('announcement.publish.contentLabel')}</Label>
           <TextArea rows={5} placeholder={t('announcement.publish.contentPlaceholder')} />
-        </TextField>
+        </FormField>
 
-        <TextField
+        <FormField
+          label={t('announcement.publish.jumpUrlLabel')}
           aria-label={t('announcement.publish.jumpUrlLabel')}
           value={formValues.jumpUrl}
           onChange={(value) => updateFormValue('jumpUrl', value)}
           isDisabled={submitting}
         >
-          <Label>{t('announcement.publish.jumpUrlLabel')}</Label>
           <Input placeholder={t('announcement.publish.jumpUrlPlaceholder')} />
-        </TextField>
+        </FormField>
 
         {formValues.deliveryScope === 'DIRECT' ? (
-          <TextField
+          <FormField
+            label={t('announcement.publish.receiverLabel')}
             aria-label={t('announcement.publish.receiverLabel')}
             value={formValues.receiverUserIds}
             onChange={(value) => updateFormValue('receiverUserIds', value)}
             isDisabled={submitting}
             isRequired
           >
-            <Label>{t('announcement.publish.receiverLabel')}</Label>
             <Input placeholder={t('announcement.publish.receiverPlaceholder')} />
-          </TextField>
+          </FormField>
         ) : null}
       </div>
     </AppFormDialog>

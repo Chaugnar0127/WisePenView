@@ -1,8 +1,9 @@
+@import (reference) '@/styles/breakpoints.less';
 .field {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-xs);
 }
 
 .fieldLabel {
@@ -16,7 +17,7 @@
   width: 100%;
   max-width: 100%;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-xs);
   letter-spacing: 0;
 }
 
@@ -27,7 +28,7 @@
 .codeGroup {
   min-width: 0;
   flex: 0 1 auto;
-  gap: 6px;
+  gap: var(--space-2xs-plus);
 }
 
 .codeSlot {
@@ -56,9 +57,9 @@
   line-height: 1.4;
 }
 
-@media (max-width: 520px) {
+@media (max-width: @breakpoint-sm) {
   .codeInput {
-    gap: 4px;
+    gap: var(--space-2xs);
   }
 
   .codeGroup {

@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppModal from '@/components/Overlay/AppModal';
 import type { TreeDataNode } from '@/components/Tree';
 import Tree from '@/components/Tree';
@@ -10,9 +11,10 @@ import {
 } from '@/domains/Chat';
 import type { Group } from '@/domains/Group';
 import type { ResourceSkillSummary } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { toast } from '@heroui/react';
+
 import { Folder } from 'lucide-react';
 import type { Key } from 'react';
 import { useState } from 'react';
@@ -59,7 +61,7 @@ function OtherSkillModalContent() {
   const [groupPage, setGroupPage] = useState<PageResult<Group> | null>(null);
   const [loadingMoreGroups, setLoadingMoreGroups] = useState(false);
   const [skillStateMap, setSkillStateMap] = useState<Record<string, SkillNodeState>>({});
-  const { loading } = useRequest(
+  const { loading } = useApi(
     () => chatService.listChatInputGroups({ page: 1, size: GROUP_PAGE_SIZE }),
     {
       refreshDeps: [currentAgent.agentId],
@@ -72,7 +74,6 @@ function OtherSkillModalContent() {
         setGroups(page.list);
         setGroupPage(page);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -291,7 +292,7 @@ function OtherSkillModalContent() {
                   />
                 )}
                 {!loading && hasMoreGroups ? (
-                  <Button
+                  <AppButton
                     size="sm"
                     variant="ghost"
                     className={styles.loadMoreButton}
@@ -299,7 +300,7 @@ function OtherSkillModalContent() {
                     onPress={handleLoadMoreGroups}
                   >
                     {t('session.loadMore')}
-                  </Button>
+                  </AppButton>
                 ) : null}
               </div>
             </div>
@@ -307,12 +308,12 @@ function OtherSkillModalContent() {
         )}
       </AppModal.DeferredContent>
       <AppModal.Footer>
-        <Button variant="secondary" onPress={handleClose}>
+        <AppButton variant="secondary" onPress={handleClose}>
           {t('actions.cancel', { ns: 'common' })}
-        </Button>
-        <Button variant="primary" onPress={handleConfirm}>
+        </AppButton>
+        <AppButton variant="primary" onPress={handleConfirm}>
           {t('actions.confirm', { ns: 'common' })}
-        </Button>
+        </AppButton>
       </AppModal.Footer>
     </AppModal>
   );

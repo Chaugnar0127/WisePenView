@@ -29,7 +29,7 @@
 
 .spinner {
   flex-shrink: 0;
-  animation: spin 0.9s linear infinite;
+  animation: var(--animate-spin-fast);
 }
 
 .label {
@@ -44,14 +44,4 @@
 
 .loadMoreRow .label {
   color: var(--muted);
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }

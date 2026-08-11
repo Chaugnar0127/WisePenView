@@ -1,10 +1,9 @@
 import { FormField, Input } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import { useDriveService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { validateReservedName } from '@/utils/tag/validateReservedName';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveActionTarget } from '../../common/driveComponentModel';
@@ -23,7 +22,7 @@ function RenameNodeModalContent({ isOpen, node, onOpenChange, onSuccess }: Renam
   const [name, setName] = useState(getDefaultName(node));
   const [nameError, setNameError] = useState('');
 
-  const { loading, run: runRenameNode } = useRequest(
+  const { loading, run: runRenameNode } = useApi(
     async (trimmed: string) => {
       if (!node) return;
       await driveService.renameNode({ node, newName: trimmed });
@@ -34,9 +33,6 @@ function RenameNodeModalContent({ isOpen, node, onOpenChange, onSuccess }: Renam
         toast.success(t('rename.success'));
         onSuccess?.();
         onOpenChange(false);
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

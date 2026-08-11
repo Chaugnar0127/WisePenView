@@ -1,8 +1,7 @@
 import { InputOTP, REGEXP_ONLY_DIGITS_AND_CHARS } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { Fragment, useId, useState } from 'react';
 import type { JoinByInviteCodeModalProps } from './index.type';
 import styles from './style.module.less';
@@ -44,7 +43,7 @@ function JoinByInviteCodeModal({
     setInviteCodeError('');
   };
 
-  const request = useRequest((code: string) => onJoin(code), {
+  const request = useApi((code: string) => onJoin(code), {
     manual: true,
     onSuccess: () => {
       toast.success(successMessage);
@@ -52,7 +51,6 @@ function JoinByInviteCodeModal({
       onSuccess?.();
       onOpenChange(false);
     },
-    onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
   });
 
   const handleCancel = () => {

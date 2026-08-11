@@ -1,11 +1,12 @@
+import { AppButton } from '@/components/Button';
 import { ResultState, Spin } from '@/components/Feedback';
 import { useGroupService } from '@/domains';
 import type { Group, GroupResConfig } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { GroupContext, type GroupCurrentUserRole } from '@/layouts/Group/GroupContext';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
+
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
@@ -22,7 +23,7 @@ function GroupRoute() {
   const groupService = useGroupService();
   const navigate = useNavigate();
   const { groupId = '' } = useParams<{ groupId: string }>();
-  const { data, loading, error, refresh } = useRequest(
+  const { data, loading, error, refresh } = useApi(
     async (): Promise<GroupRouteLoaded> => {
       const [group, currentUserRole, groupResConfig] = await Promise.all([
         groupService.fetchGroupInfo(groupId),
@@ -51,13 +52,13 @@ function GroupRoute() {
           subTitle={error ? parseErrorMessage(error) : t('detail.notFound')}
           extra={
             <div className={styles.resultActions}>
-              <Button variant="ghost" onPress={() => navigate(APP_ROUTE_PATH.GROUPS)}>
+              <AppButton variant="ghost" onPress={() => navigate(APP_ROUTE_PATH.GROUPS)}>
                 <ArrowLeft size={16} aria-hidden />
                 {t('detail.backToGroups')}
-              </Button>
-              <Button variant="primary" onPress={refresh}>
+              </AppButton>
+              <AppButton variant="primary" onPress={refresh}>
                 {t('detail.retry')}
-              </Button>
+              </AppButton>
             </div>
           }
         />

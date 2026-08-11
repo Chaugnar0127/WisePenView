@@ -36,7 +36,7 @@ ComponentName/
 - yes/no 决策弹窗使用 `AppAlertDialog`，普通确认使用 `type="confirm"`，危险操作使用 `type="danger"`。
 - 业务弹窗不要自行给 modal header/footer 添加 divider、`border-top` 或 `border-bottom`。
 - 操作成功后通常先调用 `onSuccess?.()`，再关闭弹窗。
-- 异步提交使用 `useRequest(fn, { manual: true })`。
+- 异步提交使用 `useApi(fn, { manual: true })`。
 - 错误提示使用 HeroUI `toast` 和 `parseErrorMessage(err)`。
 
 ## 四、Popover 约定

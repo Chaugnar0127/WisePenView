@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 import { isAiDiffContentEmpty, isAiDiffContentEqual } from '../../engines/aiDiff/contentState';
 import type {
   NoteAiDiffAcceptedBlockUpdate,
@@ -10,10 +11,6 @@ import {
 } from '../DefaultContentPlugin/aiDiff';
 import styles from './HighlightBlock/style.module.less';
 import { applyHighlightAppearance, readHighlightBlockProps } from './model';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 function isStructuredHighlightAiContent(value: unknown): value is Record<string, unknown> {
   return isRecord(value) && ('content' in value || 'props' in value);

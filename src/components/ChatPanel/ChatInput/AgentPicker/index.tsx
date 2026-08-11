@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { AppModal, AppPopover } from '@/components/Overlay';
 import type { TreeDataNode } from '@/components/Tree';
@@ -5,9 +6,11 @@ import Tree from '@/components/Tree';
 import { useChatService } from '@/domains';
 import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from '@/domains/Chat';
 import type { Group } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, ListBox, Skeleton, toast } from '@heroui/react';
-import { useInfiniteScroll, useLatest, useRequest } from 'ahooks';
+import { ListBox, Skeleton, toast } from '@heroui/react';
+
+import { useInfiniteScroll, useLatest } from 'ahooks';
 import { Bot, Folder } from 'lucide-react';
 import type { Key } from 'react';
 import { useEffect, useState } from 'react';
@@ -96,7 +99,6 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
       manual: !open,
       reloadDeps: [open],
       isNoMore: (page) => Boolean(page && (page.total === 0 || page.list.length >= page.total)),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
   const showSkeleton = personalPage == null && loadingPersonal;
@@ -227,7 +229,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
             </div>
           )}
           {hasMorePersonalAgents ? (
-            <Button
+            <AppButton
               size="sm"
               variant="ghost"
               className={styles.popoverLoadMore}
@@ -235,9 +237,9 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
               onPress={loadMorePersonal}
             >
               {t('session.loadMore')}
-            </Button>
+            </AppButton>
           ) : null}
-          <Button
+          <AppButton
             size="sm"
             variant="ghost"
             className={styles.agentGroupAction}
@@ -247,7 +249,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
               <Folder size={14} color="var(--resource-icon-folder)" />
               <span>{t('input.agentPicker.selectFromGroup')}</span>
             </span>
-          </Button>
+          </AppButton>
         </AppPopover.Content>
       </AppPopover>
       <GroupAgentPickerModal
@@ -294,7 +296,7 @@ function GroupAgentPickerModalContent({
   const [groupPage, setGroupPage] = useState<PageResult<Group> | null>(null);
   const [loadingMoreGroups, setLoadingMoreGroups] = useState(false);
   const [groupStateMap, setGroupStateMap] = useState<Record<string, AgentGroupState>>({});
-  const { loading } = useRequest(
+  const { loading } = useApi(
     () => chatService.listChatInputGroups({ page: 1, size: GROUP_PAGE_SIZE }),
     {
       onBefore: () => {
@@ -306,7 +308,6 @@ function GroupAgentPickerModalContent({
         setGroups(page.list);
         setGroupPage(page);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -478,7 +479,7 @@ function GroupAgentPickerModalContent({
                   />
                 )}
                 {!loading && hasMoreGroups ? (
-                  <Button
+                  <AppButton
                     size="sm"
                     variant="ghost"
                     className={styles.popoverLoadMore}
@@ -486,7 +487,7 @@ function GroupAgentPickerModalContent({
                     onPress={handleLoadMoreGroups}
                   >
                     {t('session.loadMore')}
-                  </Button>
+                  </AppButton>
                 ) : null}
               </div>
             </div>

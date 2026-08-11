@@ -17,7 +17,7 @@
   min-height: 32px;
   align-items: center;
   gap: var(--space-xs);
-  padding: 6px 12px;
+  padding: var(--space-2xs-plus) var(--space-sm);
   border: 0;
   border-radius: var(--radius-md);
   background: transparent;
@@ -29,8 +29,8 @@
   cursor: pointer;
   outline: none;
   transition:
-    background-color var(--motion-duration-fast) ease,
-    color var(--motion-duration-fast) ease;
+    background-color var(--motion-duration-fast) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard);
 
   &:hover {
     color: var(--foreground);
@@ -58,7 +58,7 @@
 .indicator {
   flex: 0 0 auto;
   color: var(--muted);
-  transition: transform var(--motion-duration-fast) ease;
+  transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
 
   .trigger[data-panel-open] & {
     transform: rotate(180deg);
@@ -68,7 +68,7 @@
 .content {
   height: var(--accordion-panel-height);
   overflow: hidden;
-  transition: height var(--motion-duration-mid) ease;
+  transition: height var(--motion-duration-mid) var(--motion-ease-standard);
 
   &[data-starting-style],
   &[data-ending-style] {

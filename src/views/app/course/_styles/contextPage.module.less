@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .page {
   box-sizing: border-box;
   width: min(100%, 920px);
@@ -14,7 +15,7 @@
   text-align: center;
 }
 
-@media (max-width: 560px) {
+@media (max-width: @breakpoint-sm) {
   .page {
     padding: var(--space-lg);
   }

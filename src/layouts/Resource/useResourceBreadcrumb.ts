@@ -5,8 +5,8 @@ import {
 import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { useDriveService, useGroupService } from '@/domains';
 import type { DriveResourceLocation } from '@/domains/Drive';
+import { useApi } from '@/hooks/useApi';
 import { buildDrivePath } from '@/utils/navigation/driveRoute';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 
 export function useResourceBreadcrumb(resourceId?: string, driveLocation?: DriveResourceLocation) {
@@ -17,7 +17,7 @@ export function useResourceBreadcrumb(resourceId?: string, driveLocation?: Drive
   const groupId = scope ? getDriveScopeGroupId(scope) : undefined;
   const mountTagId = driveLocation?.mountTagId;
 
-  const { data } = useRequest(
+  const { data } = useApi(
     async () => {
       const activeLocation = driveLocation!;
       const [pathNodes, group] = await Promise.all([

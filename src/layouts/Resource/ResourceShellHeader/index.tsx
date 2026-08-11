@@ -1,6 +1,6 @@
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import AppNavigationControls from '@/layouts/AppNavigation/AppNavigationControls';
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 
 import ResourceHeader from '../ResourceHeader';
 import type { ResourceShellHeaderProps } from './index.type';
@@ -32,7 +32,7 @@ function ResourceShellHeader({
   return (
     <header
       ref={headerRef}
-      className={clsx(
+      className={cn(
         styles.root,
         desktopWindow.isDesktop && styles.desktopRoot,
         titleBarInsetStart && styles.titleBarInsetStartAligned,

@@ -1,4 +1,5 @@
 import AppAvatar from '@/components/Avatar';
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import {
   TAG_PERMISSION_ACTION_PRESET_OPTIONS,
@@ -13,7 +14,6 @@ import { ACCESS_CONTROL_SCOPE } from '@/domains/Tag';
 import { parseErrorMessage } from '@/utils/error';
 import {
   Autocomplete,
-  Button,
   EmptyState,
   ListBox,
   SearchField,
@@ -362,17 +362,21 @@ const TagPolicyModalBase = ({
       isDismissable={!saving}
       actions={
         <>
-          <Button variant="secondary" isDisabled={saving} onPress={() => handleOpenChange(false)}>
+          <AppButton
+            variant="secondary"
+            isDisabled={saving}
+            onPress={() => handleOpenChange(false)}
+          >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={saving || !selectedTag || !groupId}
             aria-busy={saving || undefined}
             onPress={handleSubmit}
           >
             {t('actions.save', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

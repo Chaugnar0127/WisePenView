@@ -6,11 +6,6 @@
  * 拖拽约定：整条 header 为 drag，仅可交互控件 no-drag；上方 drag-strip 专供拖拽。
  */
 
-@desktop-titlebar-start-inset: 92px;
-@desktop-titlebar-height: var(--desktop-title-bar-height, 56px);
-@desktop-titlebar-drag-strip: var(--desktop-title-bar-drag-strip, 10px);
-@desktop-titlebar-end-reserve: var(--desktop-window-controls-width, 116px);
-
 .desktopTitleBarDrag() {
   -webkit-app-region: drag;
 }
@@ -32,9 +27,9 @@
  */
 .desktopTitleBarChrome() {
   box-sizing: border-box;
-  min-height: @desktop-titlebar-height;
-  height: @desktop-titlebar-height;
-  padding-top: @desktop-titlebar-drag-strip;
+  min-height: var(--desktop-title-bar-height, 56px);
+  height: var(--desktop-title-bar-height, 56px);
+  padding-top: var(--desktop-title-bar-drag-strip, 10px);
   padding-bottom: 0;
   display: flex;
   align-items: center;
@@ -55,7 +50,7 @@
     top: 0;
     right: 0;
     /* Workspace 可按 dock 宽度动态收窄；未设置时回退固定窗控宽 */
-    width: var(--resource-header-end-reserve, @desktop-titlebar-end-reserve);
+    width: var(--resource-header-end-reserve, var(--desktop-window-controls-width, 116px));
     height: 100%;
     .desktopTitleBarNoDrag();
     pointer-events: none;

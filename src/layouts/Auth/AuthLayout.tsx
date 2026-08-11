@@ -1,6 +1,6 @@
 import loginImage from '@/assets/images/login.png';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import AuthBackground from './AuthBackground';
@@ -18,7 +18,7 @@ function AuthLayout() {
     <main className={styles.root}>
       {desktopWindow.isDesktop ? (
         <div
-          className={clsx(
+          className={cn(
             styles.desktopTitleBar,
             titleBarInsetStart && styles.titleBarInsetStart,
             titleBarInsetEnd && styles.titleBarInsetEnd

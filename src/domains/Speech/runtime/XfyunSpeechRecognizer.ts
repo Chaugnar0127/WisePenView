@@ -4,6 +4,7 @@ import {
   isWisePenError,
   type WisePenError,
 } from '@/utils/error';
+import { isRecord } from '@/utils/typeGuards';
 import type { SpeechRecognitionCredential } from '../service/index.type';
 import { XfyunResultAssembler } from './XfyunResultAssembler';
 
@@ -38,10 +39,6 @@ const IFLYTEK_BUSINESS_CONFIG = {
 } as const;
 
 let recognitionActive = false;
-
-function isRecord(value: unknown): value is UnknownRecord {
-  return typeof value === 'object' && value !== null;
-}
 
 function encodeBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);

@@ -1,7 +1,8 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import EmojiPicker from '@/components/EmojiPicker';
 import { TextArea } from '@/components/Input';
-import { Button } from '@heroui/react';
+
 import { useUnmount } from 'ahooks';
 import { ImagePlus, X } from 'lucide-react';
 import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
@@ -175,11 +176,11 @@ function CommentInput({
       {showActions ? (
         <div className={styles.actions}>
           {onCancel && labels.cancel ? (
-            <Button variant="ghost" size="sm" isDisabled={disabled} onPress={onCancel}>
+            <AppButton variant="ghost" size="sm" isDisabled={disabled} onPress={onCancel}>
               {labels.cancel}
-            </Button>
+            </AppButton>
           ) : null}
-          <Button
+          <AppButton
             variant="primary"
             size="sm"
             isDisabled={disabled || !canSubmit}
@@ -187,7 +188,7 @@ function CommentInput({
             onPress={handleSubmit}
           >
             {labels.submit}
-          </Button>
+          </AppButton>
         </div>
       ) : null}
     </div>

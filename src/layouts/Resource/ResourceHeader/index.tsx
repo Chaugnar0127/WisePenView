@@ -1,11 +1,11 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import EntryIcon from '@/components/Icons/EntryIcon';
-import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
+import AppBreadcrumb, { type AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { AppMenu } from '@/components/Overlay';
 import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import { useUserService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { normalizeId } from '@/utils/normalize/normalizeId';
-import { useRequest } from 'ahooks';
 import {
   ChevronRight,
   Copy,
@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link as RouterLink } from 'react-router-dom';
 import ResourceHeaderOperations, {
   type ResourceHeaderOperationHandlers,
 } from './ResourceHeaderOperations';
@@ -293,7 +292,7 @@ function ResourceHeader({
   const userService = useUserService();
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
   const normalizedOwnerId = normalizeId(ownerId);
-  const { data: currentUser } = useRequest(() => userService.getUserInfo(), {
+  const { data: currentUser } = useApi(() => userService.getUserInfo(), {
     ready: Boolean(resourceId && normalizedOwnerId),
     refreshDeps: [resourceId, normalizedOwnerId],
   });
@@ -316,36 +315,40 @@ function ResourceHeader({
       </>
     ),
   };
+  const headerBreadcrumbItems: AppBreadcrumbItem[] = [
+    ...breadcrumbItems.map((item, index) =>
+      index === 0
+        ? {
+            ...item,
+            label: (
+              <>
+                <HardDrive
+                  className={styles.breadcrumbIcon}
+                  size={14}
+                  aria-hidden
+                  color="var(--accent)"
+                />
+                {item.label}
+              </>
+            ),
+          }
+        : item
+    ),
+    currentBreadcrumbItem,
+  ];
   return (
     <>
       <div className={styles.root}>
         <div className={styles.title}>
           {!hideBreadcrumb ? (
-            <nav className={styles.breadcrumb} aria-label={t('header.breadcrumbAria')}>
-              {breadcrumbItems.map((item, index) => (
-                <span key={item.key} className={styles.breadcrumbSegment}>
-                  {item.to ? (
-                    <RouterLink className={styles.breadcrumbButton} to={item.to}>
-                      {index === 0 ? (
-                        <HardDrive
-                          className={styles.breadcrumbIcon}
-                          size={14}
-                          aria-hidden
-                          color="var(--accent)"
-                        />
-                      ) : null}
-                      {item.label}
-                    </RouterLink>
-                  ) : (
-                    <span className={styles.breadcrumbButton}>{item.label}</span>
-                  )}
-                  <ChevronRight className={styles.breadcrumbSeparator} size={14} aria-hidden />
-                </span>
-              ))}
-              <span className={styles.breadcrumbCurrent} aria-current="page">
-                {currentBreadcrumbItem.label}
-              </span>
-            </nav>
+            <AppBreadcrumb
+              items={headerBreadcrumbItems}
+              ariaLabel={t('header.breadcrumbAria')}
+              className={styles.breadcrumb}
+              separator={
+                <ChevronRight className={styles.breadcrumbSeparator} size={14} aria-hidden />
+              }
+            />
           ) : (
             <span className={styles.breadcrumbCurrent} aria-current="page">
               {currentBreadcrumbItem.label}

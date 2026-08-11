@@ -19,7 +19,7 @@
 
 .handle {
   position: relative;
-  z-index: 20;
+  z-index: var(--app-z-index-local-overlay);
   display: flex;
   flex: 0 0 1px !important;
   width: 1px;
@@ -33,7 +33,7 @@
   background: var(--border-light);
   outline: none;
   cursor: col-resize;
-  transition: background-color 0.16s ease;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .handleCollapsed {

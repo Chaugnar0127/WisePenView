@@ -1,7 +1,8 @@
+@import (reference) '@/styles/breakpoints.less';
 .field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-xs);
   min-width: 0;
 }
 
@@ -19,7 +20,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-xs);
   letter-spacing: 0;
 }
 
@@ -34,13 +35,13 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-xs);
 }
 
 .codeGroup {
   min-width: 0;
   flex: 0 0 auto;
-  gap: 6px;
+  gap: var(--space-2xs-plus);
 }
 
 .codeSlot {
@@ -56,13 +57,13 @@
   flex: 0 0 6px;
 }
 
-@media (max-width: 520px) {
+@media (max-width: @breakpoint-sm) {
   .codeInput {
-    gap: 4px;
+    gap: var(--space-2xs);
   }
 
   .codeRow {
-    gap: 4px;
+    gap: var(--space-2xs);
   }
 
   .codeGroup {

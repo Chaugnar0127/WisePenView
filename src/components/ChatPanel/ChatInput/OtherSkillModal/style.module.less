@@ -44,7 +44,7 @@
   :global(.wisepen-tree__content) {
     min-height: 22px;
     border-radius: var(--radius);
-    transition: background-color 0.2s;
+    transition: background-color var(--motion-duration-mid);
   }
 
   :global(.wisepen-tree__item[aria-selected='true'] .wisepen-tree__content) {
@@ -59,7 +59,7 @@
 .nodeTitle {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2xs);
 }
 
 .loadMoreButton {

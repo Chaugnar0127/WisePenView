@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import ResourcePermissionActionIcon from '@/components/Drive/common/resourcePermissionActionIcon';
 import {
   buildResourceOverrideActions,
@@ -22,9 +23,10 @@ import {
   type ResourcePermissionActionOption,
   type ResourcePermissionOverview,
 } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
-import { Button, ListBox, Tabs, toast, type Selection } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { ListBox, Tabs, type Selection } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ResourcePermissionModalProps } from './index.type';
@@ -87,7 +89,7 @@ function ResourcePermissionModal({
     loading,
     error,
     refresh: refreshPermission,
-  } = useRequest(
+  } = useApi(
     async (): Promise<ResourcePermissionModalData> => {
       if (!target || !groupId) {
         throw createClientError(FRONTEND_CLIENT_ERROR.RESOURCE_PERMISSION_CONTEXT_MISSING);
@@ -159,7 +161,7 @@ function ResourcePermissionModal({
     )
   );
 
-  const { loading: saving, run: runSave } = useRequest(
+  const { loading: saving, run: runSave } = useApi(
     async () => {
       if (!target || !groupId || !policy) return;
       const overrideActions = buildResourceOverrideActions(
@@ -180,8 +182,7 @@ function ResourcePermissionModal({
         onSuccess?.();
         onOpenChange(false);
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
+      onErrorEffect: () => {
         refreshPermission();
       },
     }
@@ -247,17 +248,21 @@ function ResourcePermissionModal({
       isDismissable={!saving}
       actions={
         <>
-          <Button variant="secondary" isDisabled={saving} onPress={() => handleOpenChange(false)}>
+          <AppButton
+            variant="secondary"
+            isDisabled={saving}
+            onPress={() => handleOpenChange(false)}
+          >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={saving || loading || Boolean(error) || !policy}
             aria-busy={saving || undefined}
             onPress={() => runSave()}
           >
             {t('actions.save', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

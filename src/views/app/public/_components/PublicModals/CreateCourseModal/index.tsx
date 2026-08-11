@@ -1,9 +1,10 @@
-import { Input, TextArea } from '@/components/Input';
+import { AppButton } from '@/components/Button';
+import { FormField, Input, TextArea } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useCourseService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
-import { Button, Label, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -39,7 +40,7 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
   const { t } = useTranslation(['course', 'common']);
   const courseService = useCourseService();
   const [form, setForm] = useState<CourseCreateFormValues>(DEFAULT_FORM_VALUES);
-  const request = useRequest(() => courseService.createCourse(toCreateCourseRequest(form)), {
+  const request = useApi(() => courseService.createCourse(toCreateCourseRequest(form)), {
     manual: true,
     onSuccess: (courseId) => {
       toast.success(t('create.success'));
@@ -47,7 +48,6 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
       onOpenChange(false);
       onCreated(courseId);
     },
-    onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
   });
 
   const handleCreate = () => {
@@ -68,55 +68,55 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
       isDismissable={!request.loading}
       actions={
         <>
-          <Button
+          <AppButton
             variant="secondary"
             isDisabled={request.loading}
             onPress={() => onOpenChange(false)}
           >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button variant="primary" isPending={request.loading} onPress={handleCreate}>
+          </AppButton>
+          <AppButton variant="primary" isPending={request.loading} onPress={handleCreate}>
             {t('create.confirm')}
-          </Button>
+          </AppButton>
         </>
       }
     >
       <div className={styles.createForm}>
-        <TextField
+        <FormField
+          label={t('create.name')}
           value={form.name}
           onChange={(name) => setForm((current) => ({ ...current, name }))}
           aria-label={t('create.name')}
           isRequired
         >
-          <Label>{t('create.name')}</Label>
           <Input placeholder={t('create.namePlaceholder')} />
-        </TextField>
-        <TextField
+        </FormField>
+        <FormField
+          label={t('create.term')}
           value={form.term}
           onChange={(term) => setForm((current) => ({ ...current, term }))}
           aria-label={t('create.term')}
           isRequired
         >
-          <Label>{t('create.term')}</Label>
           <Input placeholder={t('create.termPlaceholder')} />
-        </TextField>
-        <TextField
+        </FormField>
+        <FormField
+          label={t('create.category')}
           value={form.category}
           onChange={(category) => setForm((current) => ({ ...current, category }))}
           aria-label={t('create.category')}
         >
-          <Label>{t('create.category')}</Label>
           <Input placeholder={t('create.categoryPlaceholder')} />
-        </TextField>
-        <TextField
+        </FormField>
+        <FormField
+          label={t('create.intro')}
           value={form.description}
           onChange={(description) => setForm((current) => ({ ...current, description }))}
           aria-label={t('create.intro')}
           isRequired
         >
-          <Label>{t('create.intro')}</Label>
           <TextArea rows={4} placeholder={t('create.introPlaceholder')} />
-        </TextField>
+        </FormField>
       </div>
     </AppModal>
   );

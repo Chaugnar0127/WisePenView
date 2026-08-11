@@ -1,5 +1,5 @@
 import { useInteractService, useSkillService } from '@/domains';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
 
 export function useSkillResourceController(resourceId: string) {
   const skillService = useSkillService();
@@ -10,12 +10,12 @@ export function useSkillResourceController(resourceId: string) {
     loading,
     error,
     refresh: refreshSkill,
-  } = useRequest(() => skillService.getSkillDetail(resourceId), {
+  } = useApi(() => skillService.getSkillDetail(resourceId), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
   });
 
-  useRequest(() => interactService.recordResourceRead(resourceId), {
+  useApi(() => interactService.recordResourceRead(resourceId), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
   });

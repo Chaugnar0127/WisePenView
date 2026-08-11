@@ -4,9 +4,9 @@ import Tree from '@/components/Tree';
 import { useDriveService, useGroupService } from '@/domains';
 import { buildDriveNodeScope, type DriveNode, type DriveNodeScope } from '@/domains/Drive';
 import type { IGroupService } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -371,7 +371,7 @@ function DriveNavigator({
     }
   }
 
-  const { loading } = useRequest(
+  const { loading } = useApi(
     async (): Promise<DataNode[]> => {
       nodeMapRef.current.clear();
       rootLabelRef.current.clear();
@@ -426,11 +426,10 @@ function DriveNavigator({
         setSelectedKeys(nextSelected);
         emitSelectionChange(nextSelected);
       },
-      onError: (err) => {
+      onErrorEffect: (err) => {
         setTreeData([]);
         setSelectedKeys([]);
         emitSelectionChange([]);
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

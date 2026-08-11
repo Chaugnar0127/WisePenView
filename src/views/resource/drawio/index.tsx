@@ -1,6 +1,8 @@
 import { DRAWIO_EMBED_URL } from '@/apis/clientUrls';
+import { AppButton } from '@/components/Button';
 import { ResultState, Spin } from '@/components/Feedback';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useInteractService, useNoteService, useUserService } from '@/domains';
 import type {
   DrawIoLatestSnapshotData,
@@ -8,6 +10,7 @@ import type {
   NoteVersionListPage,
 } from '@/domains/Note';
 import type { ResourceAction, ResourceItem } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
@@ -16,8 +19,8 @@ import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
-import { Button } from '@heroui/react';
-import { useMemoizedFn, useRequest } from 'ahooks';
+
+import { useMemoizedFn } from 'ahooks';
 import { History, Save } from 'lucide-react';
 import { useState, type DependencyList, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +35,6 @@ import {
 } from './drawioProtocol';
 import styles from './style.module.less';
 
-const WISEPEN_COLOR_SCHEME_STORAGE_KEY = 'heroui-color-scheme';
 const WISEPEN_COLOR_SCHEMES = new Set([
   'default',
   'warm',
@@ -77,7 +79,7 @@ function readWisePenColorScheme(): string {
   }
 
   try {
-    const storedScheme = window.localStorage.getItem(WISEPEN_COLOR_SCHEME_STORAGE_KEY);
+    const storedScheme = window.localStorage.getItem(STORAGE_KEYS.colorScheme);
 
     if (storedScheme && WISEPEN_COLOR_SCHEMES.has(storedScheme)) {
       return storedScheme;
@@ -239,7 +241,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
       resourceId,
     });
 
-  const { data: currentUser } = useRequest(() => userService.getUserInfo(), {
+  const { data: currentUser } = useApi(() => userService.getUserInfo(), {
     ready: Boolean(noteInfoDisplay.ownerId),
     refreshDeps: [noteInfoDisplay.ownerId],
   });
@@ -249,7 +251,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     error: versionsError,
     loading: versionsLoading,
     run: runLoadVersions,
-  } = useRequest(() => noteService.listNoteVersions({ resourceId, page: 1, size: 20 }), {
+  } = useApi(() => noteService.listNoteVersions({ resourceId, page: 1, size: 20 }), {
     manual: true,
   });
 
@@ -268,7 +270,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
   const headerActions = (
     <div className={styles.headerExtra}>
       {currentUser?.id === noteInfoDisplay.ownerId && canViewVersions ? (
-        <Button
+        <AppButton
           size="sm"
           variant="secondary"
           onPress={handleOpenVersions}
@@ -276,10 +278,10 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
         >
           <History size={16} />
           <span>{t('drawio.version')}</span>
-        </Button>
+        </AppButton>
       ) : null}
       {canEdit ? (
-        <Button
+        <AppButton
           size="sm"
           variant="primary"
           isDisabled={!editorLoaded || saveState === 'saved' || saveState === 'saving'}
@@ -292,7 +294,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
               ? t('drawio.status.saving')
               : t('actions.save', { ns: 'common' })}
           </span>
-        </Button>
+        </AppButton>
       ) : null}
     </div>
   );
@@ -356,7 +358,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
     error,
     loading: loadingDrawio,
     refresh: refreshDrawioInfo,
-  } = useRequest(
+  } = useApi(
     async () => {
       const [noteInfoDisplay, snapshot] = await Promise.all([
         noteService.getNoteInfoDisplay({ resourceId: resourceId as string }),
@@ -376,7 +378,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
   );
   const refreshDrawioInfoStable = useMemoizedFn(refreshDrawioInfo);
 
-  useRequest(() => interactService.recordResourceRead(resourceId as string), {
+  useApi(() => interactService.recordResourceRead(resourceId as string), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
   });
@@ -390,7 +392,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
             title={t('drawio.cannotOpen')}
             extra={
               <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                <Button variant="secondary">{t('viewer.backToDrive')}</Button>
+                <AppButton variant="secondary">{t('viewer.backToDrive')}</AppButton>
               </Link>
             }
           />
@@ -409,7 +411,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
             subTitle={parseErrorMessage(error)}
             extra={
               <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                <Button variant="secondary">{t('viewer.backToDrive')}</Button>
+                <AppButton variant="secondary">{t('viewer.backToDrive')}</AppButton>
               </Link>
             }
           />

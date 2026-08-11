@@ -1,5 +1,5 @@
+import { cn } from '@/utils/cn';
 import { Avatar as HeroAvatar } from '@heroui/react';
-import clsx from 'clsx';
 import type { ComponentProps } from 'react';
 
 import styles from './style.module.less';
@@ -12,7 +12,7 @@ function AppAvatarRoot({ className, ...props }: AppAvatarProps) {
 }
 
 function AppAvatarImage({ className, ...props }: AppAvatarImageProps) {
-  return <HeroAvatar.Image className={clsx(styles.image, className)} {...props} />;
+  return <HeroAvatar.Image className={cn(styles.image, className)} {...props} />;
 }
 
 const AppAvatar = Object.assign(AppAvatarRoot, {

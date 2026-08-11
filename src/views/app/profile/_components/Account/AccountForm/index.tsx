@@ -1,13 +1,14 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
-import { Input, Select } from '@/components/Input';
+import { FormField, Input, Select } from '@/components/Input';
 import { useUserService } from '@/domains';
 import type { UpdateUserInfoRequest } from '@/domains/User';
 import { DEGREE, SEX } from '@/domains/User';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import type { ProfileFieldKey } from '@/views/app/profile/profile.config';
 import { getVisibleProfileFieldGroups } from '@/views/app/profile/profile.config';
-import { Button, Form, Label, ListBox, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Form, ListBox, toast } from '@heroui/react';
+
 import { Pencil, X } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -69,7 +70,7 @@ function AccountForm({
   const formValues = editMode && formDraft?.user === user ? formDraft.values : userFormValues;
   const fieldGroups = getVisibleProfileFieldGroups(fieldConfig);
 
-  const { loading: saving, runAsync: runSave } = useRequest(
+  const { loading: saving, runAsync: runSave } = useApi(
     async () => {
       const rf = new Set(user?.readonlyFields ?? []);
       const params: UpdateUserInfoRequest = {
@@ -123,9 +124,8 @@ function AccountForm({
         setEditMode(false);
         toast.success(t('form.saveSuccess'));
       },
-      onError: (err) => {
+      onErrorEffect: (err) => {
         if (err && typeof err === 'object' && 'errorFields' in err) return;
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -158,31 +158,32 @@ function AccountForm({
     const fieldPlaceholder = t(field.placeholderKey);
     if (lockedByServer) {
       return (
-        <TextField
+        <FormField
           key={field.key}
+          label={fieldLabel}
           aria-label={fieldLabel}
           value={getReadonlyInputValue(formValues, field.key, t)}
           isDisabled
           className={styles.formField}
         >
-          <Label>{fieldLabel}</Label>
           <Input readOnly className={styles.editableInput} />
-        </TextField>
+        </FormField>
       );
     }
     return (
       <div key={field.key} className={styles.formField}>
         {field.type === 'input' ? (
-          <TextField
+          <FormField
+            label={fieldLabel}
             aria-label={fieldLabel}
             value={getFieldInputValue(formValues, field.key)}
             onChange={(value) => updateFormValue(field.key, value)}
           >
-            <Label>{fieldLabel}</Label>
             <Input placeholder={fieldPlaceholder} className={styles.editableInput} />
-          </TextField>
+          </FormField>
         ) : (
           <Select
+            label={fieldLabel}
             aria-label={fieldLabel}
             placeholder={fieldPlaceholder}
             value={getFieldInputValue(formValues, field.key) || null}
@@ -194,7 +195,6 @@ function AccountForm({
             }
             className={styles.editableInput}
           >
-            <Label>{fieldLabel}</Label>
             <Select.Trigger>
               <Select.Value />
               {getFieldValue(formValues, field.key) != null ? (
@@ -239,10 +239,10 @@ function AccountForm({
       <div className={styles.sectionHeader}>
         <h3 className={styles.sectionTitle}>{t('form.sectionTitle')}</h3>
         {!editMode ? (
-          <Button variant="primary" onPress={handleStartEdit}>
+          <AppButton variant="primary" onPress={handleStartEdit}>
             <Pencil size={16} aria-hidden="true" />
             {t('form.edit')}
-          </Button>
+          </AppButton>
         ) : null}
       </div>
       {editMode ? (
@@ -254,12 +254,12 @@ function AccountForm({
             </div>
           ))}
           <div className={styles.formActions}>
-            <Button type="submit" variant="primary" isDisabled={saving}>
+            <AppButton type="submit" variant="primary" isDisabled={saving}>
               {t('actions.save', { ns: 'common' })}
-            </Button>
-            <Button onPress={handleCancel} className={styles.cancelBtn}>
+            </AppButton>
+            <AppButton onPress={handleCancel} className={styles.cancelBtn}>
               {t('actions.cancel', { ns: 'common' })}
-            </Button>
+            </AppButton>
           </div>
         </Form>
       ) : (

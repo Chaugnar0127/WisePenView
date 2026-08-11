@@ -2,10 +2,8 @@ import { Spin } from '@/components/Feedback';
 import { useUserService } from '@/domains';
 import type { UserAccountProfile } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
+import { useApi } from '@/hooks/useApi';
 import PageHeader from '@/layouts/_common/PageHeader';
-import { parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -31,12 +29,9 @@ function Account() {
   const [user, setUser] = useState<UserAccountProfile | null>(null);
   const emptyLabel = t('form.emptyValue');
 
-  const { loading, runAsync: reloadUserInfo } = useRequest(() => userService.getFullUserInfo(), {
+  const { loading, runAsync: reloadUserInfo } = useApi(() => userService.getFullUserInfo(), {
     onSuccess: (data) => {
       setUser(data);
-    },
-    onError: (err: unknown) => {
-      toast.danger(parseErrorMessage(err));
     },
   });
 

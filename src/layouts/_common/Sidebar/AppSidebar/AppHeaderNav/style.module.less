@@ -3,7 +3,7 @@
   --app-header-nav-item-gap: 0.2px;
 
   position: relative;
-  padding-bottom: 6px;
+  padding-bottom: var(--space-2xs-plus);
 
   &::after {
     content: '';
@@ -20,7 +20,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--app-header-nav-item-gap);
-  padding: 0 8px;
+  padding: 0 var(--space-xs);
   background: transparent;
   outline: none;
   font-size: var(--font-size-base, 14px);
@@ -29,7 +29,7 @@
 }
 
 .headerMenuCollapsed {
-  padding-inline: 4px;
+  padding-inline: var(--space-2xs);
 }
 
 .indicator {
@@ -39,10 +39,10 @@
   height: var(--app-header-nav-item-height, 36px);
   border-radius: var(--radius-md);
   background: var(--item-selected);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  transition: transform var(--motion-duration-slow) var(--motion-ease-emphasized), opacity var(--motion-duration-mid) var(--motion-ease-standard);
   will-change: transform;
   pointer-events: none;
-  z-index: 0;
+  z-index: var(--app-z-index-base);
 }
 
 .menuSection {
@@ -51,29 +51,29 @@
   gap: var(--space-2xs);
 
   & + & {
-    margin-top: 8px;
-    padding-top: 8px;
+    margin-top: var(--space-xs);
+    padding-top: var(--space-xs);
     border-top: 1px solid var(--border-light);
   }
 }
 
 .menuItem:global(.list-box-item) {
   position: relative;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   box-sizing: border-box;
   width: 100%;
   height: var(--app-header-nav-item-height);
   min-height: var(--app-header-nav-item-height);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-xs);
   border-radius: var(--radius-md);
-  padding: 0 calc(var(--sidebar-content-inset, var(--space-lg)) - 8px);
+  padding: 0 calc(var(--sidebar-content-inset, var(--space-lg)) - var(--space-xs));
   color: var(--muted);
   cursor: pointer;
   outline: none;
   background: transparent;
-  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1), font-weight 0.3s ease;
+  transition: color var(--motion-duration-slow) var(--motion-ease-emphasized), font-weight var(--motion-duration-slow) var(--motion-ease-standard);
 
   &:hover:not([data-nav-active='true']),
   &[data-hovered]:not([data-nav-active='true']),
@@ -81,8 +81,8 @@
     color: var(--foreground);
     background: var(--item-hover);
     transition:
-      color 0.15s ease,
-      background 0.15s ease;
+      color var(--motion-duration-fast) var(--motion-ease-standard),
+      background var(--motion-duration-fast) var(--motion-ease-standard);
   }
 
   &[data-disabled] {

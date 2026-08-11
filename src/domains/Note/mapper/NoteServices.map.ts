@@ -7,6 +7,7 @@ import { coerceResourceActions, RESOURCE_ACTION, resourceActionsInclude } from '
 import { ResourceServicesMap } from '@/domains/Resource/mapper/ResourceServices.map';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { normalizeId } from '@/utils/normalize/normalizeId';
+import { isRecord } from '@/utils/typeGuards';
 import type {
   CreateNoteRequest,
   CreateNoteResponse,
@@ -110,9 +111,6 @@ const mapSaveDrawIoSnapshotRequest = (
   data: encodeBase64Utf8(params.xml),
   plainText: params.plainText,
 });
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 const readNumber = (value: unknown, fallback = 0): number =>
   typeof value === 'number' ? value : fallback;

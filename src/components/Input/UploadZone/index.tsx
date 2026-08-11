@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import EntryIcon from '@/components/Icons/EntryIcon';
 import {
   Attachment,
@@ -10,7 +11,8 @@ import {
   AttachmentTitle,
 } from '@/components/_shadcn';
 import { formatFileSize } from '@/utils/format/formatFileSize';
-import { Button, ProgressBar } from '@heroui/react';
+import { ProgressBar } from '@heroui/react';
+
 import { UploadCloud, X } from 'lucide-react';
 import { useRef, useState, type ChangeEvent, type DragEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -188,9 +190,9 @@ function UploadZone({
           })}
           {multiple && selectedFiles.length > 1 && (
             <div className={styles.fileListActions}>
-              <Button variant="ghost" size="sm" isDisabled={disabled} onPress={removeFile}>
+              <AppButton variant="ghost" size="sm" isDisabled={disabled} onPress={removeFile}>
                 {t('uploadZone.clear')}
-              </Button>
+              </AppButton>
             </div>
           )}
         </AttachmentGroup>

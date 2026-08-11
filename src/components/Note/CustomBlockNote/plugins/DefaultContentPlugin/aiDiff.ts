@@ -1,4 +1,5 @@
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+import { isRecord } from '@/utils/typeGuards';
 import styles from '../../engines/aiDiff/style.module.less';
 import {
   type AiDiffTextConfig,
@@ -42,10 +43,6 @@ const BOOLEAN_STYLE_TAGS = [
 
 type RichTextDiffPlan =
   { mode: 'granular'; hunks: readonly AiDiffTextHunk[] } | { mode: 'content' };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 function readInlineProps(inline: Record<string, unknown>): Record<string, unknown> {
   return isRecord(inline.props) ? inline.props : inline;

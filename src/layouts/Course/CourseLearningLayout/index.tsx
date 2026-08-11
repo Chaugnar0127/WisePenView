@@ -12,8 +12,8 @@ import {
   SystemResizablePanelGroup,
 } from '@/layouts/_common/SystemResizable';
 import ResourceShellHeader from '@/layouts/Resource/ResourceShellHeader';
+import { cn } from '@/utils/cn';
 import type { ResourceHostLayoutConfig } from '@/views/resource/ResourceHostContext';
-import clsx from 'clsx';
 import { PanelRightClose, PanelRightOpen, Video } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -98,7 +98,7 @@ function CourseLearningLayout() {
   return (
     <SystemResizablePanelGroup
       orientation="horizontal"
-      className={clsx(styles.root, chatDock.open && styles.rootChatOpen)}
+      className={cn(styles.root, chatDock.open && styles.rootChatOpen)}
       resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
       onLayoutChanged={chatDock.handleLayoutChanged}
     >

@@ -1,15 +1,5 @@
 @import '@/styles/scrollbar.module.less';
 
-@keyframes reasoning-shimmer {
-  from {
-    background-position: 120% 0;
-  }
-
-  to {
-    background-position: -120% 0;
-  }
-}
-
 @keyframes brain-pulse {
   0%,
   100% {
@@ -72,20 +62,20 @@
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  animation: reasoning-shimmer 1.35s ease-in-out infinite;
+  animation: var(--animate-skeleton);
 }
 
 .indicator {
   flex-shrink: 0;
   color: currentColor;
-  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform var(--motion-duration-mid) var(--motion-ease-fluid);
 
   &[data-expanded='true'] {
     transform: rotate(180deg);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
   }
 }
 

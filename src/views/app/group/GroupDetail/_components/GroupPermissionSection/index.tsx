@@ -1,7 +1,8 @@
+import { AppButton } from '@/components/Button';
 import GroupDefaultAccessPermissionModal from '@/components/Group/DefaultAccessPermissionModal';
 import type { GroupResConfig } from '@/domains/Group';
 import GroupMountPermissionModal from '@/views/app/group/_components/GroupPermissions/GroupMountPermissionModal';
-import { Button } from '@heroui/react';
+
 import { FolderInput, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -27,14 +28,14 @@ function GroupPermissionSection({
     <>
       <GroupSettingsSection title={t('settings.permissions')} compact>
         <div className={styles.permissionActions}>
-          <Button variant="secondary" onPress={() => setAccessPermissionOpen(true)}>
+          <AppButton variant="secondary" onPress={() => setAccessPermissionOpen(true)}>
             <ShieldCheck size={16} aria-hidden="true" />
             {t('settings.accessPermission')}
-          </Button>
-          <Button variant="secondary" onPress={() => setMountPermissionOpen(true)}>
+          </AppButton>
+          <AppButton variant="secondary" onPress={() => setMountPermissionOpen(true)}>
             <FolderInput size={16} aria-hidden="true" />
             {t('settings.mountPermission')}
-          </Button>
+          </AppButton>
         </div>
       </GroupSettingsSection>
 

@@ -1,8 +1,7 @@
 import { useDriveService } from '@/domains';
 import type { DriveContainerNode } from '@/domains/Drive';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 import { getDriveScopeGroupId, type DriveActionTarget } from '../../common/driveComponentModel';
 import DriveFolderPickerModal from '../DriveFolderPickerModal';
@@ -40,7 +39,7 @@ function MoveNodeModal({
     return next;
   })();
 
-  const { loading: moving, run: runMove } = useRequest(
+  const { loading: moving, run: runMove } = useApi(
     async (target: DriveContainerNode) => {
       if (nodes.length === 0) return { requestedCount: 0, affectedCount: 0 };
       return driveService.moveNodes({ nodes, target });
@@ -62,9 +61,8 @@ function MoveNodeModal({
         onSuccess?.(target);
         onOpenChange(false);
       },
-      onError: (err) => {
+      onErrorEffect: (err) => {
         onError?.();
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

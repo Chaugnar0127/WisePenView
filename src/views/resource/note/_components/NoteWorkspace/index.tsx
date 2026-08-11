@@ -1,4 +1,5 @@
-﻿import { Spin } from '@/components/Feedback';
+﻿import { AppButton } from '@/components/Button';
+import { Spin } from '@/components/Feedback';
 import InlineComment from '@/components/InlineComment';
 import { UnsavedChangesDialog } from '@/components/Overlay';
 import { useMemoizedFn, useUnmount } from 'ahooks';
@@ -20,7 +21,8 @@ import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
-import { Alert, Button } from '@heroui/react';
+import { Alert } from '@heroui/react';
+
 import { Download, History } from 'lucide-react';
 import styles from '../../style.module.less';
 import NoteInfoBar from '../NoteInfoBar';
@@ -330,14 +332,14 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
                       <Alert.Description>{t('workspace.disconnected')}</Alert.Description>
                     </Alert.Content>
                     <div className={styles.wsAlertAction}>
-                      <Button
+                      <AppButton
                         variant="secondary"
                         size="sm"
                         isDisabled={status !== 'disconnected'}
                         onPress={reconnect}
                       >
                         {t('workspace.retry')}
-                      </Button>
+                      </AppButton>
                     </div>
                   </Alert>
                 ) : null}

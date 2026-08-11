@@ -1,4 +1,5 @@
 import { buildApiUrl } from '@/apis/clientUrls';
+import { cn } from '@/utils/cn';
 import { createClientError, FRONTEND_CLIENT_ERROR, isWisePenError } from '@/utils/error';
 import {
   PDFViewer as EmbedPdfViewer,
@@ -7,7 +8,6 @@ import {
   type PDFViewerRef,
 } from '@embedpdf/react-pdf-viewer';
 import { useMount, useUnmount } from 'ahooks';
-import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PdfViewerProps } from './index.type';
@@ -131,7 +131,7 @@ function PdfViewer({ resourceId, sourceUrl, config, className, onLoadError }: Pd
     <EmbedPdfViewer
       ref={viewerRef}
       config={viewerConfig}
-      className={clsx(styles.viewer, className)}
+      className={cn(styles.viewer, className)}
     />
   );
 }

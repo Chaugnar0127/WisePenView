@@ -1,12 +1,12 @@
+import { cn } from '@/utils/cn';
 import { InputGroup as HeroInputGroup } from '@heroui/react';
-import clsx from 'clsx';
 
 import type { InputGroupProps } from './index.type';
 import styles from './style.module.less';
 
 function InputGroupRoot({ className, variant = 'secondary', ...props }: InputGroupProps) {
   return (
-    <HeroInputGroup variant={variant} className={clsx(styles.inputGroup, className)} {...props} />
+    <HeroInputGroup variant={variant} className={cn(styles.inputGroup, className)} {...props} />
   );
 }
 

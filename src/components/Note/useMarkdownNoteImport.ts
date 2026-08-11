@@ -1,7 +1,6 @@
 import { useNoteService } from '@/domains';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { useRef, type ChangeEvent, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePendingNoteImportStore } from './_store/usePendingNoteImportStore';
@@ -45,7 +44,7 @@ export function useMarkdownNoteImport({
   const noteService = useNoteService();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { loading: importing, run: importMarkdownNote } = useRequest(
+  const { loading: importing, run: importMarkdownNote } = useApi(
     async (file: File) => {
       if (!isMarkdownFile(file.name)) {
         throw createClientError(FRONTEND_CLIENT_ERROR.DOCUMENT_UNSUPPORTED_TYPE);
@@ -74,9 +73,8 @@ export function useMarkdownNoteImport({
     {
       manual: true,
       onSuccess,
-      onError: (error) => {
+      onErrorEffect: (error) => {
         onError?.();
-        toast.danger(parseErrorMessage(error));
       },
     }
   );

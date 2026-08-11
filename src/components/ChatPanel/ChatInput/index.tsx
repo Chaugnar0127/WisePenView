@@ -1,6 +1,6 @@
 import { FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH } from '@/constants/layoutScale';
+import { cn } from '@/utils/cn';
 import { TextArea } from '@heroui/react';
-import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -78,7 +78,7 @@ function ChatInputContent({
     >
       <div
         ref={inputCardRef}
-        className={clsx(styles.inputCard, isDragOver && styles.inputCardDragOver)}
+        className={cn(styles.inputCard, isDragOver && styles.inputCardDragOver)}
       >
         <AttachmentStrip />
 

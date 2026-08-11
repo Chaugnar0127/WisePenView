@@ -1,7 +1,8 @@
+import { AppButton } from '@/components/Button';
 import AppBanner from '@/components/Overlay/AppBanner';
 import AppModal from '@/components/Overlay/AppModal';
 import { USER_STATUS } from '@/domains/User';
-import { Button } from '@heroui/react';
+
 import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -63,14 +64,14 @@ function AccountVerification({
         isDismissable={!verification.verifySubmitting}
         actions={
           <>
-            <Button
+            <AppButton
               variant="secondary"
               isDisabled={verification.verifySubmitting}
               onPress={handleVerifyModalClose}
             >
               {t('common:actions.cancel')}
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               variant="primary"
               isDisabled={verification.verifySubmitting}
               aria-busy={verification.verifySubmitting || undefined}
@@ -79,7 +80,7 @@ function AccountVerification({
               {verification.verifyMode === 'email'
                 ? t('profile:verification.sendEmail')
                 : t('profile:verification.startUis')}
-            </Button>
+            </AppButton>
           </>
         }
       >

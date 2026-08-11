@@ -1,6 +1,7 @@
 import TableDrive from '@/components/Drive/TableDrive';
 import { useDriveService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
+import { useApi } from '@/hooks/useApi';
 import PageHeader from '@/layouts/_common/PageHeader';
 import { parseErrorMessage } from '@/utils/error';
 import {
@@ -12,7 +13,6 @@ import {
 } from '@/utils/navigation/driveRoute';
 import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 import { Tabs, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -34,16 +34,12 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   const driveService = useDriveService();
   const driveScope = buildDriveNodeScope();
   const isTrashView = viewMode === 'trash';
-  const handleTrashRootError = (error: unknown) => {
-    toast.danger(parseErrorMessage(error));
-  };
 
-  const { data: trashFolder } = useRequest(
+  const { data: trashFolder } = useApi(
     () => driveService.getSystemFolder({ scope: driveScope, type: 'trash' }),
     {
       ready: isTrashView && !folderId,
       refreshDeps: [viewMode, folderId],
-      onError: handleTrashRootError,
     }
   );
   const trashFolderNodeId = trashFolder?.id;

@@ -1,14 +1,16 @@
-import { Input, TextArea, UploadZone } from '@/components/Input';
+import { AppButton } from '@/components/Button';
+import { FormField, Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
 import { GROUP_TYPE, type EditGroupRequest, type Group } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { parseErrorMessage } from '@/utils/error';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { PLACEHOLDER_IMAGE } from '@/utils/image/placeholder';
 import { assertImageProxyUploadLimit } from '@/utils/image/uploadLimit';
-import { Button, Label, TextField, toast, Tooltip } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { toast, Tooltip } from '@heroui/react';
+
 import { Pencil } from 'lucide-react';
 import { useRef, useState, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -46,7 +48,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
   const [modalCoverFile, setModalCoverFile] = useState<File | null>(null);
   const coverPreviewRequestRef = useRef(0);
 
-  const { loading: saving, run: runSave } = useRequest(
+  const { loading: saving, run: runSave } = useApi(
     async (nextDraft: GroupProfileDraft): Promise<GroupProfileDraft> => {
       let groupCoverUrl = group.groupCoverUrl;
       if (nextDraft.coverFile) {
@@ -84,9 +86,6 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
           group.groupType === GROUP_TYPE.ADVANCED ? t('profile.course.saved') : t('profile.saved')
         );
         onSuccess();
-      },
-      onError: (error: unknown) => {
-        toast.danger(parseErrorMessage(error));
       },
     }
   );
@@ -211,17 +210,17 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
         actions={
           canEdit ? (
             <>
-              <Button variant="secondary" isDisabled={saving} onPress={handleRestore}>
+              <AppButton variant="secondary" isDisabled={saving} onPress={handleRestore}>
                 {t('profile.restore')}
-              </Button>
-              <Button
+              </AppButton>
+              <AppButton
                 variant="primary"
                 isDisabled={saving}
                 aria-busy={saving || undefined}
                 onPress={handleSave}
               >
                 {t('actions.save', { ns: 'common' })}
-              </Button>
+              </AppButton>
             </>
           ) : undefined
         }
@@ -230,27 +229,27 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
           <div className={styles.fields}>
             {canEdit ? (
               <>
-                <TextField
+                <FormField
+                  label={nameLabel}
                   aria-label={nameLabel}
                   value={draft.groupName}
                   onChange={(value) => updateDraft('groupName', value)}
                   isRequired
                 >
-                  <Label>{nameLabel}</Label>
                   <Input placeholder={namePlaceholder} />
-                </TextField>
-                <TextField
+                </FormField>
+                <FormField
+                  label={descriptionLabel}
                   aria-label={descriptionLabel}
                   value={draft.groupDesc}
                   onChange={(value) => updateDraft('groupDesc', value)}
                 >
-                  <Label>{descriptionLabel}</Label>
                   <TextArea
                     rows={5}
                     className={styles.descriptionTextArea}
                     placeholder={descriptionPlaceholder}
                   />
-                </TextField>
+                </FormField>
               </>
             ) : (
               <dl className={styles.readonlyFields}>
@@ -324,20 +323,20 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
         isDismissable={!saving}
         actions={
           <>
-            <Button
+            <AppButton
               variant="secondary"
               isDisabled={saving}
               onPress={() => handleCoverModalOpenChange(false)}
             >
               {t('actions.cancel', { ns: 'common' })}
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               variant="primary"
               isDisabled={!modalCoverFile || saving}
               onPress={handleConfirmCover}
             >
               {t('actions.confirm', { ns: 'common' })}
-            </Button>
+            </AppButton>
           </>
         }
       >

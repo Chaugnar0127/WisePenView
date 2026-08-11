@@ -13,7 +13,7 @@
 
 .dialogOverlay {
   position: fixed;
-  z-index: 50;
+  z-index: var(--app-z-index-command);
   inset: 0;
   background: var(--backdrop);
 
@@ -28,7 +28,7 @@
 
 .dialogContent {
   position: fixed;
-  z-index: 50;
+  z-index: var(--app-z-index-command);
   top: 50%;
   left: 50%;
   width: min(32rem, calc(100vw - 32px));
@@ -53,12 +53,12 @@
 
 .inputWrapper {
   position: relative;
-  padding: 8px 12px;
+  padding: var(--space-xs) var(--space-sm);
 }
 
 .searchIcon {
   position: absolute;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   top: 50%;
   left: 24px;
   width: 16px;
@@ -84,7 +84,7 @@
 }
 
 .list:global(.list-box) {
-  padding: 4px 12px;
+  padding: var(--space-2xs) var(--space-sm);
   outline: none;
 }
 
@@ -93,7 +93,7 @@
 }
 
 .groupHeading {
-  padding: 6px 8px;
+  padding: var(--space-2xs-plus) var(--space-xs);
   color: var(--muted);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
@@ -147,7 +147,7 @@
 .separator {
   width: calc(100% - 8px);
   height: 1px;
-  margin: 4px;
+  margin: var(--space-2xs);
   background: var(--border, var(--separator));
 }
 

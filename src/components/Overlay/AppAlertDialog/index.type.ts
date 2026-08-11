@@ -1,14 +1,14 @@
 import type { ComponentProps, ReactNode } from 'react';
 
-import type { AlertDialog } from '@heroui/react';
+import type { Modal } from '../Modal';
 
 export type AppAlertDialogType = 'confirm' | 'warning' | 'danger';
 
-export type AppAlertDialogSize = ComponentProps<typeof AlertDialog.Container>['size'];
+export type AppAlertDialogSize = ComponentProps<typeof Modal.Container>['size'];
 
-export type AppAlertDialogPlacement = ComponentProps<typeof AlertDialog.Container>['placement'];
+export type AppAlertDialogPlacement = ComponentProps<typeof Modal.Container>['placement'];
 
-export type AppAlertDialogStatus = ComponentProps<typeof AlertDialog.Icon>['status'];
+export type AppAlertDialogStatus = 'default' | 'warning' | 'danger';
 
 export interface AppAlertDialogClassNames {
   backdrop?: string;
@@ -38,6 +38,8 @@ export interface AppAlertDialogProps {
   isDismissable?: boolean;
   size?: AppAlertDialogSize;
   placement?: AppAlertDialogPlacement;
+  contentDelay?: number;
+  deferContent?: boolean;
   icon?: ReactNode | false;
   actions?: ReactNode;
   footer?: ReactNode | false | null;
@@ -50,6 +52,6 @@ export interface AppAlertDialogProps {
   classNames?: AppAlertDialogClassNames;
 }
 
-export type AppAlertDialogBodyProps = ComponentProps<typeof AlertDialog.Body>;
+export type AppAlertDialogBodyProps = ComponentProps<typeof Modal.Body>;
 
-export type AppAlertDialogFooterProps = ComponentProps<typeof AlertDialog.Footer>;
+export type AppAlertDialogFooterProps = ComponentProps<typeof Modal.Footer>;

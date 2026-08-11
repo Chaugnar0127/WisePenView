@@ -1,7 +1,6 @@
 import { useCourseService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,7 +23,7 @@ export const useCourseOutlineDescriptionController = ({
   const [draft, setDraft] = useState(initialDescription ?? '');
   const [editing, setEditing] = useState(false);
 
-  const saveRequest = useRequest(
+  const saveRequest = useApi(
     async () => {
       const normalizedDescription = draft.trim();
       await courseService.updateCourseOutlineSectionDescription({
@@ -42,7 +41,6 @@ export const useCourseOutlineDescriptionController = ({
         onSaved();
         toast.success(t('outline.descriptionSaved'));
       },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 

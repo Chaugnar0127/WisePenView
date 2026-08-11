@@ -63,13 +63,7 @@ export const formatTimestampToDate = (timestamp?: TimestampInput): string => {
   return `${year}-${month}-${day}`;
 };
 
-const formatAbsoluteMedium = (date: Date, locale: string): string =>
-  new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-
-/** 相对时间（如「3 分钟前」）；超过 7 天回退到中等日期 + 短时间 */
+/** 相对时间（如「3 分钟前」）；超过 7 天回退到统一日期时间格式 */
 export const formatRelativeTimestamp = (timestamp?: TimestampInput, locale = 'zh-CN'): string => {
   const date = parseTimestampToDate(timestamp);
   if (!date) {
@@ -78,7 +72,7 @@ export const formatRelativeTimestamp = (timestamp?: TimestampInput, locale = 'zh
 
   const diffMs = date.getTime() - Date.now();
   if (Math.abs(diffMs) >= SEVEN_DAYS_MS) {
-    return formatAbsoluteMedium(date, locale);
+    return formatTimestampToDateTime(date);
   }
 
   const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });

@@ -1,7 +1,4 @@
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
+import { isRecord } from '@/utils/typeGuards';
 /** Slash Menu 新建 Mermaid 图表时使用的可直接渲染示例。 */
 export const DEFAULT_MERMAID_SOURCE = 'flowchart TD\n  A[开始] --> B[结束]';
 

@@ -45,8 +45,10 @@ html[data-theme-radius='large'] {
   --font-size-2xs: 11px;
   --font-size-md: var(--font-size-base);
   --font-size-lg: 18px;
+  --font-size-heading-1: 26px;
   --font-size-heading-2: 20px;
   --font-size-heading-3: 24px;
+  --font-size-heading-4: 22px;
   --font-size-heading-5: 16px;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -60,10 +62,13 @@ html[data-theme-radius='large'] {
   --line-height-2xs: 16px;
   --font-sans: var(--app-font-family);
   --font-mono: var(--app-font-mono);
+  --space-3xs: 2px;
   --space-2xs: 4px;
+  --space-2xs-plus: 6px;
   --space-xs: 8px;
   --space-sm: 12px;
   --space-md: 16px;
+  --space-md-plus: 20px;
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 40px;
@@ -181,6 +186,16 @@ html[data-theme-radius='large'] {
   --table-overlay-radius: var(--table-shell-radius);
   --table-inner-radius: var(--radius-lg);
   /* Overlay 层级统一由主题维护，避免业务样式各自猜数字造成互相遮挡。 */
+  --app-z-index-base: 0;
+  --app-z-index-raised: 1;
+  --app-z-index-elevated: 2;
+  --app-z-index-sticky: 3;
+  --app-z-index-sticky-raised: 4;
+  --app-z-index-sticky-header: 5;
+  --app-z-index-floating: 10;
+  --app-z-index-local-overlay: 20;
+  --app-z-index-dock: 30;
+  --app-z-index-command: 50;
   --app-z-index-editor-menu: 180;
   --app-z-index-editor-toolbar: 220;
   --app-z-index-popover: 400;
@@ -190,6 +205,7 @@ html[data-theme-radius='large'] {
   --app-z-index-toast: 1100;
   --table-drive-layout-max-height: calc(100dvh - var(--layout-drive-chrome-height, 240px));
   --shadow-sm: 0 1px 2px 0 color-mix(in srgb, var(--black) 3%, transparent);
+  --shadow-none: none;
   --shadow-md: var(--card-shadow);
   --shadow-lg: 0 8px 24px color-mix(in srgb, var(--foreground) 12%, transparent);
   --scrollbar-size: 8px;
@@ -200,5 +216,16 @@ html[data-theme-radius='large'] {
   --line-width: 1px;
   --motion-duration-fast: 0.1s;
   --motion-duration-mid: 0.2s;
+  --motion-duration-slow: 0.3s;
+  --motion-duration-emphasis: 0.52s;
+  --motion-duration-reduced: 0.01ms;
+  --motion-ease-standard: ease;
+  --motion-ease-in: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  --motion-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --motion-ease-in-out: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  --motion-ease-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --transition-fast: var(--motion-duration-fast);
+  --transition-mid: var(--motion-duration-mid);
+  --transition-slow: var(--motion-duration-slow);
 }

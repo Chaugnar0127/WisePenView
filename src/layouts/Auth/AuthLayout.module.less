@@ -21,26 +21,26 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   .desktopTitleBarChrome();
 }
 
 .titleBarInsetStart {
-  padding-left: @desktop-titlebar-start-inset;
+  padding-left: var(--desktop-titlebar-start-inset, 92px);
 }
 
 .titleBarInsetEnd {
-  padding-right: @desktop-titlebar-end-reserve;
+  padding-right: var(--desktop-window-controls-width, 116px);
   .desktopTitleBarEndNoDragHole();
 }
 
 .authSheet {
   position: relative;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   height: 680px;
   width: 1200px;
   overflow: hidden;
-  border-radius: var(--radius-lg, var(--radius, 8px));
+  border-radius: var(--radius-lg, var(--radius, var(--radius-lg)));
   border: 1px solid var(--border);
   background-color: var(--surface);
   display: flex;

@@ -1,14 +1,16 @@
-import { Input, TextArea, UploadZone } from '@/components/Input';
+import { AppButton } from '@/components/Button';
+import { FormField, Input, TextArea, UploadZone } from '@/components/Input';
 import { AppPopover } from '@/components/Overlay';
 import AppModal from '@/components/Overlay/AppModal';
 import { FEEDBACK_TYPE, useImageService, useUserService, type FeedbackType } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import {
   assertImageProxyUploadLimit,
   IMAGE_UPLOAD_MAX_SIZE_LABEL,
 } from '@/utils/image/uploadLimit';
-import { Button, Label, ListBox, TextField, toast, type Selection } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { ListBox, toast, type Selection } from '@heroui/react';
+
 import { ChevronDown } from 'lucide-react';
 import { useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -93,7 +95,7 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
     }
   };
 
-  const { loading: submitting, run: runSubmitFeedback } = useRequest(
+  const { loading: submitting, run: runSubmitFeedback } = useApi(
     async (values: FeedbackFormValues) => {
       let imageUrl: string | undefined;
       if (values.image) {
@@ -118,9 +120,6 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
         toast.success(t('feedback.success'));
         resetForm();
         onOpenChange(false);
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -171,17 +170,17 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
       isDismissable={!submitting}
       actions={
         <>
-          <Button variant="secondary" isDisabled={submitting} onPress={handleCancel}>
+          <AppButton variant="secondary" isDisabled={submitting} onPress={handleCancel}>
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={submitting}
             aria-busy={submitting || undefined}
             onPress={handleConfirm}
           >
             {t('actions.submit', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >
@@ -194,7 +193,7 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
         </span>
         <AppPopover>
           <AppPopover.Trigger>
-            <Button
+            <AppButton
               variant="outline"
               className={styles.typeTrigger}
               isDisabled={submitting}
@@ -206,7 +205,7 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
                 {selectedTypeLabel}
               </span>
               <ChevronDown size={16} aria-hidden className={styles.typeChevron} />
-            </Button>
+            </AppButton>
           </AppPopover.Trigger>
           <AppPopover.Content className={styles.typePopover} placement="bottom start">
             <ListBox
@@ -231,16 +230,16 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
         </AppPopover>
       </div>
 
-      <TextField
+      <FormField
+        label={t('feedback.contentLabel')}
         aria-label={t('feedback.contentLabel')}
         value={formValues.content}
         onChange={(value) => updateFormValue('content', value)}
         isDisabled={submitting}
         isRequired
       >
-        <Label>{t('feedback.contentLabel')}</Label>
         <TextArea rows={5} placeholder={t('feedback.contentPlaceholder')} />
-      </TextField>
+      </FormField>
 
       <div className={styles.imageField}>
         <span className={styles.fieldLabel}>{t('feedback.imageLabel')}</span>
@@ -254,16 +253,16 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
         />
       </div>
 
-      <TextField
+      <FormField
+        label={t('feedback.contactLabel')}
         aria-label={t('feedback.contactLabel')}
         value={formValues.contact}
         onChange={(value) => updateFormValue('contact', value)}
         isDisabled={submitting}
         isRequired
       >
-        <Label>{t('feedback.contactLabel')}</Label>
         <Input placeholder={t('feedback.contactPlaceholder')} />
-      </TextField>
+      </FormField>
     </AppModal>
   );
 }

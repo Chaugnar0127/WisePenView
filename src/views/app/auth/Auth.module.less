@@ -39,7 +39,7 @@
   :global(input) {
     width: 100%;
     min-width: 0;
-    padding-left: 40px;
+    padding-left: var(--space-2xl);
   }
 
   :global([data-slot='input-wrapper']),
@@ -53,7 +53,7 @@
   position: absolute;
   left: 14px;
   top: 50%;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   width: 18px;
   height: 18px;
   color: var(--muted);
@@ -62,7 +62,7 @@
 }
 
 .fieldError {
-  margin: 6px 0 0;
+  margin: var(--space-2xs-plus) 0 0;
   color: var(--danger-text);
   font-size: var(--font-size-sm, 14px);
   line-height: 1.4;
@@ -71,24 +71,24 @@
 .formActions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-xs);
 }
 
 .submitButton {
   width: 100%;
-  margin-top: 4px;
+  margin-top: var(--space-2xs);
 }
 
 .centerLinks {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .rightLinks {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 // 底部左侧链接，用户协议展示
@@ -97,8 +97,8 @@
   flex-wrap: wrap;
   justify-content: flex-start;
   align-items: center;
-  gap: 4px;
-  margin-top: 12px;
+  gap: var(--space-2xs);
+  margin-top: var(--space-sm);
   color: var(--foreground);
 
   :global(.checkbox) {
@@ -128,7 +128,7 @@
 .onboardingActions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-sm);
 
   > :global(button) {
     width: 100%;

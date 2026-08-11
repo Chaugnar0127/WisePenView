@@ -91,7 +91,7 @@
 
 .middlePanelActions {
   display: flex;
-  gap: 2px;
+  gap: var(--space-3xs);
   flex-shrink: 0;
 }
 
@@ -106,8 +106,8 @@
   align-items: center;
   justify-content: center;
   transition:
-    color 0.15s,
-    background 0.15s;
+    color var(--motion-duration-fast),
+    background var(--motion-duration-fast);
 }
 
 .treeWrap {
@@ -115,7 +115,7 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  .appSubtleScrollbarStable();
+  .appSubtleScrollbar();
   padding: var(--space-sm);
 }
 
@@ -126,11 +126,11 @@
 .treeDropHint {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   margin-bottom: var(--space-sm);
   padding: var(--space-sm);
   border: 1px dashed var(--accent-border);
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--radius-sm, var(--radius-sm));
   background: var(--accent-soft);
   color: var(--accent-text);
   font-size: var(--font-size-sm);
@@ -175,7 +175,7 @@
 
 .configTreeBadge {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   white-space: nowrap;
 }
 
@@ -219,7 +219,7 @@
 .editorTabsList {
   width: auto;
   min-height: 26px;
-  padding: 2px;
+  padding: var(--space-3xs);
 }
 
 .editorTab {
@@ -248,7 +248,7 @@
   height: 100%;
   min-height: 0;
   overflow: auto;
-  .appSubtleScrollbarStable();
+  .appSubtleScrollbar();
   background: var(--surface);
 }
 
@@ -296,12 +296,12 @@
   width: min(100%, 800px);
   padding: 30px clamp(32px, 6%, 96px) 42px;
   overflow: auto;
-  .appSubtleScrollbarStable();
+  .appSubtleScrollbar();
 }
 
 .configFormHint {
   display: grid;
-  gap: 6px;
+  gap: var(--space-2xs-plus);
   color: var(--muted);
   font-size: var(--font-size-sm);
   line-height: 1.65;
@@ -309,7 +309,7 @@
 
 .configFormHint strong {
   color: var(--foreground);
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);
   line-height: 1.35;
 }

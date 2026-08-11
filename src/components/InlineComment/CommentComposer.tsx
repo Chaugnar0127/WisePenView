@@ -1,8 +1,8 @@
 import CommentInput, { type CommentInputImage } from '@/components/CommentInput';
 import { useImageService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { createUuid } from '@/utils/random/createUuid';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -37,7 +37,7 @@ function CommentComposer({ placeholder, imageUpload, onCancel, onSubmit }: Comme
     setSubmitError(undefined);
   };
 
-  const { loading: submitting, runAsync: submitComment } = useRequest(
+  const { loading: submitting, runAsync: submitComment } = useApi(
     async () => {
       if (!canSubmit) return;
       const imageUrls =
@@ -65,7 +65,8 @@ function CommentComposer({ placeholder, imageUpload, onCancel, onSubmit }: Comme
     },
     {
       manual: true,
-      onError: (error) => setSubmitError(parseErrorMessage(error)),
+      showErrorToast: false,
+      onErrorEffect: (error) => setSubmitError(parseErrorMessage(error)),
     }
   );
 

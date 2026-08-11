@@ -1,12 +1,13 @@
+import { AppButton } from '@/components/Button';
 import { Select } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import SelectedMemberList from '@/components/SelectedMemberList';
 import { useGroupService } from '@/domains';
 import { ROLE } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import type { EnumKey } from '@/utils/enum';
-import { parseErrorMessage } from '@/utils/error';
-import { Alert, Button, ListBox, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Alert, ListBox, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EditPermissionModalProps } from './index.type';
@@ -25,7 +26,7 @@ function EditPermissionModal({
   const { t } = useTranslation(['group', 'common']);
   const groupService = useGroupService();
   const [selectedPermission, setSelectedPermission] = useState<EnumKey<typeof ROLE>>('MEMBER');
-  const { loading, run: runUpdatePermission } = useRequest(
+  const { loading, run: runUpdatePermission } = useApi(
     async (role: number) =>
       groupService.updateMemberRole({
         groupId,
@@ -38,9 +39,6 @@ function EditPermissionModal({
         toast.success(t('member.editPermission.success', { count: memberIds.length }));
         onSuccess?.();
         onOpenChange(false);
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -71,17 +69,21 @@ function EditPermissionModal({
       isDismissable={!loading}
       actions={
         <>
-          <Button variant="secondary" isDisabled={loading} onPress={() => handleOpenChange(false)}>
+          <AppButton
+            variant="secondary"
+            isDisabled={loading}
+            onPress={() => handleOpenChange(false)}
+          >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={confirmDisabled || loading}
             aria-busy={loading || undefined}
             onPress={handleConfirm}
           >
             {t('actions.confirm', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

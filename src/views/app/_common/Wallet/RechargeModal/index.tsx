@@ -9,7 +9,7 @@
  */
 import { InputOTP, REGEXP_ONLY_DIGITS_AND_CHARS } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RechargeModalProps } from './index.type';
@@ -30,7 +30,7 @@ const OTP_GROUPS = [
 ];
 const OTP_ROWS = [OTP_GROUPS.slice(0, 2), OTP_GROUPS.slice(2)];
 
-function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeModalProps) {
+function RechargeModal({ isOpen, onOpenChange, groupDisplayName, onSubmit }: RechargeModalProps) {
   const { t } = useTranslation('wallet');
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState('');
@@ -39,7 +39,7 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
   const handleCancel = () => {
     setValue('');
     setCodeError('');
-    onCancel();
+    onOpenChange(false);
   };
 
   const title =
@@ -47,15 +47,12 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
       ? t('recharge.groupTitle', { name: groupDisplayName })
       : t('recharge.personalTitle');
 
-  const { loading: submitting, run: runRecharge } = useRequest(
-    async (code: string) => onSubmit(code),
-    {
-      manual: true,
-      onSuccess: () => {
-        handleCancel();
-      },
-    }
-  );
+  const { loading: submitting, run: runRecharge } = useApi(async (code: string) => onSubmit(code), {
+    manual: true,
+    onSuccess: () => {
+      handleCancel();
+    },
+  });
 
   const handleOk = () => {
     const code = normalizeVoucherCode(value);
@@ -75,7 +72,7 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
    * cleanup：取消尚未执行的 animation frame，避免关闭后的弹窗重新抢焦点。
    */
   useEffect(() => {
-    if (!open) {
+    if (!isOpen) {
       return;
     }
 
@@ -85,11 +82,11 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
     });
 
     return () => window.cancelAnimationFrame(animationFrameId);
-  }, [open, value.length]);
+  }, [isOpen, value.length]);
 
   return (
     <AppFormDialog
-      isOpen={open}
+      isOpen={isOpen}
       onOpenChange={(isOpen) => !isOpen && handleCancel()}
       title={title}
       size="lg"

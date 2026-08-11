@@ -22,7 +22,7 @@
   position: absolute;
   top: var(--space-md);
   right: var(--space-md);
-  z-index: 30;
+  z-index: var(--app-z-index-dock);
   box-sizing: border-box;
   width: min(38rem, calc(100% - 2 * var(--space-md)));
   pointer-events: auto;
@@ -123,7 +123,7 @@
   flex-direction: column;
   overflow: auto;
   padding: var(--space-lg);
-  .appSubtleScrollbarAutoHide();
+  .appSubtleScrollbar();
 
   &.mainColScrolling {
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
@@ -147,7 +147,7 @@
 .middleOverlay {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: var(--app-z-index-floating);
   display: flex;
   align-items: center;
   justify-content: center;

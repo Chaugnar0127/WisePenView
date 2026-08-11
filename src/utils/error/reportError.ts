@@ -4,6 +4,7 @@ import { isWisePenError } from './WisePenError';
 
 export type ErrorReportOrigin =
   | 'route'
+  | 'layout-boundary'
   | 'root-boundary'
   | 'react-uncaught'
   | 'react-recoverable'

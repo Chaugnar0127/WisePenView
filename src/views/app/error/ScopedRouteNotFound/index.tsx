@@ -1,6 +1,7 @@
+import { AppButton } from '@/components/Button';
 import { ResultState } from '@/components/Feedback';
 import ErrorPageShell from '@/views/app/error/_components/ErrorPageShell';
-import { Button } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import shellStyles from '../_components/ErrorPageShell/style.module.less';
@@ -22,10 +23,10 @@ function ScopedRouteNotFound({ homePath, homeLabelKey }: ScopedRouteNotFoundProp
         subTitle={t('page.notFoundDescription')}
         extra={
           <div className={shellStyles.actions}>
-            <Button variant="primary" onPress={() => navigate(homePath)}>
+            <AppButton variant="primary" onPress={() => navigate(homePath)}>
               {t(homeLabelKey)}
-            </Button>
-            <Button onPress={() => navigate(-1)}>{t('page.backPrevious')}</Button>
+            </AppButton>
+            <AppButton onPress={() => navigate(-1)}>{t('page.backPrevious')}</AppButton>
           </div>
         }
       />

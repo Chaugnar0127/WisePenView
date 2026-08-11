@@ -1,5 +1,6 @@
+import { AppButton } from '@/components/Button';
 import { AppMenu } from '@/components/Overlay';
-import { Button } from '@heroui/react';
+
 import { ChevronDown, GitBranch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { VersionDropdownProps } from './index.type';
@@ -11,11 +12,11 @@ function VersionDropdown({ items, disabledKeys, formatVersion, onSelect }: Versi
   return (
     <AppMenu>
       <AppMenu.Trigger>
-        <Button aria-label={t('version.selectAria')} variant="secondary">
+        <AppButton aria-label={t('version.selectAria')} variant="secondary">
           <GitBranch size={16} />
           <span>{currentItem ? formatVersion(currentItem.version) : '-'}</span>
           <ChevronDown size={10} />
-        </Button>
+        </AppButton>
       </AppMenu.Trigger>
       <AppMenu.Popover>
         <AppMenu.Menu

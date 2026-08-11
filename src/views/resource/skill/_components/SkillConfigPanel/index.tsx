@@ -1,5 +1,6 @@
+import { AppButton } from '@/components/Button';
 import { FormField, Input, TextArea } from '@/components/Input';
-import { Button } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import styles from '../../style.module.less';
 
@@ -84,17 +85,17 @@ function SkillConfigPanel({
             </span>
             {canEdit ? (
               <span className={styles.configFooterActions}>
-                <Button variant="secondary" isDisabled={!isDirty || isLoading} onPress={onReset}>
+                <AppButton variant="secondary" isDisabled={!isDirty || isLoading} onPress={onReset}>
                   {t('config.reset')}
-                </Button>
-                <Button
+                </AppButton>
+                <AppButton
                   variant="primary"
                   isDisabled={!isDirty || hasMissingConfig || isLoading}
                   aria-busy={isLoading || undefined}
                   onPress={onSave}
                 >
                   {t('config.update')}
-                </Button>
+                </AppButton>
               </span>
             ) : null}
           </footer>

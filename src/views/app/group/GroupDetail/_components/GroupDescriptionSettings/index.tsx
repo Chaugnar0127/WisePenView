@@ -1,5 +1,7 @@
+import { AppButton } from '@/components/Button';
+import { isAdmin, isOwner, type GroupRole } from '@/components/Group/GroupDisplayConfig';
 import type { Group, GroupResConfig } from '@/domains/Group';
-import { Button } from '@heroui/react';
+
 import { LogOut, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +15,7 @@ interface GroupDescriptionSettingsProps {
   group: Group;
   groupId: string;
   groupResConfig: GroupResConfig;
-  currentUserRole: 'OWNER' | 'ADMIN' | 'MEMBER';
+  currentUserRole: GroupRole;
   onRefresh: () => void;
 }
 
@@ -27,8 +29,8 @@ function GroupDescriptionSettings({
   const { t } = useTranslation('group');
   const [dissolveGroupModalOpen, setDissolveGroupModalOpen] = useState(false);
   const [exitGroupModalOpen, setExitGroupModalOpen] = useState(false);
-  const canEditProfile = currentUserRole === 'OWNER';
-  const canEditDefaultPermissions = currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
+  const canEditProfile = isOwner(currentUserRole);
+  const canEditDefaultPermissions = isOwner(currentUserRole) || isAdmin(currentUserRole);
 
   return (
     <div className={styles.settings}>
@@ -49,16 +51,16 @@ function GroupDescriptionSettings({
 
       <GroupSettingsSection title={t('settings.operations')}>
         <div className={styles.dangerAction}>
-          {currentUserRole === 'OWNER' ? (
-            <Button variant="danger" onPress={() => setDissolveGroupModalOpen(true)}>
+          {isOwner(currentUserRole) ? (
+            <AppButton variant="danger" onPress={() => setDissolveGroupModalOpen(true)}>
               <Trash2 size={16} aria-hidden="true" />
               {t('dissolve.title')}
-            </Button>
+            </AppButton>
           ) : (
-            <Button variant="danger" onPress={() => setExitGroupModalOpen(true)}>
+            <AppButton variant="danger" onPress={() => setExitGroupModalOpen(true)}>
               <LogOut size={16} aria-hidden="true" />
               {t('exit.title')}
-            </Button>
+            </AppButton>
           )}
         </div>
       </GroupSettingsSection>

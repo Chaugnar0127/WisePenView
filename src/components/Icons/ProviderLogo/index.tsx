@@ -1,3 +1,4 @@
+import { cn } from '@/utils/cn';
 import claudeIcon from '@lobehub/icons-static-svg/icons/claude.svg?url';
 import deepSeekIcon from '@lobehub/icons-static-svg/icons/deepseek.svg?url';
 import doubaoIcon from '@lobehub/icons-static-svg/icons/doubao.svg?url';
@@ -7,7 +8,6 @@ import metaIcon from '@lobehub/icons-static-svg/icons/meta.svg?url';
 import mistralIcon from '@lobehub/icons-static-svg/icons/mistral.svg?url';
 import openAiIcon from '@lobehub/icons-static-svg/icons/openai.svg?url';
 import qwenIcon from '@lobehub/icons-static-svg/icons/qwen.svg?url';
-import clsx from 'clsx';
 import type { ProviderLogoProps } from './index.type';
 import styles from './style.module.less';
 
@@ -34,7 +34,7 @@ function ProviderLogo({ provider, size = 16, className }: ProviderLogoProps) {
 
   return (
     <img
-      className={clsx(styles.logo, className)}
+      className={cn(styles.logo, className)}
       src={iconSrc}
       width={size}
       height={size}

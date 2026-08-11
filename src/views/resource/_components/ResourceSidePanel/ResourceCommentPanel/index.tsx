@@ -1,12 +1,15 @@
+import { AppButton } from '@/components/Button';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useInteractService, useUserService } from '@/domains';
 import type { CommentSortBy, ResourceComment } from '@/domains/Interact';
 import type { ResourceItem } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Tabs, toast } from '@heroui/react';
+import { Tabs, toast } from '@heroui/react';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useInfiniteScroll, useRequest } from 'ahooks';
+import { useInfiniteScroll } from 'ahooks';
 import { useEffect, useRef, useState, type Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import ResourceFavoriteAction from '../../ResourceFavoriteAction';
@@ -58,12 +61,12 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   const [previewImageUrl, setPreviewImageUrl] = useState<string>();
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const { data: currentUser } = useRequest(() => userService.getUserInfo());
+  const { data: currentUser } = useApi(() => userService.getUserInfo());
   const {
     data: interaction,
     loading: interactionLoading,
     refresh: refreshInteraction,
-  } = useRequest(() => interactService.getResourceInteraction(resourceId), {
+  } = useApi(() => interactService.getResourceInteraction(resourceId), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
   });
@@ -74,7 +77,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
       .finally(refreshInteraction);
   };
 
-  const { run: submitResourceLike, loading: resourceLikePending } = useRequest(
+  const { run: submitResourceLike, loading: resourceLikePending } = useApi(
     async (liked: boolean) => {
       await interactService.setResourceLike(resourceId, liked);
       return liked;
@@ -82,9 +85,8 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     {
       manual: true,
       onSuccess: notifyResourceChanged,
-      onError: (error) => {
+      onErrorEffect: (error) => {
         setOptimisticLike(undefined);
-        toast.danger(parseErrorMessage(error));
       },
     }
   );
@@ -116,7 +118,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     {
       reloadDeps: [resourceId, sortBy],
       isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -191,7 +192,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     }
   };
 
-  const { run: confirmDelete, loading: deleting } = useRequest(
+  const { run: confirmDelete, loading: deleting } = useApi(
     async () => {
       const target = pendingDeletion;
       if (!target) return;
@@ -206,7 +207,6 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
     },
     {
       manual: true,
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -338,7 +338,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
           </div>
 
           {commentPageData && !commentsNoMore ? (
-            <Button
+            <AppButton
               variant="ghost"
               size="sm"
               className={styles.loadMoreButton}
@@ -348,7 +348,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
               {commentsLoadingMore
                 ? t('resource:comment.loadingShort')
                 : t('resource:comment.loadMore')}
-            </Button>
+            </AppButton>
           ) : null}
         </section>
       </div>

@@ -1,4 +1,6 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/layoutMixins.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .root {
   position: relative;
@@ -38,10 +40,10 @@
 }
 
 .outlineSidebar {
-  display: flex;
+  .flexColumnMin();
+
   min-width: 0;
   min-height: 0;
-  flex-direction: column;
   border-right: 1px solid var(--border-light);
   background: transparent;
 }
@@ -90,7 +92,7 @@
 
 .outlineSearch > svg {
   position: absolute;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   top: 50%;
   left: var(--space-sm);
   transform: translateY(-50%);
@@ -112,7 +114,7 @@
   gap: var(--space-xs);
   padding: 0 var(--space-sm) 0 0;
   border: 0;
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--radius-md, var(--radius-md));
   color: var(--muted);
   background: transparent;
   font-family: inherit;
@@ -164,7 +166,7 @@
   background: transparent !important;
   font-size: 14px;
   font-weight: 400;
-  box-shadow: none !important;
+  box-shadow: var(--shadow-none) !important;
   outline: none;
 }
 
@@ -172,14 +174,14 @@
   min-height: 0;
   flex: 1;
   overflow-y: auto;
-  .appSubtleScrollbarStable();
+  .appSubtleScrollbar();
   padding: 0 var(--space-sm) var(--space-md);
 }
 
 .outlineCreateRow {
   display: flex;
   min-width: 0;
-  margin-top: 2px;
+  margin-top: var(--space-3xs);
 }
 
 .outlineTreeControl {
@@ -189,10 +191,10 @@
     min-height: 32px;
     width: 100%;
     padding-right: 0;
-    border-radius: var(--radius-md, 6px);
+    border-radius: var(--radius-md, var(--radius-md));
     transition:
-      background 0.2s ease,
-      color 0.2s ease;
+      background var(--motion-duration-mid) var(--motion-ease-standard),
+      color var(--motion-duration-mid) var(--motion-ease-standard);
 
     &:hover,
     &:focus-within {
@@ -251,13 +253,11 @@
 }
 
 .outlineNodeTitle {
+  .inlineFlexBetween(var(--space-xs));
+
   position: relative;
-  display: inline-flex;
   width: 100%;
   min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-xs);
 }
 
 .outlineNodeMain {
@@ -309,21 +309,21 @@
 
 .outlineNodeActions {
   position: absolute;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   top: 50%;
   right: 0;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-3xs);
   padding-left: var(--space-xs);
   opacity: 0;
   pointer-events: none;
   transform: translate(2px, -50%);
   background: linear-gradient(to right, transparent, var(--accent-soft) var(--space-xs));
   transition:
-    opacity 140ms ease,
-    transform 140ms ease;
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .outlineNodeActionButton {
@@ -339,7 +339,7 @@
   display: flex;
   width: 184px;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-3xs);
 }
 
 .outlineActionMenu button {
@@ -390,7 +390,7 @@
   overflow-y: auto;
   .appSubtleScrollbar();
   border: 1px solid var(--border);
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--radius-md, var(--radius-md));
 
   :global(.wisepen-tree__item[aria-expanded='true']) .outlineCollapsedIcon {
     display: none;
@@ -524,7 +524,7 @@
   background: var(--surface);
 }
 
-@media (max-width: 760px) {
+@media (max-width: @breakpoint-md) {
   .studyShell {
     grid-template-columns: 240px minmax(320px, 1fr);
   }

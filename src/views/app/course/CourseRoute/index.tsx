@@ -1,10 +1,11 @@
+import { AppButton } from '@/components/Button';
 import { ResultState, Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { CourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
+
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
@@ -15,10 +16,10 @@ function CourseRoute() {
   const courseService = useCourseService();
   const navigate = useNavigate();
   const { courseId = '' } = useParams<{ courseId: string }>();
-  const { data, loading, error, refresh } = useRequest(
-    () => courseService.getCourseDetail(courseId),
-    { ready: Boolean(courseId), refreshDeps: [courseId] }
-  );
+  const { data, loading, error, refresh } = useApi(() => courseService.getCourseDetail(courseId), {
+    ready: Boolean(courseId),
+    refreshDeps: [courseId],
+  });
 
   if (loading) {
     return (
@@ -37,13 +38,13 @@ function CourseRoute() {
           subTitle={error ? parseErrorMessage(error) : t('common.notFound')}
           extra={
             <div className={styles.resultActions}>
-              <Button variant="ghost" onPress={() => navigate(APP_ROUTE_PATH.COURSES)}>
+              <AppButton variant="ghost" onPress={() => navigate(APP_ROUTE_PATH.COURSES)}>
                 <ArrowLeft size={16} aria-hidden />
                 {t('common.backToCourseGroups')}
-              </Button>
-              <Button variant="primary" onPress={refresh}>
+              </AppButton>
+              <AppButton variant="primary" onPress={refresh}>
                 {t('common.retry')}
-              </Button>
+              </AppButton>
             </div>
           }
         />

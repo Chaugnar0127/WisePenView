@@ -1,9 +1,8 @@
 import QuotaBar from '@/components/QuotaBar';
 import { DataTable, type DataTableColumn } from '@/components/Table';
 import { useQuotaService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
-import { toast, type SortDescriptor } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { type SortDescriptor } from '@heroui/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { QuotaByGroupProps, UserGroupQuota } from './index.type';
@@ -36,7 +35,7 @@ function QuotaByGroup({ pagination }: QuotaByGroupProps) {
     return { quotas, total, currentPage: page };
   };
 
-  const { loading } = useRequest(() => fetchQuotaPage(1), {
+  const { loading } = useApi(() => fetchQuotaPage(1), {
     refreshDeps: [quotaService, pageSize],
     onBefore: () => {
       setQuotaPageData(INITIAL_QUOTA_PAGE_DATA);
@@ -44,15 +43,12 @@ function QuotaByGroup({ pagination }: QuotaByGroupProps) {
     onSuccess: (data) => {
       setQuotaPageData(data);
     },
-    onError: (error: unknown) => {
-      toast.danger(parseErrorMessage(error));
-    },
   });
 
   const hasMore =
     quotaPageData.currentPage > 0 && quotaPageData.currentPage * pageSize < quotaPageData.total;
 
-  const { loading: loadingMore, run: loadMore } = useRequest(
+  const { loading: loadingMore, run: loadMore } = useApi(
     async (): Promise<QuotaPageData> => {
       const canLoadMore =
         quotaPageData.currentPage > 0 && quotaPageData.currentPage * pageSize < quotaPageData.total;
@@ -71,9 +67,6 @@ function QuotaByGroup({ pagination }: QuotaByGroupProps) {
       manual: true,
       onSuccess: (data) => {
         setQuotaPageData(data);
-      },
-      onError: (error: unknown) => {
-        toast.danger(parseErrorMessage(error));
       },
     }
   );

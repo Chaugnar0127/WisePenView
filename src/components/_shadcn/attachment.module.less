@@ -12,9 +12,9 @@
   background: var(--surface);
   color: var(--foreground);
   transition:
-    border-color var(--motion-duration-mid) ease,
-    background var(--motion-duration-mid) ease,
-    box-shadow var(--motion-duration-mid) ease;
+    border-color var(--motion-duration-mid) var(--motion-ease-standard),
+    background var(--motion-duration-mid) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-mid) var(--motion-ease-standard);
 
   &:focus-within {
     box-shadow: 0 0 0 2px var(--accent-soft);
@@ -53,25 +53,25 @@
   font-size: var(--font-size-xs);
 
   &:has([data-slot='attachment-content']) {
-    padding: 6px var(--space-xs);
+    padding: var(--space-2xs-plus) var(--space-xs);
   }
 
   &:has([data-slot='attachment-media']) {
-    padding-left: 6px;
+    padding-left: var(--space-2xs-plus);
   }
 }
 
 .sizeXs {
-  gap: 6px;
+  gap: var(--space-2xs-plus);
   border-radius: var(--radius);
   font-size: var(--font-size-xs);
 
   &:has([data-slot='attachment-content']) {
-    padding: 4px 6px;
+    padding: var(--space-2xs) var(--space-2xs-plus);
   }
 
   &:has([data-slot='attachment-media']) {
-    padding-left: 4px;
+    padding-left: var(--space-2xs);
   }
 }
 
@@ -157,7 +157,7 @@
 
   .vertical & {
     width: 100%;
-    padding-inline: 4px;
+    padding-inline: var(--space-2xs);
   }
 }
 
@@ -178,7 +178,7 @@
     background-size: 220% 100%;
     background-clip: text;
     color: transparent;
-    animation: attachment-shimmer 1.35s ease-in-out infinite;
+    animation: var(--animate-skeleton);
   }
 }
 
@@ -186,7 +186,7 @@
   display: block;
   max-width: 100%;
   min-width: 0;
-  margin-top: 2px;
+  margin-top: var(--space-3xs);
   overflow: hidden;
   color: var(--muted);
   font-size: var(--font-size-xs);
@@ -201,7 +201,7 @@
 
 .actions {
   position: relative;
-  z-index: 20;
+  z-index: var(--app-z-index-local-overlay);
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -210,7 +210,7 @@
     position: absolute;
     top: var(--space-xs);
     right: var(--space-xs);
-    gap: 4px;
+    gap: var(--space-2xs);
   }
 }
 
@@ -225,7 +225,7 @@
 .trigger {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: var(--app-z-index-floating);
   border: 0;
   background: transparent;
   outline: none;
@@ -237,23 +237,13 @@
   gap: var(--space-sm);
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  padding-block: 4px;
+  padding-block: var(--space-2xs);
   scroll-padding-inline: 4px;
   scroll-snap-type: x mandatory;
-  .appSubtleScrollbarAutoHide();
+  .appSubtleScrollbar();
 
   > [data-slot='attachment'] {
     flex: none;
     scroll-snap-align: start;
-  }
-}
-
-@keyframes attachment-shimmer {
-  from {
-    background-position: 120% 0;
-  }
-
-  to {
-    background-position: -120% 0;
   }
 }

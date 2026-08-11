@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .actionsRow {
   display: flex;
   gap: var(--space-sm);
@@ -42,13 +43,13 @@
   text-align: center;
 }
 
-@media (max-width: 768px) {
+@media (max-width: @breakpoint-md) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: @breakpoint-sm) {
   .listControls {
     align-items: stretch;
     flex-direction: column;

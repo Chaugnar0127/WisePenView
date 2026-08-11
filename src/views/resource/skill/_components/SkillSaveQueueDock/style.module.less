@@ -13,7 +13,7 @@
   top: -3px;
   left: 0;
   right: 0;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   height: 6px;
   cursor: ns-resize;
   touch-action: none;
@@ -67,7 +67,7 @@
 
 .chevronIcon {
   color: var(--muted);
-  transition: transform 0.15s ease;
+  transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .chevronIconExpanded {
@@ -118,9 +118,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--radius-sm, var(--radius-sm));
   background: var(--surface);
   color: var(--foreground);
   padding: 0 7px;
@@ -140,12 +140,12 @@
   display: block;
   height: 100%;
   background: var(--foreground);
-  transition: width 0.18s ease;
+  transition: width var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .queueBody {
   overflow: auto;
-  .appSubtleScrollbarAutoHide();
+  .appSubtleScrollbar();
 }
 
 .emptyItem {
@@ -165,7 +165,7 @@
   grid-template-columns: 16px minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-xs);
-  padding: 6px var(--space-sm);
+  padding: var(--space-2xs-plus) var(--space-sm);
   border-bottom: 1px solid var(--border-light);
   background: var(--surface);
 
@@ -186,7 +186,7 @@
 }
 
 .spinningIcon {
-  animation: queueSpin 0.9s linear infinite;
+  animation: var(--animate-spin-fast);
 }
 
 .itemText {
@@ -211,7 +211,7 @@
 
   small {
     color: var(--muted);
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 }
 
@@ -226,14 +226,4 @@
 
 .itemPhaseFailed {
   color: var(--danger-text);
-}
-
-@keyframes queueSpin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }

@@ -1,39 +1,34 @@
+import { AppButton } from '@/components/Button';
 import { Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
 import { COURSE_ROLE } from '@/domains/Course';
+import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
+import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import {
   buildCourseAssignmentPath,
   buildCourseLearningPath,
   buildCoursePath,
 } from '@/utils/navigation/appRoute';
-import { Button, Meter, ProgressBar } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Meter, ProgressBar } from '@heroui/react';
+
 import { ArrowRight, Bell, BookOpen, CalendarClock, ClipboardCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styles from './style.module.less';
 
 function CourseHomeTab() {
-  const { t, i18n } = useTranslation('course');
+  const { t } = useTranslation('course');
   const { course } = useCourseContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
   const canEditOutline = course.myRole === COURSE_ROLE.TEACHER;
-  const { data, loading, error, refresh } = useRequest(() =>
+  const { data, loading, error, refresh } = useApi(() =>
     courseService.getCourseHome(course.courseId)
   );
   const visibleAssignments = data?.pendingAssignments.slice(0, 2) ?? [];
   const visibleAnnouncements = data?.announcements.slice(0, 2) ?? [];
-
-  const formatDateTime = (value: string) =>
-    new Date(value).toLocaleString(i18n.language, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
 
   if (loading) {
     return (
@@ -47,9 +42,9 @@ function CourseHomeTab() {
     return (
       <div className={styles.state}>
         <span>{error ? parseErrorMessage(error) : t('common.notFound')}</span>
-        <Button variant="secondary" onPress={refresh}>
+        <AppButton variant="secondary" onPress={refresh}>
           {t('common.retry')}
-        </Button>
+        </AppButton>
       </div>
     );
   }
@@ -72,13 +67,13 @@ function CourseHomeTab() {
               </p>
             </div>
           </div>
-          <Button
+          <AppButton
             variant="primary"
             onPress={() => navigate(buildCourseLearningPath(course.courseId))}
           >
             {canEditOutline ? t('home.enterEditing') : t('home.enterLearning')}
             <ArrowRight size={16} aria-hidden />
-          </Button>
+          </AppButton>
         </section>
 
         <section className={styles.homeSection}>
@@ -89,13 +84,13 @@ function CourseHomeTab() {
               </span>
               <h2>{t('home.pendingAssignments')}</h2>
             </div>
-            <Button
+            <AppButton
               variant="secondary"
               size="sm"
               onPress={() => navigate(buildCourseAssignmentPath(course.courseId))}
             >
               {t('home.viewAll')}
-            </Button>
+            </AppButton>
           </div>
           {visibleAssignments.length > 0 ? (
             <div className={styles.assignmentList}>
@@ -114,7 +109,7 @@ function CourseHomeTab() {
                   </span>
                   <span className={styles.deadline}>
                     <CalendarClock size={15} aria-hidden />
-                    {formatDateTime(assignment.deadline)}
+                    {formatTimestampToDateTime(assignment.deadline)}
                   </span>
                 </button>
               ))}
@@ -132,13 +127,13 @@ function CourseHomeTab() {
               </span>
               <h2>{t('home.announcements')}</h2>
             </div>
-            <Button
+            <AppButton
               variant="secondary"
               size="sm"
               onPress={() => navigate(buildCoursePath(course.courseId, 'announcements'))}
             >
               {t('home.viewAll')}
-            </Button>
+            </AppButton>
           </div>
           {visibleAnnouncements.length > 0 ? (
             <div className={styles.announcementList}>
@@ -146,7 +141,7 @@ function CourseHomeTab() {
                 <article key={announcement.announcementId} className={styles.announcement}>
                   <div>
                     <h3>{announcement.title}</h3>
-                    <time>{formatDateTime(announcement.publishTime)}</time>
+                    <time>{formatTimestampToDateTime(announcement.publishTime)}</time>
                   </div>
                   <p>{announcement.content}</p>
                 </article>

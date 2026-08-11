@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import type { ReactNode } from 'react';
 import styles from './style.module.less';
 
@@ -11,9 +11,9 @@ interface ResourceFrameProps {
 
 function ResourceFrame({ header, children, className, bodyClassName }: ResourceFrameProps) {
   return (
-    <div className={clsx(styles.root, className)}>
+    <div className={cn(styles.root, className)}>
       {header}
-      <div className={clsx(styles.body, bodyClassName)}>{children}</div>
+      <div className={cn(styles.body, bodyClassName)}>{children}</div>
     </div>
   );
 }

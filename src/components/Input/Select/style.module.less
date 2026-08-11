@@ -44,7 +44,7 @@
   background-color: var(--app-select-trigger-bg);
   color: var(--field-foreground, var(--foreground));
   font-weight: var(--field-text-font-weight, var(--font-weight-medium));
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
   letter-spacing: 0;
 }
 
@@ -84,7 +84,7 @@
 .selectTrigger:global(.select__trigger)[aria-disabled='true'] {
   border-color: color-mix(in oklab, var(--app-select-trigger-border) 76%, transparent);
   background-color: color-mix(in oklab, var(--app-select-trigger-bg) 78%, transparent);
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .select:global(.select) :global(.select__value) {

@@ -115,7 +115,7 @@
   max-width: 100%;
   min-width: var(--table-chip-min-width, 56px);
   min-height: var(--table-chip-min-height, 28px);
-  padding: var(--table-chip-padding-block, 4px) var(--table-chip-padding-inline, 14px);
+  padding: var(--table-chip-padding-block, var(--space-2xs)) var(--table-chip-padding-inline, 14px);
   border-radius: @table-inner-radius;
   font-family: inherit;
   font-size: inherit;
@@ -125,7 +125,7 @@
 
   &:global(.chip) {
     min-height: var(--table-chip-min-height, 28px);
-    padding: var(--table-chip-padding-block, 4px) var(--table-chip-padding-inline, 14px);
+    padding: var(--table-chip-padding-block, var(--space-2xs)) var(--table-chip-padding-inline, 14px);
   }
 
   :global([data-slot='label']) {

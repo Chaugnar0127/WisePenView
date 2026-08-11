@@ -19,8 +19,8 @@
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: var(--space-xs, 8px);
-  padding: var(--space-sm, 12px) var(--space-md, 16px);
+  gap: var(--space-xs, var(--space-xs));
+  padding: var(--space-sm, var(--space-sm)) var(--space-md, var(--space-md));
   border-bottom: 1px solid var(--separator);
   color: var(--overlay-foreground, var(--foreground));
   font-size: var(--font-size-sm, 14px);
@@ -48,7 +48,7 @@
 
 .body {
   min-width: 0;
-  padding: var(--app-popover-content-padding, var(--space-xs, 8px));
+  padding: var(--app-popover-content-padding, var(--space-xs, var(--space-xs)));
   background: var(--surface);
 }
 

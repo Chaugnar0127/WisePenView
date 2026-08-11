@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .root {
   position: relative;
@@ -160,7 +161,7 @@
   margin: 0;
   padding: var(--space-sm);
   overflow: auto;
-  .appSubtleScrollbarAutoHide();
+  .appSubtleScrollbar();
   color: var(--foreground);
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
@@ -199,7 +200,7 @@
   margin: 0;
   padding: var(--space-sm);
   overflow: auto;
-  .appSubtleScrollbarAutoHide();
+  .appSubtleScrollbar();
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
@@ -253,7 +254,7 @@
   :global([data-focus-visible='true']),
   :global([data-focus='true']) {
     outline: none;
-    box-shadow: none;
+    box-shadow: var(--shadow-none);
   }
 }
 
@@ -272,7 +273,7 @@
 .aiDiffTab:focus,
 .aiDiffTab:focus-visible {
   outline: none;
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .aiDiffTab[data-selected='true'] {
@@ -321,7 +322,7 @@
   display: none;
 }
 
-@media (max-width: 960px) {
+@media (max-width: @breakpoint-lg) {
   .body {
     grid-template-columns: minmax(0, 1fr);
   }

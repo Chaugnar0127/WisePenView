@@ -1,8 +1,8 @@
 import { useSkillService } from '@/domains';
 import type { SkillDetail, UploadSkillAssetResult } from '@/domains/Skill';
+import { useApi } from '@/hooks/useApi';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -89,7 +89,7 @@ export function useSkillSaveController({
   const fileSaveInFlightRef = useRef(false);
   const configSaveInFlightRef = useRef(false);
 
-  const { loading: fileSaveLoading, runAsync: runSaveFiles } = useRequest(
+  const { loading: fileSaveLoading, runAsync: runSaveFiles } = useApi(
     async (snapshots: SkillFileSaveSnapshot[], options?: SaveOptions) => {
       if (!skill || snapshots.length === 0) return { options };
       onFileSaveStarted(snapshots);
@@ -177,11 +177,10 @@ export function useSkillSaveController({
         if (result?.options?.showToast !== false) toast.success(t('toast.saveSuccess'));
         if (result?.options?.refresh) refreshSkill();
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const { loading: configSaveLoading, runAsync: runSaveConfig } = useRequest(
+  const { loading: configSaveLoading, runAsync: runSaveConfig } = useApi(
     async (snapshot: SkillConfigSaveSnapshot, options?: SaveOptions) => {
       if (!skill) return { options };
       onConfigSaveStarted(snapshot);
@@ -204,7 +203,7 @@ export function useSkillSaveController({
         if (result?.options?.showToast !== false) toast.success(t('toast.configUpdated'));
         if (result?.options?.refresh) refreshSkill();
       },
-      onError: (error) => {
+      onErrorEffect: (error) => {
         onConfigSaveFailed();
         setExecutionItems((current) =>
           current.map((item) =>
@@ -218,7 +217,6 @@ export function useSkillSaveController({
               : item
           )
         );
-        toast.danger(parseErrorMessage(error));
       },
     }
   );

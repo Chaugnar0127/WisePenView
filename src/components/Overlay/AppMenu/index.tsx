@@ -1,5 +1,5 @@
+import { cn } from '@/utils/cn';
 import { Dropdown, Header } from '@heroui/react';
-import clsx from 'clsx';
 
 import type {
   AppMenuDividerProps,
@@ -21,7 +21,7 @@ function AppMenuHeader({
   ...props
 }: AppMenuHeaderProps) {
   return (
-    <div className={clsx(styles.header, className)} {...props}>
+    <div className={cn(styles.header, className)} {...props}>
       {icon ? (
         <span className={styles.headerIcon} aria-hidden="true">
           {icon}
@@ -37,7 +37,7 @@ function AppMenuHeader({
 }
 
 function AppMenuDivider({ className, role = 'separator', ...props }: AppMenuDividerProps) {
-  return <div className={clsx(styles.divider, className)} role={role} {...props} />;
+  return <div className={cn(styles.divider, className)} role={role} {...props} />;
 }
 
 function AppMenuPopover({
@@ -47,7 +47,7 @@ function AppMenuPopover({
   ...props
 }: AppMenuPopoverProps) {
   return (
-    <Dropdown.Popover className={clsx(styles.popover, className)} {...props}>
+    <Dropdown.Popover className={cn(styles.popover, className)} {...props}>
       <div className={bodyPadding === 'default' ? styles.popoverBodyDefault : undefined}>
         {children}
       </div>
@@ -56,7 +56,7 @@ function AppMenuPopover({
 }
 
 function AppMenuMenu({ className, ...props }: AppMenuMenuProps) {
-  return <Dropdown.Menu className={clsx(styles.menu, className)} {...props} />;
+  return <Dropdown.Menu className={cn(styles.menu, className)} {...props} />;
 }
 
 function AppMenuSection({
@@ -68,7 +68,7 @@ function AppMenuSection({
 }: AppMenuSectionProps) {
   return (
     <Dropdown.Section
-      className={clsx(styles.section, showDivider && styles.sectionWithDivider, className)}
+      className={cn(styles.section, showDivider && styles.sectionWithDivider, className)}
       {...props}
     >
       {title ? <Header className={styles.sectionTitle}>{title}</Header> : null}
@@ -114,7 +114,7 @@ function AppMenuItem({
 
   return (
     <Dropdown.Item
-      className={clsx(styles.item, variant === 'danger' && styles.dangerItem, className)}
+      className={cn(styles.item, variant === 'danger' && styles.dangerItem, className)}
       data-selected={selected || undefined}
       isDisabled={isDisabled ?? disabled}
       variant={variant}
@@ -127,7 +127,7 @@ function AppMenuItem({
 
 function AppMenuDangerItem(props: AppMenuItemProps) {
   return (
-    <AppMenuItem {...props} className={clsx(styles.dangerItem, props.className)} variant="danger" />
+    <AppMenuItem {...props} className={cn(styles.dangerItem, props.className)} variant="danger" />
   );
 }
 

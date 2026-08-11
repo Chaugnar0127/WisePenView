@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { getGroupDisplayConfig } from '@/components/Group/GroupDisplayConfig';
 import { GROUP_TYPE } from '@/domains/Group';
 import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
@@ -9,7 +10,8 @@ import {
   type GroupRoutePage,
 } from '@/utils/navigation/appRoute';
 import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
-import { Button, Link, Tabs } from '@heroui/react';
+import { Link, Tabs } from '@heroui/react';
+
 import { linkVariants } from '@heroui/styles';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { useState } from 'react';
@@ -67,7 +69,7 @@ function GroupDetail() {
     <div className={containerClassName}>
       <div className={`${layout.pageHeaderWithActions} ${page.detailHeader}`}>
         <div className={page.titleStack}>
-          <Button
+          <AppButton
             className={page.backButton}
             variant="ghost"
             size="sm"
@@ -75,7 +77,7 @@ function GroupDetail() {
           >
             <ArrowLeft size={16} aria-hidden />
             {t('detail.backToGroups')}
-          </Button>
+          </AppButton>
           <h1 className={layout.pageTitle}>{group.groupName}</h1>
         </div>
         {group.groupType === GROUP_TYPE.ADVANCED ? (

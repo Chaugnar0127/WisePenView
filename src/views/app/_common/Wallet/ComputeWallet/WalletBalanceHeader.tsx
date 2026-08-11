@@ -1,4 +1,6 @@
-import { Button, Skeleton } from '@heroui/react';
+import { AppButton } from '@/components/Button';
+import { Skeleton } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -31,9 +33,9 @@ function WalletBalanceHeader({
         )}
       </div>
       {canRecharge ? (
-        <Button variant="primary" onPress={onRecharge}>
+        <AppButton variant="primary" onPress={onRecharge}>
           {t('balance.recharge')}
-        </Button>
+        </AppButton>
       ) : null}
     </div>
   );

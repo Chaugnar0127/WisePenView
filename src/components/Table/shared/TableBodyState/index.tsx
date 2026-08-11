@@ -1,4 +1,4 @@
-import { Spinner } from '@heroui/react';
+import { Spin } from '@/components/Feedback';
 import { EllipsisVertical } from 'lucide-react';
 import { joinClassNames } from '../TableBase/cellAlign';
 import type { TableBodyStateProps } from './index.type';
@@ -12,7 +12,7 @@ function TableBodyState({
   className,
 }: TableBodyStateProps) {
   const iconContent = loading ? (
-    <Spinner className={styles.icon} size="sm" />
+    <Spin className={styles.icon} size="small" />
   ) : (
     (icon ?? <EllipsisVertical className={styles.icon} size={16} aria-hidden />)
   );

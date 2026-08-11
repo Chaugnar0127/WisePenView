@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import type { AppBreadcrumbProps } from './index.type';
 import styles from './style.module.less';
 
-function AppBreadcrumb({ items, ariaLabel, className, renderItem }: AppBreadcrumbProps) {
+function AppBreadcrumb({ items, ariaLabel, className, separator, renderItem }: AppBreadcrumbProps) {
   return (
     <nav className={`${styles.breadcrumb} ${className ?? ''}`} aria-label={ariaLabel}>
       {items.map((item, index) => {
@@ -23,7 +23,7 @@ function AppBreadcrumb({ items, ariaLabel, className, renderItem }: AppBreadcrum
 
         return (
           <span key={item.key} className={styles.segment}>
-            {index > 0 ? <span className={styles.separator}>/</span> : null}
+            {index > 0 ? <span className={styles.separator}>{separator ?? '/'}</span> : null}
             {renderItem ? renderItem(content, item, isCurrent) : content}
           </span>
         );

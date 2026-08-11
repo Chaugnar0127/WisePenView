@@ -1,6 +1,8 @@
+import { AppButton } from '@/components/Button';
 import { FormField, TextArea } from '@/components/Input';
 import type { AgentSpec } from '@/domains/Agent';
-import { Button, Label, NumberField, Slider } from '@heroui/react';
+import { Label, NumberField, Slider } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RECOMMENDED_AGENT_MEMORY_SETTINGS } from '../../config/agentPresets';
@@ -72,20 +74,20 @@ export default function MemorySection({ spec, disabled, onChange }: Props) {
           onChange={(value) => updatePolicy({ enableLongTermMemory: value })}
         />
         <div className={styles.moreRow}>
-          <Button
+          <AppButton
             className={styles.more}
             size="sm"
             variant="ghost"
             onPress={() => setMore((value) => !value)}
           >
             {more ? t('memory.collapse') : t('memory.more')}
-          </Button>
+          </AppButton>
         </div>
         {more ? (
           <div className={styles.advanced}>
             <div className={styles.advancedHeader}>
               <span>{t('memory.advanced')}</span>
-              <Button
+              <AppButton
                 className={styles.presetButton}
                 size="sm"
                 variant="secondary"
@@ -93,7 +95,7 @@ export default function MemorySection({ spec, disabled, onChange }: Props) {
                 onPress={() => setRestoreOpen(true)}
               >
                 {t('memory.restore')}
-              </Button>
+              </AppButton>
             </div>
             <div className={styles.settingGrid}>
               <div>

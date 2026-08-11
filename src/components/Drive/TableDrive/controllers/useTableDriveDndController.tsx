@@ -1,7 +1,7 @@
 import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { useDriveService } from '@/domains';
 import type { DriveNode } from '@/domains/Drive';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import {
   MouseSensor,
   useSensor,
@@ -10,7 +10,6 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -84,7 +83,7 @@ export function useTableDriveDndController({
     setActiveDragRowId(null);
   };
 
-  const { loading: movingByDrag, run: runMoveRowsByDrag } = useRequest(
+  const { loading: movingByDrag, run: runMoveRowsByDrag } = useApi(
     async ({
       sourceRowIds,
       targetFolderNodeId,
@@ -116,9 +115,8 @@ export function useTableDriveDndController({
           toast.success(t('table.movedSingle'));
         }
       },
-      onError: (error) => {
+      onErrorEffect: (error) => {
         onMoveError?.();
-        toast.danger(parseErrorMessage(error));
       },
     }
   );

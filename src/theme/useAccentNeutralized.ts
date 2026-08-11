@@ -1,13 +1,13 @@
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useSyncExternalStore } from 'react';
 
-const READING_MODE_STORAGE_KEY = 'wisepen-reading-mode';
 const READING_MODE_ACCENT_SURFACE_NEUTRAL_MIX_PERCENT = 40;
 const READING_MODE_ACCENT_FOREGROUND_NEUTRAL_MIX_PERCENT = 10;
 const readingModeListeners = new Set<() => void>();
 
 function readStoredReadingMode(defaultValue: boolean): boolean {
   if (typeof window === 'undefined') return defaultValue;
-  return localStorage.getItem(READING_MODE_STORAGE_KEY) === 'true';
+  return localStorage.getItem(STORAGE_KEYS.readingMode) === 'true';
 }
 
 let sharedReadingMode = readStoredReadingMode(false);
@@ -39,7 +39,7 @@ function setSharedReadingMode(isReadingMode: boolean) {
   if (sharedReadingMode === isReadingMode) return;
   sharedReadingMode = isReadingMode;
   if (typeof window !== 'undefined') {
-    localStorage.setItem(READING_MODE_STORAGE_KEY, String(isReadingMode));
+    localStorage.setItem(STORAGE_KEYS.readingMode, String(isReadingMode));
   }
   emitReadingModeChange();
 }

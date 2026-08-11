@@ -1,6 +1,6 @@
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
+import { cn } from '@/utils/cn';
 import { ToggleButton, Tooltip } from '@heroui/react';
-import clsx from 'clsx';
 import { cloneElement, type ComponentProps } from 'react';
 import type { AppIconButtonProps } from './index.type';
 import styles from './style.module.less';
@@ -23,7 +23,7 @@ function AppIconButton({
 }: AppIconButtonProps) {
   // ToggleButton 与原生 button 的事件泛型不同，实际仅透传二者共有的 DOM 属性。
   const toggleButtonProps = buttonProps as ComponentProps<typeof ToggleButton>;
-  const classNames = clsx(
+  const classNames = cn(
     styles.root,
     styles[size],
     styles[variant],
@@ -75,7 +75,7 @@ function AppIconButton({
   return (
     <Tooltip delay={tooltip.delay} closeDelay={tooltip.closeDelay}>
       <Tooltip.Trigger
-        className={clsx(styles.tooltipTrigger, tooltip.triggerClassName)}
+        className={cn(styles.tooltipTrigger, tooltip.triggerClassName)}
         {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}
       >
         {trigger}
@@ -93,3 +93,4 @@ function AppIconButton({
 }
 
 export default AppIconButton;
+export type { AppIconButtonProps, AppIconButtonTooltipOptions } from './index.type';

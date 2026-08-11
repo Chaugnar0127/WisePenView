@@ -3,7 +3,7 @@ import { en, zh } from '@blocknote/core/locales';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
-import { useLatest, useMemoizedFn, useMount, useUnmount } from 'ahooks';
+import { useDebounceFn, useLatest, useMemoizedFn, useMount, useUnmount } from 'ahooks';
 import { useEffect, useImperativeHandle, useRef, type KeyboardEvent, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -96,7 +96,6 @@ function NoteTitle({
   const { resolvedTheme } = useAppTheme();
   const noteService = useNoteService();
   const latestIdRef = useLatest(id);
-  const titleDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveVersionRef = useRef(0);
   const emitSaveStatus = useMemoizedFn(onSaveStatusChange);
@@ -114,6 +113,27 @@ function NoteTitle({
     },
     trailingBlock: false,
   });
+  const { run: scheduleTitleSync, cancel: cancelTitleSync } = useDebounceFn(
+    (currentId: string, saveVersion: number) => {
+      const block = editor.document[0];
+      const raw = getBlockPlainText(block as { content?: unknown[] } | undefined);
+      const nextTitle = raw.trim() || untitledTitle;
+      void noteService.syncTitle({ resourceId: currentId, newName: nextTitle }).then(
+        () => {
+          if (saveVersion === saveVersionRef.current) {
+            emitSaveStatus('saved');
+          }
+        },
+        (error: unknown) => {
+          if (saveVersion === saveVersionRef.current) {
+            emitSaveStatus('failed');
+          }
+          toast.danger(parseErrorMessage(error));
+        }
+      );
+    },
+    { wait: TITLE_DEBOUNCE_MS }
+  );
 
   useImperativeHandle(
     ref,
@@ -153,29 +173,7 @@ function NoteTitle({
       saveVersionRef.current += 1;
       const saveVersion = saveVersionRef.current;
       emitSaveStatus('saving');
-      if (titleDebounceTimerRef.current) {
-        clearTimeout(titleDebounceTimerRef.current);
-        titleDebounceTimerRef.current = null;
-      }
-      titleDebounceTimerRef.current = setTimeout(() => {
-        titleDebounceTimerRef.current = null;
-        const block = editor.document[0];
-        const raw = getBlockPlainText(block as { content?: unknown[] } | undefined);
-        const nextTitle = raw.trim() || untitledTitle;
-        void noteService.syncTitle({ resourceId: currentId, newName: nextTitle }).then(
-          () => {
-            if (saveVersion === saveVersionRef.current) {
-              emitSaveStatus('saved');
-            }
-          },
-          (error: unknown) => {
-            if (saveVersion === saveVersionRef.current) {
-              emitSaveStatus('failed');
-            }
-            toast.danger(parseErrorMessage(error));
-          }
-        );
-      }, TITLE_DEBOUNCE_MS);
+      scheduleTitleSync(currentId, saveVersion);
 
       const newNoteState = useNewNoteStore.getState();
       if (newNoteState.newNoteResourceId === currentId) {
@@ -211,17 +209,14 @@ function NoteTitle({
       detachOnChange();
       detachBeforeChange();
     };
-  }, [editor, emitSaveStatus, latestIdRef, noteService, readOnly, untitledTitle]);
+  }, [editor, emitSaveStatus, latestIdRef, readOnly, scheduleTitleSync]);
 
   useUnmount(() => {
     if (focusTimerRef.current) {
       clearTimeout(focusTimerRef.current);
       focusTimerRef.current = null;
     }
-    if (titleDebounceTimerRef.current) {
-      clearTimeout(titleDebounceTimerRef.current);
-      titleDebounceTimerRef.current = null;
-    }
+    cancelTitleSync();
   });
 
   const handleKeyDown = (e: KeyboardEvent) => {

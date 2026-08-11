@@ -1,12 +1,15 @@
+import { AppButton } from '@/components/Button';
 import { Spin } from '@/components/Feedback';
 import UploadZone from '@/components/Input/UploadZone';
 import { useCourseService } from '@/domains';
 import { COURSE_ASSIGNMENT_STATUS } from '@/domains/Course';
+import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
+import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { buildCourseAssignmentPath } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { toast } from '@heroui/react';
+
 import { ArrowLeft, CalendarClock, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,17 +17,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
 
 function CourseAssignmentDetailPage() {
-  const { t, i18n } = useTranslation('course');
+  const { t } = useTranslation('course');
   const { course, refreshCourse } = useCourseContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
   const { assignmentId = '' } = useParams<{ assignmentId: string }>();
   const [files, setFiles] = useState<File[]>([]);
-  const { data, loading, error, refresh } = useRequest(
+  const { data, loading, error, refresh } = useApi(
     () => courseService.getCourseAssignment(course.courseId, assignmentId),
     { ready: Boolean(assignmentId), refreshDeps: [assignmentId, course.courseId] }
   );
-  const { loading: submitting, run: submitAssignment } = useRequest(
+  const { loading: submitting, run: submitAssignment } = useApi(
     () =>
       courseService.submitCourseAssignment({
         courseId: course.courseId,
@@ -39,7 +42,6 @@ function CourseAssignmentDetailPage() {
         refresh();
         refreshCourse();
       },
-      onError: (requestError: unknown) => toast.danger(parseErrorMessage(requestError)),
     }
   );
 
@@ -63,21 +65,15 @@ function CourseAssignmentDetailPage() {
     return (
       <div className={styles.state}>
         <span>{error ? parseErrorMessage(error) : t('common.notFound')}</span>
-        <Button variant="secondary" onPress={refresh}>
+        <AppButton variant="secondary" onPress={refresh}>
           {t('common.retry')}
-        </Button>
+        </AppButton>
       </div>
     );
   }
 
   const submitted = data.status !== COURSE_ASSIGNMENT_STATUS.PENDING;
-  const deadline = new Date(data.deadline).toLocaleString(i18n.language, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const deadline = formatTimestampToDateTime(data.deadline);
 
   return (
     <div className={styles.page}>
@@ -127,9 +123,9 @@ function CourseAssignmentDetailPage() {
           onFilesChange={setFiles}
         />
         <div className={styles.submitActions}>
-          <Button variant="primary" isDisabled={submitting} onPress={handleSubmit}>
+          <AppButton variant="primary" isDisabled={submitting} onPress={handleSubmit}>
             {t('assignments.submit')}
-          </Button>
+          </AppButton>
         </div>
       </section>
     </div>

@@ -7,9 +7,9 @@ import {
 } from '@/bootstrap/authContinuation';
 import { useUserService } from '@/domains';
 import type { InitiateUISVerifyRequest, SendEmailVerifyRequest } from '@/domains/User';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest, useUnmount } from 'ahooks';
+import { useUnmount } from 'ahooks';
 import type { FormEvent } from 'react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -86,7 +86,7 @@ export const useAccountVerificationController = ({
     return Object.keys(nextErrors).length === 0;
   };
 
-  const { run: runUisPolling, cancel: cancelUisPolling } = useRequest(
+  const { run: runUisPolling, cancel: cancelUisPolling } = useApi(
     () => userService.checkFudanUISVerify(),
     {
       manual: true,
@@ -115,10 +115,9 @@ export const useAccountVerificationController = ({
           setUisOutcomeOpen(true);
         }
       },
-      onError: (pollErr) => {
+      onErrorEffect: (pollErr) => {
         if (!uisPollingActiveRef.current) return;
         dismissUisOutcome();
-        toast.danger(parseErrorMessage(pollErr));
       },
     }
   );
@@ -136,7 +135,7 @@ export const useAccountVerificationController = ({
     uisPollLoadingRef.current = null;
   };
 
-  const { loading: emailSubmitting, run: runEmailVerifySubmit } = useRequest(
+  const { loading: emailSubmitting, run: runEmailVerifySubmit } = useApi(
     async () => {
       const params: SendEmailVerifyRequest = { email: email.trim() };
       saveAuthContinuation('verifyEmail', resolveVerificationRedirectPath());
@@ -150,13 +149,10 @@ export const useAccountVerificationController = ({
         setVerifyMode(defaultMode);
         onSubmitted?.();
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
 
-  const { loading: uisSubmitting, run: runUisVerifySubmit } = useRequest(
+  const { loading: uisSubmitting, run: runUisVerifySubmit } = useApi(
     async () => {
       const params: InitiateUISVerifyRequest = {
         uisAccount: uisAccount.trim(),
@@ -179,9 +175,6 @@ export const useAccountVerificationController = ({
         });
         uisPollLoadingRef.current = () => toast.close(toastId);
         runUisPolling();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

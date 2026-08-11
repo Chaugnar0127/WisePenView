@@ -1,6 +1,8 @@
+import { AppButton } from '@/components/Button';
 import { DataTable, type DataTableColumn } from '@/components/Table';
 import { formatFileSize } from '@/utils/format/formatFileSize';
-import { Button, ProgressBar } from '@heroui/react';
+import { ProgressBar } from '@heroui/react';
+
 import { CircleAlert, CircleCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -50,7 +52,7 @@ function UploadQueueTab() {
         return (
           <div className={styles.actionGroup}>
             {row.retryable ? (
-              <Button
+              <AppButton
                 variant="ghost"
                 size="sm"
                 isDisabled={retryingId === row.documentId}
@@ -59,10 +61,10 @@ function UploadQueueTab() {
                 }}
               >
                 {t('actions.retry', { ns: 'common' })}
-              </Button>
+              </AppButton>
             ) : null}
             {row.cancelable ? (
-              <Button
+              <AppButton
                 variant="danger"
                 size="sm"
                 isDisabled={cancelingId === row.documentId}
@@ -71,7 +73,7 @@ function UploadQueueTab() {
                 }}
               >
                 {t('actions.cancel', { ns: 'common' })}
-              </Button>
+              </AppButton>
             ) : null}
           </div>
         );

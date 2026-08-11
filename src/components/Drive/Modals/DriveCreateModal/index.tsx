@@ -1,11 +1,13 @@
+import { AppButton } from '@/components/Button';
 import { FormField, Input, TextArea } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import AppModal from '@/components/Overlay/AppModal';
 import { useAgentService, useDriveService, useNoteService, useSkillService } from '@/domains';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { validateReservedName } from '@/utils/tag/validateReservedName';
-import { Button, Label, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -39,7 +41,7 @@ function DriveCreateModal({
     setTitleError('');
   };
 
-  const { loading, run: runCreate } = useRequest(
+  const { loading, run: runCreate } = useApi(
     async () => {
       let createdId: string;
       switch (type) {
@@ -87,9 +89,6 @@ function DriveCreateModal({
       onSuccess: () => {
         if (type === 'folder') toast.success(t('create.success'));
         reset();
-      },
-      onError: (error) => {
-        toast.danger(parseErrorMessage(error));
       },
     }
   );
@@ -192,46 +191,50 @@ function DriveCreateModal({
           isDismissable={!loading}
           actions={
             <>
-              <Button
+              <AppButton
                 variant="secondary"
                 isDisabled={loading}
                 onPress={() => handleOpenChange(false)}
               >
                 {t('actions.cancel', { ns: 'common' })}
-              </Button>
-              <Button
+              </AppButton>
+              <AppButton
                 variant="primary"
                 isDisabled={!title.trim() || loading}
                 aria-busy={loading || undefined}
                 onPress={handleSubmit}
               >
                 {t('actions.create', { ns: 'common' })}
-              </Button>
+              </AppButton>
             </>
           }
         >
           <div className={styles.form}>
-            <TextField
+            <FormField
               aria-label={t('create.asset.displayName')}
+              label={t('create.asset.displayName')}
               value={title}
               onChange={setTitle}
               isRequired
             >
-              <Label>{t('create.asset.displayName')}</Label>
               <Input autoFocus placeholder={t('create.asset.agentDisplayPlaceholder')} />
-            </TextField>
-            <TextField aria-label={t('create.asset.agentName')} value={name} onChange={setName}>
-              <Label>{t('create.asset.agentName')}</Label>
+            </FormField>
+            <FormField
+              aria-label={t('create.asset.agentName')}
+              label={t('create.asset.agentName')}
+              value={name}
+              onChange={setName}
+            >
               <Input placeholder="course_research_assistant" />
-            </TextField>
-            <TextField
+            </FormField>
+            <FormField
               aria-label={t('create.asset.description')}
+              label={t('create.asset.description')}
               value={description}
               onChange={setDescription}
             >
-              <Label>{t('create.asset.description')}</Label>
               <TextArea rows={3} placeholder={t('create.asset.agentDescriptionPlaceholder')} />
-            </TextField>
+            </FormField>
           </div>
         </AppModal>
       );
@@ -245,46 +248,50 @@ function DriveCreateModal({
           isDismissable={!loading}
           actions={
             <>
-              <Button
+              <AppButton
                 variant="secondary"
                 isDisabled={loading}
                 onPress={() => handleOpenChange(false)}
               >
                 {t('actions.cancel', { ns: 'common' })}
-              </Button>
-              <Button
+              </AppButton>
+              <AppButton
                 variant="primary"
                 isDisabled={!title.trim() || loading}
                 aria-busy={loading || undefined}
                 onPress={handleSubmit}
               >
                 {t('actions.create', { ns: 'common' })}
-              </Button>
+              </AppButton>
             </>
           }
         >
           <div className={styles.form}>
-            <TextField
+            <FormField
               aria-label={t('create.asset.displayName')}
+              label={t('create.asset.displayName')}
               value={title}
               onChange={setTitle}
               isRequired
             >
-              <Label>{t('create.asset.displayName')}</Label>
               <Input autoFocus placeholder={t('create.asset.skillDisplayPlaceholder')} />
-            </TextField>
-            <TextField aria-label={t('create.asset.skillName')} value={name} onChange={setName}>
-              <Label>{t('create.asset.skillName')}</Label>
+            </FormField>
+            <FormField
+              aria-label={t('create.asset.skillName')}
+              label={t('create.asset.skillName')}
+              value={name}
+              onChange={setName}
+            >
               <Input placeholder="paper_reading_assistant" />
-            </TextField>
-            <TextField
+            </FormField>
+            <FormField
               aria-label={t('create.asset.description')}
+              label={t('create.asset.description')}
               value={description}
               onChange={setDescription}
             >
-              <Label>{t('create.asset.description')}</Label>
               <TextArea rows={3} placeholder={t('create.asset.skillDescriptionPlaceholder')} />
-            </TextField>
+            </FormField>
           </div>
         </AppModal>
       );

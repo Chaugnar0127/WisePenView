@@ -1,5 +1,5 @@
-import { Input, InputGroup } from '@/components/Input';
-import { ErrorMessage, Form, Label, Tabs, TextField } from '@heroui/react';
+import { FormField, Input, InputGroup } from '@/components/Input';
+import { Form, Tabs } from '@heroui/react';
 import { Mail, ShieldUser } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -60,30 +60,31 @@ function AccountVerificationForm({
       </Tabs>
       <Form id={formId} onSubmit={onSubmit} className={styles.verifyForm}>
         {verifyMode === 'email' ? (
-          <TextField
+          <FormField
+            label={t('verification.emailLabel')}
             value={email}
             onChange={onEmailChange}
             isInvalid={verifyFormErrors.email != null}
+            errorMessage={verifyFormErrors.email}
             name="email"
           >
-            <Label>{t('verification.emailLabel')}</Label>
             <InputGroup>
               <InputGroup.Prefix>
                 <Mail size={18} className={styles.verifyInputIcon} />
               </InputGroup.Prefix>
               <InputGroup.Input type="email" placeholder={t('verification.emailPlaceholder')} />
             </InputGroup>
-            <ErrorMessage>{verifyFormErrors.email}</ErrorMessage>
-          </TextField>
+          </FormField>
         ) : (
           <>
-            <TextField
+            <FormField
+              label={t('verification.uisAccountLabel')}
               value={uisAccount}
               onChange={onUisAccountChange}
               isInvalid={verifyFormErrors.uisAccount != null}
+              errorMessage={verifyFormErrors.uisAccount}
               name="uisAccount"
             >
-              <Label>{t('verification.uisAccountLabel')}</Label>
               <InputGroup>
                 <InputGroup.Prefix>
                   <ShieldUser size={18} className={styles.verifyInputIcon} />
@@ -93,22 +94,21 @@ function AccountVerificationForm({
                   autoComplete="username"
                 />
               </InputGroup>
-              <ErrorMessage>{verifyFormErrors.uisAccount}</ErrorMessage>
-            </TextField>
-            <TextField
+            </FormField>
+            <FormField
+              label={t('verification.uisPasswordLabel')}
               value={uisPassword}
               onChange={onUisPasswordChange}
               isInvalid={verifyFormErrors.uisPassword != null}
+              errorMessage={verifyFormErrors.uisPassword}
               name="uisPassword"
             >
-              <Label>{t('verification.uisPasswordLabel')}</Label>
               <Input
                 type="password"
                 placeholder={t('verification.uisPasswordLabel')}
                 autoComplete="current-password"
               />
-              <ErrorMessage>{verifyFormErrors.uisPassword}</ErrorMessage>
-            </TextField>
+            </FormField>
           </>
         )}
       </Form>

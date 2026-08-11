@@ -14,10 +14,10 @@
   left: 0;
   height: 2px;
   background: var(--accent);
-  border-radius: 1px;
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-xs);
+  transition: transform var(--motion-duration-mid) var(--motion-ease-emphasized);
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
 }
 
 .tabItem,
@@ -35,7 +35,7 @@
   line-height: @table-line-height-body;
   text-align: center;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color var(--motion-duration-mid) var(--motion-ease-standard);
 }
 
 .tabActive {

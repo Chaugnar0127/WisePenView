@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import TagPermissionActionEditor from '@/components/Drive/PermissionActionEditor';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService } from '@/domains';
@@ -7,9 +8,9 @@ import {
   normalizeResourceActions,
   type TagResourceAction,
 } from '@/domains/Tag';
-import { parseErrorMessage } from '@/utils/error';
-import { Button, Tabs, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { Tabs, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -104,7 +105,7 @@ function GroupDefaultAccessPermissionModal({
     normalizeResourceActions(groupResConfig.defaultMemberActions)
   );
 
-  const { loading: saving, run: runSave } = useRequest(
+  const { loading: saving, run: runSave } = useApi(
     async (actions: TagResourceAction[]) => {
       await groupService.updateGroupResConfig({
         groupId,
@@ -117,9 +118,6 @@ function GroupDefaultAccessPermissionModal({
         toast.success(t('permission.saved'));
         onOpenChange(false);
         onSuccess();
-      },
-      onError: (error: unknown) => {
-        toast.danger(parseErrorMessage(error));
       },
     }
   );
@@ -140,12 +138,16 @@ function GroupDefaultAccessPermissionModal({
       isDismissable={!saving}
       actions={
         <>
-          <Button variant="secondary" isDisabled={saving} onPress={() => handleOpenChange(false)}>
+          <AppButton
+            variant="secondary"
+            isDisabled={saving}
+            onPress={() => handleOpenChange(false)}
+          >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button variant="primary" isPending={saving} onPress={() => runSave(selectedActions)}>
+          </AppButton>
+          <AppButton variant="primary" isPending={saving} onPress={() => runSave(selectedActions)}>
             {t('actions.save', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

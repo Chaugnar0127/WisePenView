@@ -1,16 +1,17 @@
+import { AppButton } from '@/components/Button';
 import { FormField, Input } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { ResetPasswordRequest } from '@/domains/Auth';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Alert, Button, Form, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Alert, Form, toast } from '@heroui/react';
+
+import { hasFieldErrors, runFieldValidation, type FieldErrors } from '@/utils/formValidation';
 import { Mail } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import auth from '../Auth.module.less';
-import { hasFieldErrors, runFieldValidation, type FieldErrors } from '../formValidation';
 
 type ResetPasswordField = keyof ResetPasswordRequest;
 
@@ -24,15 +25,12 @@ function ResetPassword() {
   const [formValues, setFormValues] = useState<ResetPasswordRequest>(DEFAULT_RESET_PASSWORD_VALUES);
   const [formErrors, setFormErrors] = useState<FieldErrors<ResetPasswordField>>({});
 
-  const { loading, run: submitResetPassword } = useRequest(
+  const { loading, run: submitResetPassword } = useApi(
     (values: ResetPasswordRequest) => authService.resetPassword(values),
     {
       manual: true,
       onSuccess: () => {
         toast.info(t('resetPassword.sendSuccess'));
-      },
-      onError: (err: unknown) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -91,7 +89,7 @@ function ResetPassword() {
         </FormField>
 
         <div className={auth.formActions}>
-          <Button
+          <AppButton
             variant="primary"
             size="lg"
             type="submit"
@@ -99,7 +97,7 @@ function ResetPassword() {
             isDisabled={loading}
           >
             {t('resetPassword.submit')}
-          </Button>
+          </AppButton>
           <div className={auth.centerLinks}>
             <Link to={APP_ROUTE_PATH.AUTH_LOGIN}>{t('resetPassword.backToLogin')}</Link>
           </div>

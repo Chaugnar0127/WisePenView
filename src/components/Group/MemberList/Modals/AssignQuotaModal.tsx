@@ -1,10 +1,11 @@
-import { Input } from '@/components/Input';
+import { AppButton } from '@/components/Button';
+import { FormField, Input } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import SelectedMemberList from '@/components/SelectedMemberList';
 import { useQuotaService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
-import { Alert, Button, Label, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { Alert, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AssignQuotaModalProps } from './index.type';
@@ -37,7 +38,8 @@ function QuotaInput({
   const { t } = useTranslation('group');
   return (
     <div className={className}>
-      <TextField
+      <FormField
+        label={t('quota.assign.limitLabel')}
         aria-label={t('quota.assign.limitAria')}
         value={value != null ? String(value) : ''}
         onChange={(nextValue) => {
@@ -51,9 +53,8 @@ function QuotaInput({
         isDisabled={disabled}
         aria-invalid={Boolean(errorMessage)}
       >
-        <Label>{t('quota.assign.limitLabel')}</Label>
         <Input type="number" min={min} max={max} step={1} placeholder={placeholder} />
-      </TextField>
+      </FormField>
       {errorMessage ? <div className={styles.fieldError}>{errorMessage}</div> : null}
     </div>
   );
@@ -87,7 +88,7 @@ function AssignQuotaModal({
     { checkOwner: false, forQuota: true }
   );
 
-  const { loading, run: runSetQuota } = useRequest(
+  const { loading, run: runSetQuota } = useApi(
     async (value: number) =>
       quotaService.setGroupQuota({
         groupId,
@@ -103,16 +104,14 @@ function AssignQuotaModal({
         onSuccess?.();
         onOpenChange(false);
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
-  useRequest(() => quotaService.fetchGroupQuota(groupId), {
+  useApi(() => quotaService.fetchGroupQuota(groupId), {
     ready: isOpen,
     refreshDeps: [groupId, isOpen],
     onSuccess: setGroupQuotaState,
-    onError: () => setGroupQuotaState({ used: 0, limit: 0 }),
+    showErrorToast: false,
+    onErrorEffect: () => setGroupQuotaState({ used: 0, limit: 0 }),
   });
 
   const validateQuota = (value: number | null) => {
@@ -161,17 +160,21 @@ function AssignQuotaModal({
       isDismissable={!loading}
       actions={
         <>
-          <Button variant="secondary" isDisabled={loading} onPress={() => handleOpenChange(false)}>
+          <AppButton
+            variant="secondary"
+            isDisabled={loading}
+            onPress={() => handleOpenChange(false)}
+          >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={loading || confirmDisabled || quotaOverGlobalMax}
             aria-busy={loading || undefined}
             onPress={handleConfirm}
           >
             {t('actions.confirm', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

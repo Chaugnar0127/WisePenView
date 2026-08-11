@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import {
   DRIVE_DOCUMENT_FILE_ACCEPT,
   getSupportedDriveDocumentFiles,
@@ -5,7 +6,8 @@ import {
 } from '@/components/Drive/common/useDriveDocumentUpload';
 import { UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import { CloudUpload, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -73,14 +75,14 @@ function UploadDocumentModal({
       bodyClassName={styles.body}
       actions={
         <>
-          <Button variant="secondary" onPress={handleClose}>
+          <AppButton variant="secondary" onPress={handleClose}>
             <X size={14} strokeWidth={1.8} />
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button variant="primary" isDisabled={selectedFiles.length === 0} onPress={handleOk}>
+          </AppButton>
+          <AppButton variant="primary" isDisabled={selectedFiles.length === 0} onPress={handleOk}>
             <CloudUpload size={15} strokeWidth={1.8} />
             {t('upload.addToQueue')}
-          </Button>
+          </AppButton>
         </>
       }
     >

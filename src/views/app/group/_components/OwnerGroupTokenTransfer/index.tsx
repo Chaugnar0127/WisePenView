@@ -1,12 +1,13 @@
 /**
  * 高级组组长：个人计算点与小组池之间的 Token 划拨（transferTokenBetweenGroupAndUser）。
  */
-import { Input } from '@/components/Input';
+import { AppButton } from '@/components/Button';
+import { FormField, Input } from '@/components/Input';
 import { useGroupService, useWalletService } from '@/domains';
 import { WALLET_TOKEN_TRANSFER_TYPE } from '@/domains/Wallet';
-import { parseErrorMessage } from '@/utils/error';
-import { Button, Skeleton, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { Skeleton, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OwnerGroupTokenTransferProps } from './index.type';
@@ -22,7 +23,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
   const [amtToGroup, setAmtToGroup] = useState<number | null>(null);
   const [amtToOwner, setAmtToOwner] = useState<number | null>(null);
 
-  const { loading: balanceLoading, runAsync: loadBalances } = useRequest(
+  const { loading: balanceLoading, runAsync: loadBalances } = useApi(
     async () => {
       const gid = groupId?.trim();
       if (!gid) {
@@ -42,9 +43,6 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
         setPersonalBal(res.personalBal);
         setGroupBal(res.groupBal);
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
 
@@ -53,7 +51,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
     onTransferSuccess?.();
   };
 
-  const { loading: submittingToGroup, runAsync: runTransferToGroup } = useRequest(
+  const { loading: submittingToGroup, runAsync: runTransferToGroup } = useApi(
     async (amount: number) =>
       walletService.transferTokenBetweenGroupAndUser({
         groupId,
@@ -67,13 +65,10 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
         setAmtToGroup(null);
         await refreshAfterTransfer();
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
 
-  const { loading: submittingToOwner, runAsync: runTransferToOwner } = useRequest(
+  const { loading: submittingToOwner, runAsync: runTransferToOwner } = useApi(
     async (amount: number) =>
       walletService.transferTokenBetweenGroupAndUser({
         groupId,
@@ -86,9 +81,6 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
         toast.success(t('transfer.toOwnerSuccess'));
         setAmtToOwner(null);
         await refreshAfterTransfer();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -129,9 +121,9 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
 
       <div className={styles.balanceHeader}>
         <h3 className={styles.balanceTitle}>{t('transfer.currentBalance')}</h3>
-        <Button onPress={() => void loadBalances()} isDisabled={balanceLoading}>
+        <AppButton onPress={() => void loadBalances()} isDisabled={balanceLoading}>
           {t('transfer.refresh')}
-        </Button>
+        </AppButton>
       </div>
       <div className={styles.balanceRow}>
         <div className={styles.balanceItem}>
@@ -162,7 +154,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
 
       <h4 className={styles.transferTitle}>{t('transfer.toGroupTitle')}</h4>
       <div className={styles.formRow}>
-        <TextField
+        <FormField
           aria-label={t('transfer.toGroupAria')}
           className={styles.amountInput}
           value={amtToGroup != null ? String(amtToGroup) : ''}
@@ -183,21 +175,21 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
             step={1}
             placeholder={t('transfer.amountPlaceholder')}
           />
-        </TextField>
-        <Button
+        </FormField>
+        <AppButton
           variant="primary"
           isDisabled={submittingToGroup || balanceLoading}
           onPress={() => void handleGiveToGroup()}
         >
           {t('transfer.toGroupConfirm')}
-        </Button>
+        </AppButton>
       </div>
 
       <hr className={styles.divider} />
 
       <h4 className={styles.transferTitle}>{t('transfer.toOwnerTitle')}</h4>
       <div className={styles.formRow}>
-        <TextField
+        <FormField
           aria-label={t('transfer.toOwnerAria')}
           className={styles.amountInput}
           value={amtToOwner != null ? String(amtToOwner) : ''}
@@ -218,14 +210,14 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
             step={1}
             placeholder={t('transfer.amountPlaceholder')}
           />
-        </TextField>
-        <Button
+        </FormField>
+        <AppButton
           variant="primary"
           isDisabled={submittingToOwner || balanceLoading}
           onPress={() => void handleGiveToOwner()}
         >
           {t('transfer.toOwnerConfirm')}
-        </Button>
+        </AppButton>
       </div>
     </div>
   );

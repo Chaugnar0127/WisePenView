@@ -1,8 +1,10 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { PieChart } from '@/components/Chart';
-import { Input } from '@/components/Input';
+import { FormField, Input, Select } from '@/components/Input';
 import type { CourseAssessmentItem, CourseFinalAssessment } from '@/domains/Course';
-import { Button, Label, ListBox, Select, TextField } from '@heroui/react';
+import { ListBox } from '@heroui/react';
+
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -87,7 +89,7 @@ function CourseAssessmentSection({
               </div>
             ))}
           </div>
-          <Button
+          <AppButton
             variant="secondary"
             onPress={() =>
               onUpdate('assessmentItems', [
@@ -98,7 +100,7 @@ function CourseAssessmentSection({
           >
             <Plus size={16} aria-hidden />
             {t('editor.actions.addAssessment')}
-          </Button>
+          </AppButton>
         </div>
         <PieChart
           items={form.assessmentItems.map((item) => ({
@@ -124,6 +126,7 @@ function CourseAssessmentSection({
         </div>
         <Select
           className={styles.finalTypeField}
+          label={t('editor.fields.finalType')}
           variant="primary"
           value={form.finalAssessment.type}
           onChange={(value) => {
@@ -132,7 +135,6 @@ function CourseAssessmentSection({
           }}
           aria-label={t('editor.fields.finalType')}
         >
-          <Label>{t('editor.fields.finalType')}</Label>
           <Select.Trigger className={styles.finalTypeTrigger}>
             <Select.Value />
             <Select.Indicator />
@@ -149,24 +151,24 @@ function CourseAssessmentSection({
         </Select>
         {form.finalAssessment.type === 'EXAM' ? (
           <div className={styles.finalExamFields}>
-            <TextField
+            <FormField
+              label={t('editor.fields.examForm')}
               value={form.finalAssessment.examForm ?? ''}
               onChange={(value) =>
                 onUpdate('finalAssessment', { ...form.finalAssessment, examForm: value })
               }
             >
-              <Label>{t('editor.fields.examForm')}</Label>
               <Input placeholder={t('editor.fields.examFormPlaceholder')} />
-            </TextField>
-            <TextField
+            </FormField>
+            <FormField
+              label={t('editor.fields.examLocation')}
               value={form.finalAssessment.location ?? ''}
               onChange={(value) =>
                 onUpdate('finalAssessment', { ...form.finalAssessment, location: value })
               }
             >
-              <Label>{t('editor.fields.examLocation')}</Label>
               <Input />
-            </TextField>
+            </FormField>
             <CourseDateField
               label={t('editor.fields.examDate')}
               value={form.finalAssessment.date ?? ''}
@@ -194,7 +196,8 @@ function CourseAssessmentSection({
         ) : (
           <div className={styles.finalDeadlineFields}>
             {form.finalAssessment.type === 'OTHER' ? (
-              <TextField
+              <FormField
+                label={t('editor.fields.customAssessment')}
                 className={styles.finalCustomName}
                 value={form.finalAssessment.customName ?? ''}
                 onChange={(value) =>
@@ -208,9 +211,8 @@ function CourseAssessmentSection({
                   })
                 }
               >
-                <Label>{t('editor.fields.customAssessment')}</Label>
                 <Input placeholder={t('editor.fields.customAssessmentPlaceholder')} />
-              </TextField>
+              </FormField>
             ) : null}
             {!hasNoFinalAssessment ? (
               <>

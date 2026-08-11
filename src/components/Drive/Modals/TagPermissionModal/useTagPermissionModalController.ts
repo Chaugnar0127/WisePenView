@@ -1,9 +1,8 @@
 import { useGroupService, useTagService } from '@/domains';
 import type { GroupMember } from '@/domains/Group';
 import type { TagTreeNode } from '@/domains/Tag';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import type { TFunction } from 'i18next';
 import { useState, type Key } from 'react';
 import type { TagPermissionModalProps } from './index.type';
@@ -57,7 +56,7 @@ export const useTagPermissionModalController = ({
     data: groupMembers = [],
     loading: groupMemberLoading,
     error: groupMemberError,
-  } = useRequest(
+  } = useApi(
     async () => {
       if (!groupId) return [];
       const members: GroupMember[] = [];
@@ -103,7 +102,7 @@ export const useTagPermissionModalController = ({
   const resolveCachedTag = (tagId: string): TagTreeNode | undefined =>
     tagService.getRawTagById(tagId, groupId) ?? tagService.getTagById(tagId, groupId);
 
-  const { loading: tagRequestLoading } = useRequest(
+  const { loading: tagRequestLoading } = useApi(
     async () => {
       await tagService.getRawTagTree(groupId);
       return initialTagId ? resolveTagById(initialTagId) : undefined;
@@ -127,7 +126,6 @@ export const useTagPermissionModalController = ({
         setSelectedTag(buildSelectionFromTag(tag, groupId));
         applyTagToForm(tag);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
   const initialTagLoading = Boolean(initialTagId) && tagRequestLoading;
@@ -151,7 +149,7 @@ export const useTagPermissionModalController = ({
     void fillFormByTag();
   };
 
-  const { loading: saving, run: runSavePermission } = useRequest(
+  const { loading: saving, run: runSavePermission } = useApi(
     async (values: TagPermissionFormValues) => {
       if (!selectedTag?.tagId) return;
       if (!groupId) throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_ID_REQUIRED);
@@ -178,7 +176,6 @@ export const useTagPermissionModalController = ({
         onSuccess?.();
         onOpenChange(false);
       },
-      onError: (err) => toast.danger(parseErrorMessage(err)),
     }
   );
 

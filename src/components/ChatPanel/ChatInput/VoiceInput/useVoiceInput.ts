@@ -1,5 +1,6 @@
 import { useSpeechService } from '@/domains';
 import { XfyunSpeechRecognizer } from '@/domains/Speech';
+import { useApi } from '@/hooks/useApi';
 import {
   createClientError,
   FRONTEND_CLIENT_ERROR,
@@ -7,7 +8,7 @@ import {
   parseErrorMessage,
 } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest, useUnmount } from 'ahooks';
+import { useUnmount } from 'ahooks';
 import { useRef, useState } from 'react';
 import { useChatInputStoreApi } from '../_store/ChatInputStore';
 import type { VoiceInputProps, VoiceInputState } from './index.type';
@@ -58,7 +59,7 @@ export function useVoiceInput({ disabled }: UseVoiceInputOptions): VoiceInputPro
   const operationRef = useRef(0);
   const streamRef = useRef<MediaStream | null>(null);
   const recognizerRef = useRef<XfyunSpeechRecognizer | null>(null);
-  const { runAsync: issueCredential } = useRequest(
+  const { runAsync: issueCredential } = useApi(
     () => speechService.issueRecognitionCredential({ eosMs: DEFAULT_EOS_MS }),
     { manual: true }
   );

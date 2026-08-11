@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
 import { ChevronsLeft, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -71,7 +71,7 @@ function NoteOutline({ items, activeId, onNavigate, title, open, onOpenChange }:
                       key={it.id}
                       type="button"
                       role="listitem"
-                      className={clsx(
+                      className={cn(
                         styles.item,
                         resolveLevelClass(it.level),
                         it.level === 0 && styles.titleItem,

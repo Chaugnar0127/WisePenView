@@ -1,4 +1,4 @@
-import { Input, Select } from '@/components/Input';
+import { FormField, Input, Select } from '@/components/Input';
 import QuotaBar from '@/components/QuotaBar';
 import {
   DataTable,
@@ -8,11 +8,16 @@ import {
 } from '@/components/Table';
 import { ROLE, type GroupMember } from '@/domains/Group';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
-import { Label, ListBox, TextField } from '@heroui/react';
+import { ListBox } from '@heroui/react';
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { canEditSelectedMembers, canEditSelectedMembersForQuota } from '../../GroupDisplayConfig';
+import {
+  canEditSelectedMembers,
+  canEditSelectedMembersForQuota,
+  isAdmin,
+  isOwner,
+} from '../../GroupDisplayConfig';
 import type {
   MemberListInlineDraft,
   MemberListPaginationConfig,
@@ -121,12 +126,11 @@ function buildPageSizeControl(
 }
 
 function renderRole(role: GroupMember['role'], t: TFunction<'group'>) {
-  const roleLabel =
-    role === 'OWNER'
-      ? t('member.role.owner')
-      : role === 'ADMIN'
-        ? t('member.role.admin')
-        : t('member.role.member');
+  const roleLabel = isOwner(role)
+    ? t('member.role.owner')
+    : isAdmin(role)
+      ? t('member.role.admin')
+      : t('member.role.member');
   return <span className={`${styles.roleBadge} ${getRoleClassName(role)}`}>{roleLabel}</span>;
 }
 
@@ -191,13 +195,14 @@ function renderQuotaEditor(
   const value = inlineDraft.quota ?? String(member.limit ?? min);
 
   return (
-    <TextField
+    <FormField
       aria-label={t('member.table.quotaAria')}
+      label={t('member.table.quotaLabel')}
       value={value}
       onChange={(nextValue) => onInlineDraftChange({ quota: nextValue })}
       className={styles.inlineNumberField}
+      labelClassName={styles.inlineFieldLabel}
     >
-      <Label className={styles.inlineFieldLabel}>{t('member.table.quotaLabel')}</Label>
       <Input
         type="number"
         min={min}
@@ -205,7 +210,7 @@ function renderQuotaEditor(
         step={1}
         placeholder={t('member.table.integerPlaceholder')}
       />
-    </TextField>
+    </FormField>
   );
 }
 

@@ -1,18 +1,19 @@
 import { appendRedirectParam, readRedirectParam } from '@/bootstrap/authContinuation';
+import { AppButton } from '@/components/Button';
 import { FormField, Input, PasswordInput } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { LoginRequest } from '@/domains/Auth';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
-import { Button, Form, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Form } from '@heroui/react';
+
+import { hasFieldErrors, runFieldValidation, type FieldErrors } from '@/utils/formValidation';
 import { User } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import auth from '../Auth.module.less';
-import { hasFieldErrors, runFieldValidation, type FieldErrors } from '../formValidation';
 
 type LoginField = keyof LoginRequest;
 
@@ -31,15 +32,12 @@ function Login() {
   const location = useLocation();
   const redirectPath = readRedirectParam(location.search);
 
-  const { loading, run: submitLogin } = useRequest(
+  const { loading, run: submitLogin } = useApi(
     (values: LoginRequest) => authService.login(values),
     {
       manual: true,
       onSuccess: () => {
         navigate(redirectPath, { replace: true });
-      },
-      onError: (err: unknown) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -107,7 +105,7 @@ function Login() {
         </FormField>
 
         <div className={auth.formActions}>
-          <Button
+          <AppButton
             variant="primary"
             size="lg"
             type="submit"
@@ -115,7 +113,7 @@ function Login() {
             isDisabled={loading}
           >
             {t('login.submit')}
-          </Button>
+          </AppButton>
           <div className={auth.rightLinks}>
             <Link to={appendRedirectParam(APP_ROUTE_PATH.AUTH_REGISTER, redirectPath)}>
               {t('login.register')}

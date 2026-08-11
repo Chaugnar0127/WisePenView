@@ -1,4 +1,5 @@
-import { Button } from '@heroui/react';
+import { AppButton } from '@/components/Button';
+
 import { useTranslation } from 'react-i18next';
 
 import AppAlertDialog from '../AppAlertDialog';
@@ -22,15 +23,15 @@ function UnsavedChangesDialog({
   const resolvedDiscardText = discardText ?? t('overlay.discard');
   const actions = onDiscard ? (
     <>
-      <Button variant="secondary" isDisabled={isLoading} onPress={onCancel}>
+      <AppButton variant="secondary" isDisabled={isLoading} onPress={onCancel}>
         {resolvedCancelText}
-      </Button>
-      <Button variant="secondary" isDisabled={isLoading} onPress={onDiscard}>
+      </AppButton>
+      <AppButton variant="secondary" isDisabled={isLoading} onPress={onDiscard}>
         {resolvedDiscardText}
-      </Button>
-      <Button variant="primary" isDisabled={isLoading} aria-busy={isLoading} onPress={onConfirm}>
+      </AppButton>
+      <AppButton variant="primary" isDisabled={isLoading} aria-busy={isLoading} onPress={onConfirm}>
         {confirmText}
-      </Button>
+      </AppButton>
     </>
   ) : undefined;
 

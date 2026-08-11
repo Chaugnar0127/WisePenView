@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { COURSE_ROLE } from '@/domains/Course';
 import {
   APP_ROUTE_PATH,
@@ -5,7 +6,7 @@ import {
   buildCourseLearningPath,
   buildCoursePath,
 } from '@/utils/navigation/appRoute';
-import { Button } from '@heroui/react';
+
 import {
   ArrowLeft,
   Bell,
@@ -73,7 +74,7 @@ function CourseNavigationSidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
-        <Button
+        <AppButton
           variant="ghost"
           size="sm"
           className={styles.backLink}
@@ -81,7 +82,7 @@ function CourseNavigationSidebar() {
         >
           <ArrowLeft size={16} aria-hidden />
           {t('common.backToCourseGroups')}
-        </Button>
+        </AppButton>
         <div className={styles.courseName}>
           <BookOpen size={18} aria-hidden />
           <strong>{course.name}</strong>

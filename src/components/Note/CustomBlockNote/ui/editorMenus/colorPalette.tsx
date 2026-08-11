@@ -1,5 +1,7 @@
-import { Button, ColorSwatchPicker } from '@heroui/react';
-import clsx from 'clsx';
+import { AppButton } from '@/components/Button';
+import { ColorSwatchPicker } from '@heroui/react';
+
+import { cn } from '@/utils/cn';
 import { Baseline } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -57,18 +59,18 @@ function ColorSection({
             color={item.value}
             aria-label={`${title}${getColorItemLabel(item)}`}
             className={({ isSelected }) =>
-              clsx(styles.colorSwatchItem, isSelected && styles.colorSwatchSelected)
+              cn(styles.colorSwatchItem, isSelected && styles.colorSwatchSelected)
             }
             onPress={() => onSelect(item.key)}
           >
             {mode === 'text' ? (
               <Baseline
                 size={20}
-                className={clsx(styles.colorTextPreview, item.textClassName)}
+                className={cn(styles.colorTextPreview, item.textClassName)}
                 aria-hidden="true"
               />
             ) : (
-              <span className={clsx(styles.colorBackgroundPreview, item.backgroundClassName)} />
+              <span className={cn(styles.colorBackgroundPreview, item.backgroundClassName)} />
             )}
           </ColorSwatchPicker.Item>
         ))}
@@ -85,7 +87,7 @@ export function ColorPaletteContent({
 }: ColorPaletteContentProps) {
   const { t } = useTranslation('note');
   return (
-    <div className={clsx(styles.colorPanel, className)}>
+    <div className={cn(styles.colorPanel, className)}>
       {text ? (
         <ColorSection
           title={t('editor.color.text')}
@@ -103,9 +105,14 @@ export function ColorPaletteContent({
         />
       ) : null}
       {onReset ? (
-        <Button variant="outline" size="sm" className={styles.resetColorButton} onPress={onReset}>
+        <AppButton
+          variant="outline"
+          size="sm"
+          className={styles.resetColorButton}
+          onPress={onReset}
+        >
           {t('editor.color.reset')}
-        </Button>
+        </AppButton>
       ) : null}
     </div>
   );

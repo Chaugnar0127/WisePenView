@@ -1,10 +1,10 @@
 import { useCourseService, useImageService } from '@/domains';
 import type { CourseAssessmentItem, CourseDetail, CourseMeeting } from '@/domains/Course';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { PLACEHOLDER_IMAGE } from '@/utils/image/placeholder';
 import { assertImageProxyUploadLimit } from '@/utils/image/uploadLimit';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useRef, useState, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -33,7 +33,7 @@ export function useCourseEditorFormController({
   const [coverPreview, setCoverPreview] = useState<string>();
   const coverPreviewRequestRef = useRef(0);
 
-  const { loading: saving, run: saveCourse } = useRequest(
+  const { loading: saving, run: saveCourse } = useApi(
     async () => {
       let coverUrl = form.coverUrl.trim() || undefined;
       if (coverFile) {
@@ -64,7 +64,6 @@ export function useCourseEditorFormController({
         refreshCourse();
         toast.success(t('editor.saveSuccess'));
       },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 

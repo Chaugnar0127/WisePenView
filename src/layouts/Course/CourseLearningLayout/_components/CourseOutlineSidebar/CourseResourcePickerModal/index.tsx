@@ -1,12 +1,13 @@
+import { AppButton } from '@/components/Button';
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
+import { usePickerSelection } from '@/components/Picker';
 import { useCourseService } from '@/domains';
 import type { CourseOutlineMountResource } from '@/domains/Course';
-import { parseErrorMessage } from '@/utils/error';
-import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
-import { useState } from 'react';
+import { useApi } from '@/hooks/useApi';
+import { toast } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -29,33 +30,35 @@ function CourseResourcePickerModal({
 }: CourseResourcePickerModalProps) {
   const { t } = useTranslation('course');
   const courseService = useCourseService();
-  const [selectedResources, setSelectedResources] = useState<CourseOutlineMountResource[]>([]);
+  const selection = usePickerSelection<CourseOutlineMountResource[]>({
+    initialValue: [],
+    getCount: (value) => value.length,
+  });
 
   const close = () => {
-    setSelectedResources([]);
+    selection.clear();
     onOpenChange(false);
   };
 
-  const { loading, run: mountResources } = useRequest(
+  const { loading, run: mountResources } = useApi(
     () =>
       courseService.mountCourseOutlineResources({
         courseId,
         targetNodeId,
-        resources: selectedResources,
+        resources: selection.value,
       }),
     {
       manual: true,
       onSuccess: () => {
-        toast.success(t('editor.outline.mountSuccess', { count: selectedResources.length }));
+        toast.success(t('editor.outline.mountSuccess', { count: selection.count }));
         onSuccess();
         close();
       },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 
   const handleSelectionChange = (items: DriveSelectionItem[]) => {
-    setSelectedResources(
+    selection.setValue(
       items
         .filter((item) => item.kind === 'resource' || item.kind === 'link')
         .filter((item) => Boolean(item.resourceId))
@@ -79,16 +82,16 @@ function CourseResourcePickerModal({
       isDismissable={!loading}
       actions={
         <>
-          <Button variant="secondary" isDisabled={loading} onPress={close}>
+          <AppButton variant="secondary" isDisabled={loading} onPress={close}>
             {t('editor.actions.cancel')}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
-            isDisabled={loading || selectedResources.length === 0}
+            isDisabled={loading || !selection.canConfirm}
             onPress={mountResources}
           >
-            {t('editor.outline.mountSelected', { count: selectedResources.length })}
-          </Button>
+            {t('editor.outline.mountSelected', { count: selection.count })}
+          </AppButton>
         </>
       }
     >

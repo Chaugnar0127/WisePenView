@@ -1,5 +1,6 @@
-import { Select as HeroSelect } from '@heroui/react';
-import clsx from 'clsx';
+import { cn } from '@/utils/cn';
+import { Select as HeroSelect, Label } from '@heroui/react';
+import type { ReactNode } from 'react';
 
 import type {
   SelectIndicatorProps,
@@ -12,15 +13,33 @@ import styles from './style.module.less';
 
 function SelectRoot<T extends object = object, M extends 'single' | 'multiple' = 'single'>({
   className,
+  label,
+  labelClassName,
   variant = 'secondary',
+  isRequired,
+  children,
   ...props
 }: SelectProps<T, M>) {
-  return <HeroSelect variant={variant} className={clsx(styles.select, className)} {...props} />;
+  return (
+    <HeroSelect
+      variant={variant}
+      className={cn(styles.select, className)}
+      isRequired={isRequired}
+      {...props}
+    >
+      {label ? (
+        <Label className={labelClassName} isRequired={isRequired}>
+          {label}
+        </Label>
+      ) : null}
+      {children as ReactNode}
+    </HeroSelect>
+  );
 }
 
 function SelectTrigger({ children, className, ...props }: SelectTriggerProps) {
   return (
-    <HeroSelect.Trigger className={clsx(styles.selectTrigger, className)} {...props}>
+    <HeroSelect.Trigger className={cn(styles.selectTrigger, className)} {...props}>
       {children === undefined ? (
         <>
           <SelectValue />
@@ -42,7 +61,7 @@ function SelectIndicator({ className, ...props }: SelectIndicatorProps) {
 }
 
 function SelectPopover({ className, ...props }: SelectPopoverProps) {
-  return <HeroSelect.Popover className={clsx(styles.selectPopover, className)} {...props} />;
+  return <HeroSelect.Popover className={cn(styles.selectPopover, className)} {...props} />;
 }
 
 const Select = Object.assign(SelectRoot, {

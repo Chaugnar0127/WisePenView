@@ -1,15 +1,17 @@
-import { Input, TextArea, UploadZone } from '@/components/Input';
+import { AppButton } from '@/components/Button';
+import { FormField, Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
 import type { CreateGroupRequest } from '@/domains/Group';
 import { GROUP_TYPE } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import {
   assertImageProxyUploadLimit,
   IMAGE_UPLOAD_MAX_SIZE_LABEL,
 } from '@/utils/image/uploadLimit';
-import { Button, Label, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateGroupModalProps } from './index.type';
@@ -62,7 +64,7 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
     }
   };
 
-  const { loading: submitting, run: runCreateGroup } = useRequest(
+  const { loading: submitting, run: runCreateGroup } = useApi(
     async (values: CreateGroupFormValues) => {
       let groupCoverUrl = '';
       if (values.cover) {
@@ -87,9 +89,6 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
         resetForm();
         onOpenChange(false);
         onSuccess?.();
-      },
-      onError: (err: unknown) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );
@@ -126,38 +125,38 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
       isDismissable={!submitting}
       actions={
         <>
-          <Button variant="secondary" isDisabled={submitting} onPress={handleCancel}>
+          <AppButton variant="secondary" isDisabled={submitting} onPress={handleCancel}>
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={submitting}
             aria-busy={submitting || undefined}
             onPress={handleConfirm}
           >
             {t('actions.confirm', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >
-      <TextField
+      <FormField
+        label={t('fields.name')}
         aria-label={t('fields.name')}
         value={formValues.groupName}
         onChange={(value) => updateFormValue('groupName', value)}
         isRequired
       >
-        <Label>{t('fields.name')}</Label>
         <Input placeholder={t('fields.namePlaceholder')} />
-      </TextField>
-      <TextField
+      </FormField>
+      <FormField
+        label={t('fields.description')}
         aria-label={t('fields.description')}
         value={formValues.groupDesc}
         onChange={(value) => updateFormValue('groupDesc', value)}
         isRequired
       >
-        <Label>{t('fields.description')}</Label>
         <TextArea rows={4} placeholder={t('fields.descriptionPlaceholder')} />
-      </TextField>
+      </FormField>
       <div className={styles.coverField}>
         <span className={styles.fieldLabel}>{t('fields.cover')}</span>
         <UploadZone

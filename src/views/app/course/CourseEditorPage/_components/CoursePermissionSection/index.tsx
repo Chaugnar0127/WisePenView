@@ -1,8 +1,9 @@
+import { AppButton } from '@/components/Button';
 import { TagMountPermissionModal } from '@/components/Drive/Modals';
 import GroupDefaultAccessPermissionModal from '@/components/Group/DefaultAccessPermissionModal';
 import { useGroupService } from '@/domains';
-import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+
 import { FolderInput, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -27,9 +28,9 @@ function CoursePermissionSection({
     data: groupResConfig,
     loading,
     refresh,
-  } = useRequest(() => groupService.fetchGroupResConfig(courseId), {
+  } = useApi(() => groupService.fetchGroupResConfig(courseId), {
     refreshDeps: [courseId],
-    onError: () => toast.danger(t('editor.permissions.loadFailed')),
+    getErrorMessage: () => t('editor.permissions.loadFailed'),
   });
 
   const handlePermissionSuccess = () => {
@@ -40,22 +41,22 @@ function CoursePermissionSection({
   return (
     <>
       <div className={styles.permissionActions}>
-        <Button
+        <AppButton
           variant="secondary"
           isDisabled={loading || !groupResConfig}
           onPress={() => setAccessPermissionOpen(true)}
         >
           <ShieldCheck size={16} aria-hidden="true" />
           {t('editor.permissions.access')}
-        </Button>
-        <Button
+        </AppButton>
+        <AppButton
           variant="secondary"
           isDisabled={!outlineRootTagId}
           onPress={() => setMountPermissionOpen(true)}
         >
           <FolderInput size={16} aria-hidden="true" />
           {t('editor.permissions.mount')}
-        </Button>
+        </AppButton>
       </div>
 
       {accessPermissionOpen && groupResConfig ? (

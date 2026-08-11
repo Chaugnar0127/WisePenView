@@ -1,7 +1,6 @@
 import { useInteractService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -25,18 +24,15 @@ export function useFavoriteCollectionPickerController({
     data: collections,
     loading: loadingCollections,
     refresh: refreshCollections,
-  } = useRequest(() => interactService.listFavoriteCollections(), {
-    onError: (error) => toast.danger(parseErrorMessage(error)),
-  });
-  const { loading: loadingStatus } = useRequest(
+  } = useApi(() => interactService.listFavoriteCollections(), {});
+  const { loading: loadingStatus } = useApi(
     () => interactService.getFavoriteCollectionIds(resourceId),
     {
       onSuccess: setSelectedIds,
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const { loading: loadingConfirm, run: confirm } = useRequest(
+  const { loading: loadingConfirm, run: confirm } = useApi(
     async () => {
       await interactService.updateFavoriteCollections({ resourceId, collectionIds: selectedIds });
       return interactService.getFavoriteCollectionIds(resourceId);
@@ -47,11 +43,10 @@ export function useFavoriteCollectionPickerController({
         onConfirmed(collectionIds);
         onOpenChange(false);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const { loading: loadingCreate, run: createCollection } = useRequest(
+  const { loading: loadingCreate, run: createCollection } = useApi(
     (collectionName: string) => interactService.createFavoriteCollection({ collectionName }),
     {
       manual: true,
@@ -61,7 +56,6 @@ export function useFavoriteCollectionPickerController({
         setShowCreateInput(false);
         void refreshCollections();
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

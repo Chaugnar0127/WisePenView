@@ -52,7 +52,7 @@
 
 /* Mac：侧栏折叠后顶栏避开红绿灯 */
 .titleBarInsetStart .bar {
-  padding-left: @desktop-titlebar-start-inset;
+  padding-left: var(--desktop-titlebar-start-inset, 92px);
 }
 
 /* Win：--resource-header-end-reserve 由 useResourceHeaderEndReserve 写入 */

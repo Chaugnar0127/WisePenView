@@ -35,9 +35,9 @@
   width: var(--app-checkbox-control-size, 16px);
   height: var(--app-checkbox-control-size, 16px);
   border: 1px solid var(--app-checkbox-control-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background-color: var(--app-checkbox-control-bg);
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .checkbox:global(.checkbox):hover:not([data-disabled='true']):not([data-selected='true']):not(
@@ -85,5 +85,5 @@
 .checkbox:global(.checkbox)[data-disabled='true'] :global(.checkbox__control) {
   border-color: color-mix(in oklab, var(--app-checkbox-control-border) 76%, transparent);
   background-color: color-mix(in oklab, var(--app-checkbox-control-bg) 78%, transparent);
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }

@@ -1,9 +1,8 @@
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { useInteractService } from '@/domains';
 import type { FavoriteItem } from '@/domains/Interact';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 
 interface UnfavoriteResourceModalProps {
@@ -21,7 +20,7 @@ function UnfavoriteResourceModal({
 }: UnfavoriteResourceModalProps) {
   const { t } = useTranslation('resource');
   const interactService = useInteractService();
-  const { loading, run: unfavorite } = useRequest(
+  const { loading, run: unfavorite } = useApi(
     async () => {
       if (!item) return;
       const collectionIds = await interactService.getFavoriteCollectionIds(item.resourceId);
@@ -37,7 +36,6 @@ function UnfavoriteResourceModal({
         onSuccess();
         onOpenChange(false);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

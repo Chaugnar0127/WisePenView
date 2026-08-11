@@ -42,7 +42,7 @@
   box-sizing: border-box;
   color: var(--text-disabled);
   font-family: inherit;
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
   line-height: 22px;
@@ -57,7 +57,7 @@
 
 .lineNumber {
   justify-content: flex-end;
-  padding-right: 8px;
+  padding-right: var(--space-xs);
   border-right: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 }
 
@@ -65,7 +65,7 @@
   display: block;
   min-width: 0;
   min-height: 22px;
-  padding: 0 20px 0 var(--space-sm);
+  padding: 0 var(--space-md-plus) 0 var(--space-sm);
   line-height: 22px;
   white-space: pre;
   color: inherit;

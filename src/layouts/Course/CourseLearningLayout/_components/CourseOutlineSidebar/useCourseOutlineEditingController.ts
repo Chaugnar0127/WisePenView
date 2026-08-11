@@ -1,8 +1,7 @@
 import { useCourseService } from '@/domains';
 import type { CourseOutlineNode } from '@/domains/Course';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -35,7 +34,7 @@ export const useCourseOutlineEditingController = ({
   const [moveTarget, setMoveTarget] = useState<CourseOutlineResourceTarget>();
   const [removeTarget, setRemoveTarget] = useState<CourseOutlineResourceTarget>();
 
-  const createChapterRequest = useRequest(
+  const createChapterRequest = useApi(
     async (name: string) => {
       const normalizedName = name.trim();
       if (!normalizedName) return;
@@ -50,11 +49,10 @@ export const useCourseOutlineEditingController = ({
         onMutated();
         toast.success(t('editor.outline.saved'));
       },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const saveSectionRequest = useRequest(
+  const saveSectionRequest = useApi(
     async () => {
       const name = sectionName.trim();
       if (!sectionDialog || !name) return;
@@ -80,11 +78,10 @@ export const useCourseOutlineEditingController = ({
         onMutated();
         toast.success(t('editor.outline.saved'));
       },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const deleteSectionRequest = useRequest(
+  const deleteSectionRequest = useApi(
     async () => {
       if (!deleteTarget) return;
       await courseService.deleteCourseOutlineSection({
@@ -99,11 +96,10 @@ export const useCourseOutlineEditingController = ({
         onMutated();
         toast.success(t('editor.outline.saved'));
       },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const reorderRequest = useRequest(
+  const reorderRequest = useApi(
     async (node: CourseOutlineContainerNode, offset: -1 | 1) => {
       const siblings = findCourseOutlineContainerSiblings(nodes, node.nodeId);
       if (!siblings) return;
@@ -123,11 +119,10 @@ export const useCourseOutlineEditingController = ({
     {
       manual: true,
       onSuccess: onMutated,
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const moveResourceRequest = useRequest(
+  const moveResourceRequest = useApi(
     async ({
       target,
       targetNodeId,
@@ -152,14 +147,13 @@ export const useCourseOutlineEditingController = ({
         onMutated();
         toast.success(t('editor.outline.saved'));
       },
-      onError: (error: unknown) => {
+      onErrorEffect: (error) => {
         onMutated();
-        toast.danger(parseErrorMessage(error));
       },
     }
   );
 
-  const removeResourceRequest = useRequest(
+  const removeResourceRequest = useApi(
     async () => {
       if (!removeTarget) return;
       await courseService.removeCourseOutlineResource({
@@ -175,7 +169,6 @@ export const useCourseOutlineEditingController = ({
         onMutated();
         toast.success(t('editor.outline.saved'));
       },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 

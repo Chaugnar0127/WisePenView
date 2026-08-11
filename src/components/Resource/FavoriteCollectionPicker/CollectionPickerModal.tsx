@@ -1,8 +1,10 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { Spin } from '@/components/Feedback';
 import AppModal from '@/components/Overlay/AppModal';
 import type { FavoriteCollection } from '@/domains/Interact';
-import { Button, Input, ListBox, ListBoxItem, TextField } from '@heroui/react';
+import { Input, ListBox, ListBoxItem, TextField } from '@heroui/react';
+
 import { Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -51,16 +53,16 @@ function CollectionPickerModal({
       isDismissable={!busy}
       actions={
         <>
-          <Button variant="secondary" isDisabled={busy} onPress={() => onOpenChange(false)}>
+          <AppButton variant="secondary" isDisabled={busy} onPress={() => onOpenChange(false)}>
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={busy || loadingCollections || loadingStatus}
             onPress={onConfirm}
           >
             {t('actions.confirm', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >
@@ -137,7 +139,7 @@ function CollectionPickerModal({
             </div>
           </TextField>
         ) : (
-          <Button
+          <AppButton
             variant="ghost"
             size="sm"
             className={styles.newCollectionButton}
@@ -145,7 +147,7 @@ function CollectionPickerModal({
           >
             <Plus size={15} aria-hidden="true" />
             {t('favorite.picker.create')}
-          </Button>
+          </AppButton>
         )}
       </div>
     </AppModal>

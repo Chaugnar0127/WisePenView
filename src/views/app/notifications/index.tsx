@@ -1,15 +1,17 @@
+import { AppButton } from '@/components/Button';
 import { EmptyState, ResultState, Spin } from '@/components/Feedback';
 import { useMessageService } from '@/domains';
 import type { UserMessage } from '@/domains/Message';
+import { useApi, useApiInfiniteScroll } from '@/hooks/useApi';
 import PageHeader from '@/layouts/_common/PageHeader';
 import { parseErrorMessage } from '@/utils/error';
 import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
+import { cn } from '@/utils/cn';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useInfiniteScroll, useRequest } from 'ahooks';
-import clsx from 'clsx';
 import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,7 +59,7 @@ function NotificationsPage() {
   const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
   const messageListRef = useRef<HTMLDivElement>(null);
 
-  const messagesRequest = useInfiniteScroll<UserMessageInfinitePage>(
+  const messagesRequest = useApiInfiniteScroll<UserMessageInfinitePage>(
     async (current) => {
       const nextPage = Math.floor((current?.list.length ?? 0) / MESSAGE_PAGE_SIZE) + 1;
       const data = await messageService.listUserMessages({
@@ -69,7 +71,8 @@ function NotificationsPage() {
     {
       target: messageListRef,
       isNoMore: (data) => Boolean(data && data.page >= data.totalPage),
-      onError: (error) => toast.warning(parseErrorMessage(error)),
+      showErrorToast: false,
+      onErrorEffect: (error) => toast.warning(parseErrorMessage(error)),
     }
   );
 
@@ -92,7 +95,7 @@ function NotificationsPage() {
       ? messageVirtualizer.getTotalSize() - (virtualItems[virtualItems.length - 1]?.end ?? 0)
       : 0;
 
-  const { runAsync: readMessages } = useRequest(
+  const { runAsync: readMessages } = useApi(
     (messageIds: string[]) => messageService.readMessages({ messageIds }),
     { manual: true }
   );
@@ -173,7 +176,7 @@ function NotificationsPage() {
         title={t('page.title')}
         subtitle={t('page.subtitle')}
         actions={
-          <Button
+          <AppButton
             size="sm"
             variant="secondary"
             isDisabled={!hasUnreadMessages}
@@ -181,7 +184,7 @@ function NotificationsPage() {
           >
             <CheckCheck size={16} />
             {t('page.markAllAsRead')}
-          </Button>
+          </AppButton>
         }
       />
 
@@ -193,10 +196,10 @@ function NotificationsPage() {
               title={t('page.loadFailed')}
               subTitle={parseErrorMessage(messagesRequest.error)}
               extra={
-                <Button variant="primary" onPress={handleRefreshMessages}>
+                <AppButton variant="primary" onPress={handleRefreshMessages}>
                   <RotateCw size={16} />
                   {t('page.refresh')}
-                </Button>
+                </AppButton>
               }
             />
           </div>
@@ -253,7 +256,7 @@ function NotificationsPage() {
                   key={message.messageId}
                   data-index={virtualItem.index}
                   ref={messageVirtualizer.measureElement}
-                  className={clsx(styles.messageItem, isSelected && styles.messageItemSelected)}
+                  className={cn(styles.messageItem, isSelected && styles.messageItemSelected)}
                 >
                   <div className={styles.messageSummary}>
                     <button
@@ -264,7 +267,7 @@ function NotificationsPage() {
                     >
                       <span className={styles.messageStatusLine}>
                         <span
-                          className={clsx(styles.statusDot, !isUnread && styles.statusDotRead)}
+                          className={cn(styles.statusDot, !isUnread && styles.statusDotRead)}
                           aria-hidden="true"
                         />
                         <span>{typeLabel}</span>
@@ -316,14 +319,14 @@ function NotificationsPage() {
                       <p className={styles.messageContent}>{content}</p>
                       {message.jumpUrl ? (
                         <div className={styles.messageActions}>
-                          <Button
+                          <AppButton
                             size="sm"
                             variant="secondary"
                             onPress={() => handleOpenJumpUrl(message)}
                           >
                             <ExternalLink size={16} />
                             {t('page.jumpLink')}
-                          </Button>
+                          </AppButton>
                         </div>
                       ) : null}
                     </div>
@@ -340,7 +343,7 @@ function NotificationsPage() {
             ) : null}
             {hasMoreMessages ? (
               <div className={styles.loadMoreBar}>
-                <Button
+                <AppButton
                   variant="ghost"
                   size="sm"
                   className={styles.loadMoreButton}
@@ -348,7 +351,7 @@ function NotificationsPage() {
                   onPress={messagesRequest.loadMore}
                 >
                   {messagesRequest.loadingMore ? t('page.loadingMore') : t('page.loadMore')}
-                </Button>
+                </AppButton>
               </div>
             ) : null}
           </div>

@@ -45,17 +45,17 @@
 }
 
 .review[data-ai-diff-content-type='heading'][data-ai-diff-heading-level='2'] {
-  font-size: 22px;
+  font-size: var(--font-size-heading-4);
   line-height: 1.4;
 }
 
 .review[data-ai-diff-content-type='heading'][data-ai-diff-heading-level='3'] {
-  font-size: 20px;
+  font-size: var(--font-size-heading-2);
   line-height: 1.4;
 }
 
 .review[data-ai-diff-content-type='heading'][data-ai-diff-heading-level='4'] {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   line-height: 1.4;
 }
 
@@ -394,7 +394,7 @@
 /* —— 段右侧工具条：左缘对齐灰块右缘，垂直对齐当前改动 —— */
 .blockActions {
   position: absolute;
-  z-index: 30;
+  z-index: var(--app-z-index-dock);
   top: 50%;
   left: 100%;
   right: auto;
@@ -415,8 +415,8 @@
   white-space: nowrap;
   transform: translateY(-50%);
   transition:
-    opacity var(--motion-duration-fast) ease,
-    transform var(--motion-duration-fast) ease;
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 /* 选中态：显示工具条（在灰块右侧外侧） */
@@ -429,9 +429,9 @@
 .segmentNavigator {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-3xs);
   height: 28px;
-  padding: 0 4px;
+  padding: 0 var(--space-2xs);
   border-radius: var(--radius-md);
   background: var(--surface-secondary);
   color: var(--muted);
@@ -452,8 +452,8 @@
   cursor: pointer;
   line-height: 0;
   transition:
-    background var(--motion-duration-fast) ease,
-    color var(--motion-duration-fast) ease;
+    background var(--motion-duration-fast) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .toolbarIcon {
@@ -484,7 +484,7 @@
   justify-content: center;
   min-width: 3.75em;
   height: 24px;
-  padding: 0 2px;
+  padding: 0 var(--space-3xs);
   color: var(--muted);
   font-size: var(--font-size-2xs);
   font-variant-numeric: tabular-nums;
@@ -496,7 +496,7 @@
 .segmentDecision {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-3xs);
 }
 
 .blockAction {
@@ -504,7 +504,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   width: auto;
   height: 28px;
   min-width: 28px;
@@ -514,9 +514,9 @@
   cursor: pointer;
   line-height: 1;
   transition:
-    background var(--motion-duration-fast) ease,
-    border-color var(--motion-duration-fast) ease,
-    color var(--motion-duration-fast) ease;
+    background var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .shortcutKbd {
@@ -535,7 +535,7 @@
   font-weight: var(--font-weight-medium);
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .blockAction:focus-visible {
@@ -600,7 +600,7 @@
   position: absolute;
   right: var(--space-lg);
   bottom: var(--space-lg);
-  z-index: 30;
+  z-index: var(--app-z-index-dock);
   display: inline-flex;
   align-items: center;
   padding: var(--space-xs);

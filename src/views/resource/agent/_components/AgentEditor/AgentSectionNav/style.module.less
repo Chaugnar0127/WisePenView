@@ -1,15 +1,16 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .nav {
   min-height: 0;
   overflow-y: auto;
-  .appSubtleScrollbarStable();
-  padding: 20px 12px;
+  .appSubtleScrollbar();
+  padding: var(--space-md-plus) var(--space-sm);
   border-right: 1px solid var(--border);
   background: var(--surface);
 
   h2 {
-    margin: 0 8px 14px;
+    margin: 0 var(--space-xs) 14px;
     color: var(--foreground);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
@@ -22,10 +23,10 @@
     display: flex;
     align-items: center;
     gap: 9px;
-    margin: 2px 0;
+    margin: var(--space-3xs) 0;
     padding: 0 9px;
     border: 0;
-    border-radius: var(--radius-sm, 6px);
+    border-radius: var(--radius-sm, var(--radius-md));
     color: color-mix(in srgb, var(--foreground) 64%, var(--muted));
     background: transparent;
     text-align: left;
@@ -65,7 +66,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: @breakpoint-md) {
   .nav {
     display: none;
   }

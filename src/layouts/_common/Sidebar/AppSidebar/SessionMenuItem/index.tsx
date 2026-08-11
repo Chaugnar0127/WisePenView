@@ -3,9 +3,8 @@ import { FormField, Input } from '@/components/Input';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import { useChatService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +19,7 @@ function SessionMenuItem({ session, onUpdated, onDeleted }: SessionMenuItemProps
   const [editingTitleError, setEditingTitleError] = useState('');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
-  const { runAsync: runRenameSession } = useRequest(
+  const { runAsync: runRenameSession } = useApi(
     async (newTitle: string) =>
       chatService.renameSession({
         sessionId: session.id,
@@ -33,13 +32,10 @@ function SessionMenuItem({ session, onUpdated, onDeleted }: SessionMenuItemProps
         setRenameModalOpen(false);
         await onUpdated();
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
 
-  const { runAsync: runDeleteSession, loading: deleting } = useRequest(
+  const { runAsync: runDeleteSession, loading: deleting } = useApi(
     async () =>
       chatService.deleteSession({
         sessionId: session.id,
@@ -50,9 +46,6 @@ function SessionMenuItem({ session, onUpdated, onDeleted }: SessionMenuItemProps
         toast.success(t('chat:session.deleteSuccess'));
         onDeleted(session.id);
         await onUpdated();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

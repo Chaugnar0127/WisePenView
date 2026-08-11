@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { Copy } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,8 @@ import { copyText } from '@/utils/browser/copyText';
 import { getErrorReportId } from '@/utils/error';
 import ErrorPageShell from '@/views/app/error/_components/ErrorPageShell';
 import ResourceNotFound from '@/views/app/error/ResourceNotFound';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import shellStyles from '../_components/ErrorPageShell/style.module.less';
 import { buildAppErrorInfo } from '../errorInfo';
 import { buildErrorDetail } from './errorDetail';
@@ -48,12 +50,12 @@ function AppError() {
         subTitle={errorInfo.subTitle}
         extra={
           <div className={shellStyles.actions}>
-            <Button variant="primary" size="lg" onPress={() => window.location.reload()}>
+            <AppButton variant="primary" size="lg" onPress={() => window.location.reload()}>
               {t('page.refresh')}
-            </Button>
-            <Button size="lg" onPress={() => navigate(-1)}>
+            </AppButton>
+            <AppButton size="lg" onPress={() => navigate(-1)}>
               {t('page.backPrevious')}
-            </Button>
+            </AppButton>
           </div>
         }
       >

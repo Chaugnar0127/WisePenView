@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .block {
   margin-top: 22px;
@@ -14,8 +15,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: var(--space-sm);
+  padding: 10px var(--space-sm);
   border-bottom: 1px solid var(--separator);
   border-radius: 16px 16px 0 0;
   background: var(--surface-secondary);
@@ -45,7 +46,7 @@
 .header span {
   flex: 1 1 auto;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   line-height: 1.45;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -56,7 +57,7 @@
   max-height: 320px;
   overflow: auto;
   .appSubtleScrollbar();
-  padding: 6px;
+  padding: var(--space-2xs-plus);
 }
 
 .option {
@@ -81,7 +82,7 @@
 .optionIcon {
   width: 24px;
   height: 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
 }
 
 .optionCopy {
@@ -104,15 +105,15 @@
 }
 
 .optionCopy small {
-  margin-top: 2px;
+  margin-top: var(--space-3xs);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   line-height: 1.45;
 }
 
 .option em {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-style: normal;
 }
 
@@ -122,9 +123,9 @@
 }
 
 .selectedEmpty {
-  padding: 18px 16px;
+  padding: 18px var(--space-md);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   text-align: center;
 }
 
@@ -134,7 +135,7 @@
   grid-template-columns: 28px minmax(0, 1fr) 32px;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 10px var(--space-sm);
   border-top: 1px solid var(--separator);
 }
 
@@ -156,7 +157,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-xs);
 }
 
 .selectedTitle strong,
@@ -178,14 +179,14 @@
   flex: 0 1 auto;
   min-width: 36px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
 }
 
 .selectedDescription {
   display: block;
   margin-top: 3px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   line-height: 1.45;
 }
 
@@ -199,11 +200,11 @@
   min-height: 320px;
   max-height: 460px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   background: var(--surface);
 }
 
-@media (max-width: 760px) {
+@media (max-width: @breakpoint-md) {
   .header {
     align-items: stretch;
     flex-direction: column;

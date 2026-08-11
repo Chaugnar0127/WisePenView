@@ -9,7 +9,7 @@ const ahooksUpdateEffectImportRule = {
   name: 'ahooks',
   importNames: ['useUpdateEffect'],
   message:
-    'useUpdateEffect 只是跳过首次执行，不能替代副作用设计；请改为事件驱动、渲染期派生、useRequest 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
+    'useUpdateEffect 只是跳过首次执行，不能替代副作用设计；请改为事件驱动、渲染期派生、useApi 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
 };
 
 const reactFcImportRule = {
@@ -23,6 +23,27 @@ const heroUiOverlayPrimitiveImportRule = {
   importNames: ['Modal', 'AlertDialog'],
   message:
     '业务浮层请使用 src/components/Overlay 下的 AppAlertDialog、AppFormDialog、AppDisplayDialog 或 AppModal；底层 Modal / AlertDialog 只允许 Overlay 封装内部使用。',
+};
+
+const heroUiButtonPrimitiveImportRule = {
+  name: '@heroui/react',
+  importNames: ['Button'],
+  message:
+    '业务按钮请使用 src/components/Button 下的 AppButton；底层 Button 只允许 Button 封装内部使用。',
+};
+
+const heroUiInputPrimitiveImportRule = {
+  name: '@heroui/react',
+  importNames: ['Input', 'TextArea', 'TextField', 'Label', 'Select'],
+  message:
+    '业务输入控件请使用 src/components/Input 下的 FormField、Input、TextArea 或 Select；底层输入原语只允许 Input 封装内部或明确特殊组件使用。',
+};
+
+const heroUiFeedbackPrimitiveImportRule = {
+  name: '@heroui/react',
+  importNames: ['Spinner'],
+  message:
+    '业务加载反馈请使用 src/components/Feedback 下的 Spin 或 LoadingState；底层 Spinner 只允许 Feedback 封装内部使用。',
 };
 
 const projectOverlayModalImportRule = {
@@ -95,8 +116,11 @@ const domainApiFunctionImportPattern = {
 
 const buildRestrictedImportsRule = ({
   allowApiRequest = false,
+  allowButtonPrimitive = false,
   allowDirectAxios = false,
   allowDomainApiFunction = false,
+  allowInputPrimitive = false,
+  allowFeedbackPrimitive = false,
   allowOverlayPrimitive = false,
   allowServiceFactory = false,
   allowServiceMock = false,
@@ -104,6 +128,9 @@ const buildRestrictedImportsRule = ({
   const paths = [
     ahooksUpdateEffectImportRule,
     reactFcImportRule,
+    ...(allowButtonPrimitive ? [] : [heroUiButtonPrimitiveImportRule]),
+    ...(allowInputPrimitive ? [] : [heroUiInputPrimitiveImportRule]),
+    ...(allowFeedbackPrimitive ? [] : [heroUiFeedbackPrimitiveImportRule]),
     ...(allowOverlayPrimitive
       ? []
       : [heroUiOverlayPrimitiveImportRule, projectOverlayModalImportRule]),
@@ -338,7 +365,7 @@ export default defineConfig([
           object: 'ahooks',
           property: 'useUpdateEffect',
           message:
-            '项目禁止 ahooks.useUpdateEffect；请改为事件驱动、渲染期派生、useRequest 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
+            '项目禁止 ahooks.useUpdateEffect；请改为事件驱动、渲染期派生、useApi 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
         },
       ],
       'no-restricted-syntax': ['error', ...projectRestrictedSyntaxRules],
@@ -375,6 +402,42 @@ export default defineConfig([
     files: ['electron/**/*.{ts,tsx}'],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+  {
+    // Feedback 封装内部允许直连 HeroUI Spinner，其它业务代码统一使用 Spin/LoadingState。
+    files: ['src/components/Feedback/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': buildRestrictedImportsRule({ allowFeedbackPrimitive: true }),
+    },
+  },
+  {
+    // Button 封装内部允许直连 HeroUI Button，其它业务代码统一使用 AppButton。
+    files: ['src/components/Button/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': buildRestrictedImportsRule({ allowButtonPrimitive: true }),
+    },
+  },
+  {
+    // Input 封装内部允许直连 HeroUI 输入原语，其它业务代码统一使用项目输入封装。
+    files: ['src/components/Input/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': buildRestrictedImportsRule({ allowInputPrimitive: true }),
+    },
+  },
+  {
+    // ChatInput 与富文本工具栏依赖底层 textarea/input 的特殊组合行为，单独留白名单。
+    files: [
+      'src/components/ChatPanel/ChatInput/index.tsx',
+      'src/components/Note/CustomBlockNote/ui/toolbar/components/FileButtons.tsx',
+      'src/components/Note/CustomBlockNote/ui/toolbar/components/LinkButton.tsx',
+      'src/components/Resource/FavoriteCollectionPicker/CollectionPickerModal.tsx',
+      'src/components/UserSearchCombobox/index.tsx',
+      'src/views/app/course/CourseEditorPage/_components/CourseEditorDateFields/index.tsx',
+      'src/views/resource/agent/_components/AgentEditor/sections/MemorySection/index.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': buildRestrictedImportsRule({ allowInputPrimitive: true }),
     },
   },
   {

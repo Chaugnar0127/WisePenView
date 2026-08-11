@@ -1,6 +1,7 @@
 import type { OssStsTokenApiResponse } from '@/apis/api.type';
 import { registerServiceCacheCleaner } from '@/domains/_shared/cacheRegistry';
 import { createClientError, FRONTEND_CLIENT_ERROR, isWisePenError } from '@/utils/error';
+import { isRecord } from '@/utils/typeGuards';
 import OSS from 'ali-oss';
 
 export interface OssStsClientManagerOptions<Key> {
@@ -51,9 +52,6 @@ const createOssClient = (token: OssStsTokenApiResponse): OSS => {
     secure: true,
   });
 };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 const isOssAuthExpiredError = (error: unknown): boolean => {
   if (!isRecord(error)) return false;

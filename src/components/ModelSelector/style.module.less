@@ -10,7 +10,7 @@
   min-width: 0;
   height: 32px;
   padding: 0 var(--space-xs);
-  gap: 6px;
+  gap: var(--space-2xs-plus);
   border: 0;
   border-radius: var(--radius-xl);
   color: var(--muted);
@@ -18,8 +18,8 @@
   overflow: hidden;
   cursor: pointer;
   transition:
-    background 0.2s,
-    color 0.2s;
+    background var(--motion-duration-mid),
+    color var(--motion-duration-mid);
 
   /* 与 ChatInput toolbarCircleBtn（HeroUI ghost）一致的 hover */
   &:hover:not(:disabled),
@@ -114,7 +114,7 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-3xs);
 }
 
 .name,
@@ -133,7 +133,7 @@
 .meta,
 .empty {
   color: var(--muted);
-  font-size: var(--font-size-xs, 12px);
+  font-size: var(--font-size-xs, var(--font-size-xs));
 }
 
 .empty {
@@ -142,11 +142,5 @@
 }
 
 .spinIcon {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: var(--animate-spin-fast);
 }

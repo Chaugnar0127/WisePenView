@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .container {
   flex-shrink: 0;
@@ -19,8 +20,8 @@
   container-type: inline-size;
   container-name: chat-input;
   transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color var(--motion-duration-mid),
+    box-shadow var(--motion-duration-mid);
 
   &:focus-within {
     border-color: var(--accent-softer);
@@ -103,7 +104,7 @@
   resize: none !important;
   field-sizing: content;
   border: none !important;
-  box-shadow: none !important;
+  box-shadow: var(--shadow-none) !important;
   background: transparent !important;
   padding: var(--space-xs) 0 !important;
   font-size: var(--font-size-base);
@@ -217,7 +218,7 @@
 }
 
 .compactPopoverHeader {
-  padding-inline: var(--space-sm, 12px);
+  padding-inline: var(--space-sm, var(--space-sm));
 }
 
 .modelMenu {
@@ -262,7 +263,7 @@
   display: block;
   padding: var(--space-2xs) var(--space-sm);
   color: var(--muted);
-  font-size: var(--font-size-xs, 12px);
+  font-size: var(--font-size-xs, var(--font-size-xs));
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-xs, 16px);
 }
@@ -288,7 +289,7 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-3xs);
 }
 
 .listItemLabel,
@@ -307,7 +308,7 @@
 
 .listItemDescription {
   color: var(--muted);
-  font-size: var(--font-size-xs, 12px);
+  font-size: var(--font-size-xs, var(--font-size-xs));
   line-height: var(--line-height-xs, 16px);
 }
 
@@ -370,10 +371,10 @@
   position: absolute;
   top: -5px;
   right: -4px;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   min-width: 16px;
   height: 16px;
-  padding: 0 4px;
+  padding: 0 var(--space-2xs);
   border-radius: 999px;
   background: var(--accent);
   color: var(--accent-foreground);
@@ -482,7 +483,7 @@
   }
 
   .toolbarLeft {
-    gap: 2px;
+    gap: var(--space-3xs);
   }
 
   .toolsRight {
@@ -493,12 +494,12 @@
 .dropOverlay {
   position: absolute;
   inset: 0;
-  z-index: 30;
+  z-index: var(--app-z-index-dock);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px dashed var(--accent);
-  border-radius: calc(var(--radius-xl) - 1px);
+  border-radius: calc(var(--radius-xl) - var(--radius-xs));
   background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
   color: var(--accent-text);
   font-size: var(--font-size-sm);
@@ -508,24 +509,24 @@
   visibility: hidden;
   transform: scale(0.98);
   transition:
-    opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 0.22s,
-    background-color 0.22s ease;
+    opacity var(--motion-duration-mid) var(--motion-ease-fluid),
+    transform var(--motion-duration-mid) var(--motion-ease-fluid),
+    visibility 0s linear var(--motion-duration-mid),
+    background-color var(--motion-duration-mid) var(--motion-ease-standard);
 
   &[data-visible='true'] {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
     transition:
-      opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity var(--motion-duration-mid) var(--motion-ease-fluid),
+      transform var(--motion-duration-mid) var(--motion-ease-fluid),
       visibility 0s linear 0s,
-      background-color 0.22s ease;
+      background-color var(--motion-duration-mid) var(--motion-ease-standard);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
     transform: none;
 
     &[data-visible='true'] {
@@ -541,7 +542,7 @@
 }
 
 .spinIcon {
-  animation: chat-input-spin 1s linear infinite;
+  animation: var(--animate-spin-fast);
 }
 
 .footerTip {
@@ -552,17 +553,7 @@
   line-height: 1.4;
 }
 
-@keyframes chat-input-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (max-width: 640px) {
+@media (max-width: @breakpoint-sm) {
   .container {
     padding-inline: var(--space-sm);
   }

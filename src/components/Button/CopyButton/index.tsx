@@ -42,4 +42,5 @@ function CopyButton({ text, label, className, isDisabled }: CopyButtonProps) {
 }
 
 export default CopyButton;
+export type { CopyButtonProps } from './index.type';
 export { ICON_SIZE as MESSAGE_ACTION_ICON_SIZE };

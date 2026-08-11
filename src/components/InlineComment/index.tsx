@@ -1,13 +1,16 @@
 import AppAvatar from '@/components/Avatar';
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import AppModal from '@/components/Overlay/AppModal';
 import type { InlineCommentItem, InlineCommentReactionGroup } from '@/domains/InlineComment';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Chip, toast } from '@heroui/react';
+import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/format/formatTime';
+import { Chip, toast } from '@heroui/react';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useRequest } from 'ahooks';
 import { Check, RotateCcw, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -34,27 +37,9 @@ function hasVisibleContent(content: string): boolean {
   return Boolean(content.replace(/\u200B/g, '').trim());
 }
 
-function formatDateTime(timestamp: number, locale: string): string | undefined {
-  const date = new Date(timestamp);
-  if (!Number.isFinite(date.getTime())) return undefined;
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-}
-
 function formatRelativeTime(timestamp: number, locale: string): string | undefined {
   if (!Number.isFinite(new Date(timestamp).getTime())) return undefined;
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1_000));
-  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  if (elapsedSeconds < 60) return formatter.format(0, 'second');
-  const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-  if (elapsedMinutes < 60) return formatter.format(-elapsedMinutes, 'minute');
-  const elapsedHours = Math.floor(elapsedMinutes / 60);
-  if (elapsedHours < 24) return formatter.format(-elapsedHours, 'hour');
-  const elapsedDays = Math.floor(elapsedHours / 24);
-  if (elapsedDays < 7) return formatter.format(-elapsedDays, 'day');
-  return formatDateTime(timestamp, locale);
+  return formatRelativeTimestamp(timestamp, locale);
 }
 
 function formatReactionUsers(
@@ -89,7 +74,7 @@ function CommentItem({
 }: CommentItemProps) {
   const { t, i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
-  const { loading: changingReaction, runAsync: changeReaction } = useRequest(
+  const { loading: changingReaction, runAsync: changeReaction } = useApi(
     async (emojiId: string) => {
       const selectedGroup = item.reactionGroups.find((group) => group.emojiId === emojiId);
       await onReactionChange({
@@ -101,7 +86,6 @@ function CommentItem({
     },
     {
       manual: true,
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -109,7 +93,7 @@ function CommentItem({
     void changeReaction(emojiId);
   };
 
-  const formattedTime = formatDateTime(item.createdAt, locale) ?? t('inlineComment.timeUnknown');
+  const formattedTime = formatTimestampToDateTime(item.createdAt) || t('inlineComment.timeUnknown');
   const date = new Date(item.createdAt);
   const dateTime = Number.isFinite(date.getTime()) ? date.toISOString() : undefined;
 
@@ -255,14 +239,10 @@ function ResolvedCommentThread({
   onPreviewImage,
 }: ResolvedCommentThreadProps) {
   const { t } = useTranslation('common');
-  const { loading: reopening, runAsync: reopen } = useRequest(
-    async () => onReopen(thread.threadId),
-    {
-      manual: true,
-      onSuccess: () => toast.success(t('inlineComment.reopened')),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
+  const { loading: reopening, runAsync: reopen } = useApi(async () => onReopen(thread.threadId), {
+    manual: true,
+    onSuccess: () => toast.success(t('inlineComment.reopened')),
+  });
   const deletableItem = thread.items[thread.items.length - 1];
   const canDelete = Boolean(
     deletableItem &&
@@ -290,7 +270,7 @@ function ResolvedCommentThread({
         ))}
       </div>
       <div className={styles.resolvedActions}>
-        <Button
+        <AppButton
           variant="ghost"
           size="sm"
           isDisabled={reopening}
@@ -300,7 +280,7 @@ function ResolvedCommentThread({
         >
           <RotateCcw size={14} aria-hidden />
           {t('inlineComment.reopen')}
-        </Button>
+        </AppButton>
         {canDelete ? (
           <AppIconButton
             icon={<Trash2 size={15} aria-hidden />}
@@ -335,14 +315,10 @@ function CommentThread({
 }: CommentThreadProps) {
   const { t } = useTranslation('common');
   const active = thread.threadId === activeThreadId;
-  const { loading: resolving, runAsync: resolve } = useRequest(
-    async () => onResolve(thread.threadId),
-    {
-      manual: true,
-      onSuccess: () => toast.success(t('inlineComment.resolved')),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
+  const { loading: resolving, runAsync: resolve } = useApi(async () => onResolve(thread.threadId), {
+    manual: true,
+    onSuccess: () => toast.success(t('inlineComment.resolved')),
+  });
 
   return (
     <article className={`${styles.thread} ${active ? styles.threadActive : ''}`}>
@@ -450,7 +426,7 @@ function InlineComment({
       ? resolvedThreadVirtualizer.getTotalSize() -
         (virtualResolvedThreads[virtualResolvedThreads.length - 1]?.end ?? 0)
       : 0;
-  const { loading: deleting, runAsync: deleteComment } = useRequest(
+  const { loading: deleting, runAsync: deleteComment } = useApi(
     async () => {
       if (!pendingDeletion) return;
       await onDelete(pendingDeletion);
@@ -461,7 +437,6 @@ function InlineComment({
         setPendingDeletion(undefined);
         toast.success(t('inlineComment.deleted'));
       },
-      onError: (deleteError) => toast.danger(parseErrorMessage(deleteError)),
     }
   );
 

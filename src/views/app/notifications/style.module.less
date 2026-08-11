@@ -41,7 +41,7 @@
   flex: none;
   border-bottom: 1px solid var(--border-light);
   background: transparent;
-  transition: background-color var(--transition-fast, 0.15s ease);
+  transition: background-color var(--transition-fast, var(--motion-duration-fast) var(--motion-ease-standard));
 }
 
 .messageItem:hover {
@@ -161,16 +161,16 @@
   margin-block: calc((1.45em - var(--control-height-sm)) / 2);
   padding: 0;
   border: 0;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, var(--radius-md));
   outline: none;
   background: transparent;
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
   color: var(--muted);
   cursor: pointer;
   appearance: none;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--transition-fast, 0.15s ease);
+  transition: opacity var(--transition-fast, var(--motion-duration-fast) var(--motion-ease-standard));
 }
 
 .messageItem:hover .toggleDetail,
@@ -189,7 +189,7 @@
 .toggleDetail:focus,
 .toggleDetail:focus-visible {
   outline: none;
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .toggleDetail:focus-visible {

@@ -1,15 +1,16 @@
+import { AppButton } from '@/components/Button';
 import CourseCard from '@/components/Course/CourseCard';
 import { Empty, Spin } from '@/components/Feedback';
 import { useCourseService, useUserService } from '@/domains';
 import { IDENTITY } from '@/domains/User';
+import { useApi } from '@/hooks/useApi';
 import PageHeader from '@/layouts/_common/PageHeader';
 import {
   buildCourseListPath,
   buildCoursePath,
   parseCourseListRouteQuery,
 } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,13 +30,13 @@ function PublicCoursesPage() {
   const query = parseCourseListRouteQuery(searchParams);
   const [joinModalOpen, setJoinModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const userRequest = useRequest(() => userService.getUserInfo());
-  const courseRequest = useRequest(
+  const userRequest = useApi(() => userService.getUserInfo());
+  const courseRequest = useApi(
     () => courseService.listMyCourses({ page: query.page, size: query.size }),
     {
       refreshDeps: [query.page, query.size],
       loadingDelay: 160,
-      onError: () => toast.danger(t('group:list.loadFailed')),
+      getErrorMessage: () => t('group:list.loadFailed'),
     }
   );
   const identityType = userRequest.data?.identityType;
@@ -70,19 +71,19 @@ function PublicCoursesPage() {
           canCreateCourse || canJoinCourse ? (
             <div className={styles.actionsRow}>
               {canCreateCourse ? (
-                <Button
+                <AppButton
                   variant={canJoinCourse ? 'secondary' : 'primary'}
                   onPress={() => setCreateModalOpen(true)}
                 >
                   <Plus size={16} aria-hidden />
                   {t('list.create')}
-                </Button>
+                </AppButton>
               ) : null}
               {canJoinCourse ? (
-                <Button variant="primary" onPress={() => setJoinModalOpen(true)}>
+                <AppButton variant="primary" onPress={() => setJoinModalOpen(true)}>
                   <UserPlus size={16} aria-hidden />
                   {t('list.join')}
-                </Button>
+                </AppButton>
               ) : null}
             </div>
           ) : null

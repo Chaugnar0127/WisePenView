@@ -1,14 +1,15 @@
 import { readRedirectParam } from '@/bootstrap/authContinuation';
+import { AppButton } from '@/components/Button';
 import { Spin } from '@/components/Feedback';
 import { useUserService } from '@/domains';
 import type { UserAccountProfile } from '@/domains/User';
 import { USER_STATUS } from '@/domains/User';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import AccountVerificationForm from '@/views/app/profile/_components/Account/AccountVerification/AccountVerificationForm';
 import AccountVerificationOutcomeDialog from '@/views/app/profile/_components/Account/AccountVerification/AccountVerificationOutcomeDialog';
 import { useAccountVerificationController } from '@/views/app/profile/_components/Account/AccountVerification/useAccountVerificationController';
-import { Alert, Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Alert } from '@heroui/react';
+
 import { CircleCheck, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,12 +24,9 @@ function AuthBindingOnboarding() {
   const redirectPath = readRedirectParam(location.search);
   const [user, setUser] = useState<UserAccountProfile | null>(null);
 
-  const { loading, runAsync: reloadUserInfo } = useRequest(() => userService.getFullUserInfo(), {
+  const { loading, runAsync: reloadUserInfo } = useApi(() => userService.getFullUserInfo(), {
     onSuccess: (data) => {
       setUser(data);
-    },
-    onError: (err: unknown) => {
-      toast.danger(parseErrorMessage(err));
     },
   });
 
@@ -77,7 +75,7 @@ function AuthBindingOnboarding() {
           )}
 
           <div className={auth.onboardingActions}>
-            <Button
+            <AppButton
               variant="primary"
               size="lg"
               isDisabled={verification.verifySubmitting}
@@ -85,16 +83,16 @@ function AuthBindingOnboarding() {
               onPress={verified ? handleContinue : verification.handleVerifySubmit}
             >
               {verified ? t('onboarding.continue') : t('onboarding.confirm')}
-            </Button>
+            </AppButton>
             {!verified ? (
-              <Button
+              <AppButton
                 variant="secondary"
                 size="lg"
                 isDisabled={verification.verifySubmitting}
                 onPress={handleContinue}
               >
                 {t('onboarding.skip')}
-              </Button>
+              </AppButton>
             ) : null}
           </div>
         </div>

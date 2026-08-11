@@ -1,11 +1,13 @@
+import { AppButton } from '@/components/Button';
+import { Select } from '@/components/Input';
 import { DataTable, type DataTableColumn } from '@/components/Table';
 import { useUserService } from '@/domains';
 import type { AdminMessage } from '@/domains/User';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import AdminPageHeader from '@/views/admin/_common/AdminPageHeader';
-import { Button, Chip, ListBox, Select, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Chip, ListBox } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
@@ -33,13 +35,10 @@ function AnnouncementManagement() {
   const [pageSize, setPageSize] = useState(20);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  const { data, loading, refresh } = useRequest(
+  const { data, loading, refresh } = useApi(
     () => userService.listAdminMessages({ page: currentPage, size: pageSize }),
     {
       refreshDeps: [userService, currentPage, pageSize],
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
 
@@ -147,10 +146,10 @@ function AnnouncementManagement() {
         maxBodyHeight={560}
         toolbar={
           <div className={pageStyles.toolbarActions}>
-            <Button variant="secondary" size="sm" onPress={() => setCreateModalOpen(true)}>
+            <AppButton variant="secondary" size="sm" onPress={() => setCreateModalOpen(true)}>
               {t('announcement.create')}
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               variant="secondary"
               size="sm"
               isDisabled={loading}
@@ -159,7 +158,7 @@ function AnnouncementManagement() {
               }}
             >
               {t('actions.refresh', { ns: 'common' })}
-            </Button>
+            </AppButton>
           </div>
         }
         pagination={{

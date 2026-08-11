@@ -2,9 +2,8 @@ import { clearNewNoteStore } from '@/components/Note/_store/useNewNoteStore';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { removePdfPreviewProgress } from '@/components/PdfViewer/_store/usePdfPreviewProgressStore';
 import { useDriveService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 
 import type { DriveActionTarget } from '../../common/driveComponentModel';
@@ -30,7 +29,7 @@ function TrashDeleteModal({ isOpen, nodes, onOpenChange, onSuccess }: TrashDelet
   const { t } = useTranslation('drive');
   const driveService = useDriveService();
 
-  const { loading, run: runDelete } = useRequest(
+  const { loading, run: runDelete } = useApi(
     async () => {
       if (nodes.length === 0) return;
       await driveService.deleteTrashedNodes({ nodes });
@@ -46,9 +45,6 @@ function TrashDeleteModal({ isOpen, nodes, onOpenChange, onSuccess }: TrashDelet
         );
         onSuccess?.();
         onOpenChange(false);
-      },
-      onError: (error) => {
-        toast.danger(parseErrorMessage(error));
       },
     }
   );

@@ -1,6 +1,7 @@
+import { AppButton } from '@/components/Button';
 import VersionDropdown from '@/components/VersionDropdown';
 import type { VersionDropdownItem } from '@/components/VersionDropdown/index.type';
-import { Button } from '@heroui/react';
+
 import { Save, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from '../../../style.module.less';
@@ -34,28 +35,28 @@ export default function AgentHeaderActions({
 
   return (
     <div className={styles.headerActions}>
-      <Button
+      <AppButton
         variant="secondary"
         isDisabled={viewingVersion !== null || !isDirty || saveLoading || versionLoading}
         onPress={onSave}
       >
         <Save size={15} />
         {t('common:actions.save')}
-      </Button>
+      </AppButton>
       <VersionDropdown
         items={versionItems}
         disabledKeys={disabledVersionKeys}
         formatVersion={(version) => `v${version}.0`}
         onSelect={onVersionSelect}
       />
-      <Button
+      <AppButton
         variant="primary"
         isDisabled={viewingVersion !== null || publishLoading || saveLoading || versionLoading}
         onPress={onPublish}
       >
         <Upload size={15} />
         {t('agent:page.publishAction')}
-      </Button>
+      </AppButton>
     </div>
   );
 }

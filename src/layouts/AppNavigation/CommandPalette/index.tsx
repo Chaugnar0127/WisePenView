@@ -17,7 +17,7 @@ import { useOpenResource } from '@/hooks/useOpenResource';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
-import { useDebounce } from 'ahooks';
+import { useDebounceFn } from 'ahooks';
 import {
   Bot,
   FolderHeart,
@@ -89,10 +89,14 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
   const openResource = useOpenResource();
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [preparingType, setPreparingType] = useState<CreateResourceType>();
   const [createModalTarget, setCreateModalTarget] = useState<CreateModalTarget | null>(null);
   const commandListRef = useRef<HTMLDivElement>(null);
-  const debouncedQuery = useDebounce(query, { wait: 300 });
+  const { run: updateDebouncedQuery, cancel: cancelDebouncedQuery } = useDebounceFn(
+    (nextQuery: string) => setDebouncedQuery(nextQuery),
+    { wait: 300 }
+  );
 
   const getEnabledListOptions = (): HTMLElement[] =>
     Array.from(
@@ -124,7 +128,14 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
 
   const closePalette = () => {
     setQuery('');
+    setDebouncedQuery('');
+    cancelDebouncedQuery();
     onOpenChange(false);
+  };
+
+  const handleQueryChange = (nextQuery: string) => {
+    setQuery(nextQuery);
+    updateDebouncedQuery(nextQuery);
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -310,7 +321,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
         <CommandInput
           autoFocus
           value={query}
-          onValueChange={setQuery}
+          onValueChange={handleQueryChange}
           aria-label={t('commandPalette.inputAria', { ns: 'shell' })}
           placeholder={t('commandPalette.placeholder', { ns: 'shell' })}
           onKeyDown={handleInputKeyDown}

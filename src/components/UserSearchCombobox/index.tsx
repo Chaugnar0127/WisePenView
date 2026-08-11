@@ -5,7 +5,7 @@ import type { UserSearchUser } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
 import { TextField } from '@heroui/react';
 
-import { useUnmount } from 'ahooks';
+import { useDebounceFn, useUnmount } from 'ahooks';
 import clsx from 'clsx';
 import type { KeyboardEvent } from 'react';
 import { useId, useRef, useState } from 'react';
@@ -47,6 +47,7 @@ function UserSearchCombobox({
   const inputId = useId();
   const listboxId = `${inputId}-listbox`;
   const keyword = value.trim();
+  const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
   const [isFocused, setIsFocused] = useState(false);
   const [activeOption, setActiveOption] = useState<ActiveOptionState>({ keyword: '', index: 0 });
   const blurTimerRef = useRef<number | null>(null);
@@ -55,16 +56,19 @@ function UserSearchCombobox({
     loading,
     runAsync,
   } = useApi(
-    async (nextKeyword: string = keyword) => {
+    async (nextKeyword: string = debouncedKeyword) => {
       const queryKeyword = nextKeyword.trim();
       const users = await queryUsers(queryKeyword);
       return { keyword: queryKeyword, users };
     },
     {
-      ready: keyword.length >= minKeywordLength && !disabled,
-      refreshDeps: [keyword, queryUsers, minKeywordLength, disabled],
-      debounceWait: 250,
+      ready: debouncedKeyword.length >= minKeywordLength && !disabled,
+      refreshDeps: [debouncedKeyword, queryUsers, minKeywordLength, disabled],
     }
+  );
+  const { run: updateDebouncedKeyword, cancel: cancelDebouncedKeyword } = useDebounceFn(
+    (nextKeyword: string) => setDebouncedKeyword(nextKeyword.trim()),
+    { wait: 250 }
   );
 
   const isFreshResult = queryResult?.keyword === keyword;
@@ -85,6 +89,7 @@ function UserSearchCombobox({
     if (blurTimerRef.current) {
       window.clearTimeout(blurTimerRef.current);
     }
+    cancelDebouncedKeyword();
   });
 
   const selectUser = (user: UserSearchUser) => {
@@ -120,6 +125,7 @@ function UserSearchCombobox({
 
   const handleValueChange = (nextValue: string) => {
     onValueChange(nextValue);
+    updateDebouncedKeyword(nextValue);
     if (!disabled && nextValue.trim().length >= minKeywordLength) {
       setIsFocused(true);
     }

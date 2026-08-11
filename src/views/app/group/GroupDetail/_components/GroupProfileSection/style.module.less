@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .profileMeta {
   display: flex;
   align-items: center;
@@ -152,7 +153,7 @@
   transition: opacity var(--motion-duration-fast) ease;
 }
 
-@media (max-width: 720px) {
+@media (max-width: @breakpoint-md) {
   .profileMeta {
     align-items: flex-start;
     flex-direction: column;

@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .homeLayout {
   display: grid;
@@ -232,7 +233,7 @@
   color: var(--muted);
 }
 
-@media (max-width: 980px) {
+@media (max-width: @breakpoint-lg) {
   .homeLayout {
     display: block;
     height: auto;
@@ -253,7 +254,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: @breakpoint-sm) {
   .assignmentList,
   .announcementList,
   .emptyCopy {

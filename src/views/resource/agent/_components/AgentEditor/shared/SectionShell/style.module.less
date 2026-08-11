@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .section {
   padding: 0 clamp(32px, 6%, 96px);
   scroll-margin-top: var(--space-sm);
@@ -33,7 +34,7 @@
   line-height: 1.65;
 }
 
-@media (max-width: 760px) {
+@media (max-width: @breakpoint-md) {
   .section {
     padding: 0 15px;
   }

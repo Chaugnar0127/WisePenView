@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .container {
   flex-shrink: 0;
@@ -552,7 +553,7 @@
   line-height: 1.4;
 }
 
-@media (max-width: 640px) {
+@media (max-width: @breakpoint-sm) {
   .container {
     padding-inline: var(--space-sm);
   }

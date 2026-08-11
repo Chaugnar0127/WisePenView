@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .moreRow {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -67,7 +68,7 @@
   font-size: 13px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: @breakpoint-md) {
   .advancedHeader {
     align-items: flex-start;
   }

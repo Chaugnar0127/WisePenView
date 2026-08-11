@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .root {
   position: relative;
@@ -524,7 +525,7 @@
   background: var(--surface);
 }
 
-@media (max-width: 760px) {
+@media (max-width: @breakpoint-md) {
   .studyShell {
     grid-template-columns: 240px minmax(320px, 1fr);
   }

@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .nav {
   min-height: 0;
@@ -65,7 +66,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: @breakpoint-md) {
   .nav {
     display: none;
   }

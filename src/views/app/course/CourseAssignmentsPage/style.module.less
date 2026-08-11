@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .page {
   --course-workflow-gutter: clamp(var(--space-xl), 5vw, 64px);
   box-sizing: border-box;
@@ -113,7 +114,7 @@
   color: var(--muted);
 }
 
-@media (max-width: 760px) {
+@media (max-width: @breakpoint-md) {
   .page {
     --course-workflow-gutter: var(--space-lg);
     padding-block: var(--space-lg);

@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .list {
   display: grid;
   /* 标签 | 值 | 标签 | 值，宽屏纵向对齐 */
@@ -40,7 +41,7 @@
   font-weight: var(--font-weight-regular, 400);
 }
 
-@media (max-width: 720px) {
+@media (max-width: @breakpoint-md) {
   .list {
     grid-template-columns: 5em minmax(0, 1fr);
   }

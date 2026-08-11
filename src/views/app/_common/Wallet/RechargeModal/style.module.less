@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .field {
   display: flex;
   flex-direction: column;
@@ -56,7 +57,7 @@
   flex: 0 0 6px;
 }
 
-@media (max-width: 520px) {
+@media (max-width: @breakpoint-sm) {
   .codeInput {
     gap: var(--space-2xs);
   }

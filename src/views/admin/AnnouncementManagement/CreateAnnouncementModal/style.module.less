@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .form {
   display: flex;
   flex-direction: column;
@@ -10,7 +11,7 @@
   gap: var(--space-sm);
 }
 
-@media (max-width: 640px) {
+@media (max-width: @breakpoint-sm) {
   .twoColumnFields {
     grid-template-columns: 1fr;
   }

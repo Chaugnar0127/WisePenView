@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .section {
   padding: var(--space-lg) 0 42px;
 }
@@ -37,7 +38,7 @@
   gap: var(--space-xs);
 }
 
-@media (max-width: 640px) {
+@media (max-width: @breakpoint-sm) {
   .header {
     align-items: flex-start;
     flex-direction: column;

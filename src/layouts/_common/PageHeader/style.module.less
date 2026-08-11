@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .pageHeader {
   display: flex;
   align-items: flex-start;
@@ -37,7 +38,7 @@
   gap: var(--space-sm);
 }
 
-@media (max-width: 520px) {
+@media (max-width: @breakpoint-sm) {
   .pageHeader {
     align-items: stretch;
     flex-direction: column;

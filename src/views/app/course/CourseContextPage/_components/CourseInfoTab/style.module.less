@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .infoPage {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
@@ -137,7 +138,7 @@
   line-height: 1.5;
 }
 
-@media (max-width: 860px) {
+@media (max-width: @breakpoint-lg) {
   .infoPage {
     grid-template-columns: 1fr;
     gap: var(--space-xl);
@@ -150,7 +151,7 @@
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: @breakpoint-sm) {
   .goalList {
     margin-left: 0;
   }

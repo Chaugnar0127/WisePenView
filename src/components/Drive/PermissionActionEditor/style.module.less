@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/breakpoints.less';
 
 .permissionCard {
   display: flex;
@@ -172,7 +173,7 @@
   padding: 0;
 }
 
-@media (max-width: 560px) {
+@media (max-width: @breakpoint-sm) {
   .presetBar {
     align-items: flex-start;
     flex-direction: column;

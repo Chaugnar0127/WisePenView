@@ -1,3 +1,4 @@
+@import (reference) '@/styles/breakpoints.less';
 .profileSection {
   display: flex;
   flex-direction: column;
@@ -92,7 +93,7 @@
   margin-left: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: @breakpoint-md) {
   .formFieldsGrid {
     grid-template-columns: 1fr;
   }

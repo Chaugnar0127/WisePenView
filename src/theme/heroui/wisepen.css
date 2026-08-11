@@ -205,6 +205,7 @@ html[data-theme-radius='large'] {
   --app-z-index-toast: 1100;
   --table-drive-layout-max-height: calc(100dvh - var(--layout-drive-chrome-height, 240px));
   --shadow-sm: 0 1px 2px 0 color-mix(in srgb, var(--black) 3%, transparent);
+  --shadow-none: none;
   --shadow-md: var(--card-shadow);
   --shadow-lg: 0 8px 24px color-mix(in srgb, var(--foreground) 12%, transparent);
   --scrollbar-size: 8px;

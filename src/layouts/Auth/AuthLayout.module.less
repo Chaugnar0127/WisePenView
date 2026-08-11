@@ -26,11 +26,11 @@
 }
 
 .titleBarInsetStart {
-  padding-left: @desktop-titlebar-start-inset;
+  padding-left: var(--desktop-titlebar-start-inset, 92px);
 }
 
 .titleBarInsetEnd {
-  padding-right: @desktop-titlebar-end-reserve;
+  padding-right: var(--desktop-window-controls-width, 116px);
   .desktopTitleBarEndNoDragHole();
 }
 

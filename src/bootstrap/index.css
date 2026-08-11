@@ -191,7 +191,7 @@
   .button:is(:disabled, [aria-disabled='true']) {
     opacity: 1;
     transform: none;
-    box-shadow: none;
+    box-shadow: var(--shadow-none);
   }
 
   .button:is(:disabled, [aria-disabled='true']).button--primary,
@@ -314,7 +314,7 @@
     &:focus-visible:not(:focus),
     &[data-focus-visible] {
       outline: none;
-      box-shadow: none;
+      box-shadow: var(--shadow-none);
       --tw-ring-shadow: 0 0 #0000;
       --tw-ring-offset-shadow: 0 0 #0000;
     }
@@ -458,6 +458,17 @@ html {
 #root img {
   -webkit-user-drag: none;
   user-drag: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--motion-duration-reduced) !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: var(--motion-duration-reduced) !important;
+  }
 }
 
 @layer utilities {

@@ -179,7 +179,7 @@
 
 /* Mac：折叠后主区顶栏避开红绿灯 */
 .titleBarInsetStart {
-  padding-left: @desktop-titlebar-start-inset;
+  padding-left: var(--desktop-titlebar-start-inset, 92px);
 
   .collapsedHeaderControls {
     transform: translateY(1px);
@@ -188,6 +188,6 @@
 
 /* Win/Linux：右侧留白给 App 层固定窗口按钮，并挖掉 drag */
 .titleBarInsetEnd {
-  padding-right: @desktop-titlebar-end-reserve;
+  padding-right: var(--desktop-window-controls-width, 116px);
   .desktopTitleBarEndNoDragHole();
 }

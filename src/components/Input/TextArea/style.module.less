@@ -37,7 +37,7 @@
   background-color: var(--app-textarea-bg);
   color: var(--field-foreground, var(--foreground));
   font-weight: var(--field-text-font-weight, var(--font-weight-medium));
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
   letter-spacing: 0;
 }
 
@@ -81,5 +81,5 @@
 .textarea:global(.textarea)[aria-disabled='true'] {
   border-color: color-mix(in oklab, var(--app-textarea-border) 76%, transparent);
   background-color: color-mix(in oklab, var(--app-textarea-bg) 78%, transparent);
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }

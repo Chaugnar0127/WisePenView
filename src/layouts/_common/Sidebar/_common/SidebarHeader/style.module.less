@@ -48,7 +48,7 @@
 
 /* Mac：再避开左上红绿灯并微调垂直对齐 */
 .titleBarInsetStart .headerTop {
-  padding-left: @desktop-titlebar-start-inset;
+  padding-left: var(--desktop-titlebar-start-inset, 92px);
 
   > * {
     transform: translateY(var(--desktop-header-content-offset-y, 1px));

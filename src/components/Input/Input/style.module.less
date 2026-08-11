@@ -38,7 +38,7 @@
   background-color: var(--app-input-slot-bg);
   color: var(--field-foreground, var(--foreground));
   font-weight: var(--field-text-font-weight, var(--font-weight-medium));
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .input:global(.input)::placeholder {
@@ -81,5 +81,5 @@
 .input:global(.input)[aria-disabled='true'] {
   border-color: color-mix(in oklab, var(--app-input-slot-border) 76%, transparent);
   background-color: color-mix(in oklab, var(--app-input-slot-bg) 78%, transparent);
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }

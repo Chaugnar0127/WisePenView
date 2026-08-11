@@ -112,7 +112,7 @@
 /* 与 Workspace 顶栏同高、同垂直居中；右侧留白给固定窗口按钮 */
 .titleBarInsetEnd {
   .desktopTitleBarChrome();
-  padding-right: @desktop-titlebar-end-reserve;
+  padding-right: var(--desktop-window-controls-width, 116px);
   padding-left: var(--space-sm);
   .desktopTitleBarEndNoDragHole();
 

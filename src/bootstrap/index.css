@@ -163,8 +163,13 @@
   --animate-caret-blink: caret-blink 1.2s ease-out infinite;
 
   @keyframes skeleton {
+    0% {
+      background-position: 120% 0;
+    }
+
     100% {
       transform: translateX(200%);
+      background-position: -120% 0;
     }
   }
 

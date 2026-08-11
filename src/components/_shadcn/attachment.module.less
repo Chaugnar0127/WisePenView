@@ -178,7 +178,7 @@
     background-size: 220% 100%;
     background-clip: text;
     color: transparent;
-    animation: attachment-shimmer 1.35s ease-in-out infinite;
+    animation: var(--animate-skeleton);
   }
 }
 
@@ -245,15 +245,5 @@
   > [data-slot='attachment'] {
     flex: none;
     scroll-snap-align: start;
-  }
-}
-
-@keyframes attachment-shimmer {
-  from {
-    background-position: 120% 0;
-  }
-
-  to {
-    background-position: -120% 0;
   }
 }

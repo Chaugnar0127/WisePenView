@@ -96,7 +96,7 @@
 }
 
 .loadingIcon {
-  animation: tree-loading-spin 0.8s linear infinite;
+  animation: var(--animate-spin-fast);
 }
 
 .checkbox {
@@ -158,10 +158,4 @@
   width: 100%;
   min-width: 0;
   line-height: 22px;
-}
-
-@keyframes tree-loading-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }

@@ -541,7 +541,7 @@
 }
 
 .spinIcon {
-  animation: chat-input-spin 1s linear infinite;
+  animation: var(--animate-spin-fast);
 }
 
 .footerTip {
@@ -550,16 +550,6 @@
   color: var(--text-disabled);
   font-size: var(--font-size-xs);
   line-height: 1.4;
-}
-
-@keyframes chat-input-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 @media (max-width: 640px) {

@@ -186,7 +186,7 @@
 }
 
 .spinningIcon {
-  animation: queueSpin 0.9s linear infinite;
+  animation: var(--animate-spin-fast);
 }
 
 .itemText {
@@ -226,14 +226,4 @@
 
 .itemPhaseFailed {
   color: var(--danger-text);
-}
-
-@keyframes queueSpin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }

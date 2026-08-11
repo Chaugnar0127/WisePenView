@@ -30,7 +30,7 @@ const OTP_GROUPS = [
 ];
 const OTP_ROWS = [OTP_GROUPS.slice(0, 2), OTP_GROUPS.slice(2)];
 
-function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeModalProps) {
+function RechargeModal({ isOpen, onOpenChange, groupDisplayName, onSubmit }: RechargeModalProps) {
   const { t } = useTranslation('wallet');
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState('');
@@ -39,7 +39,7 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
   const handleCancel = () => {
     setValue('');
     setCodeError('');
-    onCancel();
+    onOpenChange(false);
   };
 
   const title =
@@ -72,7 +72,7 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
    * cleanup：取消尚未执行的 animation frame，避免关闭后的弹窗重新抢焦点。
    */
   useEffect(() => {
-    if (!open) {
+    if (!isOpen) {
       return;
     }
 
@@ -82,11 +82,11 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
     });
 
     return () => window.cancelAnimationFrame(animationFrameId);
-  }, [open, value.length]);
+  }, [isOpen, value.length]);
 
   return (
     <AppFormDialog
-      isOpen={open}
+      isOpen={isOpen}
       onOpenChange={(isOpen) => !isOpen && handleCancel()}
       title={title}
       size="lg"

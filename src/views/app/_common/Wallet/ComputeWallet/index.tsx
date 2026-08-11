@@ -229,8 +229,8 @@ function ComputeWallet({
       />
 
       <RechargeModal
-        open={rechargeOpen}
-        onCancel={() => setRechargeOpen(false)}
+        isOpen={rechargeOpen}
+        onOpenChange={setRechargeOpen}
         groupDisplayName={groupDisplayName}
         onSubmit={handleRechargeSubmit}
       />

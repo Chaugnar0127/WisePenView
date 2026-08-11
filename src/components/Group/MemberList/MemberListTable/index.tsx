@@ -12,7 +12,12 @@ import { ListBox } from '@heroui/react';
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { canEditSelectedMembers, canEditSelectedMembersForQuota } from '../../GroupDisplayConfig';
+import {
+  canEditSelectedMembers,
+  canEditSelectedMembersForQuota,
+  isAdmin,
+  isOwner,
+} from '../../GroupDisplayConfig';
 import type {
   MemberListInlineDraft,
   MemberListPaginationConfig,
@@ -121,12 +126,11 @@ function buildPageSizeControl(
 }
 
 function renderRole(role: GroupMember['role'], t: TFunction<'group'>) {
-  const roleLabel =
-    role === 'OWNER'
-      ? t('member.role.owner')
-      : role === 'ADMIN'
-        ? t('member.role.admin')
-        : t('member.role.member');
+  const roleLabel = isOwner(role)
+    ? t('member.role.owner')
+    : isAdmin(role)
+      ? t('member.role.admin')
+      : t('member.role.member');
   return <span className={`${styles.roleBadge} ${getRoleClassName(role)}`}>{roleLabel}</span>;
 }
 

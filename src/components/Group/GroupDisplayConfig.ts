@@ -7,6 +7,7 @@ import type { ROLE } from '@/domains/Group';
 import { GROUP_TYPE } from '@/domains/Group';
 import type { EnumKey } from '@/utils/enum';
 
+export type GroupRole = EnumKey<typeof ROLE>;
 export type EditableRole = Exclude<EnumKey<typeof ROLE>, 'OWNER'>;
 
 /** 配额分配时可编辑的角色（含 OWNER，组长可修改自己的配额） */
@@ -218,7 +219,7 @@ const GroupDisplayConfigs: Record<number, Record<EnumKey<typeof ROLE>, GroupDisp
 
 export const getGroupDisplayConfig = (
   groupType: number,
-  userRole: EnumKey<typeof ROLE>
+  userRole: GroupRole
 ): GroupDisplayConfig => {
   const config = GroupDisplayConfigs[groupType]?.[userRole];
 
@@ -244,6 +245,10 @@ export const getGroupDisplayConfig = (
   );
 };
 
+export const isOwner = (role?: GroupRole): role is 'OWNER' => role === 'OWNER';
+
+export const isAdmin = (role?: GroupRole): role is 'ADMIN' => role === 'ADMIN';
+
 /** 检查选中的成员是否均可被当前用户编辑（基于 editableRoles，OWNER 永远不可编辑，用于权限/删除） */
 export const canEditSelectedMembers = (
   members: { role?: EnumKey<typeof ROLE> }[],
@@ -252,7 +257,7 @@ export const canEditSelectedMembers = (
   if (editableRoles.length === 0) return false;
   return members.every((m) => {
     if (m.role == null) return false;
-    return m.role !== 'OWNER' && editableRoles.includes(m.role as EditableRole);
+    return !isOwner(m.role) && editableRoles.includes(m.role as EditableRole);
   });
 };
 

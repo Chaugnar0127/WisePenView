@@ -22,7 +22,7 @@ function ForbiddenRoute() {
             <AppButton variant="primary" onPress={() => navigate(-1)}>
               {t('page.backPrevious')}
             </AppButton>
-            <AppButton onPress={() => navigate(APP_ROUTE_PATH.APP)}>{t('page.backApp')}</AppButton>
+            <AppButton onPress={() => navigate(APP_ROUTE_PATH.CHAT)}>{t('page.backApp')}</AppButton>
           </div>
         }
       />

@@ -1,11 +1,10 @@
 import { STORAGE_KEYS, STORAGE_PREFIXES } from '@/constants/storageKeys';
-import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+import { APP_ROUTE_PATH, isAuthRoutePath } from '@/utils/navigation/appRoute';
 import { isRecord } from '@/utils/typeGuards';
 
 const AUTH_CONTINUATION_TTL_MS = 30 * 60_000;
 
 export const DEFAULT_AUTH_REDIRECT_PATH = APP_ROUTE_PATH.CHAT;
-export const AUTH_ONBOARDING_BIND_PATH = APP_ROUTE_PATH.AUTH_ONBOARDING_BIND;
 
 export type AuthContinuationKind = 'auth' | 'registerOnboarding' | 'verifyEmail' | 'uisVerify';
 
@@ -80,7 +79,7 @@ export const sanitizeOptionalRedirectPath = (raw: string | null | undefined): st
   if (!raw) return null;
   const value = raw.trim();
   if (!value.startsWith('/') || value.startsWith('//')) return null;
-  if (value === APP_ROUTE_PATH.AUTH || value.startsWith(`${APP_ROUTE_PATH.AUTH}/`)) return null;
+  if (isAuthRoutePath(splitRoutePathWithSearch(value).pathname)) return null;
   return value;
 };
 
@@ -156,5 +155,5 @@ export const buildLoginHrefForCurrentLocation = (): string =>
 export const buildRegisterOnboardingPath = (redirectPath: string): string => {
   const safeRedirectPath = sanitizeRedirectPath(redirectPath);
   saveAuthContinuation('registerOnboarding', safeRedirectPath);
-  return appendRedirectParam(AUTH_ONBOARDING_BIND_PATH, safeRedirectPath);
+  return appendRedirectParam(APP_ROUTE_PATH.AUTH_ONBOARDING_BIND, safeRedirectPath);
 };

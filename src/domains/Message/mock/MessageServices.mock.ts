@@ -27,7 +27,7 @@ WisePen 将在 **今晚 23:30 - 23:50** 进行一次短暂维护。维护期间�
 > 如果你正在编辑重要文档，建议在维护开始前确认内容已保存。
 
 维护结束后无需重新登录。若遇到异常，可先刷新页面，或通过用户反馈联系我们。`,
-    jumpUrl: '/app/drive/personal',
+    jumpUrl: '/drive/personal',
     read: false,
     createTime: now,
   },

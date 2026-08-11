@@ -128,15 +128,9 @@ const profileHandle = appRouteHandle({
 
 const router = createHashRouter([
   {
-    path: APP_ROUTE_PATH.HOME,
-    element: <Navigate to={APP_ROUTE_PATH.PUBLIC_CHAT} replace />,
-  },
-  {
-    path: APP_ROUTE_PATH.AUTH,
     element: <AuthLayout />,
     errorElement: <AppError />,
     children: [
-      { index: true, element: <Navigate to={APP_ROUTE_PATH.AUTH_LOGIN} replace /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
       { path: 'onboarding/bind', element: <AuthBindingOnboarding /> },
@@ -146,7 +140,7 @@ const router = createHashRouter([
     ],
   },
   {
-    path: APP_ROUTE_PATH.PUBLIC_CHAT,
+    path: APP_ROUTE_PATH.HOME,
     element: (
       <AppAuthProvider mode="anonymous">
         <AppNavigationLayout />
@@ -163,17 +157,11 @@ const router = createHashRouter([
             element: <ChatPage />,
             handle: chatHandle,
           },
-          {
-            path: '*',
-            element: <Navigate to={APP_ROUTE_PATH.PUBLIC_CHAT} replace />,
-            handle: chatHandle,
-          },
         ],
       },
     ],
   },
   {
-    path: APP_ROUTE_PATH.APP,
     element: <AuthenticatedRouteGuard />,
     errorElement: <AppError />,
     children: [
@@ -188,7 +176,6 @@ const router = createHashRouter([
             element: <AppLayout />,
             errorElement: <RouteError />,
             children: [
-              { index: true, element: <Navigate to={APP_ROUTE_PATH.CHAT} replace /> },
               { path: 'chat', element: <ChatPage />, handle: chatHandle },
               { path: 'chat/:sessionId', element: <ChatPage />, handle: chatSessionHandle },
               {
@@ -233,7 +220,6 @@ const router = createHashRouter([
                 element: <ResourceRouteView />,
                 handle: resourceHandle,
               },
-              { index: true, element: <Navigate to={APP_ROUTE_PATH.GROUPS} replace /> },
               {
                 path: 'invite',
                 element: <PublicInvitePage />,
@@ -258,17 +244,17 @@ const router = createHashRouter([
                       {
                         path: 'files',
                         element: <GroupFilesPage />,
-                        handle: groupHandle('group.files'),
+                        handle: groupHandle('group.files', 'fixed'),
                       },
                       {
                         path: 'files/folder/:folderId',
                         element: <GroupFilesPage />,
-                        handle: groupHandle('group.files'),
+                        handle: groupHandle('group.files', 'fixed'),
                       },
                       {
                         path: 'members',
                         element: <GroupMembersPage />,
-                        handle: groupHandle('group.members'),
+                        handle: groupHandle('group.members', 'fixed'),
                       },
                       {
                         element: <GroupWalletRouteGuard />,
@@ -276,19 +262,19 @@ const router = createHashRouter([
                           {
                             path: 'wallet',
                             element: <GroupWalletPage />,
-                            handle: groupHandle('group.wallet'),
+                            handle: groupHandle('group.wallet', 'fixed'),
                           },
                           {
                             path: 'token-transfer',
                             element: <GroupTokenTransferPage />,
-                            handle: groupHandle('group.tokenTransfer'),
+                            handle: groupHandle('group.tokenTransfer', 'fixed'),
                           },
                         ],
                       },
                       {
                         path: 'settings',
                         element: <GroupSettingsPage />,
-                        handle: groupHandle('group.settings'),
+                        handle: groupHandle('group.settings', 'fixed'),
                       },
                     ],
                   },
@@ -377,15 +363,6 @@ const router = createHashRouter([
               { path: 'profile/account', element: <Account />, handle: profileHandle },
               { path: 'profile/appearance', element: <Appearance />, handle: profileHandle },
             ],
-          },
-          {
-            path: '*',
-            element: (
-              <ScopedRouteNotFound homePath={APP_ROUTE_PATH.APP} homeLabelKey="page.backApp" />
-            ),
-            handle: appRouteHandle({
-              pageKey: 'app.notFound',
-            }),
           },
         ],
       },

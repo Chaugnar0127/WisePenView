@@ -1,6 +1,5 @@
 import AppAvatar from '@/components/Avatar';
 import { AppButton } from '@/components/Button';
-import { AppMenu } from '@/components/Overlay';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
 import type { User } from '@/domains/User';
@@ -9,6 +8,7 @@ import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
 import { cn } from '@/utils/cn';
+import { Dropdown, Label } from '@heroui/react';
 import { useMount } from 'ahooks';
 import {
   ChartPie,
@@ -103,7 +103,7 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
         navigate(APP_ROUTE_PATH.ADMIN_USERS);
         break;
       case 'back-app':
-        navigate(APP_ROUTE_PATH.APP);
+        navigate(APP_ROUTE_PATH.CHAT);
         break;
       case 'usage':
         navigate(APP_ROUTE_PATH.PROFILE_USAGE);
@@ -140,115 +140,71 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
   );
 
   const userMenu = (
-    <AppMenu.Popover placement="top left" className={styles.profileMenuPopover} bodyPadding="none">
-      <AppMenu.Menu
-        aria-label={t('userMenu.aria')}
-        className={styles.profileMenu}
-        onAction={handleMenuAction}
-      >
+    <Dropdown.Popover placement="top left" className={styles.profileMenuPopover}>
+      <Dropdown.Menu aria-label={t('userMenu.aria')} onAction={handleMenuAction}>
         {menuMode === 'admin' ? (
           <>
-            <AppMenu.Item
-              id="back-app"
-              textValue={t('userMenu.backToApp')}
-              className={styles.profileMenuItem}
-            >
+            <Dropdown.Item id="back-app" textValue={t('userMenu.backToApp')}>
               <Home size={16} />
-              <span>{t('userMenu.backToApp')}</span>
-            </AppMenu.Item>
-            <AppMenu.Item
-              id="about"
-              textValue={t('userMenu.about')}
-              className={styles.profileMenuItem}
-            >
+              <Label>{t('userMenu.backToApp')}</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="about" textValue={t('userMenu.about')}>
               <Info size={16} />
-              <span>{t('userMenu.about')}</span>
-            </AppMenu.Item>
-            <AppMenu.DangerItem
-              id="logout"
-              textValue={t('userMenu.logout')}
-              className={styles.profileMenuItem}
-            >
+              <Label>{t('userMenu.about')}</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="logout" textValue={t('userMenu.logout')} variant="danger">
               <LogOut size={16} />
-              <span>{t('userMenu.logout')}</span>
-            </AppMenu.DangerItem>
+              <Label>{t('userMenu.logout')}</Label>
+            </Dropdown.Item>
           </>
         ) : (
           <>
-            <AppMenu.Item
-              id="usage"
-              textValue={t('userMenu.usage')}
-              className={styles.profileMenuItem}
-            >
+            <Dropdown.Item id="usage" textValue={t('userMenu.usage')}>
               <ChartPie size={16} />
-              <span>{t('userMenu.usage')}</span>
-            </AppMenu.Item>
-            <AppMenu.Item
-              id="account"
-              textValue={t('userMenu.account')}
-              className={styles.profileMenuItem}
-            >
+              <Label>{t('userMenu.usage')}</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="account" textValue={t('userMenu.account')}>
               <ShieldUser size={16} />
-              <span>{t('userMenu.account')}</span>
-            </AppMenu.Item>
-            <AppMenu.Item
-              id="appearance"
-              textValue={t('userMenu.appearance')}
-              className={styles.profileMenuItem}
-            >
+              <Label>{t('userMenu.account')}</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="appearance" textValue={t('userMenu.appearance')}>
               <Palette size={16} />
-              <span>{t('userMenu.appearance')}</span>
-            </AppMenu.Item>
-            <AppMenu.Item
-              id="feedback"
-              textValue={t('userMenu.feedback')}
-              className={styles.profileMenuItem}
-            >
+              <Label>{t('userMenu.appearance')}</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="feedback" textValue={t('userMenu.feedback')}>
               <MessageSquare size={16} />
-              <span>{t('userMenu.feedback')}</span>
-            </AppMenu.Item>
+              <Label>{t('userMenu.feedback')}</Label>
+            </Dropdown.Item>
             {isAdmin && (
-              <AppMenu.Item
-                id="enter-admin"
-                textValue={t('userMenu.enterAdmin')}
-                className={styles.profileMenuItem}
-              >
+              <Dropdown.Item id="enter-admin" textValue={t('userMenu.enterAdmin')}>
                 <Shield size={16} />
-                <span>{t('userMenu.enterAdmin')}</span>
-              </AppMenu.Item>
+                <Label>{t('userMenu.enterAdmin')}</Label>
+              </Dropdown.Item>
             )}
-            <AppMenu.Item
-              id="about"
-              textValue={t('userMenu.about')}
-              className={styles.profileMenuItem}
-            >
+            <Dropdown.Item id="about" textValue={t('userMenu.about')}>
               <Info size={16} />
-              <span>{t('userMenu.about')}</span>
-            </AppMenu.Item>
-            <AppMenu.DangerItem
-              id="logout"
-              textValue={t('userMenu.logout')}
-              className={styles.profileMenuItem}
-            >
+              <Label>{t('userMenu.about')}</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="logout" textValue={t('userMenu.logout')} variant="danger">
               <LogOut size={16} />
-              <span>{t('userMenu.logout')}</span>
-            </AppMenu.DangerItem>
+              <Label>{t('userMenu.logout')}</Label>
+            </Dropdown.Item>
           </>
         )}
-      </AppMenu.Menu>
-    </AppMenu.Popover>
+      </Dropdown.Menu>
+    </Dropdown.Popover>
   );
 
   return (
     <>
       <div className={cn(styles.profile, !collapsed && styles.expanded)}>
         {collapsed ? (
-          <AppMenu>
-            <AppMenu.Trigger aria-label={t('userMenu.openAria')} className={styles.avatarTrigger}>
+          <Dropdown>
+            <Dropdown.Trigger aria-label={t('userMenu.openAria')} className={styles.avatarTrigger}>
               {userAvatar}
-            </AppMenu.Trigger>
+            </Dropdown.Trigger>
             {userMenu}
-          </AppMenu>
+          </Dropdown>
         ) : (
           <>
             {userAvatar}
@@ -256,15 +212,15 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
               <span className={styles.username}>{displayName}</span>
               <span className={styles.tag}>{identityLabel}</span>
             </div>
-            <AppMenu>
-              <AppMenu.Trigger
+            <Dropdown>
+              <Dropdown.Trigger
                 aria-label={t('userMenu.openSettingsAria')}
                 className={styles.menuTrigger}
               >
                 <Settings size={16} aria-hidden="true" />
-              </AppMenu.Trigger>
+              </Dropdown.Trigger>
               {userMenu}
-            </AppMenu>
+            </Dropdown>
           </>
         )}
       </div>

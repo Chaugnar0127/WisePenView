@@ -20,11 +20,7 @@ function ResourceNotFound() {
         subTitle={t('page.notFoundDescription')}
         extra={
           <div className={shellStyles.actions}>
-            <AppButton
-              variant="primary"
-              size="lg"
-              onPress={() => navigate(APP_ROUTE_PATH.PUBLIC_CHAT)}
-            >
+            <AppButton variant="primary" size="lg" onPress={() => navigate(APP_ROUTE_PATH.HOME)}>
               {t('page.backHome')}
             </AppButton>
             <AppButton size="lg" onPress={() => navigate(-1)}>

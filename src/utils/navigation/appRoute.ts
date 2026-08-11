@@ -1,29 +1,26 @@
 export const APP_ROUTE_PATH = {
   HOME: '/',
-  AUTH: '/auth',
-  AUTH_LOGIN: '/auth/login',
-  AUTH_REGISTER: '/auth/register',
-  AUTH_ONBOARDING_BIND: '/auth/onboarding/bind',
-  AUTH_PASSWORD_FORGOT: '/auth/password/forgot',
-  AUTH_PASSWORD_RESET: '/auth/password/reset',
-  AUTH_EMAIL_VERIFY: '/auth/email/verify',
-  PUBLIC_CHAT: '/chat',
-  APP: '/app',
-  CHAT: '/app/chat',
-  NOTIFICATIONS: '/app/notifications',
-  DRIVE: '/app/drive',
-  DRIVE_PERSONAL: '/app/drive/personal',
-  DRIVE_UPLOAD_QUEUE: '/app/drive/upload-queue',
-  DRIVE_FAVORITES: '/app/drive/favorites',
-  DRIVE_TRASH: '/app/drive/trash',
-  GROUPS: '/app/groups',
-  COURSES: '/app/courses',
-  INVITE: '/app/invite',
-  RESOURCES: '/app/resources',
-  PROFILE: '/app/profile',
-  PROFILE_ACCOUNT: '/app/profile/account',
-  PROFILE_USAGE: '/app/profile/usage',
-  PROFILE_APPEARANCE: '/app/profile/appearance',
+  AUTH_LOGIN: '/login',
+  AUTH_REGISTER: '/register',
+  AUTH_ONBOARDING_BIND: '/onboarding/bind',
+  AUTH_PASSWORD_FORGOT: '/password/forgot',
+  AUTH_PASSWORD_RESET: '/password/reset',
+  AUTH_EMAIL_VERIFY: '/email/verify',
+  CHAT: '/chat',
+  NOTIFICATIONS: '/notifications',
+  DRIVE: '/drive',
+  DRIVE_PERSONAL: '/drive/personal',
+  DRIVE_UPLOAD_QUEUE: '/drive/upload-queue',
+  DRIVE_FAVORITES: '/drive/favorites',
+  DRIVE_TRASH: '/drive/trash',
+  GROUPS: '/groups',
+  COURSES: '/courses',
+  INVITE: '/invite',
+  RESOURCES: '/resources',
+  PROFILE: '/profile',
+  PROFILE_ACCOUNT: '/profile/account',
+  PROFILE_USAGE: '/profile/usage',
+  PROFILE_APPEARANCE: '/profile/appearance',
   ADMIN: '/admin',
   ADMIN_USERS: '/admin/users',
   ADMIN_RESOURCES: '/admin/resources',
@@ -35,6 +32,36 @@ export const APP_ROUTE_PATH = {
   ADMIN_LOGS: '/admin/logs',
   ADMIN_TASKS: '/admin/tasks',
 } as const;
+
+const AUTH_ROUTE_PATHS = [
+  APP_ROUTE_PATH.AUTH_LOGIN,
+  APP_ROUTE_PATH.AUTH_REGISTER,
+  APP_ROUTE_PATH.AUTH_ONBOARDING_BIND,
+  APP_ROUTE_PATH.AUTH_PASSWORD_FORGOT,
+  APP_ROUTE_PATH.AUTH_PASSWORD_RESET,
+  APP_ROUTE_PATH.AUTH_EMAIL_VERIFY,
+] as const;
+
+export const isAuthRoutePath = (pathname: string): boolean => {
+  const normalizedPathname = pathname.replace(/\/+$/, '');
+  return AUTH_ROUTE_PATHS.some((routePath) => normalizedPathname === routePath);
+};
+
+const AUTHENTICATED_APP_ROUTE_ROOTS = [
+  APP_ROUTE_PATH.CHAT,
+  APP_ROUTE_PATH.NOTIFICATIONS,
+  APP_ROUTE_PATH.DRIVE,
+  APP_ROUTE_PATH.GROUPS,
+  APP_ROUTE_PATH.COURSES,
+  APP_ROUTE_PATH.INVITE,
+  APP_ROUTE_PATH.RESOURCES,
+  APP_ROUTE_PATH.PROFILE,
+] as const;
+
+export const isAuthenticatedAppRoutePath = (pathname: string): boolean =>
+  AUTHENTICATED_APP_ROUTE_ROOTS.some(
+    (rootPath) => pathname === rootPath || pathname.startsWith(`${rootPath}/`)
+  );
 
 export type GroupListRole = 'all' | 'joined' | 'managed';
 

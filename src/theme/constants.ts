@@ -23,7 +23,7 @@ export const COLOR_SCHEME = {
 
 export type ColorScheme = (typeof COLOR_SCHEME)[keyof typeof COLOR_SCHEME];
 
-export const DEFAULT_COLOR_SCHEME = COLOR_SCHEME.DEFAULT;
+export const DEFAULT_COLOR_SCHEME = COLOR_SCHEME.AQUA;
 
 /** HeroUI 主题页 Radius 配置 */
 export const THEME_RADIUS = {
@@ -52,6 +52,11 @@ export interface ThemeRadiusOption {
 
 export const COLOR_SCHEME_OPTIONS: ColorSchemeOption[] = [
   {
+    id: COLOR_SCHEME.AQUA,
+    labelKey: 'appearance.scheme.aqua.label',
+    descriptionKey: 'appearance.scheme.aqua.description',
+  },
+  {
     id: COLOR_SCHEME.DEFAULT,
     labelKey: 'appearance.scheme.default.label',
     descriptionKey: 'appearance.scheme.default.description',
@@ -60,11 +65,6 @@ export const COLOR_SCHEME_OPTIONS: ColorSchemeOption[] = [
     id: COLOR_SCHEME.FLORAL,
     labelKey: 'appearance.scheme.floral.label',
     descriptionKey: 'appearance.scheme.floral.description',
-  },
-  {
-    id: COLOR_SCHEME.AQUA,
-    labelKey: 'appearance.scheme.aqua.label',
-    descriptionKey: 'appearance.scheme.aqua.description',
   },
   {
     id: COLOR_SCHEME.SUNSET,

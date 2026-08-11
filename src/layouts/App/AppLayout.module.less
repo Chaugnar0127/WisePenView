@@ -1,4 +1,5 @@
 @import '@/styles/scrollbar.module.less';
+@import (reference) '@/styles/layoutMixins.less';
 
 .root {
   --app-page-max-width: 1200px;
@@ -85,13 +86,11 @@
 }
 
 .middleLayout {
+  .flexColumnFill();
+
   width: 100%;
   /* 下限由 Panel minSize 约束；勿在 flex 子项上写 CSS min-width，否则会撑破视口出现整页滚动 */
   min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
   max-height: 100%;
   position: relative;
   overflow: hidden;
@@ -120,10 +119,9 @@
 }
 
 .appPageContainer {
-  display: flex;
-  flex-direction: column;
+  .flexColumnFill();
+
   min-height: 0;
-  height: 100%;
   width: 100%;
   max-width: var(--app-page-max-width);
   margin: 0 auto;
@@ -143,12 +141,10 @@
 @import '@/layouts/_common/desktopTitleBar.less';
 
 .desktopHeader {
+  .flexBetween();
+
   box-sizing: border-box;
   flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
   padding-right: var(--space-sm);
   padding-bottom: 0;
   padding-left: var(--space-sm);

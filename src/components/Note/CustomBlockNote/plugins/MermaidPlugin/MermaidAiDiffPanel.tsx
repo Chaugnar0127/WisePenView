@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- AI Diff DOM 渲染器需要暴露 React 挂载函数 */
+import { useApi } from '@/hooks/useApi';
 import { SVG_HTML_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
 import { Tabs } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useId, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -47,7 +47,7 @@ function MermaidAiDiffPanel({ source }: MermaidAiDiffPanelProps) {
   const [view, setView] = useState<MermaidDiffView>('graph');
   const diagramId = `ai-diff-mermaid-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const shouldRender = source.trim().length > 0;
-  const { data: rendered, loading } = useRequest(
+  const { data: rendered, loading } = useApi(
     async () => {
       try {
         return { source, svg: await renderNoteMermaidDiagram(diagramId, source) };

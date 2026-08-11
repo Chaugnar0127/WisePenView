@@ -1,8 +1,8 @@
 import { appendRedirectParam } from '@/bootstrap/authContinuation';
 import { useUserService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -22,13 +22,14 @@ export function AppAuthProvider({ children, mode }: AppAuthProviderProps) {
   const isAuthenticated = mode === 'authenticated';
   const loginPath = appendRedirectParam(APP_ROUTE_PATH.AUTH_LOGIN, APP_ROUTE_PATH.CHAT);
 
-  useRequest(() => userService.getUserInfo({ forceRefresh: true }), {
+  useApi(() => userService.getUserInfo({ forceRefresh: true }), {
     ready: mode === 'anonymous',
+    showErrorToast: false,
     onSuccess: () => {
       sessionStorage.removeItem(ANONYMOUS_AUTH_CHECK_NOTIFIED_KEY);
       navigate(APP_ROUTE_PATH.CHAT, { replace: true });
     },
-    onError: () => {
+    onErrorEffect: () => {
       if (sessionStorage.getItem(ANONYMOUS_AUTH_CHECK_NOTIFIED_KEY) === 'true') return;
       sessionStorage.setItem(ANONYMOUS_AUTH_CHECK_NOTIFIED_KEY, 'true');
       toast.warning(t('anonymous.sessionExpired'));

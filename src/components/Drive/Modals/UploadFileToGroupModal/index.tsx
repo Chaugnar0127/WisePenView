@@ -3,9 +3,8 @@ import AppModal from '@/components/Overlay/AppModal';
 import StepDots from '@/components/StepDots';
 import { useDriveService } from '@/domains';
 import type { DriveNode, FolderNode } from '@/domains/Drive';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveSelectionItem } from '../../common/driveComponentModel';
@@ -50,7 +49,7 @@ function UploadFileToGroupModal({
     setSelectedTarget(target);
   };
 
-  const { loading: submitting, run: runUploadToGroup } = useRequest(
+  const { loading: submitting, run: runUploadToGroup } = useApi(
     async ({ resourceIds, target }: { resourceIds: string[]; target: FolderNode }) => {
       await driveService.addResourcesToGroup({ resourceIds, target });
       return resourceIds.length;
@@ -61,9 +60,6 @@ function UploadFileToGroupModal({
         toast.success(t('upload.group.success', { count }));
         onSuccess?.();
         closeModal();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

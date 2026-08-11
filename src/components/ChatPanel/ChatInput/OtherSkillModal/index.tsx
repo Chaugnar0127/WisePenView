@@ -10,9 +10,9 @@ import {
 } from '@/domains/Chat';
 import type { Group } from '@/domains/Group';
 import type { ResourceSkillSummary } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { Folder } from 'lucide-react';
 import type { Key } from 'react';
 import { useState } from 'react';
@@ -59,7 +59,7 @@ function OtherSkillModalContent() {
   const [groupPage, setGroupPage] = useState<PageResult<Group> | null>(null);
   const [loadingMoreGroups, setLoadingMoreGroups] = useState(false);
   const [skillStateMap, setSkillStateMap] = useState<Record<string, SkillNodeState>>({});
-  const { loading } = useRequest(
+  const { loading } = useApi(
     () => chatService.listChatInputGroups({ page: 1, size: GROUP_PAGE_SIZE }),
     {
       refreshDeps: [currentAgent.agentId],
@@ -72,7 +72,6 @@ function OtherSkillModalContent() {
         setGroups(page.list);
         setGroupPage(page);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

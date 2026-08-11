@@ -3,9 +3,9 @@ import { useDocumentService, useNoteService } from '@/domains';
 import { RESOURCE_ACTION, type ResourceAction, type ResourceItem } from '@/domains/Resource';
 import { ACCESS_CONTROL_SCOPE, type AccessControlScope } from '@/domains/Tag';
 import type { UserDisplayBase } from '@/domains/User';
+import { useApi } from '@/hooks/useApi';
 import { formatFileSize } from '@/utils/format/formatFileSize';
 import { RESOURCE_KIND, resolveResourceKind } from '@/utils/navigation/resourceTarget';
-import { useRequest } from 'ahooks';
 import { Clock3, FileType2, GitBranch, HardDrive, ShieldCheck, UserRound } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -90,14 +90,14 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
     resourceNode?.resourceId && resourceKind === RESOURCE_KIND.FILE && !shouldLoadNoteMeta
   );
 
-  const { data: noteMeta, loading: loadingNoteMeta } = useRequest(
+  const { data: noteMeta, loading: loadingNoteMeta } = useApi(
     () => noteService.getNoteInfoDisplay({ resourceId: resourceNode?.resourceId ?? '' }),
     {
       ready: shouldLoadNoteMeta,
       refreshDeps: [resourceNode?.resourceId],
     }
   );
-  const { data: documentMeta, loading: loadingDocumentMeta } = useRequest(
+  const { data: documentMeta, loading: loadingDocumentMeta } = useApi(
     () => documentService.getDocInfo(resourceNode?.resourceId ?? ''),
     {
       ready: shouldLoadDocumentMeta,

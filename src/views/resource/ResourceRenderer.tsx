@@ -1,5 +1,6 @@
 import { ResultState, Spin } from '@/components/Feedback';
 import { useDocumentService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import {
   RESOURCE_KIND,
@@ -12,7 +13,6 @@ import {
   type ResourceViewer,
 } from '@/utils/navigation/resourceTarget';
 import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useResourceHostLayoutConfig, type ResourceHostLayoutConfig } from './ResourceHostContext';
@@ -82,7 +82,7 @@ function FileViewerResolver({ target, onTargetChange, onClose }: ResourceRendere
     data: docInfo,
     error,
     loading,
-  } = useRequest(async () => documentService.getDocInfo(resourceId), {
+  } = useApi(async () => documentService.getDocInfo(resourceId), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
     onSuccess: (data) => {

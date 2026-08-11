@@ -6,11 +6,11 @@ import {
   DOCUMENT_PROCESS,
   isDocumentTerminalStatus,
 } from '@/domains/Document';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { parseExtension } from '@/utils/parser/extensionParser';
 import { createUuid } from '@/utils/random/createUuid';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
@@ -93,7 +93,7 @@ export function useDriveDocumentUpload({ pathTagId, onSuccess }: UseDriveDocumen
     }, UPLOAD_STATUS_SYNC_DELAY_MS);
   };
 
-  const { run: queueDocuments } = useRequest(
+  const { run: queueDocuments } = useApi(
     async (files: File[], targetPathTagId?: string) => {
       const uploadPathTagId = targetPathTagId ?? pathTagId;
       if (!uploadPathTagId) return 0;
@@ -150,9 +150,6 @@ export function useDriveDocumentUpload({ pathTagId, onSuccess }: UseDriveDocumen
     },
     {
       manual: true,
-      onError: (error: unknown) => {
-        toast.danger(parseErrorMessage(error));
-      },
     }
   );
 

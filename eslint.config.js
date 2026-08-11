@@ -9,7 +9,7 @@ const ahooksUpdateEffectImportRule = {
   name: 'ahooks',
   importNames: ['useUpdateEffect'],
   message:
-    'useUpdateEffect 只是跳过首次执行，不能替代副作用设计；请改为事件驱动、渲染期派生、useRequest 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
+    'useUpdateEffect 只是跳过首次执行，不能替代副作用设计；请改为事件驱动、渲染期派生、useApi 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
 };
 
 const reactFcImportRule = {
@@ -338,7 +338,7 @@ export default defineConfig([
           object: 'ahooks',
           property: 'useUpdateEffect',
           message:
-            '项目禁止 ahooks.useUpdateEffect；请改为事件驱动、渲染期派生、useRequest 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
+            '项目禁止 ahooks.useUpdateEffect；请改为事件驱动、渲染期派生、useApi 或有带 @wisepen-manual-effect 标记完整说明的 useEffect。',
         },
       ],
       'no-restricted-syntax': ['error', ...projectRestrictedSyntaxRules],

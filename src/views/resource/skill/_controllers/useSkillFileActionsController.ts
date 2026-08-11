@@ -4,9 +4,9 @@ import type {
 } from '@/components/Skill/SkillFileTree/index.type';
 import { useSkillService } from '@/domains';
 import type { SkillDetail, SkillFileNode } from '@/domains/Skill';
+import { useApi } from '@/hooks/useApi';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -116,7 +116,7 @@ export function useSkillFileActionsController({
   const selectedTreeNode = selectedTreeNodeId ? findFile(files, selectedTreeNodeId) : null;
   const cancelPendingCreate = () => setPendingCreate(null);
 
-  const { loading: contentLoading, run: loadFileContent } = useRequest(
+  const { loading: contentLoading, run: loadFileContent } = useApi(
     async (file: SkillFileNode) => {
       if (!skill?.resourceId || !file.objectKey) return null;
       const content = await skillService.loadAssetContent(
@@ -131,7 +131,6 @@ export function useSkillFileActionsController({
       onSuccess: (result) => {
         if (result) applyLoadedContent(result.fileId, result.content);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -139,7 +138,7 @@ export function useSkillFileActionsController({
    * @wisepen-manual-effect
    * 执行时机：选中可编辑远端文件且尚未加载正文时请求内容。
    * 不可替代原因：文件正文来自异步 Skill service，结果需要写回工作区基线。
-   * cleanup：请求竞态由 useRequest 管理，本层没有额外订阅需要清理。
+   * cleanup：请求竞态由 useApi 管理，本层没有额外订阅需要清理。
    */
   useEffect(() => {
     if (
@@ -165,7 +164,7 @@ export function useSkillFileActionsController({
     };
   };
 
-  const { loading: moveLoading, runAsync: executeMove } = useRequest(
+  const { loading: moveLoading, runAsync: executeMove } = useApi(
     async (
       move: PendingSkillMove,
       savedSnapshots: SkillFileSaveSnapshot[] = []
@@ -213,7 +212,6 @@ export function useSkillFileActionsController({
         setPendingMove(null);
         toast.success(t('toast.moveSuccess'));
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -393,7 +391,7 @@ export function useSkillFileActionsController({
     onTreeNodeSelected(nodeId);
   };
 
-  const { loading: deleteLoading, run: deleteFile } = useRequest(
+  const { loading: deleteLoading, run: deleteFile } = useApi(
     async (target: SkillFileNode) => {
       if (!skill) return null;
       const fileIds = collectFileIds(target);
@@ -416,7 +414,6 @@ export function useSkillFileActionsController({
         setDeleteTarget(null);
         toast.success(t('toast.deleteSuccess'));
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

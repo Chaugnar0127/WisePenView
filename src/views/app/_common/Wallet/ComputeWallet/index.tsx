@@ -7,10 +7,10 @@
  */
 import { useGroupService, useWalletService } from '@/domains';
 import { WALLET_TARGET_TYPE, WALLET_TOKEN_TX_TYPE } from '@/domains/Wallet';
+import { useApi } from '@/hooks/useApi';
 import type { EnumValue } from '@/utils/enum';
-import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { usePagination, useRequest, useUnmount } from 'ahooks';
+import { usePagination, useUnmount } from 'ahooks';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RechargeModal from '../RechargeModal';
@@ -74,7 +74,7 @@ function ComputeWallet({
     rafRef.current = requestAnimationFrame(step);
   };
 
-  const { runAsync: loadBalance } = useRequest(
+  const { runAsync: loadBalance } = useApi(
     async (options?: { animateFrom?: number; silent?: boolean }) => {
       if (targetType === WALLET_TARGET_TYPE.GROUP && effectiveGroupId) {
         const groupBalance = await groupService.getGroupWalletInfo({ groupId: effectiveGroupId });
@@ -106,8 +106,7 @@ function ComputeWallet({
           setLoadingWallet(false);
         }
       },
-      onError: (err, params) => {
-        toast.danger(parseErrorMessage(err));
+      onErrorEffect: (_err, params) => {
         const options = params?.[0];
         if (!options?.silent) {
           setLoadingWallet(false);
@@ -165,9 +164,6 @@ function ComputeWallet({
       defaultCurrent: 1,
       defaultPageSize: PAGE_SIZE,
       refreshDeps: [walletService, targetType, effectiveGroupId, txTab, refreshVersion],
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
 
@@ -179,7 +175,7 @@ function ComputeWallet({
 
   const personalRecharge = targetType === WALLET_TARGET_TYPE.USER && canRecharge;
 
-  const { runAsync: runRecharge } = useRequest(
+  const { runAsync: runRecharge } = useApi(
     async (code: string) => walletService.redeemVoucher({ voucherCode: code }),
     {
       manual: true,
@@ -190,9 +186,6 @@ function ComputeWallet({
         onTxPageChange(1, PAGE_SIZE);
         setFlashFirstRow(true);
         window.setTimeout(() => setFlashFirstRow(false), 2400);
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

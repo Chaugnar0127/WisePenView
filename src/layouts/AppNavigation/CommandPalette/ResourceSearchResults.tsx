@@ -4,12 +4,10 @@ import EntryIcon from '@/components/Icons/EntryIcon';
 import { useResourceService } from '@/domains';
 import type { SearchHitItem, SearchResultPage } from '@/domains/Resource';
 import { SEARCH_SCOPE } from '@/domains/Resource';
+import { useApiInfiniteScroll } from '@/hooks/useApi';
 import { useOpenResource } from '@/hooks/useOpenResource';
-import { parseErrorMessage } from '@/utils/error';
 import { SEARCH_HIGHLIGHT_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
-import { toast } from '@heroui/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useInfiniteScroll } from 'ahooks';
 import { useEffect, useState, type CSSProperties, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -114,30 +112,28 @@ function ResourceSearchResults({
   const query = keyword.trim();
   const [resourceListOffset, setResourceListOffset] = useState(0);
 
-  const { data, loading, loadingMore, noMore, mutate } = useInfiniteScroll<CommandSearchResultPage>(
-    async (current) => {
-      if (!query) return createEmptySearchResult(query);
+  const { data, loading, loadingMore, noMore, mutate } =
+    useApiInfiniteScroll<CommandSearchResultPage>(
+      async (current) => {
+        if (!query) return createEmptySearchResult(query);
 
-      const currentList = current?.query === query ? current.list : [];
-      const nextPage = Math.floor(currentList.length / PAGE_SIZE) + 1;
-      const result = await resourceService.globalSearch({
-        keyword: query,
-        scope: SEARCH_SCOPE.ALL,
-        page: nextPage,
-        size: PAGE_SIZE,
-      });
-      return { ...result, query };
-    },
-    {
-      target: viewportRef,
-      isNoMore: (result) => !!result && result.page >= result.totalPage,
-      reloadDeps: [query],
-      manual: !query,
-      onError: (error) => {
-        toast.danger(parseErrorMessage(error));
+        const currentList = current?.query === query ? current.list : [];
+        const nextPage = Math.floor(currentList.length / PAGE_SIZE) + 1;
+        const result = await resourceService.globalSearch({
+          keyword: query,
+          scope: SEARCH_SCOPE.ALL,
+          page: nextPage,
+          size: PAGE_SIZE,
+        });
+        return { ...result, query };
       },
-    }
-  );
+      {
+        target: viewportRef,
+        isNoMore: (result) => !!result && result.page >= result.totalPage,
+        reloadDeps: [query],
+        manual: !query,
+      }
+    );
 
   const items = data?.query === query ? data.list : [];
   const initialLoading = loading && items.length === 0;

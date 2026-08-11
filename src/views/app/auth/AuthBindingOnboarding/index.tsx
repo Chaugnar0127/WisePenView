@@ -3,12 +3,11 @@ import { Spin } from '@/components/Feedback';
 import { useUserService } from '@/domains';
 import type { UserAccountProfile } from '@/domains/User';
 import { USER_STATUS } from '@/domains/User';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import AccountVerificationForm from '@/views/app/profile/_components/Account/AccountVerification/AccountVerificationForm';
 import AccountVerificationOutcomeDialog from '@/views/app/profile/_components/Account/AccountVerification/AccountVerificationOutcomeDialog';
 import { useAccountVerificationController } from '@/views/app/profile/_components/Account/AccountVerification/useAccountVerificationController';
-import { Alert, Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Alert, Button } from '@heroui/react';
 import { CircleCheck, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,12 +22,9 @@ function AuthBindingOnboarding() {
   const redirectPath = readRedirectParam(location.search);
   const [user, setUser] = useState<UserAccountProfile | null>(null);
 
-  const { loading, runAsync: reloadUserInfo } = useRequest(() => userService.getFullUserInfo(), {
+  const { loading, runAsync: reloadUserInfo } = useApi(() => userService.getFullUserInfo(), {
     onSuccess: (data) => {
       setUser(data);
-    },
-    onError: (err: unknown) => {
-      toast.danger(parseErrorMessage(err));
     },
   });
 

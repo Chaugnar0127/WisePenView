@@ -23,11 +23,11 @@ import {
 } from '@/components/Note/useMarkdownNoteImport';
 import { useDriveService, useNoteService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
+import { useApi } from '@/hooks/useApi';
 import { useOpenResource } from '@/hooks/useOpenResource';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useRef, useState, type ChangeEvent, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveActionTarget } from '../../common/driveComponentModel';
@@ -101,7 +101,7 @@ export function useTableDriveActionsController({
   const toolbarConfig = { ...DEFAULT_TOOLBAR_CONFIG, ...actions?.toolbar };
 
   const selectedNodes = selectedActionTargets;
-  const { loading: batchDeleting, run: executeBatchDelete } = useRequest(
+  const { loading: batchDeleting, run: executeBatchDelete } = useApi(
     async () => {
       if (selectedNodes.length === 0) return;
       if (scope.type === 'group') {
@@ -116,9 +116,8 @@ export function useTableDriveActionsController({
         toast.success(t('table.batchDeleted', { count: selectedNodes.length }));
         onNodeActionSuccess();
       },
-      onError: (error) => {
+      onErrorEffect: (error) => {
         refresh();
-        toast.danger(parseErrorMessage(error));
       },
     }
   );
@@ -168,7 +167,7 @@ export function useTableDriveActionsController({
   const documentFileInputRef = useRef<HTMLInputElement>(null);
   const { queueDocuments } = useDriveDocumentUpload({ pathTagId: mountTagId, onSuccess: refresh });
 
-  const { loading: creatingNote, run: runCreateNote } = useRequest(
+  const { loading: creatingNote, run: runCreateNote } = useApi(
     async () => {
       const { resourceId } = await noteService.createNote({
         title: t('create.defaultNoteTitle'),
@@ -189,9 +188,6 @@ export function useTableDriveActionsController({
           resourceType: RESOURCE_KIND.NOTE,
           driveLocation: resourceDriveLocation,
         });
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

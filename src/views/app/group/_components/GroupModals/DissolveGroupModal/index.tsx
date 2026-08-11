@@ -1,10 +1,9 @@
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { useGroupService } from '@/domains';
 import type { DeleteGroupRequest } from '@/domains/Group';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { DissolveGroupModalProps } from './index.type';
@@ -20,7 +19,7 @@ function DissolveGroupModal({
   const groupService = useGroupService();
   const navigate = useNavigate();
 
-  const { loading, run: runDissolveGroup } = useRequest(
+  const { loading, run: runDissolveGroup } = useApi(
     async () => {
       const params: DeleteGroupRequest = { groupId: groupId! };
       await groupService.deleteGroup(params);
@@ -32,9 +31,6 @@ function DissolveGroupModal({
         onSuccess?.();
         onOpenChange(false);
         navigate(APP_ROUTE_PATH.GROUPS);
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

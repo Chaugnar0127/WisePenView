@@ -2,13 +2,13 @@ import { Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
 import { GROUP_TYPE, type EditGroupRequest, type Group } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { parseErrorMessage } from '@/utils/error';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { PLACEHOLDER_IMAGE } from '@/utils/image/placeholder';
 import { assertImageProxyUploadLimit } from '@/utils/image/uploadLimit';
 import { Button, Label, TextField, toast, Tooltip } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { Pencil } from 'lucide-react';
 import { useRef, useState, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -46,7 +46,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
   const [modalCoverFile, setModalCoverFile] = useState<File | null>(null);
   const coverPreviewRequestRef = useRef(0);
 
-  const { loading: saving, run: runSave } = useRequest(
+  const { loading: saving, run: runSave } = useApi(
     async (nextDraft: GroupProfileDraft): Promise<GroupProfileDraft> => {
       let groupCoverUrl = group.groupCoverUrl;
       if (nextDraft.coverFile) {
@@ -84,9 +84,6 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
           group.groupType === GROUP_TYPE.ADVANCED ? t('profile.course.saved') : t('profile.saved')
         );
         onSuccess();
-      },
-      onError: (error: unknown) => {
-        toast.danger(parseErrorMessage(error));
       },
     }
   );

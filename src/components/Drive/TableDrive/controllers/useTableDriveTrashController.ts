@@ -1,6 +1,6 @@
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
 
 interface UseTableDriveTrashControllerParams {
   currentNodeId: string;
@@ -15,7 +15,7 @@ export function useTableDriveTrashController({
 }: UseTableDriveTrashControllerParams) {
   const driveService = useDriveService();
   const canOpenTrash = scope.type === 'personal';
-  const { data: trashFolder } = useRequest(
+  const { data: trashFolder } = useApi(
     () => driveService.getSystemFolder({ scope, type: 'trash' }),
     {
       ready: canOpenTrash,

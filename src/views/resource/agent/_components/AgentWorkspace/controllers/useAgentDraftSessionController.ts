@@ -1,9 +1,8 @@
 import { useAgentService } from '@/domains';
 import type { AgentDetail, AgentSpec } from '@/domains/Agent';
+import { useApi } from '@/hooks/useApi';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
-import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { useState } from 'react';
 import { buildGuidedPrompt, getDefaultGuidedPromptFields } from '../../../guidedPrompt';
@@ -61,7 +60,7 @@ export function useAgentDraftSessionController({
       return next;
     });
 
-  const saveRequest = useRequest(
+  const saveRequest = useApi(
     async () => {
       if (viewingVersion !== null) return;
       setSavePhase('saving');
@@ -80,14 +79,13 @@ export function useAgentDraftSessionController({
         setSavePhase('clean');
         toast.success(t('agent:page.saved'));
       },
-      onError: (error) => {
+      onErrorEffect: (error) => {
         setSavePhase('failed');
-        toast.danger(parseErrorMessage(error));
       },
     }
   );
 
-  const publishRequest = useRequest(
+  const publishRequest = useApi(
     async () => {
       if (isDirty) await saveRequest.runAsync();
       await agentService.publishVersion(resourceId);
@@ -98,7 +96,6 @@ export function useAgentDraftSessionController({
         toast.success(t('agent:page.published'));
         onPublished();
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

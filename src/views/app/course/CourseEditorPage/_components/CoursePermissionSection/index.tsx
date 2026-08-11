@@ -1,8 +1,8 @@
 import { TagMountPermissionModal } from '@/components/Drive/Modals';
 import GroupDefaultAccessPermissionModal from '@/components/Group/DefaultAccessPermissionModal';
 import { useGroupService } from '@/domains';
-import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
+import { Button } from '@heroui/react';
 import { FolderInput, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -27,9 +27,9 @@ function CoursePermissionSection({
     data: groupResConfig,
     loading,
     refresh,
-  } = useRequest(() => groupService.fetchGroupResConfig(courseId), {
+  } = useApi(() => groupService.fetchGroupResConfig(courseId), {
     refreshDeps: [courseId],
-    onError: () => toast.danger(t('editor.permissions.loadFailed')),
+    getErrorMessage: () => t('editor.permissions.loadFailed'),
   });
 
   const handlePermissionSuccess = () => {

@@ -2,6 +2,7 @@ import { Empty, Spin } from '@/components/Feedback';
 import Select from '@/components/Input/Select';
 import { useGroupService } from '@/domains';
 import { GROUP_ROLE_FILTER_MAP, GROUP_TYPE } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import PageHeader from '@/layouts/_common/PageHeader';
 import {
   buildGroupFilesPath,
@@ -9,8 +10,7 @@ import {
   parseGroupListRouteQuery,
   type GroupListRole,
 } from '@/utils/navigation/appRoute';
-import { Button, ListBox, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Button, ListBox } from '@heroui/react';
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +32,7 @@ function PublicGroupsPage() {
   const [joinModalOpen, setJoinModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const roleFilter = GROUP_ROLE_FILTER_MAP[query.role];
-  const { data, loading, error, refresh } = useRequest(
+  const { data, loading, error, refresh } = useApi(
     () =>
       groupService.fetchGroupList({
         groupRoleFilter: roleFilter,
@@ -43,7 +43,7 @@ function PublicGroupsPage() {
     {
       refreshDeps: [query.role, query.page, query.size],
       loadingDelay: 160,
-      onError: () => toast.danger(t('list.loadFailed')),
+      getErrorMessage: () => t('list.loadFailed'),
     }
   );
   const groups = data?.groups ?? [];

@@ -1,8 +1,9 @@
 import AppAvatar from '@/components/Avatar';
 import { Input } from '@/components/Input';
 import type { UserSearchUser } from '@/domains/User';
+import { useApi } from '@/hooks/useApi';
 import { Button, TextField } from '@heroui/react';
-import { useRequest, useUnmount } from 'ahooks';
+import { useUnmount } from 'ahooks';
 import clsx from 'clsx';
 import type { KeyboardEvent } from 'react';
 import { useId, useRef, useState } from 'react';
@@ -51,8 +52,8 @@ function UserSearchCombobox({
     data: queryResult,
     loading,
     runAsync,
-  } = useRequest(
-    async (nextKeyword = keyword) => {
+  } = useApi(
+    async (nextKeyword: string = keyword) => {
       const queryKeyword = nextKeyword.trim();
       const users = await queryUsers(queryKeyword);
       return { keyword: queryKeyword, users };

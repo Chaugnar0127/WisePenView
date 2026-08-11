@@ -6,11 +6,10 @@ import {
 import { Checkbox, FormField, Input, PasswordInput } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { RegisterRequest } from '@/domains/Auth';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
 import { Button, Form, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { User } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +41,7 @@ function Register() {
   const location = useLocation();
   const redirectPath = readRedirectParam(location.search);
 
-  const { run: submitLogin } = useRequest(
+  const { run: submitLogin } = useApi(
     (values: RegisterRequest) =>
       authService.login({
         account: values.username,
@@ -53,14 +52,13 @@ function Register() {
       onSuccess: () => {
         navigate(buildRegisterOnboardingPath(redirectPath), { replace: true });
       },
-      onError: (err: unknown) => {
-        toast.danger(parseErrorMessage(err));
+      onErrorEffect: () => {
         navigate(APP_ROUTE_PATH.AUTH_LOGIN, { replace: true });
       },
     }
   );
 
-  const { loading, run: submitRegister } = useRequest(
+  const { loading, run: submitRegister } = useApi(
     async (values: RegisterRequest) => {
       await authService.register(values);
       return values;
@@ -70,9 +68,6 @@ function Register() {
       onSuccess: (values) => {
         toast.success(t('register.registerSuccess'));
         submitLogin(values);
-      },
-      onError: (err: unknown) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

@@ -1,11 +1,11 @@
 import { useGroupService, useQuotaService } from '@/domains';
 import type { GroupMember } from '@/domains/Group';
 import { ROLE } from '@/domains/Group';
+import { useApiPagination } from '@/hooks/useApi';
 import type { EnumKey } from '@/utils/enum';
 import { parseErrorMessage } from '@/utils/error';
 import { normalizeId } from '@/utils/normalize/normalizeId';
 import { Button, toast, type Selection, type SortDescriptor } from '@heroui/react';
-import { usePagination } from 'ahooks';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MemberListProps } from './index.type';
@@ -49,7 +49,7 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
     loading,
     refresh,
     pagination: { current: currentPage = 1, pageSize = defaultPageSize, onChange: onPageChange },
-  } = usePagination(
+  } = useApiPagination(
     async ({ current, pageSize: nextPageSize }) => {
       const { members, total } = await groupService.fetchGroupMembers(
         groupId,
@@ -62,9 +62,7 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
       defaultCurrent: 1,
       defaultPageSize,
       refreshDeps: [groupId],
-      onError: () => {
-        toast.danger(t('member.loadFailed'));
-      },
+      getErrorMessage: () => t('member.loadFailed'),
     }
   );
 

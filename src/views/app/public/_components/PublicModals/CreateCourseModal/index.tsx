@@ -1,9 +1,8 @@
 import { Input, TextArea } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useCourseService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { Button, Label, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -39,7 +38,7 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
   const { t } = useTranslation(['course', 'common']);
   const courseService = useCourseService();
   const [form, setForm] = useState<CourseCreateFormValues>(DEFAULT_FORM_VALUES);
-  const request = useRequest(() => courseService.createCourse(toCreateCourseRequest(form)), {
+  const request = useApi(() => courseService.createCourse(toCreateCourseRequest(form)), {
     manual: true,
     onSuccess: (courseId) => {
       toast.success(t('create.success'));
@@ -47,7 +46,6 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
       onOpenChange(false);
       onCreated(courseId);
     },
-    onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
   });
 
   const handleCreate = () => {

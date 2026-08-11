@@ -2,9 +2,9 @@ import { useDriveUploadQueueStore } from '@/components/Drive/_store/useDriveUplo
 import { useDocumentService } from '@/domains';
 import type { PendingDocItem } from '@/domains/Document';
 import { DOCUMENT_PROCESS, isDocumentTerminalStatus } from '@/domains/Document';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useInterval, useMount, useRequest, useUnmount } from 'ahooks';
+import { useInterval, useMount, useUnmount } from 'ahooks';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -53,7 +53,7 @@ export function useUploadQueue() {
     run: fetchPendingList,
     loading: listLoading,
     cancel: cancelListRequest,
-  } = useRequest(async () => documentService.listPendingDocs(), {
+  } = useApi(async () => documentService.listPendingDocs(), {
     manual: true,
     onSuccess: (nextItems) => {
       const readyRows = nextItems.flatMap((item, index) =>
@@ -74,13 +74,12 @@ export function useUploadQueue() {
         nextPendingItems.some((item) => !isDocumentTerminalStatus(item.documentStatus.status))
       );
     },
-    onError: (error) => {
+    onErrorEffect: (error) => {
       setPollingActive(false);
-      toast.danger(parseErrorMessage(error));
     },
   });
 
-  const { run: retryPendingDoc, cancel: cancelRetryRequest } = useRequest(
+  const { run: retryPendingDoc, cancel: cancelRetryRequest } = useApi(
     async (documentId: string) => {
       await documentService.retryPendingDoc(documentId);
     },
@@ -93,16 +92,13 @@ export function useUploadQueue() {
         toast.success(t('uploadQueue.feedback.retrySubmitted'));
         fetchPendingList();
       },
-      onError: (error) => {
-        toast.danger(parseErrorMessage(error));
-      },
       onFinally: () => {
         setRetryingId(null);
       },
     }
   );
 
-  const { run: cancelPendingDoc, cancel: cancelCancelRequest } = useRequest(
+  const { run: cancelPendingDoc, cancel: cancelCancelRequest } = useApi(
     async (documentId: string) => {
       await documentService.cancelPendingDoc(documentId);
     },
@@ -114,9 +110,6 @@ export function useUploadQueue() {
       onSuccess: () => {
         toast.success(t('uploadQueue.feedback.canceled'));
         fetchPendingList();
-      },
-      onError: (error) => {
-        toast.danger(parseErrorMessage(error));
       },
       onFinally: () => {
         setCancelingId(null);

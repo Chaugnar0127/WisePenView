@@ -1,6 +1,6 @@
 import { useUserService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -8,7 +8,7 @@ function Welcome() {
   const { t } = useTranslation('chat');
   const { colorScheme } = useColorScheme();
   const userService = useUserService();
-  const { data: user } = useRequest(() => userService.getUserInfo());
+  const { data: user } = useApi(() => userService.getUserInfo());
   const name = user?.nickname?.trim() || user?.username?.trim();
 
   return (

@@ -1,14 +1,14 @@
 import { Spin } from '@/components/Feedback';
 import { useUserService } from '@/domains';
 import { IDENTITY } from '@/domains/User';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { useRequest } from 'ahooks';
 import { Navigate, Outlet } from 'react-router-dom';
 import styles from './AdminRouteGuard.module.less';
 
 function AdminRouteGuard() {
   const userService = useUserService();
-  const { data: user, error, loading } = useRequest(() => userService.getUserInfo());
+  const { data: user, error, loading } = useApi(() => userService.getUserInfo());
 
   if (loading || (!user && !error)) {
     return (

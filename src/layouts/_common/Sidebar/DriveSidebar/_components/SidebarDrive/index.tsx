@@ -22,12 +22,11 @@ import type { DataNode } from '@/components/Tree';
 import Tree from '@/components/Tree';
 import { useGroupService, useNoteService } from '@/domains';
 import type { DriveResourceLocation, FolderNode, RootNode } from '@/domains/Drive';
+import { useApi } from '@/hooks/useApi';
 import { useOpenResource } from '@/hooks/useOpenResource';
 import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
-import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -62,7 +61,7 @@ function SidebarDrive() {
   const [renameTarget, setRenameTarget] = useState<DriveActionTarget | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
   const importTargetRef = useRef<RootNode | FolderNode | null>(null);
-  const { data: groupBaseInfo } = useRequest(
+  const { data: groupBaseInfo } = useApi(
     async () => {
       if (!groupId) return undefined;
       return groupService.fetchGroupBaseInfo(groupId);
@@ -215,7 +214,7 @@ function SidebarDrive() {
     },
   });
 
-  useRequest(
+  useApi(
     async () => {
       if (!noteTarget) {
         throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
@@ -245,9 +244,8 @@ function SidebarDrive() {
           driveLocation: resolveContainerResourceLocation(target),
         });
       },
-      onError: (err) => {
+      onErrorEffect: (err) => {
         setNoteTarget(null);
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

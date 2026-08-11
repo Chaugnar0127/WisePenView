@@ -4,9 +4,8 @@
 import { Input } from '@/components/Input';
 import { useGroupService, useWalletService } from '@/domains';
 import { WALLET_TOKEN_TRANSFER_TYPE } from '@/domains/Wallet';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { Button, Skeleton, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OwnerGroupTokenTransferProps } from './index.type';
@@ -22,7 +21,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
   const [amtToGroup, setAmtToGroup] = useState<number | null>(null);
   const [amtToOwner, setAmtToOwner] = useState<number | null>(null);
 
-  const { loading: balanceLoading, runAsync: loadBalances } = useRequest(
+  const { loading: balanceLoading, runAsync: loadBalances } = useApi(
     async () => {
       const gid = groupId?.trim();
       if (!gid) {
@@ -42,9 +41,6 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
         setPersonalBal(res.personalBal);
         setGroupBal(res.groupBal);
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
 
@@ -53,7 +49,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
     onTransferSuccess?.();
   };
 
-  const { loading: submittingToGroup, runAsync: runTransferToGroup } = useRequest(
+  const { loading: submittingToGroup, runAsync: runTransferToGroup } = useApi(
     async (amount: number) =>
       walletService.transferTokenBetweenGroupAndUser({
         groupId,
@@ -67,13 +63,10 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
         setAmtToGroup(null);
         await refreshAfterTransfer();
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
 
-  const { loading: submittingToOwner, runAsync: runTransferToOwner } = useRequest(
+  const { loading: submittingToOwner, runAsync: runTransferToOwner } = useApi(
     async (amount: number) =>
       walletService.transferTokenBetweenGroupAndUser({
         groupId,
@@ -86,9 +79,6 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
         toast.success(t('transfer.toOwnerSuccess'));
         setAmtToOwner(null);
         await refreshAfterTransfer();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

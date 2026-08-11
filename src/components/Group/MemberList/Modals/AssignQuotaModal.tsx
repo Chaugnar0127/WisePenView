@@ -2,9 +2,8 @@ import { Input } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import SelectedMemberList from '@/components/SelectedMemberList';
 import { useQuotaService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { Alert, Button, Label, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AssignQuotaModalProps } from './index.type';
@@ -87,7 +86,7 @@ function AssignQuotaModal({
     { checkOwner: false, forQuota: true }
   );
 
-  const { loading, run: runSetQuota } = useRequest(
+  const { loading, run: runSetQuota } = useApi(
     async (value: number) =>
       quotaService.setGroupQuota({
         groupId,
@@ -103,16 +102,14 @@ function AssignQuotaModal({
         onSuccess?.();
         onOpenChange(false);
       },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
-      },
     }
   );
-  useRequest(() => quotaService.fetchGroupQuota(groupId), {
+  useApi(() => quotaService.fetchGroupQuota(groupId), {
     ready: isOpen,
     refreshDeps: [groupId, isOpen],
     onSuccess: setGroupQuotaState,
-    onError: () => setGroupQuotaState({ used: 0, limit: 0 }),
+    showErrorToast: false,
+    onErrorEffect: () => setGroupQuotaState({ used: 0, limit: 0 }),
   });
 
   const validateQuota = (value: number | null) => {

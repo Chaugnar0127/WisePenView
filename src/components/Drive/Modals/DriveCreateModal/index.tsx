@@ -2,10 +2,10 @@ import { FormField, Input, TextArea } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import AppModal from '@/components/Overlay/AppModal';
 import { useAgentService, useDriveService, useNoteService, useSkillService } from '@/domains';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { validateReservedName } from '@/utils/tag/validateReservedName';
 import { Button, Label, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -39,7 +39,7 @@ function DriveCreateModal({
     setTitleError('');
   };
 
-  const { loading, run: runCreate } = useRequest(
+  const { loading, run: runCreate } = useApi(
     async () => {
       let createdId: string;
       switch (type) {
@@ -87,9 +87,6 @@ function DriveCreateModal({
       onSuccess: () => {
         if (type === 'folder') toast.success(t('create.success'));
         reset();
-      },
-      onError: (error) => {
-        toast.danger(parseErrorMessage(error));
       },
     }
   );

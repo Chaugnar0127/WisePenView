@@ -1,8 +1,7 @@
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { useDriveService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 
 import type { DriveActionTarget } from '../../common/driveComponentModel';
@@ -26,7 +25,7 @@ function DriveDeleteModal({
   const isGroupNode = Boolean(groupId && node);
   const isGroupResource = Boolean(groupId && node && node.type !== 'folder');
 
-  const { loading, run: runDelete } = useRequest(
+  const { loading, run: runDelete } = useApi(
     async () => {
       if (!node) return;
       if (node.scope.type === 'group') {
@@ -48,9 +47,8 @@ function DriveDeleteModal({
         onSuccess?.();
         onOpenChange(false);
       },
-      onError: (error) => {
+      onErrorEffect: (error) => {
         onError?.();
-        toast.danger(parseErrorMessage(error));
       },
     }
   );

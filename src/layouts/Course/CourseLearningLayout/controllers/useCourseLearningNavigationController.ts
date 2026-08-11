@@ -1,6 +1,6 @@
 import { useCourseService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { buildCourseLearningPath, buildCoursePath } from '@/utils/navigation/appRoute';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -16,7 +16,7 @@ export const useCourseLearningNavigationController = (courseId: string) => {
   const navigate = useNavigate();
   const { outlineNodeId = '' } = useParams<{ outlineNodeId: string }>();
   const [searchQuery, setSearchQuery] = useState('');
-  const request = useRequest(() => courseService.getCourseOutline(courseId), {
+  const request = useApi(() => courseService.getCourseOutline(courseId), {
     ready: Boolean(courseId),
     refreshDeps: [courseId],
   });
@@ -32,7 +32,7 @@ export const useCourseLearningNavigationController = (courseId: string) => {
   const selectedUnreadResourceId =
     selectedNode?.nodeType === 'RESOURCE' && !selectedNode.read ? selectedNode.resourceId : '';
 
-  useRequest(() => courseService.setResourceRead({ resourceId: selectedUnreadResourceId }), {
+  useApi(() => courseService.setResourceRead({ resourceId: selectedUnreadResourceId }), {
     ready: Boolean(selectedUnreadResourceId),
     refreshDeps: [courseId, selectedUnreadResourceId],
     onSuccess: () => {

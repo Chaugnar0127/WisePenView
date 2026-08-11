@@ -2,11 +2,10 @@ import { appendRedirectParam, readRedirectParam } from '@/bootstrap/authContinua
 import { FormField, Input, PasswordInput } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { LoginRequest } from '@/domains/Auth';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
-import { Button, Form, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
+import { Button, Form } from '@heroui/react';
 import { User } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -31,15 +30,12 @@ function Login() {
   const location = useLocation();
   const redirectPath = readRedirectParam(location.search);
 
-  const { loading, run: submitLogin } = useRequest(
+  const { loading, run: submitLogin } = useApi(
     (values: LoginRequest) => authService.login(values),
     {
       manual: true,
       onSuccess: () => {
         navigate(redirectPath, { replace: true });
-      },
-      onError: (err: unknown) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

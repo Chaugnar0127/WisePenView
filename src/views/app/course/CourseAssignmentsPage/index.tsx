@@ -1,11 +1,11 @@
 import { Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
 import { COURSE_ASSIGNMENT_STATUS } from '@/domains/Course';
+import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { buildCourseAssignmentPath } from '@/utils/navigation/appRoute';
 import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { CalendarClock, CheckCircle2, ChevronRight, ClipboardCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +16,7 @@ function CourseAssignmentsPage() {
   const { course } = useCourseContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
-  const { data, loading, error, refresh } = useRequest(() =>
+  const { data, loading, error, refresh } = useApi(() =>
     courseService.listCourseAssignments(course.courseId)
   );
 

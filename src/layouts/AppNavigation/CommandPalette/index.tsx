@@ -12,12 +12,12 @@ import { DriveCreateModal, type DriveCreateType } from '@/components/Drive/Modal
 import { Spin } from '@/components/Feedback';
 import { useDriveService, useNoteService } from '@/domains';
 import type { RootNode } from '@/domains/Drive';
+import { useApi } from '@/hooks/useApi';
 import { useOpenResource } from '@/hooks/useOpenResource';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
-import { toast } from '@heroui/react';
-import { useDebounce, useRequest } from 'ahooks';
+import { useDebounce } from 'ahooks';
 import {
   Bot,
   FolderHeart,
@@ -144,7 +144,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
     navigate(path);
   };
 
-  const { loading: preparingCreate, run: prepareCreate } = useRequest(
+  const { loading: preparingCreate, run: prepareCreate } = useApi(
     async (type: CreateResourceType): Promise<PrepareCreateResult> => {
       const root = await driveService.getRoot();
       if (!root.canMountResources || !root.tagId) {
@@ -178,9 +178,6 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
             ? { scope: result.root.scope, mountTagId: result.root.tagId }
             : undefined,
         });
-      },
-      onError: (error) => {
-        toast.danger(parseErrorMessage(error));
       },
       onFinally: () => {
         setPreparingType(undefined);

@@ -1,7 +1,5 @@
 import { useChatService } from '@/domains';
 import type { ChatSession, PageResult } from '@/domains/Chat';
-import { parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
 import { useInfiniteScroll, useKeyPress } from 'ahooks';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +45,6 @@ function ChatSessionBar({ activeSessionId, onClose, onSelectSession }: ChatSessi
       }),
     {
       isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

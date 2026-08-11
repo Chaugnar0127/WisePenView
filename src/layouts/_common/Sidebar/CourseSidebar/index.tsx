@@ -2,8 +2,8 @@ import { Spin } from '@/components/Feedback';
 import Tree, { type TreeDataNode } from '@/components/Tree';
 import { useCourseService } from '@/domains';
 import type { CourseSummary } from '@/domains/Course';
+import { useApi } from '@/hooks/useApi';
 import { buildCourseLearningPath } from '@/utils/navigation/appRoute';
-import { useRequest } from 'ahooks';
 import { BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -34,7 +34,7 @@ function SidebarCourse() {
   const navigate = useNavigate();
   const { courseId } = useParams<{ courseId?: string }>();
 
-  const { data, loading } = useRequest(() => courseService.listMyCourses({ page: 1, size: 50 }));
+  const { data, loading } = useApi(() => courseService.listMyCourses({ page: 1, size: 50 }));
 
   if (loading) {
     return (

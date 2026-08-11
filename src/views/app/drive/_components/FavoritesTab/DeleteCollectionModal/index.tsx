@@ -1,9 +1,8 @@
 import { Checkbox } from '@/components/Input';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { useInteractService } from '@/domains';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -23,7 +22,7 @@ function DeleteCollectionModal({
   const { t } = useTranslation(['resource', 'common']);
   const interactService = useInteractService();
   const [keepResources, setKeepResources] = useState(false);
-  const { loading, run: remove } = useRequest(
+  const { loading, run: remove } = useApi(
     () =>
       interactService.deleteFavoriteCollection({
         collectionId,
@@ -36,7 +35,6 @@ function DeleteCollectionModal({
         onSuccess();
         onOpenChange(false);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
   return (

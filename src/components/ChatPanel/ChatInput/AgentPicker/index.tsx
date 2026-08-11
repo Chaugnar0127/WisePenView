@@ -5,9 +5,10 @@ import Tree from '@/components/Tree';
 import { useChatService } from '@/domains';
 import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from '@/domains/Chat';
 import type { Group } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, ListBox, Skeleton, toast } from '@heroui/react';
-import { useInfiniteScroll, useLatest, useRequest } from 'ahooks';
+import { useInfiniteScroll, useLatest } from 'ahooks';
 import { Bot, Folder } from 'lucide-react';
 import type { Key } from 'react';
 import { useEffect, useState } from 'react';
@@ -96,7 +97,6 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
       manual: !open,
       reloadDeps: [open],
       isNoMore: (page) => Boolean(page && (page.total === 0 || page.list.length >= page.total)),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
   const showSkeleton = personalPage == null && loadingPersonal;
@@ -294,7 +294,7 @@ function GroupAgentPickerModalContent({
   const [groupPage, setGroupPage] = useState<PageResult<Group> | null>(null);
   const [loadingMoreGroups, setLoadingMoreGroups] = useState(false);
   const [groupStateMap, setGroupStateMap] = useState<Record<string, AgentGroupState>>({});
-  const { loading } = useRequest(
+  const { loading } = useApi(
     () => chatService.listChatInputGroups({ page: 1, size: GROUP_PAGE_SIZE }),
     {
       onBefore: () => {
@@ -306,7 +306,6 @@ function GroupAgentPickerModalContent({
         setGroups(page.list);
         setGroupPage(page);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

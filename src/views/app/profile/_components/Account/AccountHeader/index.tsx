@@ -4,11 +4,11 @@ import AppModal from '@/components/Overlay/AppModal';
 import { useImageService, useUserService } from '@/domains';
 import { assertImageProxyUploadLimit } from '@/domains/Image';
 import { IDENTITY, USER_STATUS } from '@/domains/User';
+import { useApi } from '@/hooks/useApi';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { parseErrorMessage } from '@/utils/error';
 import { IMAGE_UPLOAD_MAX_SIZE_LABEL } from '@/utils/image/uploadLimit';
 import { Button, toast, Tooltip } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { Camera, Check, TriangleAlert, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +21,7 @@ function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
-  const { loading: avatarSubmitting, run: runUpdateAvatar } = useRequest(
+  const { loading: avatarSubmitting, run: runUpdateAvatar } = useApi(
     async (raw: File, currentUser: NonNullable<AccountHeaderProps['user']>) => {
       const { publicUrl } = await imageService.uploadImage({
         file: raw,
@@ -41,9 +41,6 @@ function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {
         toast.success(t('header.avatarUpdated'));
         setAvatarFile(null);
         setAvatarModalOpen(false);
-      },
-      onError: (err: unknown) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

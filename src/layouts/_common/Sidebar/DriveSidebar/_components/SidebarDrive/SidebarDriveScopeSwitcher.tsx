@@ -3,9 +3,8 @@ import { AppPopover } from '@/components/Overlay';
 import { useGroupService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
 import type { Group } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
-import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { Check, ChevronsUpDown, HardDrive, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +25,7 @@ function SidebarDriveScopeSwitcher() {
   const [groupTotalPage, setGroupTotalPage] = useState(1);
   const selectedKey = activeScope.type === 'group' ? activeScope.groupId : PERSONAL_SCOPE_KEY;
 
-  const { loading } = useRequest(
+  const { loading } = useApi(
     () =>
       groupService.fetchGroupList({
         groupRoleFilter: 'ALL',
@@ -41,9 +40,7 @@ function SidebarDriveScopeSwitcher() {
         );
         setGroupTotalPage(result.totalPage);
       },
-      onError: () => {
-        toast.danger(t('sidebar.loadGroupsFailed'));
-      },
+      getErrorMessage: () => t('sidebar.loadGroupsFailed'),
     }
   );
   const hasMoreGroups = groupPage < groupTotalPage;

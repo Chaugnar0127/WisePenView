@@ -4,8 +4,8 @@ import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { AppMenu } from '@/components/Overlay';
 import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import { useUserService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { normalizeId } from '@/utils/normalize/normalizeId';
-import { useRequest } from 'ahooks';
 import {
   ChevronRight,
   Copy,
@@ -293,7 +293,7 @@ function ResourceHeader({
   const userService = useUserService();
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
   const normalizedOwnerId = normalizeId(ownerId);
-  const { data: currentUser } = useRequest(() => userService.getUserInfo(), {
+  const { data: currentUser } = useApi(() => userService.getUserInfo(), {
     ready: Boolean(resourceId && normalizedOwnerId),
     refreshDeps: [resourceId, normalizedOwnerId],
   });

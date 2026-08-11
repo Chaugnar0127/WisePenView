@@ -9,7 +9,7 @@
  */
 import { InputOTP, REGEXP_ONLY_DIGITS_AND_CHARS } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
-import { useRequest } from 'ahooks';
+import { useApi } from '@/hooks/useApi';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RechargeModalProps } from './index.type';
@@ -47,15 +47,12 @@ function RechargeModal({ open, onCancel, groupDisplayName, onSubmit }: RechargeM
       ? t('recharge.groupTitle', { name: groupDisplayName })
       : t('recharge.personalTitle');
 
-  const { loading: submitting, run: runRecharge } = useRequest(
-    async (code: string) => onSubmit(code),
-    {
-      manual: true,
-      onSuccess: () => {
-        handleCancel();
-      },
-    }
-  );
+  const { loading: submitting, run: runRecharge } = useApi(async (code: string) => onSubmit(code), {
+    manual: true,
+    onSuccess: () => {
+      handleCancel();
+    },
+  });
 
   const handleOk = () => {
     const code = normalizeVoucherCode(value);

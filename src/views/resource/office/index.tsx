@@ -2,6 +2,7 @@ import { ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL } from '@/apis/clientUrls';
 import { ResultState, Spin } from '@/components/Feedback';
 import { useDocumentService, useInteractService } from '@/domains';
 import type { ResourceItem } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import {
@@ -19,7 +20,7 @@ import {
 import { Button } from '@heroui/react';
 import type { Config } from '@onlyoffice/doceditor-types';
 import { DocumentEditor } from '@onlyoffice/document-editor-react';
-import { useMemoizedFn, useRequest } from 'ahooks';
+import { useMemoizedFn } from 'ahooks';
 import { FileText } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -155,7 +156,7 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
     loading: isConfigLoading,
     mutate: mutateOfficeData,
     refresh: refreshOfficeData,
-  } = useRequest(
+  } = useApi(
     async () => {
       const [docInfo, editorConfig] = await Promise.all([
         documentService.getDocInfo(resourceId as string),
@@ -173,7 +174,7 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
     }
   );
 
-  useRequest(() => interactService.recordResourceRead(resourceId as string), {
+  useApi(() => interactService.recordResourceRead(resourceId as string), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
   });

@@ -1,8 +1,8 @@
 import { useAgentService } from '@/domains';
 import type { AgentAsset } from '@/domains/Agent';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { useState } from 'react';
 
@@ -32,7 +32,7 @@ export function useAgentAssetsController({
     }
   };
 
-  const uploadRequest = useRequest(
+  const uploadRequest = useApi(
     async (files: File[]) => {
       for (const file of files) {
         await agentService.uploadAsset(resourceId, draftVersion, { file });
@@ -44,11 +44,10 @@ export function useAgentAssetsController({
         toast.success(t('agent:page.assetUploaded'));
         void refreshAssets();
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const deleteRequest = useRequest(
+  const deleteRequest = useApi(
     (assetId: string) => agentService.deleteAssets(resourceId, draftVersion, [assetId]),
     {
       manual: true,
@@ -56,7 +55,6 @@ export function useAgentAssetsController({
         toast.success(t('agent:page.assetDeleted'));
         void refreshAssets();
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

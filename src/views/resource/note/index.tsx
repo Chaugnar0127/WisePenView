@@ -1,5 +1,6 @@
 import { ResultState, Spin } from '@/components/Feedback';
 import { useNoteService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import {
@@ -7,7 +8,6 @@ import {
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
 import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -65,7 +65,7 @@ function NoteView({ resourceId }: { resourceId: string }) {
     loading,
     error,
     refresh,
-  } = useRequest(() => noteService.getNoteInfoDisplay({ resourceId }), {
+  } = useApi(() => noteService.getNoteInfoDisplay({ resourceId }), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
   });

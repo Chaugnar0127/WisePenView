@@ -5,9 +5,9 @@ import { useCourseService, useGroupService } from '@/domains';
 import type { CourseMember } from '@/domains/Course';
 import { COURSE_ROLE } from '@/domains/Course';
 import { GROUP_TYPE } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { Chip } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -21,7 +21,7 @@ const TEACHER_MEMBER_MANAGEMENT_CONFIG = getGroupDisplayConfig(GROUP_TYPE.ADVANC
 function TeacherCourseMembersView({ courseId, memberCount }: CourseMembersViewProps) {
   const { t } = useTranslation('course');
   const groupService = useGroupService();
-  const { data: group } = useRequest(() => groupService.fetchGroupInfo(courseId), {
+  const { data: group } = useApi(() => groupService.fetchGroupInfo(courseId), {
     refreshDeps: [courseId],
   });
 
@@ -50,7 +50,7 @@ function TeacherCourseMembersView({ courseId, memberCount }: CourseMembersViewPr
 function StudentCourseMembersView({ courseId, memberCount }: CourseMembersViewProps) {
   const { t } = useTranslation('course');
   const courseService = useCourseService();
-  const { data, loading } = useRequest(() =>
+  const { data, loading } = useApi(() =>
     courseService.listCourseMembers({ courseId, page: 1, size: 100 })
   );
 

@@ -1,9 +1,8 @@
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import { useUserService } from '@/domains';
 import type { PublishMessageDeliveryScope, PublishMessageType } from '@/domains/User';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { Input, Label, ListBox, Select, TextArea, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -84,7 +83,7 @@ function CreateAnnouncementModal({
     onOpenChange(false);
   };
 
-  const { loading: submitting, run: runPublishMessage } = useRequest(
+  const { loading: submitting, run: runPublishMessage } = useApi(
     async (values: AnnouncementFormValues) => {
       const receiverUserIds = parseReceiverUserIds(values.receiverUserIds);
       await userService.publishMessage({
@@ -103,9 +102,6 @@ function CreateAnnouncementModal({
         reset();
         onOpenChange(false);
         onSuccess?.();
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

@@ -2,11 +2,11 @@ import { Spin } from '@/components/Feedback';
 import UploadZone from '@/components/Input/UploadZone';
 import { useCourseService } from '@/domains';
 import { COURSE_ASSIGNMENT_STATUS } from '@/domains/Course';
+import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { buildCourseAssignmentPath } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { ArrowLeft, CalendarClock, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,11 +20,11 @@ function CourseAssignmentDetailPage() {
   const navigate = useNavigate();
   const { assignmentId = '' } = useParams<{ assignmentId: string }>();
   const [files, setFiles] = useState<File[]>([]);
-  const { data, loading, error, refresh } = useRequest(
+  const { data, loading, error, refresh } = useApi(
     () => courseService.getCourseAssignment(course.courseId, assignmentId),
     { ready: Boolean(assignmentId), refreshDeps: [assignmentId, course.courseId] }
   );
-  const { loading: submitting, run: submitAssignment } = useRequest(
+  const { loading: submitting, run: submitAssignment } = useApi(
     () =>
       courseService.submitCourseAssignment({
         courseId: course.courseId,
@@ -39,7 +39,6 @@ function CourseAssignmentDetailPage() {
         refresh();
         refreshCourse();
       },
-      onError: (requestError: unknown) => toast.danger(parseErrorMessage(requestError)),
     }
   );
 

@@ -3,10 +3,10 @@ import { FormField, PasswordInput } from '@/components/Input';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useAuthService } from '@/domains';
 import type { NewPasswordRequest } from '@/domains/Auth';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Button, Form, toast } from '@heroui/react';
-import { useMount, useRequest } from 'ahooks';
+import { useMount } from 'ahooks';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -37,16 +37,13 @@ function NewPassword() {
     setToken(queryToken);
   });
 
-  const { loading, run: submitNewPassword } = useRequest(
+  const { loading, run: submitNewPassword } = useApi(
     async (values: NewPasswordFormValues) =>
       authService.newPassword({ newPassword: values.newPassword, token }),
     {
       manual: true,
       onSuccess: () => {
         setSuccessModalOpen(true);
-      },
-      onError: (err) => {
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

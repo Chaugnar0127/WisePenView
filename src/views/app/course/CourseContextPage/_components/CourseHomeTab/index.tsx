@@ -1,6 +1,7 @@
 import { Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
 import { COURSE_ROLE } from '@/domains/Course';
+import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import {
@@ -9,7 +10,6 @@ import {
   buildCoursePath,
 } from '@/utils/navigation/appRoute';
 import { Button, Meter, ProgressBar } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { ArrowRight, Bell, BookOpen, CalendarClock, ClipboardCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +21,7 @@ function CourseHomeTab() {
   const courseService = useCourseService();
   const navigate = useNavigate();
   const canEditOutline = course.myRole === COURSE_ROLE.TEACHER;
-  const { data, loading, error, refresh } = useRequest(() =>
+  const { data, loading, error, refresh } = useApi(() =>
     courseService.getCourseHome(course.courseId)
   );
   const visibleAssignments = data?.pendingAssignments.slice(0, 2) ?? [];

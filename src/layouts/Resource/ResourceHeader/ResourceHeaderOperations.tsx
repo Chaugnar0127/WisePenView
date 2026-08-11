@@ -18,13 +18,13 @@ import {
   type ResourceAction,
   type ResourceItem,
 } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { useOpenResource } from '@/hooks/useOpenResource';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { buildDrivePath } from '@/utils/navigation/driveRoute';
 import { parseResourceDriveLocation } from '@/utils/navigation/resourceRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -81,7 +81,7 @@ function ResourceHeaderOperations({
   const [moveOpen, setMoveOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data: node, loading: resolvingNode } = useRequest<DriveResourceNode, []>(
+  const { data: node, loading: resolvingNode } = useApi<DriveResourceNode, []>(
     () =>
       driveService.resolveResourceNode({
         resource: resourceInfo!,
@@ -95,10 +95,9 @@ function ResourceHeaderOperations({
         driveLocation?.scope.rootId,
         driveLocation?.mountTagId,
       ],
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
-  const { data: parentPath, loading: locatingParentPath } = useRequest(
+  const { data: parentPath, loading: locatingParentPath } = useApi(
     () => driveService.getMountPath({ location: driveLocation! }),
     {
       ready: Boolean(driveLocation && !groupId),
@@ -157,7 +156,7 @@ function ResourceHeaderOperations({
     });
   };
 
-  const { loading: copying, run: runCopy } = useRequest(
+  const { loading: copying, run: runCopy } = useApi(
     async (target: DriveContainerNode) => {
       const newResourceId = await forkResource();
       try {
@@ -183,11 +182,10 @@ function ResourceHeaderOperations({
           driveLocation: mountTagId ? { scope: target.scope, mountTagId } : undefined,
         });
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const { loading: linking, run: runCreateLink } = useRequest(
+  const { loading: linking, run: runCreateLink } = useApi(
     async (target: DriveContainerNode) => {
       if (!node || target.type !== 'folder' || target.scope.type !== 'group') return;
       await driveService.addResourcesToGroup({ resourceIds: [node.resourceId], target });
@@ -198,11 +196,10 @@ function ResourceHeaderOperations({
         setTargetModal(null);
         toast.success(t('resource:header.linkCreated'));
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const { loading: sharing, run: runShare } = useRequest(
+  const { loading: sharing, run: runShare } = useApi(
     async (target: DriveContainerNode) => {
       if (target.type !== 'folder' || target.scope.type !== 'group') return;
       await driveService.addResourcesToGroup({ resourceIds: [resourceId], target });
@@ -213,7 +210,6 @@ function ResourceHeaderOperations({
         setTargetModal(null);
         toast.success(t('resource:header.sharedToGroup'));
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

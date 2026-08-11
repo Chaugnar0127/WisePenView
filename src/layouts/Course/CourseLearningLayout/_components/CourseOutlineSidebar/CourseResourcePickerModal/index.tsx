@@ -3,9 +3,8 @@ import type { DriveSelectionItem } from '@/components/Drive/common/driveComponen
 import AppModal from '@/components/Overlay/AppModal';
 import { useCourseService } from '@/domains';
 import type { CourseOutlineMountResource } from '@/domains/Course';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { Button, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -36,7 +35,7 @@ function CourseResourcePickerModal({
     onOpenChange(false);
   };
 
-  const { loading, run: mountResources } = useRequest(
+  const { loading, run: mountResources } = useApi(
     () =>
       courseService.mountCourseOutlineResources({
         courseId,
@@ -50,7 +49,6 @@ function CourseResourcePickerModal({
         onSuccess();
         close();
       },
-      onError: (error: unknown) => toast.danger(parseErrorMessage(error)),
     }
   );
 

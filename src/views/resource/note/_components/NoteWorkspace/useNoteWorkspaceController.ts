@@ -9,12 +9,13 @@ import type {
   NoteSelectionSnapshot,
 } from '@/domains/Note';
 import { NoteInlineCommentSession, useNoteSession } from '@/domains/Note';
+import { useApi } from '@/hooks/useApi';
 import { useSmoothFlag } from '@/hooks/useSmoothFlag';
 import { parseErrorMessage } from '@/utils/error';
 import { useResourceHostChatContextActions } from '@/views/resource/ResourceHostContext';
 import { useResourceSidePanelStore } from '@/views/resource/_store/useResourceSidePanelStore';
 import { toast } from '@heroui/react';
-import { useMemoizedFn, useRequest, useUnmount } from 'ahooks';
+import { useMemoizedFn, useUnmount } from 'ahooks';
 import type { TFunction } from 'i18next';
 import { useState, useSyncExternalStore, type RefObject } from 'react';
 import {
@@ -65,9 +66,7 @@ export function useNoteWorkspaceController({
     inlineCommentSession.subscribe,
     inlineCommentSession.getSnapshot
   );
-  const { data: currentUser, error: currentUserError } = useRequest(() =>
-    userService.getUserInfo()
-  );
+  const { data: currentUser, error: currentUserError } = useApi(() => userService.getUserInfo());
   const shouldWaitCurrentUser = !currentUser && !currentUserError;
   const { status, saveStatus, doc, provider, reconnect, idbSynced } = useNoteSession(resourceId, {
     actorUserId: currentUser?.id,
@@ -95,11 +94,11 @@ export function useNoteWorkspaceController({
   }>();
   const [isInlineCommentHistoryOpen, setIsInlineCommentHistoryOpen] = useState(false);
 
-  useRequest(() => interactService.recordResourceRead(resourceId), {
+  useApi(() => interactService.recordResourceRead(resourceId), {
     refreshDeps: [resourceId],
   });
 
-  useRequest(() => inlineCommentSession.refresh(), {
+  useApi(() => inlineCommentSession.refresh(), {
     pollingInterval: INLINE_COMMENT_POLLING_INTERVAL,
     refreshDeps: [inlineCommentSession],
   });

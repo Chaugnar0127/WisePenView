@@ -1,6 +1,7 @@
 import { EmptyState, ResultState, Spin } from '@/components/Feedback';
 import { useMessageService } from '@/domains';
 import type { UserMessage } from '@/domains/Message';
+import { useApi, useApiInfiniteScroll } from '@/hooks/useApi';
 import PageHeader from '@/layouts/_common/PageHeader';
 import { parseErrorMessage } from '@/utils/error';
 import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/format/formatTime';
@@ -8,7 +9,6 @@ import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainT
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
 import { Button, toast } from '@heroui/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useInfiniteScroll, useRequest } from 'ahooks';
 import clsx from 'clsx';
 import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
 import { useRef } from 'react';
@@ -57,7 +57,7 @@ function NotificationsPage() {
   const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
   const messageListRef = useRef<HTMLDivElement>(null);
 
-  const messagesRequest = useInfiniteScroll<UserMessageInfinitePage>(
+  const messagesRequest = useApiInfiniteScroll<UserMessageInfinitePage>(
     async (current) => {
       const nextPage = Math.floor((current?.list.length ?? 0) / MESSAGE_PAGE_SIZE) + 1;
       const data = await messageService.listUserMessages({
@@ -69,7 +69,8 @@ function NotificationsPage() {
     {
       target: messageListRef,
       isNoMore: (data) => Boolean(data && data.page >= data.totalPage),
-      onError: (error) => toast.warning(parseErrorMessage(error)),
+      showErrorToast: false,
+      onErrorEffect: (error) => toast.warning(parseErrorMessage(error)),
     }
   );
 
@@ -92,7 +93,7 @@ function NotificationsPage() {
       ? messageVirtualizer.getTotalSize() - (virtualItems[virtualItems.length - 1]?.end ?? 0)
       : 0;
 
-  const { runAsync: readMessages } = useRequest(
+  const { runAsync: readMessages } = useApi(
     (messageIds: string[]) => messageService.readMessages({ messageIds }),
     { manual: true }
   );

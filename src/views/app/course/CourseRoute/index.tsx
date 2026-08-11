@@ -1,10 +1,10 @@
 import { ResultState, Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { CourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
@@ -15,10 +15,10 @@ function CourseRoute() {
   const courseService = useCourseService();
   const navigate = useNavigate();
   const { courseId = '' } = useParams<{ courseId: string }>();
-  const { data, loading, error, refresh } = useRequest(
-    () => courseService.getCourseDetail(courseId),
-    { ready: Boolean(courseId), refreshDeps: [courseId] }
-  );
+  const { data, loading, error, refresh } = useApi(() => courseService.getCourseDetail(courseId), {
+    ready: Boolean(courseId),
+    refreshDeps: [courseId],
+  });
 
   if (loading) {
     return (

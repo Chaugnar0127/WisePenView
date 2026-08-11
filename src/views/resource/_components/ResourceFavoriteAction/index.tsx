@@ -1,8 +1,8 @@
 import FavoriteCollectionPicker from '@/components/Resource/FavoriteCollectionPicker';
 import { useInteractService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import ResourceFavoriteButton from './ResourceFavoriteButton';
 
@@ -23,17 +23,16 @@ function ResourceFavoriteAction({
     data: collectionIds,
     loading: loadingStatus,
     mutate: mutateCollectionIds,
-  } = useRequest(() => interactService.getFavoriteCollectionIds(resourceId), {
+  } = useApi(() => interactService.getFavoriteCollectionIds(resourceId), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
-    onError: (error) => toast.danger(parseErrorMessage(error)),
   });
 
   const notifySuccess = () => {
     void Promise.resolve(onSuccess?.()).catch((error) => toast.danger(parseErrorMessage(error)));
   };
 
-  const { loading: loadingUnfavorite, run: unfavorite } = useRequest(
+  const { loading: loadingUnfavorite, run: unfavorite } = useApi(
     async () => {
       await interactService.updateFavoriteCollections({ resourceId, collectionIds: [] });
       return interactService.getFavoriteCollectionIds(resourceId);
@@ -44,7 +43,6 @@ function ResourceFavoriteAction({
         mutateCollectionIds(nextCollectionIds);
         notifySuccess();
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

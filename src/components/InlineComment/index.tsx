@@ -4,10 +4,10 @@ import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import AppModal from '@/components/Overlay/AppModal';
 import type { InlineCommentItem, InlineCommentReactionGroup } from '@/domains/InlineComment';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { Button, Chip, toast } from '@heroui/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useRequest } from 'ahooks';
 import { Check, RotateCcw, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -89,7 +89,7 @@ function CommentItem({
 }: CommentItemProps) {
   const { t, i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage === 'en-US' ? 'en-US' : 'zh-CN';
-  const { loading: changingReaction, runAsync: changeReaction } = useRequest(
+  const { loading: changingReaction, runAsync: changeReaction } = useApi(
     async (emojiId: string) => {
       const selectedGroup = item.reactionGroups.find((group) => group.emojiId === emojiId);
       await onReactionChange({
@@ -101,7 +101,6 @@ function CommentItem({
     },
     {
       manual: true,
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
@@ -255,14 +254,10 @@ function ResolvedCommentThread({
   onPreviewImage,
 }: ResolvedCommentThreadProps) {
   const { t } = useTranslation('common');
-  const { loading: reopening, runAsync: reopen } = useRequest(
-    async () => onReopen(thread.threadId),
-    {
-      manual: true,
-      onSuccess: () => toast.success(t('inlineComment.reopened')),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
+  const { loading: reopening, runAsync: reopen } = useApi(async () => onReopen(thread.threadId), {
+    manual: true,
+    onSuccess: () => toast.success(t('inlineComment.reopened')),
+  });
   const deletableItem = thread.items[thread.items.length - 1];
   const canDelete = Boolean(
     deletableItem &&
@@ -335,14 +330,10 @@ function CommentThread({
 }: CommentThreadProps) {
   const { t } = useTranslation('common');
   const active = thread.threadId === activeThreadId;
-  const { loading: resolving, runAsync: resolve } = useRequest(
-    async () => onResolve(thread.threadId),
-    {
-      manual: true,
-      onSuccess: () => toast.success(t('inlineComment.resolved')),
-      onError: (error) => toast.danger(parseErrorMessage(error)),
-    }
-  );
+  const { loading: resolving, runAsync: resolve } = useApi(async () => onResolve(thread.threadId), {
+    manual: true,
+    onSuccess: () => toast.success(t('inlineComment.resolved')),
+  });
 
   return (
     <article className={`${styles.thread} ${active ? styles.threadActive : ''}`}>
@@ -450,7 +441,7 @@ function InlineComment({
       ? resolvedThreadVirtualizer.getTotalSize() -
         (virtualResolvedThreads[virtualResolvedThreads.length - 1]?.end ?? 0)
       : 0;
-  const { loading: deleting, runAsync: deleteComment } = useRequest(
+  const { loading: deleting, runAsync: deleteComment } = useApi(
     async () => {
       if (!pendingDeletion) return;
       await onDelete(pendingDeletion);
@@ -461,7 +452,6 @@ function InlineComment({
         setPendingDeletion(undefined);
         toast.success(t('inlineComment.deleted'));
       },
-      onError: (deleteError) => toast.danger(parseErrorMessage(deleteError)),
     }
   );
 

@@ -14,11 +14,12 @@ import {
   type ChatSession,
   type CreateSessionRequest,
 } from '@/domains/Chat';
+import { useApi } from '@/hooks/useApi';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { buildChatPath } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
-import { useLatest, useRequest } from 'ahooks';
+import { useLatest } from 'ahooks';
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from 'ai';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -73,7 +74,7 @@ export function useChatPanelController({
     model: currentModel?.modelId,
   });
 
-  const { runAsync: runLoadSessionHistory } = useRequest(
+  const { runAsync: runLoadSessionHistory } = useApi(
     async (sessionId: string, page: number, size: number) =>
       chatService.listHistoryMessages({ sessionId, page, size }),
     { manual: true }
@@ -91,11 +92,11 @@ export function useChatPanelController({
     loadPage: runLoadSessionHistory,
     setMessages,
   });
-  const { runAsync: runCreateSession } = useRequest(
+  const { runAsync: runCreateSession } = useApi(
     (params?: CreateSessionRequest) => chatService.createSession(params),
     { manual: true }
   );
-  const { runAsync: runSetSessionAgent } = useRequest(
+  const { runAsync: runSetSessionAgent } = useApi(
     (params: { sessionId: string; agentId?: string | null; agentVersion?: number | null }) =>
       chatService.setSessionAgent(params),
     { manual: true }

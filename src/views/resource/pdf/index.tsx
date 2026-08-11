@@ -2,6 +2,7 @@ import { ResultState, Spin } from '@/components/Feedback';
 import PdfViewer from '@/components/PdfViewer/index';
 import { useDocumentService, useInteractService } from '@/domains';
 import type { ResourceItem } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import {
@@ -12,7 +13,6 @@ import {
 } from '@/utils/navigation/resourceTarget';
 import { useResourceHostLayoutConfig } from '@/views/resource/ResourceHostContext';
 import { Button } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { FilePenLine } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -91,7 +91,7 @@ function PdfView({ resourceId }: PdfViewProps = {}) {
     error: docInfoError,
     loading: isDocInfoLoading,
     refresh: refreshDocInfo,
-  } = useRequest(
+  } = useApi(
     async () => {
       return await documentService.getDocInfo(resourceId as string);
     },
@@ -102,7 +102,7 @@ function PdfView({ resourceId }: PdfViewProps = {}) {
   );
 
   // 进入页面时上报阅读
-  useRequest(() => interactService.recordResourceRead(resourceId as string), {
+  useApi(() => interactService.recordResourceRead(resourceId as string), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
   });

@@ -2,9 +2,8 @@ import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCur
 import { useNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
 import { useChatService } from '@/domains';
 import type { ChatSession, PageResult } from '@/domains/Chat';
-import { parseErrorMessage } from '@/utils/error';
 import { buildChatPath } from '@/utils/navigation/appRoute';
-import { Button, ListBox, ListBoxItem, ListBoxSection, toast } from '@heroui/react';
+import { Button, ListBox, ListBoxItem, ListBoxSection } from '@heroui/react';
 import { useInfiniteScroll, useMemoizedFn } from 'ahooks';
 import clsx from 'clsx';
 import { useEffect } from 'react';
@@ -54,7 +53,6 @@ const useSessionListGroup = () => {
         }
         setSessionPageResult(payload, payload.page > 1);
       },
-      onError: (err) => toast.danger(parseErrorMessage(err)),
     }
   );
 

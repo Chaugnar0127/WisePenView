@@ -1,9 +1,8 @@
 import { useDriveService } from '@/domains';
 import type { DriveContainerNode, DriveNode, DriveNodeScope } from '@/domains/Drive';
-import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { findTreeNodeById } from '@/utils/tree/findTreeNodeById';
-import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { startTransition, useRef, useState } from 'react';
 import type { DriveViewNode } from '../../common/driveComponentModel';
 import { useDrivePagedTreeChildren } from '../../common/useDrivePagedTreeChildren';
@@ -122,7 +121,7 @@ export function useTableDriveNavigationController({
     return node;
   };
 
-  const { loading, refresh } = useRequest(
+  const { loading, refresh } = useApi(
     async (): Promise<DriveRowsResult> => {
       const expandedKeysToRestore =
         loadedLocationKeyRef.current === locationKey ? new Set(expandedRowKeysRef.current) : null;
@@ -175,13 +174,14 @@ export function useTableDriveNavigationController({
         setTotalCount(result.totalCount);
         updateExpandedRowKeys(result.expandedRowKeys);
       },
-      onError: (error) => {
+      showErrorToast: false,
+      onErrorEffect: (error) => {
         if (onPathError) onPathError(error);
       },
     }
   );
 
-  const { loading: loadingMore, run: loadMore } = useRequest(
+  const { loading: loadingMore, run: loadMore } = useApi(
     async () => {
       if (!currentParent) return [];
       return loadMorePagedChildren(currentParent);
@@ -189,11 +189,10 @@ export function useTableDriveNavigationController({
     {
       manual: true,
       onSuccess: (nextRows) => setRows(nextRows as DriveRow[]),
-      onError: (err) => toast.danger(parseErrorMessage(err)),
     }
   );
 
-  const { data: pathResult } = useRequest(
+  const { data: pathResult } = useApi(
     async (): Promise<DrivePathResult> => ({
       locationKey,
       nodes: await driveService.getNodePath({ nodeId: currentNodeId, scope }),
@@ -201,12 +200,12 @@ export function useTableDriveNavigationController({
     {
       ready,
       refreshDeps: [currentNodeId, groupId],
-      onError: (err) => {
+      showErrorToast: !onPathError,
+      onErrorEffect: (err) => {
         if (onPathError) {
           onPathError(err);
           return;
         }
-        toast.danger(parseErrorMessage(err));
         if (currentNodeId !== rootId) setCurrentLocation({ navigationKey, nodeId: rootId });
       },
     }

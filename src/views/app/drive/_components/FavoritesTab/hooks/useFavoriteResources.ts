@@ -1,7 +1,5 @@
 import { useInteractService } from '@/domains';
 import type { FavoriteItem } from '@/domains/Interact';
-import { parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
 import { useInfiniteScroll } from 'ahooks';
 import { useEffect } from 'react';
 
@@ -30,7 +28,6 @@ export function useFavoriteResources(collectionId: string) {
         isNoMore: (result) =>
           Boolean(result && (result.total === 0 || result.list.length >= result.total)),
         reloadDeps: [collectionId],
-        onError: (error) => toast.danger(parseErrorMessage(error)),
       }
     );
 

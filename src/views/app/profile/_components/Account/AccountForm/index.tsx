@@ -3,11 +3,10 @@ import { Input, Select } from '@/components/Input';
 import { useUserService } from '@/domains';
 import type { UpdateUserInfoRequest } from '@/domains/User';
 import { DEGREE, SEX } from '@/domains/User';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import type { ProfileFieldKey } from '@/views/app/profile/profile.config';
 import { getVisibleProfileFieldGroups } from '@/views/app/profile/profile.config';
 import { Button, Form, Label, ListBox, TextField, toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { Pencil, X } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -69,7 +68,7 @@ function AccountForm({
   const formValues = editMode && formDraft?.user === user ? formDraft.values : userFormValues;
   const fieldGroups = getVisibleProfileFieldGroups(fieldConfig);
 
-  const { loading: saving, runAsync: runSave } = useRequest(
+  const { loading: saving, runAsync: runSave } = useApi(
     async () => {
       const rf = new Set(user?.readonlyFields ?? []);
       const params: UpdateUserInfoRequest = {
@@ -123,9 +122,8 @@ function AccountForm({
         setEditMode(false);
         toast.success(t('form.saveSuccess'));
       },
-      onError: (err) => {
+      onErrorEffect: (err) => {
         if (err && typeof err === 'object' && 'errorFields' in err) return;
-        toast.danger(parseErrorMessage(err));
       },
     }
   );

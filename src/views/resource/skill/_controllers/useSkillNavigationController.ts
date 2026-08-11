@@ -1,9 +1,9 @@
 import { useSkillService } from '@/domains';
 import type { SkillDetail, SkillFileNode } from '@/domains/Skill';
+import { useApi } from '@/hooks/useApi';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
-import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
-import { useLatest, useRequest } from 'ahooks';
+import { useLatest } from 'ahooks';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -79,7 +79,7 @@ export function useSkillNavigationController({
     }
   }, [unsavedChangesGuard.isBlocked, pendingIntent?.type, setPendingIntent]);
 
-  const { loading: publishLoading, run: publish } = useRequest(
+  const { loading: publishLoading, run: publish } = useApi(
     async () => {
       if (skill) await skillService.publishVersion(skill.resourceId);
     },
@@ -89,11 +89,10 @@ export function useSkillNavigationController({
         toast.success(t('toast.publishSuccess'));
         refreshSkill();
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 
-  const { loading: versionLoading, run: switchVersion } = useRequest(
+  const { loading: versionLoading, run: switchVersion } = useApi(
     async (version: number) => {
       if (!skill) return null;
       return skillService.getSkillVersionFiles(skill.resourceId, version);
@@ -103,7 +102,6 @@ export function useSkillNavigationController({
       onSuccess: (data, params) => {
         if (data) onVersionFilesLoaded(data.files, params[0]);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

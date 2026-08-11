@@ -2,9 +2,8 @@ import { FormField, Input, TextArea } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import { useInteractService } from '@/domains';
 import type { FavoriteCollection } from '@/domains/Interact';
-import { parseErrorMessage } from '@/utils/error';
+import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-import { useRequest } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -21,7 +20,7 @@ function EditCollectionModal({ onOpenChange, collection, onSuccess }: EditCollec
   const isCreate = collection == null;
   const [name, setName] = useState(collection?.collectionName ?? '');
   const [description, setDescription] = useState(collection?.description ?? '');
-  const { loading, run: submit } = useRequest(
+  const { loading, run: submit } = useApi(
     async () => {
       const trimmedName = name.trim();
       const trimmedDescription = description.trim();
@@ -47,7 +46,6 @@ function EditCollectionModal({ onOpenChange, collection, onSuccess }: EditCollec
         onSuccess();
         onOpenChange(false);
       },
-      onError: (error) => toast.danger(parseErrorMessage(error)),
     }
   );
 

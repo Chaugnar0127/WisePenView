@@ -8,6 +8,7 @@ import type {
   NoteVersionListPage,
 } from '@/domains/Note';
 import type { ResourceAction, ResourceItem } from '@/domains/Resource';
+import { useApi } from '@/hooks/useApi';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
@@ -17,7 +18,7 @@ import {
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
 import { Button } from '@heroui/react';
-import { useMemoizedFn, useRequest } from 'ahooks';
+import { useMemoizedFn } from 'ahooks';
 import { History, Save } from 'lucide-react';
 import { useState, type DependencyList, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -239,7 +240,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
       resourceId,
     });
 
-  const { data: currentUser } = useRequest(() => userService.getUserInfo(), {
+  const { data: currentUser } = useApi(() => userService.getUserInfo(), {
     ready: Boolean(noteInfoDisplay.ownerId),
     refreshDeps: [noteInfoDisplay.ownerId],
   });
@@ -249,7 +250,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
     error: versionsError,
     loading: versionsLoading,
     run: runLoadVersions,
-  } = useRequest(() => noteService.listNoteVersions({ resourceId, page: 1, size: 20 }), {
+  } = useApi(() => noteService.listNoteVersions({ resourceId, page: 1, size: 20 }), {
     manual: true,
   });
 
@@ -356,7 +357,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
     error,
     loading: loadingDrawio,
     refresh: refreshDrawioInfo,
-  } = useRequest(
+  } = useApi(
     async () => {
       const [noteInfoDisplay, snapshot] = await Promise.all([
         noteService.getNoteInfoDisplay({ resourceId: resourceId as string }),
@@ -376,7 +377,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
   );
   const refreshDrawioInfoStable = useMemoizedFn(refreshDrawioInfo);
 
-  useRequest(() => interactService.recordResourceRead(resourceId as string), {
+  useApi(() => interactService.recordResourceRead(resourceId as string), {
     ready: Boolean(resourceId),
     refreshDeps: [resourceId],
   });

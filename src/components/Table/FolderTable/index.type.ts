@@ -11,6 +11,8 @@ export interface FolderTableRow {
   id: string;
   name: string;
   entryType: FolderTableEntryType;
+  /** 文件夹图标细分展示；由业务层按需要注入 */
+  folderVariant?: 'default' | 'shared';
   /** resource 类型时使用 EntryIcon */
   resourceType?: string;
   /** resource 类型时使用 EntryIcon 的细分图标 */
@@ -88,6 +90,7 @@ export interface FolderTableProps<T extends FolderTableRow> {
   /** 浏览态双击行激活（例如进入文件夹 / 打开资源）。 */
   onRowActivate?: (row: T) => void;
   /** 包装名称列的图标与名称内容，用于在业务层扩展交互能力 */
+  renderEntryIcon?: (row: T, ctx: FolderTableRowContext<T>) => ReactNode;
   renderNameContent?: (content: ReactNode, row: T, ctx: FolderTableRowContext<T>) => ReactNode;
   /** 包装整行节点，用于业务层扩展行级交互能力。 */
   renderRow?: (rowElement: ReactElement, row: T, ctx: FolderTableRowContext<T>) => ReactNode;

@@ -14,26 +14,31 @@ function FolderTableNameCell<T extends FolderTableRow>({
   expanded,
   expandable,
   onToggleExpand,
+  renderEntryIcon,
   renderNameContent,
 }: FolderTableNameCellProps<T>) {
   const { t } = useTranslation('table');
+  const ctx = { row, rowId: row.id, depth };
   const nameContent = (
     <span className={styles.nameContent}>
       <span className={styles.entryIcon}>
-        <EntryIcon
-          entryType={row.entryType}
-          resourceType={row.resourceType}
-          resourceIconType={row.resourceIconType}
-        />
+        {renderEntryIcon ? (
+          renderEntryIcon(row, ctx)
+        ) : (
+          <EntryIcon
+            entryType={row.entryType}
+            folderVariant={row.folderVariant}
+            resourceType={row.resourceType}
+            resourceIconType={row.resourceIconType}
+          />
+        )}
       </span>
       <TableTextCell emphasis className={styles.nameText}>
         {row.name}
       </TableTextCell>
     </span>
   );
-  const content = renderNameContent
-    ? renderNameContent(nameContent, row, { row, rowId: row.id, depth })
-    : nameContent;
+  const content = renderNameContent ? renderNameContent(nameContent, row, ctx) : nameContent;
   const nameCellStyle = {
     '--folder-table-depth-indent': `${depth * 24}px`,
   } as CSSProperties;

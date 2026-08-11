@@ -404,6 +404,7 @@ function FolderTable<T extends FolderTableRow>({
   selectedRowKey,
   onRowSelect,
   onRowActivate,
+  renderEntryIcon,
   renderNameContent,
   renderRow,
   bodyDragHandlers,
@@ -752,6 +753,7 @@ function FolderTable<T extends FolderTableRow>({
           depth={row.depth}
           expanded={expanded}
           expandable={expandable}
+          renderEntryIcon={renderEntryIcon}
           renderNameContent={renderNameContent}
           onToggleExpand={
             expandable && onExpandedChange ? () => handleToggleExpand(row.id) : undefined

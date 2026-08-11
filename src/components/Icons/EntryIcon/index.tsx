@@ -13,6 +13,7 @@ import {
   LoaderCircle,
   NotebookPen,
   Presentation,
+  Share2,
   Video,
   Workflow,
   Wrench,
@@ -75,6 +76,7 @@ function renderResourceIcon(
 /** 统一展示根目录、文件夹、资源、链接和加载占位图标 */
 function EntryIcon({
   entryType,
+  folderVariant = 'default',
   resourceType,
   resourceIconType,
   size = 18,
@@ -84,6 +86,9 @@ function EntryIcon({
     case 'root':
       return <HardDrive size={size} color={color ?? COLOR_ROOT} />;
     case 'folder':
+      if (folderVariant === 'shared') {
+        return <Share2 size={size} color={color ?? COLOR_FOLDER} />;
+      }
       return <Folder size={size} color={color ?? COLOR_FOLDER} />;
     case 'resource':
       return renderResourceIcon(resourceType, resourceIconType, size, color);

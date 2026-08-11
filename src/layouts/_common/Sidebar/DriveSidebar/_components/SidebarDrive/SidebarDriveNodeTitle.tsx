@@ -126,6 +126,9 @@ function SidebarDriveNodeTitle({
         <span className={styles.nodeIcon} aria-hidden="true">
           <EntryIcon
             entryType={node.type}
+            folderVariant={
+              node.type === 'folder' && node.systemType === 'shared' ? 'shared' : undefined
+            }
             resourceType={resourceType}
             resourceIconType={resourceIconType}
             size={16}

@@ -59,6 +59,9 @@ function DriveNavigatorNodeTitle({ node, displayName, onLoadMore }: DriveNavigat
       <span className={styles.nodeIcon} aria-hidden="true">
         <EntryIcon
           entryType={node.type}
+          folderVariant={
+            node.type === 'folder' && node.systemType === 'shared' ? 'shared' : undefined
+          }
           resourceType={resourceType}
           resourceIconType={resourceIconType}
           size={14}

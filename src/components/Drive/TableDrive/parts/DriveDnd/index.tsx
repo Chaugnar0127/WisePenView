@@ -188,6 +188,7 @@ export function DriveDragOverlay({ row, count }: DriveDragOverlayProps) {
       <span className={styles.dragOverlayIcon}>
         <EntryIcon
           entryType={row.entryType}
+          folderVariant={row.folderVariant}
           resourceType={row.resourceType}
           resourceIconType={row.resourceIconType}
         />

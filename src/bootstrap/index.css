@@ -279,7 +279,7 @@
     );
     border: 1px solid var(--border-light, var(--border));
     border-radius: var(--app-radius-popover, min(32px, var(--radius-3xl)));
-    background: var(--overlay);
+    background: var(--app-popover-surface, var(--overlay));
     box-shadow: var(--overlay-shadow, var(--card-shadow));
     overflow: clip;
   }

@@ -24,6 +24,8 @@ export interface LocalAttachmentPayload {
   attachmentId: string;
   filename: string;
   enabled: boolean;
+  kind?: 'file' | 'image';
+  thumbnailUrl?: string;
 }
 
 export interface LocalResourcePayload {
@@ -33,17 +35,12 @@ export interface LocalResourcePayload {
   enabled: boolean;
 }
 
-export interface LocalPendingImageMeta {
-  id: string;
-  mimeType: string;
-  filename: string;
-  thumbnailUrl: string;
-}
-
 export interface LocalAttachmentUpload {
   id: string;
   filename: string;
-  status: 'pending' | 'uploading' | 'failed';
+  status: 'uploading' | 'failed';
+  kind?: 'file' | 'image';
+  thumbnailUrl?: string;
 }
 
 export interface SendOptions {

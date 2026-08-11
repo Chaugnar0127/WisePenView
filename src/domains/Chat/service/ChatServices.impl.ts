@@ -245,7 +245,16 @@ const uploadAttachment = async ({
     md5,
     enable_library: Boolean(saveToLibrary),
   });
-  if (!res?.put_url || !res.attachment_id) {
+  if (!res?.attachment_id) {
+    throw createClientError(FRONTEND_CLIENT_ERROR.CHAT_ATTACHMENT_UPLOAD_INIT_FAILED);
+  }
+  if (res.flash_uploaded) {
+    return {
+      attachmentId: res.attachment_id,
+      filename: file.name,
+    };
+  }
+  if (!res.put_url) {
     throw createClientError(FRONTEND_CLIENT_ERROR.CHAT_ATTACHMENT_UPLOAD_INIT_FAILED);
   }
   await putOssPresignedUrl({

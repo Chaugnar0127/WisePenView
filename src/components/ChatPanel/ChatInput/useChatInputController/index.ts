@@ -37,7 +37,7 @@ export function useChatInputController({
   const { t } = useTranslation('chat');
   const store = useChatInputStoreApi();
   const dragCounterRef = useRef(0);
-  const { routeFiles, preparePendingAttachments, clearPendingFileCache } = useChatInputFiles();
+  const { routeFiles } = useChatInputFiles();
   const voiceInputProps = useVoiceInput({ disabled: sending });
 
   const { isComposing, isDragOver, pendingAttachmentUploads, selectedModel, value } =
@@ -69,21 +69,22 @@ export function useChatInputController({
       toast.warning(t('input.attachmentUploading'));
       return;
     }
+    if (pendingAttachmentUploads.some((upload) => upload.status === 'failed')) {
+      toast.warning(t('input.attachmentUploadFailed'));
+      return;
+    }
 
     try {
-      const pendingAttachments = await preparePendingAttachments();
-      if (!pendingAttachments) return;
       const sendAccepted = await onSend(text, {
         model: selectedModel,
         selectedAgent: completionState.selectedAgent,
         activeDocRefs: completionState.activeDocRefs,
-        activeAttachments: [...completionState.activeAttachments, ...pendingAttachments],
+        activeAttachments: completionState.activeAttachments,
         selectedSkills: completionState.selectedSkills,
         selectedTools: completionState.selectedTools,
       });
       if (sendAccepted === false) return;
       clearAfterSend();
-      clearPendingFileCache();
     } catch (err) {
       toast.danger(t('input.sendFailed', { error: parseErrorMessage(err) }));
     }

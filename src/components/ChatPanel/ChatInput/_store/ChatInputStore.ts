@@ -13,7 +13,6 @@ import { createStore, type StoreApi } from 'zustand/vanilla';
 import type {
   LocalAttachmentPayload,
   LocalAttachmentUpload,
-  LocalPendingImageMeta,
   LocalResourcePayload,
 } from '../index.type';
 
@@ -52,7 +51,6 @@ interface ChatInputCompletionState {
   selectedTools: CapabilityToolOption[];
   activeDocRefs: LocalResourcePayload[];
   activeAttachments: LocalAttachmentPayload[];
-  pendingImageMetas: LocalPendingImageMeta[];
 }
 
 interface ChatInputState {
@@ -66,7 +64,6 @@ interface ChatInputState {
   modelOpen: boolean;
   otherSkillModalOpen: boolean;
   pendingAttachmentUploads: LocalAttachmentUpload[];
-  pendingImageMetas: LocalPendingImageMeta[];
   selectedAgent: ChatAgentOption;
   selectedModelId: string | null;
   selectedSkills: CapabilitySkillSelection[];
@@ -79,13 +76,11 @@ interface ChatInputActions {
   addActiveAttachment: (attachment: LocalAttachmentPayload) => void;
   addDocRefs: (resources: LocalResourcePayload[]) => void;
   addPendingAttachmentUpload: (upload: LocalAttachmentUpload) => void;
-  addPendingImageMeta: (meta: LocalPendingImageMeta) => void;
   clearAfterSend: () => void;
   clearCapabilities: () => void;
   removeActiveAttachment: (attachmentId: string) => void;
   removeDocRef: (resourceId: string) => void;
   removePendingAttachmentUpload: (id: string) => void;
-  removePendingImageMeta: (id: string) => void;
   removeSkill: (skillId: string) => void;
   removeTool: (toolId: string) => void;
   replaceAgentIfMissing: (fallbackAgent: ChatAgentOption) => void;
@@ -99,7 +94,6 @@ interface ChatInputActions {
   setIsDragOver: (isDragOver: boolean) => void;
   setModelOpen: (open: boolean) => void;
   setOtherSkillModalOpen: (open: boolean) => void;
-  setPendingAttachmentUploadStatus: (id: string, status: LocalAttachmentUpload['status']) => void;
   setPendingAttachmentUploadFailed: (id: string) => void;
   setSelectedAgent: (agent: ChatAgentOption) => void;
   setSelectedModelId: (modelId: string | null) => void;
@@ -125,7 +119,6 @@ const INITIAL_STATE: ChatInputState = {
   modelOpen: false,
   otherSkillModalOpen: false,
   pendingAttachmentUploads: [],
-  pendingImageMetas: [],
   selectedAgent: DEFAULT_PERSONAL_AGENT,
   selectedModelId: null,
   selectedSkills: [],
@@ -159,17 +152,11 @@ export function createChatInputStore(): ChatInputStoreApi {
         pendingAttachmentUploads: [...state.pendingAttachmentUploads, upload],
       })),
 
-    addPendingImageMeta: (meta) =>
-      set((state) => ({
-        pendingImageMetas: [...state.pendingImageMetas, meta],
-      })),
-
     clearAfterSend: () =>
       set({
         activeDocRefs: [],
         activeAttachments: [],
         pendingAttachmentUploads: [],
-        pendingImageMetas: [],
         selectedSkills: [],
         selectedTools: [],
         value: '',
@@ -198,11 +185,6 @@ export function createChatInputStore(): ChatInputStoreApi {
         pendingAttachmentUploads: state.pendingAttachmentUploads.filter(
           (upload) => upload.id !== id
         ),
-      })),
-
-    removePendingImageMeta: (id) =>
-      set((state) => ({
-        pendingImageMetas: state.pendingImageMetas.filter((meta) => meta.id !== id),
       })),
 
     removeSkill: (skillId) =>
@@ -244,13 +226,6 @@ export function createChatInputStore(): ChatInputStoreApi {
     setIsDragOver: (isDragOver) => set({ isDragOver }),
     setModelOpen: (modelOpen) => set({ modelOpen }),
     setOtherSkillModalOpen: (otherSkillModalOpen) => set({ otherSkillModalOpen }),
-
-    setPendingAttachmentUploadStatus: (id, status) =>
-      set((state) => ({
-        pendingAttachmentUploads: state.pendingAttachmentUploads.map((upload) =>
-          upload.id === id ? { ...upload, status } : upload
-        ),
-      })),
 
     setPendingAttachmentUploadFailed: (id) =>
       set((state) => ({
@@ -302,7 +277,6 @@ export function selectChatInputCompletionState(
     selectedTools: state.selectedTools,
     activeDocRefs: state.activeDocRefs,
     activeAttachments: state.activeAttachments,
-    pendingImageMetas: state.pendingImageMetas,
   };
 }
 

@@ -1,4 +1,5 @@
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+import { isRecord } from '@/utils/typeGuards';
 import { addAiDiffDomListener } from '../../engines/aiDiff/domCleanup';
 import type { NotePluginRegistry } from '../../registry/types';
 import styles from './style.module.less';
@@ -24,10 +25,6 @@ export interface TableContentLike {
   columnWidths: Array<number | undefined>;
   headerRows?: number;
   headerCols?: number;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 export function readTableContent(block: Record<string, unknown>): TableContentLike | null {

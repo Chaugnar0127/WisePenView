@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 import type {
   NoteAiDiffProjection,
   NoteBlockAiDiff,
@@ -13,10 +14,6 @@ export function stableStringify(value: unknown): string {
   return `{${entries
     .map(([key, item]) => `${JSON.stringify(key)}:${stableStringify(item)}`)
     .join(',')}}`;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 export function isAiDiffContentEqual(current: unknown, aiContent: unknown): boolean {

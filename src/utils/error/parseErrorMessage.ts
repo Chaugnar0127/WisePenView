@@ -2,10 +2,8 @@ import type { ApiErrorBody } from '@/apis/api.type';
 import i18n from '@/i18n';
 import { I18N_NAMESPACES } from '@/i18n/resources';
 import { isWisePenError } from '@/utils/error/WisePenError';
+import { isRecord } from '@/utils/typeGuards';
 import type { AxiosError } from 'axios';
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 const readCodeFromAxiosData = (data: unknown): number | undefined => {
   if (!isRecord(data)) return undefined;

@@ -1,4 +1,5 @@
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+import { isRecord } from '@/utils/typeGuards';
 import type * as Y from 'yjs';
 
 import type { CustomBlockNoteEditor } from '../../registry/noteEditorComposition';
@@ -26,10 +27,6 @@ export interface NoteAiDiffActionRequest {
   blockId: string;
   action: NoteAiDiffAction;
   target?: NoteAiDiffActionTarget;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function collectBlockIds(block: Record<string, unknown>): string[] {

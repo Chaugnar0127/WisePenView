@@ -1,10 +1,7 @@
+import { isRecord } from '@/utils/typeGuards';
 import type { NoteBlockAiDiff, NoteInlineAiDiff } from '../../registry/types';
 import { renderKatexInto } from './katexRender';
 import mathBlockStyles from './MathBlock/style.module.less';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 function readExpression(value: Record<string, unknown>): string {
   const props = isRecord(value.props) ? value.props : value;

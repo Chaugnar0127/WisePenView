@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 const NOTE_CONTENT_SIGNATURE_VERSION = 1;
 
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
@@ -126,10 +127,6 @@ function encodeUtf8Base64(value: string): string {
     binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
   }
   return window.btoa(binary);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function isNonEmptyObject(value: JsonValue): value is Record<string, JsonValue> {

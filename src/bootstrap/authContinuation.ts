@@ -1,4 +1,5 @@
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+import { isRecord } from '@/utils/typeGuards';
 
 const AUTH_CONTINUATION_ACTIVE_KEY = 'wisepen:auth-continuation:active';
 const AUTH_CONTINUATION_PREFIX = 'wisepen:auth-continuation:';
@@ -15,9 +16,6 @@ export interface AuthContinuation {
   redirectPath: string;
   createdAt: number;
 }
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 const parseStoredContinuation = (raw: string | null): AuthContinuation | null => {
   if (!raw) return null;

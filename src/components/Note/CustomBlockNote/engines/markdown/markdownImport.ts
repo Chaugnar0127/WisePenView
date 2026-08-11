@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 import type {
   BlockNoteEditor,
   BlockSchema,
@@ -15,10 +16,6 @@ import type {
 interface StoredToken {
   ownerId: string;
   value: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function createTokenContexts(markdown: string) {

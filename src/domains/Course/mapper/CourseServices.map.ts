@@ -25,6 +25,7 @@ import {
 import type { Group, GroupMember } from '@/domains/Group';
 import type { ResourceItem } from '@/domains/Resource';
 import type { TagMetaInfo, TagTreeNode } from '@/domains/Tag';
+import { isPlainRecord } from '@/utils/typeGuards';
 
 const COURSE_META_SCHEMA = 'wisepen.course.v1';
 const COURSE_META_KEYS = new Set([
@@ -64,9 +65,6 @@ interface SerializeCourseMetaRequest {
   assessmentItems?: CourseAssessmentItem[];
   finalAssessment?: CourseFinalAssessment;
 }
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const getCourseOutlineResourceOrder = (tagMetaInfo?: TagMetaInfo): string[] =>
   Array.isArray(tagMetaInfo?.resourceOrder)
@@ -186,7 +184,7 @@ const parseOptionalString = (value: unknown): string | undefined =>
   typeof value === 'string' ? value : undefined;
 
 const parseFinalAssessment = (value: unknown): CourseFinalAssessment | undefined => {
-  if (!isRecord(value)) return undefined;
+  if (!isPlainRecord(value)) return undefined;
   if (!isCourseFinalAssessmentType(value.type)) return undefined;
   return {
     type: value.type,
@@ -202,7 +200,7 @@ const parseFinalAssessment = (value: unknown): CourseFinalAssessment | undefined
 
 const parseCourseMeta = (groupMetaInfo: Record<string, unknown>): CourseMetaV1 => {
   const raw = groupMetaInfo.course;
-  if (!isRecord(raw) || raw.schema !== COURSE_META_SCHEMA) {
+  if (!isPlainRecord(raw) || raw.schema !== COURSE_META_SCHEMA) {
     return { schema: COURSE_META_SCHEMA, term: '' };
   }
   return {
@@ -218,7 +216,7 @@ const parseCourseMeta = (groupMetaInfo: Record<string, unknown>): CourseMetaV1 =
     meetings: Array.isArray(raw.meetings)
       ? raw.meetings.filter(
           (item): item is CourseMeeting =>
-            isRecord(item) &&
+            isPlainRecord(item) &&
             typeof item.meetingId === 'string' &&
             isCourseWeekPattern(item.weekPattern) &&
             typeof item.weekday === 'string' &&
@@ -231,7 +229,7 @@ const parseCourseMeta = (groupMetaInfo: Record<string, unknown>): CourseMetaV1 =
     assessmentItems: Array.isArray(raw.assessmentItems)
       ? raw.assessmentItems.filter(
           (item): item is CourseAssessmentItem =>
-            isRecord(item) && typeof item.label === 'string' && typeof item.weight === 'number'
+            isPlainRecord(item) && typeof item.label === 'string' && typeof item.weight === 'number'
         )
       : undefined,
     finalAssessment: parseFinalAssessment(raw.finalAssessment),
@@ -242,7 +240,7 @@ const serializeCourseMeta = (
   params: SerializeCourseMetaRequest,
   groupMetaInfo: Record<string, unknown> = {}
 ): Record<string, unknown> => {
-  const currentCourseMeta = isRecord(groupMetaInfo.course) ? groupMetaInfo.course : {};
+  const currentCourseMeta = isPlainRecord(groupMetaInfo.course) ? groupMetaInfo.course : {};
   const unknownCourseMeta = Object.fromEntries(
     Object.entries(currentCourseMeta).filter(([key]) => !COURSE_META_KEYS.has(key))
   );

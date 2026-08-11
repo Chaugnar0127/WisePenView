@@ -5,6 +5,7 @@ import {
 import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
 import { resetSessionStores } from '@/store/lifecycle';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+import { isRecord } from '@/utils/typeGuards';
 
 type AuthSessionEventType = 'login' | 'logout' | 'unauthorized';
 
@@ -19,9 +20,6 @@ const TAB_ID = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 let eventSequence = 0;
 let sessionEnded = false;
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 const parseAuthSessionEvent = (value: string): AuthSessionEventPayload | undefined => {
   const payload: unknown = JSON.parse(value);

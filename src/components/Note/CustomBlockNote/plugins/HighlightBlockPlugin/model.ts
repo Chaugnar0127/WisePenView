@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 import type { BlockConfig } from '@blocknote/core';
 
 export const HIGHLIGHT_COLOR_KEYS = [
@@ -62,10 +63,6 @@ export interface HighlightBlockStoredProps {
   highlightBorderColor: HighlightBorderColor;
   highlightTextColor: HighlightColor;
   textAlignment: HighlightTextAlignment;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function readEnumValue<T extends string>(value: unknown, values: readonly T[], fallback: T): T {

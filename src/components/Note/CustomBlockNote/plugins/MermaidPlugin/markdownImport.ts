@@ -1,10 +1,7 @@
 import { normalizeCodeLanguage } from '@/utils/codeHighlight';
+import { isRecord } from '@/utils/typeGuards';
 
 import type { NoteMarkdownBlockImport } from '../../registry/types';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 /** 将标准 Mermaid fenced code block 归一化为 Note 的专属图表块。 */
 export const mermaidMarkdownImport: NoteMarkdownBlockImport = {

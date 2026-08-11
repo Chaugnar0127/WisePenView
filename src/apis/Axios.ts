@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 // axios request 封装
 import type { ApiErrorBody } from '@/apis/api.type';
 import { API_BASE_URL } from '@/apis/clientUrls';
@@ -29,9 +30,6 @@ let lastUnauthorizedToastAt = 0;
 type RetryableAxiosConfig = InternalAxiosRequestConfig & {
   __wisePenRetryCount?: number;
 };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
 
 const delay = (ms: number): Promise<void> =>
   new Promise((resolve) => {

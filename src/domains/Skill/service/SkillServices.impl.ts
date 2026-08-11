@@ -5,6 +5,7 @@ import type { AssetUploadTicketApiResponse } from '@/domains/_shared/apis/versio
 import { createOssStsClientManager } from '@/domains/_shared/ossStsClient';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';
+import { isRecord } from '@/utils/typeGuards';
 import { SkillApi } from '../apis/SkillApi';
 import { SkillServicesMap } from '../mapper/SkillServices.map';
 import type {
@@ -35,10 +36,6 @@ function buildUploadBody(params: UploadSkillAssetRequest): Blob {
 
 function resolveUploadClientId(params: UploadSkillAssetRequest, index: number): string {
   return params.clientId ?? `${params.path}:${params.name}:${String(index)}`;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function isTextReadable(value: unknown): value is { text: () => Promise<string> } {

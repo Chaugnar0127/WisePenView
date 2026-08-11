@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 import { stableStringify } from '../../engines/aiDiff/contentState';
 import {
   diffAiTextTokens,
@@ -6,10 +7,6 @@ import {
   type AiDiffTextHunk,
   type AiDiffTextToken,
 } from '../../engines/aiDiff/wordDiff';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 function withoutField(
   value: Record<string, unknown>,

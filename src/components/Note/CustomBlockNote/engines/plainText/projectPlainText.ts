@@ -1,8 +1,5 @@
+import { isRecord } from '@/utils/typeGuards';
 import type { NotePluginRegistry } from '../../registry/types';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 export function projectInlinePlainText(content: unknown, registry: NotePluginRegistry): string {
   if (typeof content === 'string') return content;

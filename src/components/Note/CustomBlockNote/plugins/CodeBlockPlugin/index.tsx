@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 import { codeBlockOptions } from '@blocknote/code-block';
 import { createCodeBlockSpec } from '@blocknote/core';
 import { createRoot } from 'react-dom/client';
@@ -12,10 +13,6 @@ import { CodeBlockToolbar } from './CodeBlockToolbar';
 import { getCodeBlockLanguageOptions } from './language';
 
 const collapsedCodeBlockIds = new Set<string>();
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 function normalizeImportedCodeBlockLanguage(block: Record<string, unknown>) {
   if (block.type !== 'codeBlock') return undefined;

@@ -134,13 +134,12 @@ const mapAgentDetail = (params: {
   resourceId: string;
   info?: AgentInfoApiResponse;
   bundle?: AgentVersionBundleApiResponse;
-  currentUserId: string;
 }): AgentDetail => {
   const resource = params.info?.resourceInfo
     ? ResourceServicesMap.mapResourceItemFromApi(params.info.resourceInfo)
     : undefined;
   const publishedVersion = params.info?.agentInfo?.version ?? 0;
-  const version = params.bundle?.version ?? publishedVersion + 1;
+  const version = params.bundle?.version ?? publishedVersion;
   return {
     resourceId: params.resourceId,
     resourceInfo: resource,
@@ -150,7 +149,7 @@ const mapAgentDetail = (params: {
     publishedVersion,
     draftVersion: publishedVersion + 1,
     version,
-    status: params.bundle?.status ?? 'DRAFT',
+    status: params.bundle?.status ?? (publishedVersion > 0 ? 'PUBLISHED' : 'DRAFT'),
     spec: mapSpec(params.bundle?.spec),
     assets: (params.bundle?.assets ?? []).map((asset) => ({
       id: asset.id ?? '',
@@ -162,7 +161,6 @@ const mapAgentDetail = (params: {
       size: normalizeNonNegativeNumber(asset.size) ?? 0,
     })),
     ownerId: resource?.ownerId,
-    isOwner: resource?.ownerId === params.currentUserId,
     currentActions: resource?.currentActions,
   };
 };

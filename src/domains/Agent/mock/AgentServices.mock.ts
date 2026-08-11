@@ -8,6 +8,7 @@ const mockAgent: AgentDetail = {
     resourceId: 'mock-agent',
     resourceName: '研究助手',
     resourceType: 'agent',
+    ownerId: '1',
     ownerInfo: {},
   },
   title: '研究助手',
@@ -19,7 +20,6 @@ const mockAgent: AgentDetail = {
   status: 'DRAFT',
   spec: AgentServicesMap.mapSpec(),
   assets: [],
-  isOwner: true,
 };
 
 export const AgentServicesMock: IAgentService = {

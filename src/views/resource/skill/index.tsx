@@ -45,7 +45,7 @@ function SkillView({ resourceId }: SkillViewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resource = useSkillResourceController(resourceId);
   const workspace = useSkillWorkspaceDraftController(resource.skill);
-  const canEdit = canEditSkill(resource.skill, workspace.state.viewingVersion);
+  const canEdit = canEditSkill(resource.skill, workspace.state.viewingVersion, resource.isOwner);
   const isConfigSelected = workspace.state.selectedTreeNodeId === SKILL_CONFIG_NODE_ID;
   const selectedFile = isConfigSelected ? null : workspace.selectedFile;
   const canPreviewSelectedFile = canPreviewSelectedSkillFile(selectedFile);
@@ -97,6 +97,7 @@ function SkillView({ resourceId }: SkillViewProps) {
     files: workspace.state.files,
     hasUnsavedChanges: workspace.hasUnsavedChanges,
     isSaving: save.isSaving,
+    isOwner: resource.isOwner,
     onConfigSelected: () => workspace.selectConfig(SKILL_CONFIG_NODE_ID),
     onEditingChanged: workspace.setEditing,
     onVersionFilesLoaded: workspace.replaceVersion,
@@ -143,7 +144,7 @@ function SkillView({ resourceId }: SkillViewProps) {
     viewingVersion: workspace.state.viewingVersion ?? undefined,
   });
   const versionItems = getSkillVersionItems(resource.skill, workspace.state.viewingVersion);
-  const disabledVersionKeys = getDisabledSkillVersionKeys(resource.skill, versionItems);
+  const disabledVersionKeys = getDisabledSkillVersionKeys(resource.isOwner, versionItems);
   const configValuesMissing =
     workspace.state.configName.trim().length === 0 ||
     workspace.state.configDescription.trim().length === 0;

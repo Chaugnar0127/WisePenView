@@ -18,6 +18,7 @@ type AgentSavePhase = 'clean' | 'dirty' | 'saving' | 'failed';
 interface UseAgentDraftSessionControllerOptions {
   agent: AgentDetail;
   baseAgent: AgentDetail;
+  isOwner: boolean;
   onPublished: () => void;
   resourceId: string;
   t: TFunction<'agent' | 'common'>;
@@ -28,6 +29,7 @@ interface UseAgentDraftSessionControllerOptions {
 export function useAgentDraftSessionController({
   agent,
   baseAgent,
+  isOwner,
   onPublished,
   resourceId,
   t,
@@ -37,7 +39,7 @@ export function useAgentDraftSessionController({
   const agentService = useAgentService();
   const initialSavedDraft = buildAgentDraft(agent);
   const initialDraft =
-    viewingVersion === null && !initialSavedDraft.spec.systemPrompt
+    isOwner && viewingVersion === null && !initialSavedDraft.spec.systemPrompt
       ? {
           ...initialSavedDraft,
           spec: {
@@ -62,7 +64,7 @@ export function useAgentDraftSessionController({
 
   const saveRequest = useApi(
     async () => {
-      if (viewingVersion !== null) return;
+      if (!isOwner || viewingVersion !== null) return;
       setSavePhase('saving');
       await agentService.saveAgentDraft({
         resourceId,
@@ -87,6 +89,7 @@ export function useAgentDraftSessionController({
 
   const publishRequest = useApi(
     async () => {
+      if (!isOwner) return;
       if (isDirty) await saveRequest.runAsync();
       await agentService.publishVersion(resourceId);
     },
@@ -121,7 +124,7 @@ export function useAgentDraftSessionController({
 
   const setSpec = (spec: AgentSpec) => setDraft((current) => ({ ...current, spec }));
   const isReadOnly =
-    !baseAgent.isOwner ||
+    !isOwner ||
     viewingVersion !== null ||
     saveRequest.loading ||
     publishRequest.loading ||

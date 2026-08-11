@@ -62,6 +62,5 @@ export interface AgentDetail {
   spec: AgentSpec;
   assets: AgentAsset[];
   ownerId?: string;
-  isOwner: boolean;
   currentActions?: ResourceAction[] | null;
 }

@@ -96,7 +96,7 @@ export function createInitialSkillWorkspaceState(skill: SkillDetail): SkillWorks
     fileKeys: collectSkillFileKeys(skill.files),
     selectedFileId: firstFileId,
     selectedTreeNodeId: firstFileId,
-    viewingVersion: skill.draftVersion,
+    viewingVersion: skill.status === 'DRAFT' ? skill.draftVersion : skill.version,
     editing: false,
     configName: skill.skillName,
     configDescription: skill.description,

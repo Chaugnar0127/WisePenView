@@ -54,6 +54,7 @@ export default function AgentView({ resourceId }: AgentViewProps) {
       agent={version.displayAgent}
       data={version.data}
       disabledVersionKeys={version.disabledVersionKeys}
+      isOwner={version.isOwner}
       resourceId={resourceId}
       versionItems={version.versionItems}
       versionLoading={version.versionLoading}

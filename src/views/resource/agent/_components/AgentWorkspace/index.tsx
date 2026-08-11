@@ -15,6 +15,7 @@ interface AgentWorkspaceProps {
   agent: AgentDetail;
   data: AgentWorkspaceData;
   disabledVersionKeys: Set<string>;
+  isOwner: boolean;
   resourceId: string;
   versionItems: AgentVersionItem[];
   versionLoading: boolean;
@@ -27,6 +28,7 @@ export default function AgentWorkspace({
   agent,
   data,
   disabledVersionKeys,
+  isOwner,
   resourceId,
   versionItems,
   versionLoading,
@@ -38,6 +40,7 @@ export default function AgentWorkspace({
   const draftSession = useAgentDraftSessionController({
     agent,
     baseAgent: data.agent,
+    isOwner,
     onPublished: onRefresh,
     resourceId,
     t,
@@ -53,7 +56,7 @@ export default function AgentWorkspace({
   };
   const headerConfig = {
     chatAgentDebug:
-      viewingVersion === null
+      isOwner && viewingVersion === null
         ? {
             agent: draftSession.currentDraftAgent,
             isDirty: draftSession.isDirty,
@@ -71,7 +74,7 @@ export default function AgentWorkspace({
         copyVersion: agent.version,
         permissionResourceType: RESOURCE_KIND.AGENT,
         ownerId: agent.ownerId,
-        titleMeta: (
+        titleMeta: isOwner ? (
           <span className={styles.saveStatus}>
             {t(
               `agent:page.saveStatus.${
@@ -83,8 +86,8 @@ export default function AgentWorkspace({
               }`
             )}
           </span>
-        ),
-        actions: agent.isOwner ? (
+        ) : undefined,
+        actions: isOwner ? (
           <AgentHeaderActions
             disabledVersionKeys={disabledVersionKeys}
             isDirty={draftSession.isDirty}
@@ -108,6 +111,7 @@ export default function AgentWorkspace({
     draftSession.publishLoading,
     draftSession.saveLoading,
     draftSession.savePhase,
+    isOwner,
     t,
     versionLoading,
     viewingVersion,

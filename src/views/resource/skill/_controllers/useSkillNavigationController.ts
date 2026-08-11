@@ -26,6 +26,7 @@ interface UseSkillNavigationControllerOptions {
   files: SkillFileNode[];
   hasUnsavedChanges: boolean;
   isSaving: boolean;
+  isOwner: boolean;
   onConfigSelected: () => void;
   onEditingChanged: (editing: boolean) => void;
   onVersionFilesLoaded: (files: SkillFileNode[], version: number) => void;
@@ -47,6 +48,7 @@ export function useSkillNavigationController({
   files,
   hasUnsavedChanges,
   isSaving,
+  isOwner,
   onConfigSelected,
   onEditingChanged,
   onVersionFilesLoaded,
@@ -81,7 +83,7 @@ export function useSkillNavigationController({
 
   const { loading: publishLoading, run: publish } = useApi(
     async () => {
-      if (skill) await skillService.publishVersion(skill.resourceId);
+      if (isOwner && skill) await skillService.publishVersion(skill.resourceId);
     },
     {
       manual: true,
@@ -94,7 +96,7 @@ export function useSkillNavigationController({
 
   const { loading: versionLoading, run: switchVersion } = useApi(
     async (version: number) => {
-      if (!skill) return null;
+      if (!isOwner || !skill) return null;
       return skillService.getSkillVersionFiles(skill.resourceId, version);
     },
     {
@@ -106,6 +108,7 @@ export function useSkillNavigationController({
   );
 
   const handleToggleEditing = () => {
+    if (!isOwner) return;
     if (!editing) {
       onEditingChanged(true);
       return;
@@ -118,6 +121,7 @@ export function useSkillNavigationController({
   };
 
   const handlePublish = () => {
+    if (!isOwner) return;
     if (isSaving) {
       toast.warning(t('toast.savingPublish'));
       return;
@@ -169,6 +173,7 @@ export function useSkillNavigationController({
   };
 
   const handleVersionSelect = (version: number) => {
+    if (!isOwner) return;
     if (version === viewingVersion) return;
     if (isSaving) {
       toast.warning(t('toast.savingSwitchVersion'));

@@ -10,9 +10,9 @@ const mockDetail = {
   status: 'DRAFT' as const,
   updatedAt: '',
   creatorId: 'mock-user',
+  ownerId: '1',
   scopeType: 'PERSONAL' as const,
   fileCount: 1,
-  isOwner: true,
   files: [
     {
       id: 'mock-skill-md',

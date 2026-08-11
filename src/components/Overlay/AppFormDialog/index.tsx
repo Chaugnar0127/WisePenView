@@ -1,10 +1,11 @@
 import { AppButton } from '@/components/Button';
-import { Form, Modal } from '@heroui/react';
+import { Form } from '@heroui/react';
 
 import clsx from 'clsx';
 import type { FormEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Modal } from '../Modal';
 import type { AppFormDialogProps } from './index.type';
 import styles from './style.module.less';
 
@@ -23,6 +24,8 @@ function AppFormDialog({
   isDismissable = true,
   size = 'sm',
   placement = 'center',
+  contentDelay,
+  deferContent,
   actions,
   footer,
   formId,
@@ -94,7 +97,12 @@ function AppFormDialog({
   const footerContent = renderFooterContent();
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={handleOpenChange}>
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+      contentDelay={contentDelay}
+      deferContent={deferContent}
+    >
       <Modal.Backdrop
         className={clsx(backdropClassName, classNames?.backdrop)}
         isDismissable={canDismiss}
@@ -145,4 +153,9 @@ function AppFormDialog({
   );
 }
 
-export default AppFormDialog;
+const AppFormDialogComponent = Object.assign(AppFormDialog, {
+  DeferredContent: Modal.DeferredContent,
+});
+
+export { AppFormDialogComponent as AppFormDialog };
+export default AppFormDialogComponent;

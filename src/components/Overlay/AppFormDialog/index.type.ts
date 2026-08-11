@@ -1,6 +1,6 @@
 import type { ComponentProps, FormEvent, ReactNode } from 'react';
 
-import type { Modal } from '@heroui/react';
+import type { Modal } from '../Modal';
 
 export type AppFormDialogSize = ComponentProps<typeof Modal.Container>['size'];
 
@@ -33,6 +33,8 @@ export interface AppFormDialogProps {
   isDismissable?: boolean;
   size?: AppFormDialogSize;
   placement?: AppFormDialogPlacement;
+  contentDelay?: number;
+  deferContent?: boolean;
   actions?: ReactNode;
   footer?: ReactNode | false | null;
   formId?: string;

@@ -13,7 +13,7 @@
   justify-content: center;
 
   border: none;
-  padding: 0 12px;
+  padding: 0 var(--space-sm);
   background: transparent;
   color: inherit;
 
@@ -38,9 +38,9 @@
 .profileMenuItem {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-xs);
   min-height: 36px;
-  padding: 0 12px;
+  padding: 0 var(--space-sm);
   color: var(--muted);
   outline: none;
   cursor: pointer;
@@ -72,7 +72,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 0 20px;
+  padding: var(--space-sm) 0 var(--space-md-plus);
 }
 
 .aboutLogo {
@@ -82,14 +82,14 @@
 }
 
 .aboutProductName {
-  margin-top: 12px;
+  margin-top: var(--space-sm);
   color: var(--foreground);
-  font-size: 20px;
+  font-size: var(--font-size-heading-2);
   font-weight: @font-weight-semibold;
 }
 
 .aboutVersion {
-  margin-top: 4px;
+  margin-top: var(--space-2xs);
   color: var(--muted);
   font-size: var(--font-size-md, 14px);
 }
@@ -99,7 +99,7 @@
   background-color: var(--accent-soft) !important;
   color: var(--foreground);
   font-weight: @font-weight-semibold;
-  font-size: var(--font-size-sm, 12px);
+  font-size: var(--font-size-sm, var(--font-size-xs));
   border: 1px solid var(--border-light);
 
   /** HeroUI fallback 内部有 bg-default 会覆盖外层背景 */
@@ -118,7 +118,7 @@
   background: transparent;
   color: inherit;
   cursor: pointer;
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--radius-sm, var(--radius-sm));
   outline: none;
 
   &:focus-visible,
@@ -159,7 +159,7 @@
 }
 
 .info {
-  margin-left: 12px;
+  margin-left: var(--space-sm);
   display: flex;
   flex-direction: column;
   align-items: flex-start;

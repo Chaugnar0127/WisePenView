@@ -44,8 +44,8 @@
 .footerMini {
   flex-shrink: 0;
   text-align: center;
-  padding: 16px @landing-inline 24px;
-  font-size: 12px;
+  padding: var(--space-md) @landing-inline 24px;
+  font-size: var(--font-size-xs);
   color: var(--muted);
   line-height: 1.5;
 }
@@ -55,5 +55,5 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--space-sm, 12px);
+  gap: var(--space-sm, var(--space-sm));
 }

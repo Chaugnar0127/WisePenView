@@ -45,17 +45,17 @@
 }
 
 .review[data-ai-diff-content-type='heading'][data-ai-diff-heading-level='2'] {
-  font-size: 22px;
+  font-size: var(--font-size-heading-4);
   line-height: 1.4;
 }
 
 .review[data-ai-diff-content-type='heading'][data-ai-diff-heading-level='3'] {
-  font-size: 20px;
+  font-size: var(--font-size-heading-2);
   line-height: 1.4;
 }
 
 .review[data-ai-diff-content-type='heading'][data-ai-diff-heading-level='4'] {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   line-height: 1.4;
 }
 
@@ -429,9 +429,9 @@
 .segmentNavigator {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-3xs);
   height: 28px;
-  padding: 0 4px;
+  padding: 0 var(--space-2xs);
   border-radius: var(--radius-md);
   background: var(--surface-secondary);
   color: var(--muted);
@@ -484,7 +484,7 @@
   justify-content: center;
   min-width: 3.75em;
   height: 24px;
-  padding: 0 2px;
+  padding: 0 var(--space-3xs);
   color: var(--muted);
   font-size: var(--font-size-2xs);
   font-variant-numeric: tabular-nums;
@@ -496,7 +496,7 @@
 .segmentDecision {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-3xs);
 }
 
 .blockAction {
@@ -504,7 +504,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   width: auto;
   height: 28px;
   min-width: 28px;

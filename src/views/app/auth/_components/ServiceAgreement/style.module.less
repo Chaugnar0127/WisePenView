@@ -3,7 +3,7 @@
 .modalContent {
   max-height: 70vh;
   overflow-y: scroll;
-  padding-right: 8px;
+  padding-right: var(--space-xs);
   .appSubtleScrollbar();
 }
 
@@ -13,22 +13,22 @@
 
 .sectionTitle {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--font-size-heading-2);
   font-weight: var(--font-weight-bold);
 }
 
 .clauseList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin: 16px 0 0;
+  gap: var(--space-md);
+  margin: var(--space-md) 0 0;
   padding-left: 24px;
 }
 
 .subclauseList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 8px;
+  gap: var(--space-2xs);
+  margin-top: var(--space-xs);
   padding-left: 28px;
 }

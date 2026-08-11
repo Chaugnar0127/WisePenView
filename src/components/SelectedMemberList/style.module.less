@@ -1,11 +1,11 @@
 @import '@/styles/scrollbar.module.less';
 
 .wrapper {
-  margin-top: 16px;
+  margin-top: var(--space-md);
 }
 
 .title {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-xs);
   color: var(--muted);
   font-weight: var(--font-weight-medium);
 }
@@ -13,12 +13,12 @@
 .list {
   overflow-y: auto;
   .appSubtleScrollbar();
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
   max-height: 300px;
 }
 
 .memberItem {
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .memberItemReadOnly {
@@ -42,9 +42,9 @@
 .memberContent {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
   min-width: 0;
-  padding: 4px 0;
+  padding: var(--space-2xs) 0;
   color: var(--foreground);
 }
 

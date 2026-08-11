@@ -5,7 +5,7 @@
   margin-bottom: 24px;
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg, 8px);
+  border-radius: var(--radius-lg, var(--radius-lg));
 }
 
 /** 嵌入页面内容区时使用，由内部表格提供视觉边界 */
@@ -22,7 +22,7 @@
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .balanceBlock {
@@ -31,7 +31,7 @@
 }
 
 .balanceLabel {
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-xs) 0;
   font-size: 14px;
   color: var(--muted);
 }
@@ -46,20 +46,20 @@
 }
 
 .unit {
-  margin-left: 8px;
+  margin-left: var(--space-xs);
   font-size: 16px;
   font-weight: var(--font-weight-medium);
   color: var(--muted);
 }
 
 .transactionTable {
-  margin-top: 16px;
+  margin-top: var(--space-md);
 }
 
 .balanceSkeleton {
   width: 200px;
   height: 44px;
-  border-radius: var(--radius-lg, 8px);
+  border-radius: var(--radius-lg, var(--radius-lg));
 }
 
 .amount {
@@ -85,7 +85,7 @@
 }
 
 .summarySub {
-  margin-top: 2px;
+  margin-top: var(--space-3xs);
   overflow: hidden;
   font-size: 13px;
   color: var(--muted);

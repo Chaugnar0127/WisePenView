@@ -217,7 +217,7 @@
 }
 
 .compactPopoverHeader {
-  padding-inline: var(--space-sm, 12px);
+  padding-inline: var(--space-sm, var(--space-sm));
 }
 
 .modelMenu {
@@ -262,7 +262,7 @@
   display: block;
   padding: var(--space-2xs) var(--space-sm);
   color: var(--muted);
-  font-size: var(--font-size-xs, 12px);
+  font-size: var(--font-size-xs, var(--font-size-xs));
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-xs, 16px);
 }
@@ -288,7 +288,7 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-3xs);
 }
 
 .listItemLabel,
@@ -307,7 +307,7 @@
 
 .listItemDescription {
   color: var(--muted);
-  font-size: var(--font-size-xs, 12px);
+  font-size: var(--font-size-xs, var(--font-size-xs));
   line-height: var(--line-height-xs, 16px);
 }
 
@@ -373,7 +373,7 @@
   z-index: 1;
   min-width: 16px;
   height: 16px;
-  padding: 0 4px;
+  padding: 0 var(--space-2xs);
   border-radius: 999px;
   background: var(--accent);
   color: var(--accent-foreground);
@@ -482,7 +482,7 @@
   }
 
   .toolbarLeft {
-    gap: 2px;
+    gap: var(--space-3xs);
   }
 
   .toolsRight {
@@ -498,7 +498,7 @@
   align-items: center;
   justify-content: center;
   border: 1px dashed var(--accent);
-  border-radius: calc(var(--radius-xl) - 1px);
+  border-radius: calc(var(--radius-xl) - var(--radius-xs));
   background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
   color: var(--accent-text);
   font-size: var(--font-size-sm);

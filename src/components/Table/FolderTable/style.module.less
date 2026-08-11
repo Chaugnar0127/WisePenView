@@ -107,7 +107,7 @@
 }
 
 .nameColumnHeader:global(.table__column) {
-  padding-left: calc(20px + var(--space-xs));
+  padding-left: calc(var(--space-md-plus) + var(--space-xs));
 }
 
 .actionColumnHeader:global(.table__column) {
@@ -218,7 +218,7 @@
   min-width: 0;
   height: 100%;
   padding: 0;
-  padding-left: calc(var(--folder-table-depth-indent, 0px) + 20px + var(--space-xs));
+  padding-left: calc(var(--folder-table-depth-indent, 0px) + var(--space-md-plus) + var(--space-xs));
   border: none;
   background: transparent;
   color: var(--blue-11);

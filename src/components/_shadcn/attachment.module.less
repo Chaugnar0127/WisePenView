@@ -53,25 +53,25 @@
   font-size: var(--font-size-xs);
 
   &:has([data-slot='attachment-content']) {
-    padding: 6px var(--space-xs);
+    padding: var(--space-2xs-plus) var(--space-xs);
   }
 
   &:has([data-slot='attachment-media']) {
-    padding-left: 6px;
+    padding-left: var(--space-2xs-plus);
   }
 }
 
 .sizeXs {
-  gap: 6px;
+  gap: var(--space-2xs-plus);
   border-radius: var(--radius);
   font-size: var(--font-size-xs);
 
   &:has([data-slot='attachment-content']) {
-    padding: 4px 6px;
+    padding: var(--space-2xs) var(--space-2xs-plus);
   }
 
   &:has([data-slot='attachment-media']) {
-    padding-left: 4px;
+    padding-left: var(--space-2xs);
   }
 }
 
@@ -157,7 +157,7 @@
 
   .vertical & {
     width: 100%;
-    padding-inline: 4px;
+    padding-inline: var(--space-2xs);
   }
 }
 
@@ -186,7 +186,7 @@
   display: block;
   max-width: 100%;
   min-width: 0;
-  margin-top: 2px;
+  margin-top: var(--space-3xs);
   overflow: hidden;
   color: var(--muted);
   font-size: var(--font-size-xs);
@@ -210,7 +210,7 @@
     position: absolute;
     top: var(--space-xs);
     right: var(--space-xs);
-    gap: 4px;
+    gap: var(--space-2xs);
   }
 }
 
@@ -237,7 +237,7 @@
   gap: var(--space-sm);
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  padding-block: 4px;
+  padding-block: var(--space-2xs);
   scroll-padding-inline: 4px;
   scroll-snap-type: x mandatory;
   .appSubtleScrollbar();

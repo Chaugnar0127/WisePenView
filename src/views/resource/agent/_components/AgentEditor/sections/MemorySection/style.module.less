@@ -2,8 +2,8 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
 }
 .moreRow::before,
 .moreRow::after {
@@ -13,7 +13,7 @@
 .more {
   min-width: auto;
   height: 28px;
-  padding-inline: 8px;
+  padding-inline: var(--space-xs);
   color: var(--muted);
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-md);
 }
 .advancedHeader > span {
   color: var(--muted);
@@ -63,7 +63,7 @@
 }
 .advanced label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-xs);
   font-size: 13px;
 }
 

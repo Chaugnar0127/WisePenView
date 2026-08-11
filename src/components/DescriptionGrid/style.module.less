@@ -3,7 +3,7 @@
 
   display: grid;
   grid-template-columns: repeat(var(--description-grid-columns), minmax(0, 1fr));
-  gap: var(--space-md, 16px) var(--space-xl, 24px);
+  gap: var(--space-md, var(--space-md)) var(--space-xl, 24px);
 }
 
 .item {
@@ -11,7 +11,7 @@
 }
 
 .label {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-2xs);
   color: var(--muted);
   font-size: var(--font-size-sm);
   line-height: 1.45;

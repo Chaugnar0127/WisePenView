@@ -1,17 +1,17 @@
 .errorId {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-sm);
   color: var(--muted);
   font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   text-align: center;
   overflow-wrap: anywhere;
 }
 
 .errorCollapse {
-  margin-top: 8px;
+  margin-top: var(--space-xs);
   text-align: left;
   border: 1px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface) 66%, transparent);
 }
 
@@ -21,7 +21,7 @@
   justify-content: space-between;
   width: 100%;
   min-height: 42px;
-  padding: 8px 12px;
+  padding: var(--space-xs) var(--space-sm);
 }
 
 .errorCollapseToggle {
@@ -39,23 +39,23 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 0 12px 12px;
+  padding: 0 var(--space-sm) var(--space-sm);
 }
 
 .errorDetail {
-  margin-top: 2px;
+  margin-top: var(--space-3xs);
   margin-bottom: 0;
-  padding: 12px;
-  border-radius: 8px;
+  padding: var(--space-sm);
+  border-radius: var(--radius-lg);
   background: color-mix(in oklab, var(--foreground) 4%, transparent);
   color: var(--muted);
   font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .contactTip {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
 }

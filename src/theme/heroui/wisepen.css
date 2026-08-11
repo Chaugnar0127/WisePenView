@@ -45,8 +45,10 @@ html[data-theme-radius='large'] {
   --font-size-2xs: 11px;
   --font-size-md: var(--font-size-base);
   --font-size-lg: 18px;
+  --font-size-heading-1: 26px;
   --font-size-heading-2: 20px;
   --font-size-heading-3: 24px;
+  --font-size-heading-4: 22px;
   --font-size-heading-5: 16px;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -60,10 +62,13 @@ html[data-theme-radius='large'] {
   --line-height-2xs: 16px;
   --font-sans: var(--app-font-family);
   --font-mono: var(--app-font-mono);
+  --space-3xs: 2px;
   --space-2xs: 4px;
+  --space-2xs-plus: 6px;
   --space-xs: 8px;
   --space-sm: 12px;
   --space-md: 16px;
+  --space-md-plus: 20px;
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 40px;

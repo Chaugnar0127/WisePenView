@@ -8,12 +8,12 @@ import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
 import { Form } from '@heroui/react';
 
+import { hasFieldErrors, runFieldValidation, type FieldErrors } from '@/utils/formValidation';
 import { User } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import auth from '../Auth.module.less';
-import { hasFieldErrors, runFieldValidation, type FieldErrors } from '../formValidation';
 
 type LoginField = keyof LoginRequest;
 

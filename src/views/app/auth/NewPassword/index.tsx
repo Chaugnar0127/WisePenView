@@ -8,12 +8,12 @@ import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Form, toast } from '@heroui/react';
 
+import { hasFieldErrors, runFieldValidation, type FieldErrors } from '@/utils/formValidation';
 import { useMount } from 'ahooks';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import auth from '../Auth.module.less';
-import { hasFieldErrors, runFieldValidation, type FieldErrors } from '../formValidation';
 
 type NewPasswordFormValues = Pick<NewPasswordRequest, 'newPassword'> & {
   confirmPassword: string;

@@ -1,6 +1,7 @@
 import { AppButton } from '@/components/Button';
 
 import { cn } from '@/utils/cn';
+import { CircleAlert, TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -63,6 +64,17 @@ function AppAlertDialogRoot({
   const status = STATUS_MAP[type];
   const isDanger = type === 'danger';
   const canDismiss = isDismissable && !isConfirmLoading;
+  const resolvedIcon =
+    icon === undefined ? (
+      type === 'danger' ? (
+        <CircleAlert size={20} aria-hidden />
+      ) : type === 'warning' ? (
+        <TriangleAlert size={20} aria-hidden />
+      ) : null
+    ) : (
+      icon
+    );
+  const hasIcon = resolvedIcon !== undefined && resolvedIcon !== null && resolvedIcon !== false;
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && isConfirmLoading) return;
@@ -128,15 +140,15 @@ function AppAlertDialogRoot({
             className={cn(styles.dialog, className, dialogClassName, classNames?.dialog)}
           >
             <Modal.Header className={cn(styles.header, classNames?.header)}>
-              {icon === false ? null : (
+              {hasIcon ? (
                 <Modal.Icon
                   className={cn(styles.icon, classNames?.icon)}
                   data-status={status}
                   aria-hidden
                 >
-                  {icon}
+                  {resolvedIcon}
                 </Modal.Icon>
-              )}
+              ) : null}
               <div className={styles.headerContent}>
                 <Modal.Heading className={cn(styles.heading, classNames?.heading)}>
                   {title}

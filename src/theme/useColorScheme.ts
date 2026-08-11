@@ -1,9 +1,8 @@
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useSyncExternalStore } from 'react';
 
 import { COLOR_SCHEME_ICON_SRC } from './colorSchemeIcons';
 import { COLOR_SCHEME, DEFAULT_COLOR_SCHEME, type ColorScheme } from './constants';
-
-const COLOR_SCHEME_STORAGE_KEY = 'heroui-color-scheme';
 
 const COLOR_SCHEME_VALUES = new Set<string>(Object.values(COLOR_SCHEME));
 const colorSchemeListeners = new Set<() => void>();
@@ -16,7 +15,7 @@ function isColorScheme(value: string): value is ColorScheme {
 
 function readStoredColorScheme(defaultScheme: ColorScheme): ColorScheme {
   if (typeof window === 'undefined') return defaultScheme;
-  const stored = localStorage.getItem(COLOR_SCHEME_STORAGE_KEY);
+  const stored = localStorage.getItem(STORAGE_KEYS.colorScheme);
   return stored && isColorScheme(stored) ? stored : defaultScheme;
 }
 
@@ -54,7 +53,7 @@ function setSharedColorScheme(scheme: ColorScheme) {
   if (sharedColorScheme === scheme) return;
   sharedColorScheme = scheme;
   if (typeof window !== 'undefined') {
-    localStorage.setItem(COLOR_SCHEME_STORAGE_KEY, scheme);
+    localStorage.setItem(STORAGE_KEYS.colorScheme, scheme);
   }
   emitColorSchemeChange();
 }

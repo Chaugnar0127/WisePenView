@@ -1,3 +1,4 @@
+import { STORAGE_PREFIXES } from '@/constants/storageKeys';
 import { useUnmount } from 'ahooks';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { IndexeddbPersistence } from 'y-indexeddb';
@@ -9,7 +10,7 @@ import { WisepenProvider } from './WisepenProvider';
 
 /** y-indexeddb 存储键：单条笔记一个 room，与 resourceId 对应（不承诺离线冷启动可打开） */
 export function noteYjsIdbRoomName(resourceId: string): string {
-  return `wisepen-note:${resourceId}`;
+  return `${STORAGE_PREFIXES.noteYjsIdbRoom}${resourceId}`;
 }
 
 type IndexeddbSyncedObservable = {

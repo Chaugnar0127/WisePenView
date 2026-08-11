@@ -1,10 +1,11 @@
+import { STORAGE_PREFIXES } from '@/constants/storageKeys';
 import { createJSONStorage, type StateStorage } from 'zustand/middleware';
 
 export type StoreScope = 'session' | 'tab';
 
 const STORAGE_PREFIX_BY_SCOPE: Record<StoreScope, string> = {
-  session: 'wisepen:store:session:',
-  tab: 'wisepen:store:tab:',
+  session: STORAGE_PREFIXES.storeSession,
+  tab: STORAGE_PREFIXES.storeTab,
 };
 
 function createNamespacedSessionStorage(scope: StoreScope): StateStorage {

@@ -2,6 +2,7 @@ import {
   buildLoginHrefForCurrentLocation,
   getCurrentRoutePath,
 } from '@/bootstrap/authContinuation';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
 import { resetSessionStores } from '@/store/lifecycle';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
@@ -15,7 +16,6 @@ interface AuthSessionEventPayload {
   eventId: string;
 }
 
-const AUTH_SESSION_EVENT_KEY = 'wisepen:auth-session-event';
 const TAB_ID = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 let eventSequence = 0;
@@ -74,7 +74,7 @@ const broadcastSessionEvent = (type: AuthSessionEventType): void => {
       sourceTabId: TAB_ID,
       eventId: `${TAB_ID}-${Date.now()}-${eventSequence}`,
     };
-    localStorage.setItem(AUTH_SESSION_EVENT_KEY, JSON.stringify(payload));
+    localStorage.setItem(STORAGE_KEYS.authSessionEvent, JSON.stringify(payload));
   } catch {
     // 忽略浏览器存储异常，避免影响认证主流程
   }
@@ -109,7 +109,7 @@ export const authSessionCoordinator = {
 
   subscribe(): () => void {
     const onStorage = (event: StorageEvent): void => {
-      if (event.key !== AUTH_SESSION_EVENT_KEY || !event.newValue) return;
+      if (event.key !== STORAGE_KEYS.authSessionEvent || !event.newValue) return;
 
       try {
         const payload = parseAuthSessionEvent(event.newValue);

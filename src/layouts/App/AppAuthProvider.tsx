@@ -1,4 +1,5 @@
 import { appendRedirectParam } from '@/bootstrap/authContinuation';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useUserService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
@@ -7,8 +8,6 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AppAuthContext, type AppAuthContextValue, type AppAuthMode } from './AppAuthContext';
-
-const ANONYMOUS_AUTH_CHECK_NOTIFIED_KEY = 'wisepen:anonymous-auth-check-notified';
 
 interface AppAuthProviderProps {
   children: ReactNode;
@@ -26,12 +25,12 @@ export function AppAuthProvider({ children, mode }: AppAuthProviderProps) {
     ready: mode === 'anonymous',
     showErrorToast: false,
     onSuccess: () => {
-      sessionStorage.removeItem(ANONYMOUS_AUTH_CHECK_NOTIFIED_KEY);
+      sessionStorage.removeItem(STORAGE_KEYS.anonymousAuthCheckNotified);
       navigate(APP_ROUTE_PATH.CHAT, { replace: true });
     },
     onErrorEffect: () => {
-      if (sessionStorage.getItem(ANONYMOUS_AUTH_CHECK_NOTIFIED_KEY) === 'true') return;
-      sessionStorage.setItem(ANONYMOUS_AUTH_CHECK_NOTIFIED_KEY, 'true');
+      if (sessionStorage.getItem(STORAGE_KEYS.anonymousAuthCheckNotified) === 'true') return;
+      sessionStorage.setItem(STORAGE_KEYS.anonymousAuthCheckNotified, 'true');
       toast.warning(t('anonymous.sessionExpired'));
     },
   });

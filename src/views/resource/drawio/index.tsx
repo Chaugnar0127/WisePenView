@@ -2,6 +2,7 @@ import { DRAWIO_EMBED_URL } from '@/apis/clientUrls';
 import { AppButton } from '@/components/Button';
 import { ResultState, Spin } from '@/components/Feedback';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useInteractService, useNoteService, useUserService } from '@/domains';
 import type {
   DrawIoLatestSnapshotData,
@@ -34,7 +35,6 @@ import {
 } from './drawioProtocol';
 import styles from './style.module.less';
 
-const WISEPEN_COLOR_SCHEME_STORAGE_KEY = 'heroui-color-scheme';
 const WISEPEN_COLOR_SCHEMES = new Set([
   'default',
   'warm',
@@ -79,7 +79,7 @@ function readWisePenColorScheme(): string {
   }
 
   try {
-    const storedScheme = window.localStorage.getItem(WISEPEN_COLOR_SCHEME_STORAGE_KEY);
+    const storedScheme = window.localStorage.getItem(STORAGE_KEYS.colorScheme);
 
     if (storedScheme && WISEPEN_COLOR_SCHEMES.has(storedScheme)) {
       return storedScheme;

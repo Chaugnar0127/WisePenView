@@ -1,8 +1,7 @@
+import { STORAGE_KEYS, STORAGE_PREFIXES } from '@/constants/storageKeys';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { isRecord } from '@/utils/typeGuards';
 
-const AUTH_CONTINUATION_ACTIVE_KEY = 'wisepen:auth-continuation:active';
-const AUTH_CONTINUATION_PREFIX = 'wisepen:auth-continuation:';
 const AUTH_CONTINUATION_TTL_MS = 30 * 60_000;
 
 export const DEFAULT_AUTH_REDIRECT_PATH = APP_ROUTE_PATH.CHAT;
@@ -117,10 +116,10 @@ export const saveAuthContinuation = (
       createdAt: Date.now(),
     };
     sessionStorage.setItem(
-      `${AUTH_CONTINUATION_PREFIX}${continuation.id}`,
+      `${STORAGE_PREFIXES.authContinuation}${continuation.id}`,
       JSON.stringify(continuation)
     );
-    sessionStorage.setItem(AUTH_CONTINUATION_ACTIVE_KEY, continuation.id);
+    sessionStorage.setItem(STORAGE_KEYS.authContinuationActive, continuation.id);
     return continuation;
   } catch {
     return null;
@@ -129,13 +128,13 @@ export const saveAuthContinuation = (
 
 export const consumeActiveAuthContinuation = (): AuthContinuation | null => {
   try {
-    const activeId = sessionStorage.getItem(AUTH_CONTINUATION_ACTIVE_KEY);
+    const activeId = sessionStorage.getItem(STORAGE_KEYS.authContinuationActive);
     if (!activeId) return null;
     const continuation = parseStoredContinuation(
-      sessionStorage.getItem(`${AUTH_CONTINUATION_PREFIX}${activeId}`)
+      sessionStorage.getItem(`${STORAGE_PREFIXES.authContinuation}${activeId}`)
     );
-    sessionStorage.removeItem(`${AUTH_CONTINUATION_PREFIX}${activeId}`);
-    sessionStorage.removeItem(AUTH_CONTINUATION_ACTIVE_KEY);
+    sessionStorage.removeItem(`${STORAGE_PREFIXES.authContinuation}${activeId}`);
+    sessionStorage.removeItem(STORAGE_KEYS.authContinuationActive);
     return continuation;
   } catch {
     return null;

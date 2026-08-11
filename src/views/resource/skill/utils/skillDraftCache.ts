@@ -1,8 +1,8 @@
+import { INDEXED_DB_NAMES } from '@/constants/storageKeys';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 
 import type { SkillWorkspaceDraftState } from '../_models/workspaceDraft';
 
-const DB_NAME = 'wisepen-skill-draft-cache';
 const DB_VERSION = 1;
 const STORE_NAME = 'skillDrafts';
 const DRAFT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -18,7 +18,7 @@ export interface SkillDraftCacheSnapshot {
 
 function openSkillDraftDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = indexedDB.open(INDEXED_DB_NAMES.skillDraftCache, DB_VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {

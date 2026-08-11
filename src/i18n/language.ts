@@ -1,6 +1,5 @@
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from './resources';
-
-const LANGUAGE_STORAGE_KEY = 'wisepen:language';
 
 function normalizeLanguage(language: string | null | undefined): SupportedLanguage | undefined {
   if (!language) return undefined;
@@ -15,7 +14,7 @@ function normalizeLanguage(language: string | null | undefined): SupportedLangua
 export function resolveInitialLanguage(): SupportedLanguage {
   if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
 
-  const persistedLanguage = normalizeLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY));
+  const persistedLanguage = normalizeLanguage(window.localStorage.getItem(STORAGE_KEYS.language));
   if (persistedLanguage) return persistedLanguage;
 
   for (const browserLanguage of window.navigator.languages) {
@@ -28,7 +27,7 @@ export function resolveInitialLanguage(): SupportedLanguage {
 
 export function persistLanguage(language: SupportedLanguage): void {
   if (typeof window === 'undefined') return;
-  window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  window.localStorage.setItem(STORAGE_KEYS.language, language);
 }
 
 export function syncDocumentLanguage(language: SupportedLanguage): void {

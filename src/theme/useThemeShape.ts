@@ -1,9 +1,7 @@
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useLayoutEffect, useRef, useState } from 'react';
 
 import { DEFAULT_THEME_RADIUS, THEME_RADIUS, type ThemeRadius } from './constants';
-
-const THEME_RADIUS_STORAGE_KEY = 'heroui-theme-radius';
-const THEME_FORM_RADIUS_STORAGE_KEY = 'heroui-theme-form-radius';
 
 const THEME_RADIUS_VALUES = new Set<string>(Object.values(THEME_RADIUS));
 
@@ -18,11 +16,11 @@ function isThemeRadius(value: string): value is ThemeRadius {
 function readStoredThemeShape(defaultShape: ThemeShape): ThemeShape {
   if (typeof window === 'undefined') return defaultShape;
 
-  const storedRadius = localStorage.getItem(THEME_RADIUS_STORAGE_KEY);
-  localStorage.removeItem(THEME_FORM_RADIUS_STORAGE_KEY);
+  const storedRadius = localStorage.getItem(STORAGE_KEYS.themeRadius);
+  localStorage.removeItem(STORAGE_KEYS.themeFormRadius);
 
   if (storedRadius && !isThemeRadius(storedRadius)) {
-    localStorage.removeItem(THEME_RADIUS_STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEYS.themeRadius);
   }
 
   return {
@@ -56,8 +54,8 @@ export function useThemeShape(
 
   const setRadius = (radius: ThemeRadius) => {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(THEME_RADIUS_STORAGE_KEY, radius);
-    localStorage.removeItem(THEME_FORM_RADIUS_STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEYS.themeRadius, radius);
+    localStorage.removeItem(STORAGE_KEYS.themeFormRadius);
     setThemeShape((prev) => ({ ...prev, radius }));
   };
 

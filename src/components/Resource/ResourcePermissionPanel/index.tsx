@@ -1,4 +1,5 @@
 import AppAvatar from '@/components/Avatar';
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import ResourcePermissionActionIcon from '@/components/Drive/common/resourcePermissionActionIcon';
 import { buildResourcePermissionActionKeySet } from '@/components/Drive/common/resourcePermissionPolicy';
@@ -10,7 +11,8 @@ import {
   type ResourcePermissionSubject,
 } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Chip, ListBox, Skeleton } from '@heroui/react';
+import { Chip, ListBox, Skeleton } from '@heroui/react';
+
 import type { TFunction } from 'i18next';
 import { ChevronDown, Trash2, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -75,7 +77,7 @@ function SubjectPermissionPopover({
     actionOptions
   );
   const trigger = (
-    <Button
+    <AppButton
       variant="ghost"
       size="sm"
       className={styles.permissionButton}
@@ -88,7 +90,7 @@ function SubjectPermissionPopover({
       {!subject.readonly && actionOptions.length > 0 ? (
         <ChevronDown size={14} aria-hidden className={styles.permissionChevron} />
       ) : null}
-    </Button>
+    </AppButton>
   );
 
   if (subject.readonly || actionOptions.length === 0) {
@@ -267,7 +269,7 @@ function ResourcePermissionPanel({
                 {inheritedSubjects.map(renderSubjectItem)}
                 {canLoadMoreGroups ? (
                   <div className={styles.loadMoreGroupsRow}>
-                    <Button
+                    <AppButton
                       size="sm"
                       variant="ghost"
                       className={styles.loadMoreGroupsButton}
@@ -278,7 +280,7 @@ function ResourcePermissionPanel({
                       {loadingMoreGroups
                         ? t('permission.loadingMoreGroups')
                         : t('permission.loadMoreGroups')}
-                    </Button>
+                    </AppButton>
                   </div>
                 ) : null}
                 {shouldShowInviteDivider ? (

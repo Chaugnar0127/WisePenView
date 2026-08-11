@@ -1,6 +1,7 @@
+import { AppButton } from '@/components/Button';
 import EntryIcon from '@/components/Icons/EntryIcon';
 import { AppPopover } from '@/components/Overlay';
-import { Button } from '@heroui/react';
+
 import { CloudUpload, FileInput, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,10 +51,10 @@ function CreateMenu({ disabled = false, items, onSelect }: CreateMenuProps) {
   return (
     <AppPopover isOpen={open} onOpenChange={setOpen}>
       <AppPopover.Trigger>
-        <Button variant="secondary" size="sm" isDisabled={disabled}>
+        <AppButton variant="secondary" size="sm" isDisabled={disabled}>
           <Plus size={16} aria-hidden="true" />
           {t('create.menu')}
-        </Button>
+        </AppButton>
       </AppPopover.Trigger>
       <AppPopover.Content className={styles.menuPopover} placement="bottom start">
         <div role="menu" aria-label={t('create.menuAria')}>

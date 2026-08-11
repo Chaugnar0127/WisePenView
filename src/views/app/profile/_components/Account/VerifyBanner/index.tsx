@@ -1,5 +1,6 @@
+import { AppButton } from '@/components/Button';
 import AppBanner from '@/components/Overlay/AppBanner';
-import { Button } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import type { VerifyBannerProps } from './index.type';
 import styles from './style.module.less';
@@ -14,9 +15,9 @@ function VerifyBanner({ visible, onGoVerify }: VerifyBannerProps) {
       className={styles.statusBanner}
       description={t('verification.banner')}
       action={
-        <Button size="sm" variant="primary" onPress={onGoVerify}>
+        <AppButton size="sm" variant="primary" onPress={onGoVerify}>
           {t('verification.goVerify')}
-        </Button>
+        </AppButton>
       }
     />
   );

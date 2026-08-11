@@ -1,9 +1,11 @@
+import { AppButton } from '@/components/Button';
 import { FormField, Input } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { ResetPasswordRequest } from '@/domains/Auth';
 import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Alert, Button, Form, toast } from '@heroui/react';
+import { Alert, Form, toast } from '@heroui/react';
+
 import { Mail } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -87,7 +89,7 @@ function ResetPassword() {
         </FormField>
 
         <div className={auth.formActions}>
-          <Button
+          <AppButton
             variant="primary"
             size="lg"
             type="submit"
@@ -95,7 +97,7 @@ function ResetPassword() {
             isDisabled={loading}
           >
             {t('resetPassword.submit')}
-          </Button>
+          </AppButton>
           <div className={auth.centerLinks}>
             <Link to={APP_ROUTE_PATH.AUTH_LOGIN}>{t('resetPassword.backToLogin')}</Link>
           </div>

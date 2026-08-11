@@ -1,10 +1,12 @@
+import { AppButton } from '@/components/Button';
 import { DataTable, type DataTableColumn } from '@/components/Table';
 import { useUserService } from '@/domains';
 import type { AdminMessage } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import AdminPageHeader from '@/views/admin/_common/AdminPageHeader';
-import { Button, Chip, ListBox, Select } from '@heroui/react';
+import { Chip, ListBox, Select } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
@@ -143,10 +145,10 @@ function AnnouncementManagement() {
         maxBodyHeight={560}
         toolbar={
           <div className={pageStyles.toolbarActions}>
-            <Button variant="secondary" size="sm" onPress={() => setCreateModalOpen(true)}>
+            <AppButton variant="secondary" size="sm" onPress={() => setCreateModalOpen(true)}>
               {t('announcement.create')}
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               variant="secondary"
               size="sm"
               isDisabled={loading}
@@ -155,7 +157,7 @@ function AnnouncementManagement() {
               }}
             >
               {t('actions.refresh', { ns: 'common' })}
-            </Button>
+            </AppButton>
           </div>
         }
         pagination={{

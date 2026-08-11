@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { Select } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import SelectedMemberList from '@/components/SelectedMemberList';
@@ -5,7 +6,8 @@ import { useGroupService } from '@/domains';
 import { ROLE } from '@/domains/Group';
 import { useApi } from '@/hooks/useApi';
 import type { EnumKey } from '@/utils/enum';
-import { Alert, Button, ListBox, toast } from '@heroui/react';
+import { Alert, ListBox, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EditPermissionModalProps } from './index.type';
@@ -67,17 +69,21 @@ function EditPermissionModal({
       isDismissable={!loading}
       actions={
         <>
-          <Button variant="secondary" isDisabled={loading} onPress={() => handleOpenChange(false)}>
+          <AppButton
+            variant="secondary"
+            isDisabled={loading}
+            onPress={() => handleOpenChange(false)}
+          >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={confirmDisabled || loading}
             aria-busy={loading || undefined}
             onPress={handleConfirm}
           >
             {t('actions.confirm', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { Spin } from '@/components/Feedback';
 import UploadZone from '@/components/Input/UploadZone';
 import { useCourseService } from '@/domains';
@@ -6,7 +7,8 @@ import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { buildCourseAssignmentPath } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import { ArrowLeft, CalendarClock, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -62,9 +64,9 @@ function CourseAssignmentDetailPage() {
     return (
       <div className={styles.state}>
         <span>{error ? parseErrorMessage(error) : t('common.notFound')}</span>
-        <Button variant="secondary" onPress={refresh}>
+        <AppButton variant="secondary" onPress={refresh}>
           {t('common.retry')}
-        </Button>
+        </AppButton>
       </div>
     );
   }
@@ -126,9 +128,9 @@ function CourseAssignmentDetailPage() {
           onFilesChange={setFiles}
         />
         <div className={styles.submitActions}>
-          <Button variant="primary" isDisabled={submitting} onPress={handleSubmit}>
+          <AppButton variant="primary" isDisabled={submitting} onPress={handleSubmit}>
             {t('assignments.submit')}
-          </Button>
+          </AppButton>
         </div>
       </section>
     </div>

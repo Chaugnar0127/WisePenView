@@ -1,8 +1,10 @@
+import { AppButton } from '@/components/Button';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { useCourseService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,10 +47,10 @@ function CourseDangerSection({ courseId, courseName }: CourseDangerSectionProps)
         </div>
       </div>
       <div className={styles.dangerActions}>
-        <Button variant="danger" onPress={() => setDeleteDialogOpen(true)}>
+        <AppButton variant="danger" onPress={() => setDeleteDialogOpen(true)}>
           <Trash2 size={16} aria-hidden />
           {t('editor.danger.delete')}
-        </Button>
+        </AppButton>
       </div>
 
       <AppAlertDialog

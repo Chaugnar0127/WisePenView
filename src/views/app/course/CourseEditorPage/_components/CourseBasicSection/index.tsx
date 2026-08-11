@@ -1,6 +1,8 @@
+import { AppButton } from '@/components/Button';
 import { Input, TextArea } from '@/components/Input';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
-import { Button, Label, TextField, Tooltip } from '@heroui/react';
+import { Label, TextField, Tooltip } from '@heroui/react';
+
 import { Pencil, Save } from 'lucide-react';
 import type { SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,10 +43,10 @@ function CourseBasicSection({
           <span className={saved ? styles.saved : styles.unsaved}>
             {saved ? t('editor.saved') : t('editor.unsaved')}
           </span>
-          <Button variant="primary" isDisabled={saving || saved} onPress={onSave}>
+          <AppButton variant="primary" isDisabled={saving || saved} onPress={onSave}>
             <Save size={16} aria-hidden />
             {t('editor.save')}
-          </Button>
+          </AppButton>
         </div>
       </div>
       <div className={styles.basicLayout}>

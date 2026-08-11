@@ -1,4 +1,6 @@
-import { Button, ColorSwatchPicker } from '@heroui/react';
+import { AppButton } from '@/components/Button';
+import { ColorSwatchPicker } from '@heroui/react';
+
 import clsx from 'clsx';
 import { Baseline } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -103,9 +105,14 @@ export function ColorPaletteContent({
         />
       ) : null}
       {onReset ? (
-        <Button variant="outline" size="sm" className={styles.resetColorButton} onPress={onReset}>
+        <AppButton
+          variant="outline"
+          size="sm"
+          className={styles.resetColorButton}
+          onPress={onReset}
+        >
           {t('editor.color.reset')}
-        </Button>
+        </AppButton>
       ) : null}
     </div>
   );

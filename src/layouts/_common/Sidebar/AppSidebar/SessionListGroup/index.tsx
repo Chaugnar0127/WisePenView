@@ -1,9 +1,11 @@
+import { AppButton } from '@/components/Button';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
 import { useNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
 import { useChatService } from '@/domains';
 import type { ChatSession, PageResult } from '@/domains/Chat';
 import { buildChatPath } from '@/utils/navigation/appRoute';
-import { Button, ListBox, ListBoxItem, ListBoxSection } from '@heroui/react';
+import { ListBox, ListBoxItem, ListBoxSection } from '@heroui/react';
+
 import { useInfiniteScroll, useMemoizedFn } from 'ahooks';
 import clsx from 'clsx';
 import { useEffect } from 'react';
@@ -164,7 +166,7 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
                 textValue={hasMoreSessions ? t('session.loadMore') : t('session.noMore')}
                 className={styles.sessionItem}
               >
-                <Button
+                <AppButton
                   variant="secondary"
                   isDisabled={loadingMoreSessions}
                   className={styles.sessionLoadMoreBtn}
@@ -177,7 +179,7 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
                   }}
                 >
                   {hasMoreSessions ? t('session.loadMore') : t('session.noMore')}
-                </Button>
+                </AppButton>
               </ListBoxItem>
             )}
           </>

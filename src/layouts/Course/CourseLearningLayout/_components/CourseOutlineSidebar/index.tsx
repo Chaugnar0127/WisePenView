@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { UploadDocumentModal } from '@/components/Drive/Modals';
 import { Spin } from '@/components/Feedback';
@@ -6,7 +7,8 @@ import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
 import Tree, { type DataNode, type TreeAllowDropInfo, type TreeDropInfo } from '@/components/Tree';
 import type { CourseOutlineContainerNode, CourseOutlineNode } from '@/domains/Course';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Label, TextField } from '@heroui/react';
+import { Label, TextField } from '@heroui/react';
+
 import { ArrowLeft, CheckCircle2, Circle, Plus, Search } from 'lucide-react';
 import type { Key, KeyboardEvent } from 'react';
 import { useState } from 'react';
@@ -248,9 +250,9 @@ function CourseOutlineSidebar(props: CourseOutlineSidebarProps) {
           {props.error ? (
             <div className={styles.outlineState}>
               <span>{parseErrorMessage(props.error)}</span>
-              <Button variant="secondary" size="sm" onPress={props.onRetry}>
+              <AppButton variant="secondary" size="sm" onPress={props.onRetry}>
                 {t('common.retry')}
-              </Button>
+              </AppButton>
             </div>
           ) : null}
           {isEmpty ? createChapterRow : null}

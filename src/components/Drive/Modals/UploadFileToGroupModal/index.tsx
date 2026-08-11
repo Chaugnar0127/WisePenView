@@ -1,10 +1,12 @@
+import { AppButton } from '@/components/Button';
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import AppModal from '@/components/Overlay/AppModal';
 import StepDots from '@/components/StepDots';
 import { useDriveService } from '@/domains';
 import type { DriveNode, FolderNode } from '@/domains/Drive';
 import { useApi } from '@/hooks/useApi';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DriveSelectionItem } from '../../common/driveComponentModel';
@@ -88,22 +90,26 @@ function UploadFileToGroupModal({
       isDismissable={!submitting}
       actions={
         <>
-          <Button variant="secondary" onPress={closeModal} isDisabled={submitting}>
+          <AppButton variant="secondary" onPress={closeModal} isDisabled={submitting}>
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
+          </AppButton>
           {step === 1 && (
-            <Button variant="secondary" onPress={() => setStep(0)} isDisabled={submitting}>
+            <AppButton variant="secondary" onPress={() => setStep(0)} isDisabled={submitting}>
               {t('upload.group.previous')}
-            </Button>
+            </AppButton>
           )}
           {step === 0 ? (
-            <Button variant="primary" onPress={() => setStep(1)} isDisabled={!canNext}>
+            <AppButton variant="primary" onPress={() => setStep(1)} isDisabled={!canNext}>
               {t('upload.group.next')}
-            </Button>
+            </AppButton>
           ) : (
-            <Button variant="primary" onPress={handleSubmit} isDisabled={submitting || !canSubmit}>
+            <AppButton
+              variant="primary"
+              onPress={handleSubmit}
+              isDisabled={submitting || !canSubmit}
+            >
               {t('actions.confirm', { ns: 'common' })}
-            </Button>
+            </AppButton>
           )}
         </>
       }

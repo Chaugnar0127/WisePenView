@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { useGroupService, useQuotaService } from '@/domains';
 import type { GroupMember } from '@/domains/Group';
 import { ROLE } from '@/domains/Group';
@@ -5,7 +6,8 @@ import { useApiPagination } from '@/hooks/useApi';
 import type { EnumKey } from '@/utils/enum';
 import { parseErrorMessage } from '@/utils/error';
 import { normalizeId } from '@/utils/normalize/normalizeId';
-import { Button, toast, type Selection, type SortDescriptor } from '@heroui/react';
+import { toast, type Selection, type SortDescriptor } from '@heroui/react';
+
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MemberListProps } from './index.type';
@@ -246,42 +248,42 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
     !hasBatchActions && !groupDisplayConfig.canInviteMember ? null : (
       <div className={styles.toolbarActions}>
         {batchEditMode && showBatchActions && groupDisplayConfig.canModifyPermission ? (
-          <Button
+          <AppButton
             onPress={() => setActiveModal('editPermission')}
             isDisabled={selectedRowKeys.length === 0}
           >
             {t('member.actions.editPermission')}
-          </Button>
+          </AppButton>
         ) : null}
         {batchEditMode && showBatchActions && groupDisplayConfig.canAssignQuota ? (
-          <Button
+          <AppButton
             onPress={() => setActiveModal('assignQuota')}
             isDisabled={selectedRowKeys.length === 0}
           >
             {t('member.actions.assignQuota')}
-          </Button>
+          </AppButton>
         ) : null}
         {batchEditMode && showBatchActions && groupDisplayConfig.canRemoveMember ? (
-          <Button
+          <AppButton
             variant="danger"
             onPress={() => setActiveModal('deleteMember')}
             isDisabled={selectedRowKeys.length === 0}
           >
             {t('member.actions.delete')}
-          </Button>
+          </AppButton>
         ) : null}
         {batchEditMode && hasBatchActions ? (
-          <Button variant="ghost" onPress={exitBatchEditMode}>
+          <AppButton variant="ghost" onPress={exitBatchEditMode}>
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
+          </AppButton>
         ) : null}
         {!batchEditMode && hasBatchActions ? (
-          <Button onPress={enterBatchEditMode}>{t('member.actions.batchEdit')}</Button>
+          <AppButton onPress={enterBatchEditMode}>{t('member.actions.batchEdit')}</AppButton>
         ) : null}
         {groupDisplayConfig.canInviteMember ? (
-          <Button variant="primary" onPress={() => setActiveModal('invite')}>
+          <AppButton variant="primary" onPress={() => setActiveModal('invite')}>
             {t('member.actions.invite')}
-          </Button>
+          </AppButton>
         ) : null}
       </div>
     );

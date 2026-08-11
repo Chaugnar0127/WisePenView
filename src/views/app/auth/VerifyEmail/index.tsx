@@ -3,12 +3,14 @@ import {
   getCurrentRouteSearch,
   readOptionalRedirectParam,
 } from '@/bootstrap/authContinuation';
+import { AppButton } from '@/components/Button';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
 import type { ConfirmEmailVerifyRequest } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -63,14 +65,14 @@ function VerifyEmail() {
         {t('verifyEmail.alertDescription')}
       </div>
       <div className="mt-6">
-        <Button
+        <AppButton
           variant="primary"
           className={auth.submitButton}
           isDisabled={loading || !token}
           onPress={onVerify}
         >
           {t('verifyEmail.submit')}
-        </Button>
+        </AppButton>
       </div>
       <AppDisplayDialog
         isOpen={successModalOpen}

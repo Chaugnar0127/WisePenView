@@ -1,4 +1,5 @@
 import AppAvatar from '@/components/Avatar';
+import { AppButton } from '@/components/Button';
 import { UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useImageService, useUserService } from '@/domains';
@@ -8,7 +9,8 @@ import { useApi } from '@/hooks/useApi';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { parseErrorMessage } from '@/utils/error';
 import { IMAGE_UPLOAD_MAX_SIZE_LABEL } from '@/utils/image/uploadLimit';
-import { Button, toast, Tooltip } from '@heroui/react';
+import { toast, Tooltip } from '@heroui/react';
+
 import { Camera, Check, TriangleAlert, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -185,21 +187,21 @@ function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {
         isDismissable={!avatarSubmitting}
         actions={
           <>
-            <Button
+            <AppButton
               variant="secondary"
               isDisabled={avatarSubmitting}
               onPress={handleAvatarModalClose}
             >
               {t('actions.cancel', { ns: 'common' })}
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               variant="primary"
               isDisabled={!avatarFile || avatarSubmitting}
               aria-busy={avatarSubmitting || undefined}
               onPress={handleAvatarModalOk}
             >
               {t('header.uploadAndSave')}
-            </Button>
+            </AppButton>
           </>
         }
       >

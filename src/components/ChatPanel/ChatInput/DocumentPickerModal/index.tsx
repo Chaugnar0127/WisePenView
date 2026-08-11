@@ -1,7 +1,8 @@
+import { AppButton } from '@/components/Button';
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
-import { Button } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
@@ -59,16 +60,16 @@ function DocumentPickerContent() {
         </div>
       </AppModal.Body>
       <AppModal.Footer>
-        <Button variant="secondary" onPress={handleClose}>
+        <AppButton variant="secondary" onPress={handleClose}>
           {t('actions.cancel', { ns: 'common' })}
-        </Button>
-        <Button
+        </AppButton>
+        <AppButton
           variant="primary"
           onPress={handleConfirm}
           isDisabled={selectedResources.length === 0}
         >
           {t('actions.confirm', { ns: 'common' })}
-        </Button>
+        </AppButton>
       </AppModal.Footer>
     </>
   );
@@ -104,12 +105,12 @@ function DocumentPickerModal() {
               </div>
             </AppModal.Body>
             <AppModal.Footer>
-              <Button variant="secondary" onPress={() => setDocumentPickerOpen(false)}>
+              <AppButton variant="secondary" onPress={() => setDocumentPickerOpen(false)}>
                 {t('actions.cancel', { ns: 'common' })}
-              </Button>
-              <Button variant="primary" isDisabled>
+              </AppButton>
+              <AppButton variant="primary" isDisabled>
                 {t('actions.confirm', { ns: 'common' })}
-              </Button>
+              </AppButton>
             </AppModal.Footer>
           </>
         }

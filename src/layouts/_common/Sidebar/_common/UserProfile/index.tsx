@@ -1,4 +1,5 @@
 import AppAvatar from '@/components/Avatar';
+import { AppButton } from '@/components/Button';
 import { AppMenu } from '@/components/Overlay';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useUserService } from '@/domains';
@@ -6,7 +7,7 @@ import type { User } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button } from '@heroui/react';
+
 import { useMount } from 'ahooks';
 import clsx from 'clsx';
 import {
@@ -82,14 +83,14 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
               <span className={styles.username}>{t('anonymous.title')}</span>
               <span className={styles.tag}>{t('anonymous.subtitle')}</span>
             </div>
-            <Button
+            <AppButton
               size="sm"
               variant="primary"
               className={styles.loginButton}
               onPress={handleLogin}
             >
               {t('anonymous.login')}
-            </Button>
+            </AppButton>
           </>
         )}
       </div>

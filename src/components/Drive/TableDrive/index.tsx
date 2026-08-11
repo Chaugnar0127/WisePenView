@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import AppBreadcrumb, { type AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
 import { FolderTable } from '@/components/Table';
@@ -10,7 +11,7 @@ import {
   type Modifier,
   type Modifiers,
 } from '@dnd-kit/core';
-import { Button } from '@heroui/react';
+
 import { HardDrive, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -265,9 +266,9 @@ function TableDrive({
         />
       ) : null}
       {!isEditMode && actionsController.showUploadToGroup ? (
-        <Button variant="secondary" size="sm" onPress={actionsController.openUploadToGroup}>
+        <AppButton variant="secondary" size="sm" onPress={actionsController.openUploadToGroup}>
           {t('table.addFromPersonal')}
-        </Button>
+        </AppButton>
       ) : null}
       <AppIconButton
         icon={
@@ -291,26 +292,26 @@ function TableDrive({
     if (!isEditMode) return null;
     return (
       <div className={styles.selectionActions}>
-        <Button variant="secondary" size="sm" onPress={interaction.clearChecked}>
+        <AppButton variant="secondary" size="sm" onPress={interaction.clearChecked}>
           {t('table.clearSelection')}
-        </Button>
+        </AppButton>
         {interaction.canMoveSelection ? (
-          <Button
+          <AppButton
             variant="secondary"
             size="sm"
             onPress={() => actionsController.setMoveNodes(interaction.selectedActionTargets)}
           >
             {t('table.move')}
-          </Button>
+          </AppButton>
         ) : null}
-        <Button
+        <AppButton
           variant="danger"
           size="sm"
           isDisabled={actionsController.batchDeleting}
           onPress={actionsController.runBatchDelete}
         >
           {trash.isTrashView ? t('delete.permanent') : t('actions.delete', { ns: 'common' })}
-        </Button>
+        </AppButton>
       </div>
     );
   })();

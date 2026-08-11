@@ -1,4 +1,5 @@
 import { DRAWIO_EMBED_URL } from '@/apis/clientUrls';
+import { AppButton } from '@/components/Button';
 import { ResultState, Spin } from '@/components/Feedback';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useInteractService, useNoteService, useUserService } from '@/domains';
@@ -17,7 +18,7 @@ import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
-import { Button } from '@heroui/react';
+
 import { useMemoizedFn } from 'ahooks';
 import { History, Save } from 'lucide-react';
 import { useState, type DependencyList, type ReactNode } from 'react';
@@ -269,7 +270,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
   const headerActions = (
     <div className={styles.headerExtra}>
       {currentUser?.id === noteInfoDisplay.ownerId && canViewVersions ? (
-        <Button
+        <AppButton
           size="sm"
           variant="secondary"
           onPress={handleOpenVersions}
@@ -277,10 +278,10 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
         >
           <History size={16} />
           <span>{t('drawio.version')}</span>
-        </Button>
+        </AppButton>
       ) : null}
       {canEdit ? (
-        <Button
+        <AppButton
           size="sm"
           variant="primary"
           isDisabled={!editorLoaded || saveState === 'saved' || saveState === 'saving'}
@@ -293,7 +294,7 @@ function DrawioViewConnected({ resourceId, data, onRefreshDrawioInfo }: DrawioVi
               ? t('drawio.status.saving')
               : t('actions.save', { ns: 'common' })}
           </span>
-        </Button>
+        </AppButton>
       ) : null}
     </div>
   );
@@ -391,7 +392,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
             title={t('drawio.cannotOpen')}
             extra={
               <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                <Button variant="secondary">{t('viewer.backToDrive')}</Button>
+                <AppButton variant="secondary">{t('viewer.backToDrive')}</AppButton>
               </Link>
             }
           />
@@ -410,7 +411,7 @@ function DrawioView({ resourceId }: DrawioViewProps) {
             subTitle={parseErrorMessage(error)}
             extra={
               <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                <Button variant="secondary">{t('viewer.backToDrive')}</Button>
+                <AppButton variant="secondary">{t('viewer.backToDrive')}</AppButton>
               </Link>
             }
           />

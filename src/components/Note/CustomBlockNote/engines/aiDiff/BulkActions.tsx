@@ -1,4 +1,6 @@
-import { Button, ButtonGroup } from '@heroui/react';
+import { AppButton } from '@/components/Button';
+import { ButtonGroup } from '@heroui/react';
+
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type * as Y from 'yjs';
@@ -41,22 +43,22 @@ export function AiDiffBulkActions({
   return createPortal(
     <div className={styles.bulkActions} contentEditable={false}>
       <ButtonGroup size="sm" aria-label={t('aiDiff.actions')}>
-        <Button
+        <AppButton
           variant="secondary"
           aria-label={t('aiDiff.rejectAllLabel')}
           onMouseDown={preventEditorInteraction}
           onPress={() => apply('discard')}
         >
           {t('aiDiff.rejectAll')}
-        </Button>
-        <Button
+        </AppButton>
+        <AppButton
           variant="primary"
           aria-label={t('aiDiff.acceptAllLabel')}
           onMouseDown={preventEditorInteraction}
           onPress={() => apply('accept')}
         >
           {t('aiDiff.acceptAll')}
-        </Button>
+        </AppButton>
       </ButtonGroup>
     </div>,
     portalContainer

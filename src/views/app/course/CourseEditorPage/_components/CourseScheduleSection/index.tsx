@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { Input } from '@/components/Input';
 import {
@@ -8,7 +9,8 @@ import {
   type CoursePeriod,
   type CourseWeekPattern,
 } from '@/domains/Course';
-import { Button, ListBox, Select } from '@heroui/react';
+import { ListBox, Select } from '@heroui/react';
+
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -48,7 +50,7 @@ function CourseScheduleSection({ form, onUpdate, onUpdateMeeting }: CourseSchedu
             onUpdate('endAt', endValue);
           }}
         />
-        <Button
+        <AppButton
           variant="outline"
           size="sm"
           isDisabled={!form.startAt && !form.endAt}
@@ -58,20 +60,20 @@ function CourseScheduleSection({ form, onUpdate, onUpdateMeeting }: CourseSchedu
           }}
         >
           {t('editor.actions.clear')}
-        </Button>
+        </AppButton>
       </div>
       <div className={styles.subsectionHead}>
         <div>
           <h3>{t('editor.schedule.meetings')}</h3>
           <p>{t('editor.schedule.meetingsHint')}</p>
         </div>
-        <Button
+        <AppButton
           variant="secondary"
           onPress={() => onUpdate('meetings', [...form.meetings, createCourseMeeting()])}
         >
           <Plus size={16} aria-hidden />
           {t('editor.actions.addMeeting')}
-        </Button>
+        </AppButton>
       </div>
       <div className={styles.meetingList}>
         <div className={styles.meetingColumns} aria-hidden>

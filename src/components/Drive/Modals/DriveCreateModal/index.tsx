@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { FormField, Input, TextArea } from '@/components/Input';
 import AppFormDialog from '@/components/Overlay/AppFormDialog';
 import AppModal from '@/components/Overlay/AppModal';
@@ -5,7 +6,8 @@ import { useAgentService, useDriveService, useNoteService, useSkillService } fro
 import { useApi } from '@/hooks/useApi';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { validateReservedName } from '@/utils/tag/validateReservedName';
-import { Button, Label, TextField, toast } from '@heroui/react';
+import { Label, TextField, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -189,21 +191,21 @@ function DriveCreateModal({
           isDismissable={!loading}
           actions={
             <>
-              <Button
+              <AppButton
                 variant="secondary"
                 isDisabled={loading}
                 onPress={() => handleOpenChange(false)}
               >
                 {t('actions.cancel', { ns: 'common' })}
-              </Button>
-              <Button
+              </AppButton>
+              <AppButton
                 variant="primary"
                 isDisabled={!title.trim() || loading}
                 aria-busy={loading || undefined}
                 onPress={handleSubmit}
               >
                 {t('actions.create', { ns: 'common' })}
-              </Button>
+              </AppButton>
             </>
           }
         >
@@ -242,21 +244,21 @@ function DriveCreateModal({
           isDismissable={!loading}
           actions={
             <>
-              <Button
+              <AppButton
                 variant="secondary"
                 isDisabled={loading}
                 onPress={() => handleOpenChange(false)}
               >
                 {t('actions.cancel', { ns: 'common' })}
-              </Button>
-              <Button
+              </AppButton>
+              <AppButton
                 variant="primary"
                 isDisabled={!title.trim() || loading}
                 aria-busy={loading || undefined}
                 onPress={handleSubmit}
               >
                 {t('actions.create', { ns: 'common' })}
-              </Button>
+              </AppButton>
             </>
           }
         >

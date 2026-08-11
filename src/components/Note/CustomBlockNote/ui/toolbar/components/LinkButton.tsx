@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
 import { AppPopover } from '@/components/Overlay';
 import { isTableCellSelection } from '@blocknote/core';
@@ -9,7 +10,8 @@ import {
   VALID_LINK_PROTOCOLS,
 } from '@blocknote/core/extensions';
 import { useBlockNoteEditor, useEditorState, useExtension } from '@blocknote/react';
-import { Button, Input } from '@heroui/react';
+import { Input } from '@heroui/react';
+
 import { useEventListener, useUnmount } from 'ahooks';
 import { Link } from 'lucide-react';
 import { useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
@@ -148,9 +150,9 @@ export function CreateLinkToolbarButton({
             onChange={(event) => setUrl(event.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <Button size="sm" variant="primary" onPress={saveLink}>
+          <AppButton size="sm" variant="primary" onPress={saveLink}>
             {t('actions.confirm', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </div>
       </AppPopover.Content>
     </AppPopover>

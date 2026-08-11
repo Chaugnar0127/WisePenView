@@ -1,5 +1,6 @@
+import { AppButton } from '@/components/Button';
 import AppModal from '@/components/Overlay/AppModal';
-import { Button } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import GroupPolicyShellCard from '../GroupPolicyShellCard';
 import styles from '../style.module.less';
@@ -21,12 +22,12 @@ function GroupMountPermissionModal({ isOpen, onOpenChange }: GroupMountPermissio
       dialogClassName={styles.mountModalDialog}
       actions={
         <>
-          <Button variant="secondary" onPress={() => onOpenChange(false)}>
+          <AppButton variant="secondary" onPress={() => onOpenChange(false)}>
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button variant="primary" isDisabled>
+          </AppButton>
+          <AppButton variant="primary" isDisabled>
             {t('actions.save', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

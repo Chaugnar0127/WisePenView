@@ -1,4 +1,6 @@
-import { Button, Form, Modal } from '@heroui/react';
+import { AppButton } from '@/components/Button';
+import { Form, Modal } from '@heroui/react';
+
 import clsx from 'clsx';
 import type { FormEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -69,17 +71,22 @@ function AppFormDialog({
 
     return (
       <>
-        <Button type="button" variant="secondary" isDisabled={isSubmitting} onPress={handleCancel}>
+        <AppButton
+          type="button"
+          variant="secondary"
+          isDisabled={isSubmitting}
+          onPress={handleCancel}
+        >
           {cancelText ?? t('actions.cancel')}
-        </Button>
-        <Button
+        </AppButton>
+        <AppButton
           type="submit"
           variant="primary"
           isDisabled={isSubmitDisabled || isSubmitting}
           aria-busy={isSubmitting || undefined}
         >
           {confirmText ?? t('actions.confirm')}
-        </Button>
+        </AppButton>
       </>
     );
   };

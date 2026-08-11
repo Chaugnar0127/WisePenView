@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { ResultState, Spin } from '@/components/Feedback';
 import { useNoteService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
@@ -7,7 +8,7 @@ import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
-import { Button } from '@heroui/react';
+
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -33,7 +34,7 @@ function NoteOpenFailure({ subTitle }: { subTitle?: string }) {
             subTitle={subTitle}
             extra={
               <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                <Button variant="secondary">{t('workspace.backToDrive')}</Button>
+                <AppButton variant="secondary">{t('workspace.backToDrive')}</AppButton>
               </Link>
             }
           />

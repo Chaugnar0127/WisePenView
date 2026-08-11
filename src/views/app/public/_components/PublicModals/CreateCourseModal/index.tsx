@@ -1,8 +1,10 @@
+import { AppButton } from '@/components/Button';
 import { Input, TextArea } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useCourseService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
-import { Button, Label, TextField, toast } from '@heroui/react';
+import { Label, TextField, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -66,16 +68,16 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
       isDismissable={!request.loading}
       actions={
         <>
-          <Button
+          <AppButton
             variant="secondary"
             isDisabled={request.loading}
             onPress={() => onOpenChange(false)}
           >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button variant="primary" isPending={request.loading} onPress={handleCreate}>
+          </AppButton>
+          <AppButton variant="primary" isPending={request.loading} onPress={handleCreate}>
             {t('create.confirm')}
-          </Button>
+          </AppButton>
         </>
       }
     >

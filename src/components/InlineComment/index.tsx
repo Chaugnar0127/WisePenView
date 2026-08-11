@@ -1,4 +1,5 @@
 import AppAvatar from '@/components/Avatar';
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
@@ -6,7 +7,8 @@ import AppModal from '@/components/Overlay/AppModal';
 import type { InlineCommentItem, InlineCommentReactionGroup } from '@/domains/InlineComment';
 import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Chip, toast } from '@heroui/react';
+import { Chip, toast } from '@heroui/react';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Check, RotateCcw, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -285,7 +287,7 @@ function ResolvedCommentThread({
         ))}
       </div>
       <div className={styles.resolvedActions}>
-        <Button
+        <AppButton
           variant="ghost"
           size="sm"
           isDisabled={reopening}
@@ -295,7 +297,7 @@ function ResolvedCommentThread({
         >
           <RotateCcw size={14} aria-hidden />
           {t('inlineComment.reopen')}
-        </Button>
+        </AppButton>
         {canDelete ? (
           <AppIconButton
             icon={<Trash2 size={15} aria-hidden />}

@@ -1,5 +1,6 @@
+import { AppButton } from '@/components/Button';
 import type { Group, GroupResConfig } from '@/domains/Group';
-import { Button } from '@heroui/react';
+
 import { LogOut, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,15 +51,15 @@ function GroupDescriptionSettings({
       <GroupSettingsSection title={t('settings.operations')}>
         <div className={styles.dangerAction}>
           {currentUserRole === 'OWNER' ? (
-            <Button variant="danger" onPress={() => setDissolveGroupModalOpen(true)}>
+            <AppButton variant="danger" onPress={() => setDissolveGroupModalOpen(true)}>
               <Trash2 size={16} aria-hidden="true" />
               {t('dissolve.title')}
-            </Button>
+            </AppButton>
           ) : (
-            <Button variant="danger" onPress={() => setExitGroupModalOpen(true)}>
+            <AppButton variant="danger" onPress={() => setExitGroupModalOpen(true)}>
               <LogOut size={16} aria-hidden="true" />
               {t('exit.title')}
-            </Button>
+            </AppButton>
           )}
         </div>
       </GroupSettingsSection>

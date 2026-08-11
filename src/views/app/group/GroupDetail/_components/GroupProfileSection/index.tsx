@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
@@ -8,7 +9,8 @@ import { parseErrorMessage } from '@/utils/error';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { PLACEHOLDER_IMAGE } from '@/utils/image/placeholder';
 import { assertImageProxyUploadLimit } from '@/utils/image/uploadLimit';
-import { Button, Label, TextField, toast, Tooltip } from '@heroui/react';
+import { Label, TextField, toast, Tooltip } from '@heroui/react';
+
 import { Pencil } from 'lucide-react';
 import { useRef, useState, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -208,17 +210,17 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
         actions={
           canEdit ? (
             <>
-              <Button variant="secondary" isDisabled={saving} onPress={handleRestore}>
+              <AppButton variant="secondary" isDisabled={saving} onPress={handleRestore}>
                 {t('profile.restore')}
-              </Button>
-              <Button
+              </AppButton>
+              <AppButton
                 variant="primary"
                 isDisabled={saving}
                 aria-busy={saving || undefined}
                 onPress={handleSave}
               >
                 {t('actions.save', { ns: 'common' })}
-              </Button>
+              </AppButton>
             </>
           ) : undefined
         }
@@ -321,20 +323,20 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
         isDismissable={!saving}
         actions={
           <>
-            <Button
+            <AppButton
               variant="secondary"
               isDisabled={saving}
               onPress={() => handleCoverModalOpenChange(false)}
             >
               {t('actions.cancel', { ns: 'common' })}
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               variant="primary"
               isDisabled={!modalCoverFile || saving}
               onPress={handleConfirmCover}
             >
               {t('actions.confirm', { ns: 'common' })}
-            </Button>
+            </AppButton>
           </>
         }
       >

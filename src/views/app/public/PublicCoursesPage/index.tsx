@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import CourseCard from '@/components/Course/CourseCard';
 import { Empty, Spin } from '@/components/Feedback';
 import { useCourseService, useUserService } from '@/domains';
@@ -9,7 +10,7 @@ import {
   buildCoursePath,
   parseCourseListRouteQuery,
 } from '@/utils/navigation/appRoute';
-import { Button } from '@heroui/react';
+
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -70,19 +71,19 @@ function PublicCoursesPage() {
           canCreateCourse || canJoinCourse ? (
             <div className={styles.actionsRow}>
               {canCreateCourse ? (
-                <Button
+                <AppButton
                   variant={canJoinCourse ? 'secondary' : 'primary'}
                   onPress={() => setCreateModalOpen(true)}
                 >
                   <Plus size={16} aria-hidden />
                   {t('list.create')}
-                </Button>
+                </AppButton>
               ) : null}
               {canJoinCourse ? (
-                <Button variant="primary" onPress={() => setJoinModalOpen(true)}>
+                <AppButton variant="primary" onPress={() => setJoinModalOpen(true)}>
                   <UserPlus size={16} aria-hidden />
                   {t('list.join')}
-                </Button>
+                </AppButton>
               ) : null}
             </div>
           ) : null

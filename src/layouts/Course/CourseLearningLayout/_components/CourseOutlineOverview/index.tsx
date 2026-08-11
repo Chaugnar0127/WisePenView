@@ -1,6 +1,8 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import type { CourseOutlineContainerNode, CourseOutlineResourceNode } from '@/domains/Course';
-import { Button, Label, TextArea, TextField } from '@heroui/react';
+import { Label, TextArea, TextField } from '@heroui/react';
+
 import { ChevronRight, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CourseResourceIcon from '../CourseResourceIcon';
@@ -59,15 +61,15 @@ function CourseOutlineOverview({
                 <TextArea rows={5} placeholder={t('outline.descriptionPlaceholder')} />
               </TextField>
               <div className={styles.editorActions}>
-                <Button
+                <AppButton
                   size="sm"
                   variant="secondary"
                   isDisabled={description.saving}
                   onPress={description.cancelEditing}
                 >
                   {t('outline.cancelDescription')}
-                </Button>
-                <Button
+                </AppButton>
+                <AppButton
                   size="sm"
                   variant="primary"
                   isDisabled={description.saving}
@@ -75,7 +77,7 @@ function CourseOutlineOverview({
                   onPress={description.save}
                 >
                   {t('outline.saveDescription')}
-                </Button>
+                </AppButton>
               </div>
             </div>
           ) : editable && !description.description ? (

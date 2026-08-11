@@ -25,6 +25,13 @@ const heroUiOverlayPrimitiveImportRule = {
     '业务浮层请使用 src/components/Overlay 下的 AppAlertDialog、AppFormDialog、AppDisplayDialog 或 AppModal；底层 Modal / AlertDialog 只允许 Overlay 封装内部使用。',
 };
 
+const heroUiButtonPrimitiveImportRule = {
+  name: '@heroui/react',
+  importNames: ['Button'],
+  message:
+    '业务按钮请使用 src/components/Button 下的 AppButton；底层 Button 只允许 Button 封装内部使用。',
+};
+
 const projectOverlayModalImportRule = {
   name: '@/components/Overlay',
   importNames: ['Modal'],
@@ -95,6 +102,7 @@ const domainApiFunctionImportPattern = {
 
 const buildRestrictedImportsRule = ({
   allowApiRequest = false,
+  allowButtonPrimitive = false,
   allowDirectAxios = false,
   allowDomainApiFunction = false,
   allowOverlayPrimitive = false,
@@ -104,6 +112,7 @@ const buildRestrictedImportsRule = ({
   const paths = [
     ahooksUpdateEffectImportRule,
     reactFcImportRule,
+    ...(allowButtonPrimitive ? [] : [heroUiButtonPrimitiveImportRule]),
     ...(allowOverlayPrimitive
       ? []
       : [heroUiOverlayPrimitiveImportRule, projectOverlayModalImportRule]),
@@ -375,6 +384,13 @@ export default defineConfig([
     files: ['electron/**/*.{ts,tsx}'],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+  {
+    // Button 封装内部允许直连 HeroUI Button，其它业务代码统一使用 AppButton。
+    files: ['src/components/Button/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': buildRestrictedImportsRule({ allowButtonPrimitive: true }),
     },
   },
   {

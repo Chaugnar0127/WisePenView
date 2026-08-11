@@ -3,13 +3,15 @@ import {
   buildRegisterOnboardingPath,
   readRedirectParam,
 } from '@/bootstrap/authContinuation';
+import { AppButton } from '@/components/Button';
 import { Checkbox, FormField, Input, PasswordInput } from '@/components/Input';
 import { useAuthService } from '@/domains';
 import type { RegisterRequest } from '@/domains/Auth';
 import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
-import { Button, Form, toast } from '@heroui/react';
+import { Form, toast } from '@heroui/react';
+
 import { User } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -183,7 +185,7 @@ function Register() {
         </FormField>
 
         <div className={auth.formActions}>
-          <Button
+          <AppButton
             variant="primary"
             size="lg"
             type="submit"
@@ -191,7 +193,7 @@ function Register() {
             isDisabled={loading}
           >
             {t('register.submit')}
-          </Button>
+          </AppButton>
           <div className={auth.centerLinks}>
             <span>
               {t('register.hasAccount')}

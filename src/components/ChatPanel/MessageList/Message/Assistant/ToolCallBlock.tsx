@@ -1,5 +1,7 @@
+import { AppButton } from '@/components/Button';
 import { useMessageScroller } from '@/components/_shadcn';
-import { Button, Chip } from '@heroui/react';
+import { Chip } from '@heroui/react';
+
 import { getToolName, type DynamicToolUIPart, type ToolUIPart } from 'ai';
 import {
   CheckCircle2,
@@ -166,7 +168,7 @@ function ToolCallBlock({ part, autoCollapseOnFinish = true }: ToolCallBlockProps
 
   return (
     <div className={styles.wrapper}>
-      <Button
+      <AppButton
         variant="ghost"
         className={styles.trigger}
         aria-expanded={isExpanded}
@@ -190,7 +192,7 @@ function ToolCallBlock({ part, autoCollapseOnFinish = true }: ToolCallBlockProps
             data-expanded={isExpanded ? 'true' : 'false'}
           />
         </span>
-      </Button>
+      </AppButton>
 
       {isExpanded ? (
         <div id={panelId} className={styles.panel}>

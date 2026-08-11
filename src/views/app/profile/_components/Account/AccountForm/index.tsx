@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { Input, Select } from '@/components/Input';
 import { useUserService } from '@/domains';
@@ -6,7 +7,8 @@ import { DEGREE, SEX } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
 import type { ProfileFieldKey } from '@/views/app/profile/profile.config';
 import { getVisibleProfileFieldGroups } from '@/views/app/profile/profile.config';
-import { Button, Form, Label, ListBox, TextField, toast } from '@heroui/react';
+import { Form, Label, ListBox, TextField, toast } from '@heroui/react';
+
 import { Pencil, X } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -237,10 +239,10 @@ function AccountForm({
       <div className={styles.sectionHeader}>
         <h3 className={styles.sectionTitle}>{t('form.sectionTitle')}</h3>
         {!editMode ? (
-          <Button variant="primary" onPress={handleStartEdit}>
+          <AppButton variant="primary" onPress={handleStartEdit}>
             <Pencil size={16} aria-hidden="true" />
             {t('form.edit')}
-          </Button>
+          </AppButton>
         ) : null}
       </div>
       {editMode ? (
@@ -252,12 +254,12 @@ function AccountForm({
             </div>
           ))}
           <div className={styles.formActions}>
-            <Button type="submit" variant="primary" isDisabled={saving}>
+            <AppButton type="submit" variant="primary" isDisabled={saving}>
               {t('actions.save', { ns: 'common' })}
-            </Button>
-            <Button onPress={handleCancel} className={styles.cancelBtn}>
+            </AppButton>
+            <AppButton onPress={handleCancel} className={styles.cancelBtn}>
               {t('actions.cancel', { ns: 'common' })}
-            </Button>
+            </AppButton>
           </div>
         </Form>
       ) : (

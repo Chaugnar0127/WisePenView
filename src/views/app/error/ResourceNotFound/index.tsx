@@ -1,5 +1,6 @@
+import { AppButton } from '@/components/Button';
 import ErrorPageShell from '@/views/app/error/_components/ErrorPageShell';
-import { Button } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,16 +20,16 @@ function ResourceNotFound() {
         subTitle={t('page.notFoundDescription')}
         extra={
           <div className={shellStyles.actions}>
-            <Button
+            <AppButton
               variant="primary"
               size="lg"
               onPress={() => navigate(APP_ROUTE_PATH.PUBLIC_CHAT)}
             >
               {t('page.backHome')}
-            </Button>
-            <Button size="lg" onPress={() => navigate(-1)}>
+            </AppButton>
+            <AppButton size="lg" onPress={() => navigate(-1)}>
               {t('page.backPrevious')}
-            </Button>
+            </AppButton>
           </div>
         }
       />

@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { Empty, Spin } from '@/components/Feedback';
 import Select from '@/components/Input/Select';
 import { useGroupService } from '@/domains';
@@ -10,7 +11,8 @@ import {
   parseGroupListRouteQuery,
   type GroupListRole,
 } from '@/utils/navigation/appRoute';
-import { Button, ListBox } from '@heroui/react';
+import { ListBox } from '@heroui/react';
+
 import { Plus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -84,14 +86,14 @@ function PublicGroupsPage() {
         subtitle={t('list.subtitle')}
         actions={
           <div className={styles.actionsRow}>
-            <Button variant="secondary" onPress={() => setCreateModalOpen(true)}>
+            <AppButton variant="secondary" onPress={() => setCreateModalOpen(true)}>
               <Plus size={16} aria-hidden />
               {t('list.create')}
-            </Button>
-            <Button variant="primary" onPress={() => setJoinModalOpen(true)}>
+            </AppButton>
+            <AppButton variant="primary" onPress={() => setJoinModalOpen(true)}>
               <UserPlus size={16} aria-hidden />
               {t('list.join')}
-            </Button>
+            </AppButton>
           </div>
         }
       />

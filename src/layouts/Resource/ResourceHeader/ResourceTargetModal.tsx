@@ -1,8 +1,9 @@
+import { AppButton } from '@/components/Button';
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
 import type { DriveContainerNode, DriveNode, DriveNodeScope } from '@/domains/Drive';
-import { Button } from '@heroui/react';
+
 import { useMemoizedFn } from 'ahooks';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -69,21 +70,21 @@ function ResourceTargetModal({
       isDismissable={!submitting}
       actions={
         <>
-          <Button
+          <AppButton
             variant="secondary"
             isDisabled={submitting}
             onPress={() => handleOpenChange(false)}
           >
             {t('actions.cancel')}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={!target || submitting}
             aria-busy={submitting || undefined}
             onPress={() => target && onConfirm(target)}
           >
             {confirmText ?? t('actions.confirm')}
-          </Button>
+          </AppButton>
         </>
       }
     >

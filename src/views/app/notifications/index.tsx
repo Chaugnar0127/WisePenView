@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { EmptyState, ResultState, Spin } from '@/components/Feedback';
 import { useMessageService } from '@/domains';
 import type { UserMessage } from '@/domains/Message';
@@ -7,7 +8,8 @@ import { parseErrorMessage } from '@/utils/error';
 import { formatRelativeTimestamp, formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { extractMarkdownPlainText } from '@/utils/markdown/extractMarkdownPlainText';
 import { buildNotificationPath } from '@/utils/navigation/appRoute';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
 import clsx from 'clsx';
 import { CheckCheck, ChevronDown, ChevronUp, ExternalLink, RotateCw } from 'lucide-react';
@@ -174,7 +176,7 @@ function NotificationsPage() {
         title={t('page.title')}
         subtitle={t('page.subtitle')}
         actions={
-          <Button
+          <AppButton
             size="sm"
             variant="secondary"
             isDisabled={!hasUnreadMessages}
@@ -182,7 +184,7 @@ function NotificationsPage() {
           >
             <CheckCheck size={16} />
             {t('page.markAllAsRead')}
-          </Button>
+          </AppButton>
         }
       />
 
@@ -194,10 +196,10 @@ function NotificationsPage() {
               title={t('page.loadFailed')}
               subTitle={parseErrorMessage(messagesRequest.error)}
               extra={
-                <Button variant="primary" onPress={handleRefreshMessages}>
+                <AppButton variant="primary" onPress={handleRefreshMessages}>
                   <RotateCw size={16} />
                   {t('page.refresh')}
-                </Button>
+                </AppButton>
               }
             />
           </div>
@@ -317,14 +319,14 @@ function NotificationsPage() {
                       <p className={styles.messageContent}>{content}</p>
                       {message.jumpUrl ? (
                         <div className={styles.messageActions}>
-                          <Button
+                          <AppButton
                             size="sm"
                             variant="secondary"
                             onPress={() => handleOpenJumpUrl(message)}
                           >
                             <ExternalLink size={16} />
                             {t('page.jumpLink')}
-                          </Button>
+                          </AppButton>
                         </div>
                       ) : null}
                     </div>
@@ -341,7 +343,7 @@ function NotificationsPage() {
             ) : null}
             {hasMoreMessages ? (
               <div className={styles.loadMoreBar}>
-                <Button
+                <AppButton
                   variant="ghost"
                   size="sm"
                   className={styles.loadMoreButton}
@@ -349,7 +351,7 @@ function NotificationsPage() {
                   onPress={messagesRequest.loadMore}
                 >
                   {messagesRequest.loadingMore ? t('page.loadingMore') : t('page.loadMore')}
-                </Button>
+                </AppButton>
               </div>
             ) : null}
           </div>

@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { Empty, ResultState, Spin } from '@/components/Feedback';
 import Markdown from '@/components/Markdown';
@@ -11,7 +12,8 @@ import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import type { ResourceHostLayoutConfig } from '@/views/resource/ResourceHostContext';
-import { Button, Tabs, toast } from '@heroui/react';
+import { Tabs, toast } from '@heroui/react';
+
 import { FolderPlus, Pencil, Plus, Save, Settings, Upload } from 'lucide-react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -185,7 +187,7 @@ function SkillView({ resourceId }: SkillViewProps) {
           <div className={styles.topBarActions}>
             {canEdit ? (
               <>
-                <Button
+                <AppButton
                   variant="secondary"
                   onPress={navigation.handleToggleEditing}
                   isDisabled={
@@ -197,9 +199,9 @@ function SkillView({ resourceId }: SkillViewProps) {
                 >
                   <Pencil size={16} />
                   <span>{t(workspace.state.editing ? 'header.cancelEditing' : 'header.edit')}</span>
-                </Button>
+                </AppButton>
                 {workspace.state.editing || save.hasSaveableChanges ? (
-                  <Button
+                  <AppButton
                     variant="secondary"
                     onPress={save.handleSaveAll}
                     isDisabled={
@@ -208,7 +210,7 @@ function SkillView({ resourceId }: SkillViewProps) {
                   >
                     <Save size={16} />
                     <span>{t('header.save')}</span>
-                  </Button>
+                  </AppButton>
                 ) : null}
                 <VersionDropdown
                   items={versionItems}
@@ -216,7 +218,7 @@ function SkillView({ resourceId }: SkillViewProps) {
                   formatVersion={SkillServicesMap.formatVersion}
                   onSelect={navigation.handleVersionSelect}
                 />
-                <Button
+                <AppButton
                   variant="primary"
                   onPress={navigation.handlePublish}
                   isDisabled={
@@ -228,7 +230,7 @@ function SkillView({ resourceId }: SkillViewProps) {
                 >
                   <Upload size={16} />
                   <span>{t('header.publish')}</span>
-                </Button>
+                </AppButton>
               </>
             ) : null}
           </div>
@@ -286,7 +288,7 @@ function SkillView({ resourceId }: SkillViewProps) {
             subTitle={parseErrorMessage(resource.error)}
             extra={
               <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                <Button variant="secondary">{t('page.backToDrive')}</Button>
+                <AppButton variant="secondary">{t('page.backToDrive')}</AppButton>
               </Link>
             }
           />

@@ -1,9 +1,11 @@
+import { AppButton } from '@/components/Button';
 import { Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Chip } from '@heroui/react';
+import { Chip } from '@heroui/react';
+
 import { Bell, Pin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import sharedStyles from '../_styles/contextPage.module.less';
@@ -41,9 +43,9 @@ function CourseAnnouncementsPage() {
       ) : error ? (
         <div className={sharedStyles.state}>
           <span>{parseErrorMessage(error)}</span>
-          <Button variant="secondary" onPress={refresh}>
+          <AppButton variant="secondary" onPress={refresh}>
             {t('common.retry')}
-          </Button>
+          </AppButton>
         </div>
       ) : announcements.length > 0 ? (
         <div className={styles.announcementFeed}>

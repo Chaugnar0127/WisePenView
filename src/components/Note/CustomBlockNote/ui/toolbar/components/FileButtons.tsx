@@ -1,8 +1,10 @@
+import { AppButton } from '@/components/Button';
 import { blockNoteSchema } from '@/components/Note/CustomBlockNote/registry/noteEditorComposition';
 import { AppPopover } from '@/components/Overlay';
 import { blockHasType, editorHasBlockWithType } from '@blocknote/core';
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
-import { Button, Input } from '@heroui/react';
+import { Input } from '@heroui/react';
+
 import { PencilLine } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -92,9 +94,9 @@ export function FileCaptionToolbarButton(buttonGroupProps: ButtonGroupChildProps
             onChange={(event) => setCaption(event.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <Button size="sm" variant="primary" onPress={saveCaption}>
+          <AppButton size="sm" variant="primary" onPress={saveCaption}>
             {t('actions.confirm', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </div>
       </AppPopover.Content>
     </AppPopover>

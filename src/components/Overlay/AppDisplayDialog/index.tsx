@@ -1,4 +1,5 @@
-import { Button } from '@heroui/react';
+import { AppButton } from '@/components/Button';
+
 import clsx from 'clsx';
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -27,10 +28,10 @@ function renderAction(
 ) {
   const { label, icon, variant = defaultVariant, ...buttonProps } = action;
   return (
-    <Button variant={variant} {...buttonProps}>
+    <AppButton variant={variant} {...buttonProps}>
       {icon}
       {label}
-    </Button>
+    </AppButton>
   );
 }
 
@@ -83,9 +84,9 @@ function AppDisplayDialogRoot({
 
     if (resolvedCloseText !== false && resolvedCloseText != null) {
       return (
-        <Button variant="primary" onPress={handleClose}>
+        <AppButton variant="primary" onPress={handleClose}>
           {resolvedCloseText}
-        </Button>
+        </AppButton>
       );
     }
 

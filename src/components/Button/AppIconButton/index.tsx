@@ -93,3 +93,4 @@ function AppIconButton({
 }
 
 export default AppIconButton;
+export type { AppIconButtonProps, AppIconButtonTooltipOptions } from './index.type';

@@ -1,6 +1,7 @@
+import { AppButton } from '@/components/Button';
 import AppModal from '@/components/Overlay/AppModal';
 import type { DriveContainerNode } from '@/domains/Drive';
-import { Button } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DriveNavigator from '../../DriveNavigator';
@@ -44,21 +45,21 @@ function DriveFolderPickerDialog({
       isDismissable={!isSubmitting}
       actions={
         <>
-          <Button
+          <AppButton
             variant="secondary"
             isDisabled={isSubmitting}
             onPress={() => handleOpenChange(false)}
           >
             {cancelText ?? t('actions.cancel')}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={isSubmitting || !selectedTarget}
             aria-busy={isSubmitting || undefined}
             onPress={handleConfirm}
           >
             {confirmText ?? t('actions.confirm')}
-          </Button>
+          </AppButton>
         </>
       }
     >

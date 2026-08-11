@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useInteractService, useUserService } from '@/domains';
@@ -5,7 +6,8 @@ import type { CommentSortBy, ResourceComment } from '@/domains/Interact';
 import type { ResourceItem } from '@/domains/Resource';
 import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, Tabs, toast } from '@heroui/react';
+import { Tabs, toast } from '@heroui/react';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll } from 'ahooks';
 import { useEffect, useRef, useState, type Key } from 'react';
@@ -336,7 +338,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
           </div>
 
           {commentPageData && !commentsNoMore ? (
-            <Button
+            <AppButton
               variant="ghost"
               size="sm"
               className={styles.loadMoreButton}
@@ -346,7 +348,7 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
               {commentsLoadingMore
                 ? t('resource:comment.loadingShort')
                 : t('resource:comment.loadMore')}
-            </Button>
+            </AppButton>
           ) : null}
         </section>
       </div>

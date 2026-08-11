@@ -1,5 +1,6 @@
+import { AppButton } from '@/components/Button';
 import AppModal from '@/components/Overlay/AppModal';
-import { Button } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import ResourcePermissionPanel from '../ResourcePermissionPanel';
 import type { ResourcePermissionModalProps } from './index.type';
@@ -22,9 +23,9 @@ function ResourcePermissionModal({
       size="lg"
       bodyClassName={styles.modalBody}
       actions={
-        <Button variant="secondary" onPress={() => onOpenChange(false)}>
+        <AppButton variant="secondary" onPress={() => onOpenChange(false)}>
           {t('actions.close', { ns: 'common' })}
-        </Button>
+        </AppButton>
       }
     >
       <AppModal.DeferredContent fallback={<div className={styles.deferredPanel} />}>

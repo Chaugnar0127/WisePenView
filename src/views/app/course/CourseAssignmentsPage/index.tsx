@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
 import { COURSE_ASSIGNMENT_STATUS } from '@/domains/Course';
@@ -5,7 +6,7 @@ import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { buildCourseAssignmentPath } from '@/utils/navigation/appRoute';
-import { Button } from '@heroui/react';
+
 import { CalendarClock, CheckCircle2, ChevronRight, ClipboardCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -43,9 +44,9 @@ function CourseAssignmentsPage() {
       {error ? (
         <div className={styles.state}>
           <span>{parseErrorMessage(error)}</span>
-          <Button variant="secondary" onPress={refresh}>
+          <AppButton variant="secondary" onPress={refresh}>
             {t('common.retry')}
-          </Button>
+          </AppButton>
         </div>
       ) : null}
       {!loading && !error && data?.length === 0 ? (

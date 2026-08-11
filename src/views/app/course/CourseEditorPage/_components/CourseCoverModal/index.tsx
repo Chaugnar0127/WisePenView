@@ -1,6 +1,7 @@
+import { AppButton } from '@/components/Button';
 import { UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
-import { Button } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 
 interface CourseCoverModalProps {
@@ -27,12 +28,12 @@ function CourseCoverModal({
       title={t('editor.actions.changeCover')}
       actions={
         <>
-          <Button variant="secondary" onPress={() => onOpenChange(false)}>
+          <AppButton variant="secondary" onPress={() => onOpenChange(false)}>
             {t('editor.actions.cancel')}
-          </Button>
-          <Button variant="primary" isDisabled={!file} onPress={onConfirm}>
+          </AppButton>
+          <AppButton variant="primary" isDisabled={!file} onPress={onConfirm}>
             {t('editor.actions.confirm')}
-          </Button>
+          </AppButton>
         </>
       }
     >

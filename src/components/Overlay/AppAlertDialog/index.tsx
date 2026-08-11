@@ -1,4 +1,6 @@
-import { AlertDialog, Button } from '@heroui/react';
+import { AppButton } from '@/components/Button';
+import { AlertDialog } from '@heroui/react';
+
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -86,17 +88,17 @@ function AppAlertDialogRoot({
 
     return (
       <>
-        <Button variant="secondary" isDisabled={isConfirmLoading} onPress={handleCancel}>
+        <AppButton variant="secondary" isDisabled={isConfirmLoading} onPress={handleCancel}>
           {cancelText ?? t('actions.cancel')}
-        </Button>
-        <Button
+        </AppButton>
+        <AppButton
           variant={isDanger ? 'danger' : 'primary'}
           isDisabled={isConfirmDisabled || isConfirmLoading}
           aria-busy={isConfirmLoading || undefined}
           onPress={handleConfirm}
         >
           {confirmText ?? t('actions.confirm')}
-        </Button>
+        </AppButton>
       </>
     );
   };

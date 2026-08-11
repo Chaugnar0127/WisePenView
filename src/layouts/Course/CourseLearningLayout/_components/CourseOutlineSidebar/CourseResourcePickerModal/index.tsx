@@ -1,10 +1,12 @@
+import { AppButton } from '@/components/Button';
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
 import { useCourseService } from '@/domains';
 import type { CourseOutlineMountResource } from '@/domains/Course';
 import { useApi } from '@/hooks/useApi';
-import { Button, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -77,16 +79,16 @@ function CourseResourcePickerModal({
       isDismissable={!loading}
       actions={
         <>
-          <Button variant="secondary" isDisabled={loading} onPress={close}>
+          <AppButton variant="secondary" isDisabled={loading} onPress={close}>
             {t('editor.actions.cancel')}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={loading || selectedResources.length === 0}
             onPress={mountResources}
           >
             {t('editor.outline.mountSelected', { count: selectedResources.length })}
-          </Button>
+          </AppButton>
         </>
       }
     >

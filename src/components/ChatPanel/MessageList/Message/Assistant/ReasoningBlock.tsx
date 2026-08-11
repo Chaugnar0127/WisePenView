@@ -1,5 +1,6 @@
+import { AppButton } from '@/components/Button';
 import { useMessageScroller } from '@/components/_shadcn';
-import { Button } from '@heroui/react';
+
 import { Brain, ChevronDown } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -74,7 +75,7 @@ function ReasoningBlock({
 
   return (
     <div className={styles.wrapper}>
-      <Button
+      <AppButton
         variant="ghost"
         size="sm"
         className={styles.header}
@@ -98,7 +99,7 @@ function ReasoningBlock({
           className={styles.indicator}
           data-expanded={isExpanded ? 'true' : 'false'}
         />
-      </Button>
+      </AppButton>
 
       <div ref={collapseRef} id={panelId} className={styles.collapse} aria-hidden={!isExpanded}>
         <blockquote className={styles.content}>{content}</blockquote>

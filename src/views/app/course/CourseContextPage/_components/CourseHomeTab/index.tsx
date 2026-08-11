@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { Spin } from '@/components/Feedback';
 import { useCourseService } from '@/domains';
 import { COURSE_ROLE } from '@/domains/Course';
@@ -9,7 +10,8 @@ import {
   buildCourseLearningPath,
   buildCoursePath,
 } from '@/utils/navigation/appRoute';
-import { Button, Meter, ProgressBar } from '@heroui/react';
+import { Meter, ProgressBar } from '@heroui/react';
+
 import { ArrowRight, Bell, BookOpen, CalendarClock, ClipboardCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -47,9 +49,9 @@ function CourseHomeTab() {
     return (
       <div className={styles.state}>
         <span>{error ? parseErrorMessage(error) : t('common.notFound')}</span>
-        <Button variant="secondary" onPress={refresh}>
+        <AppButton variant="secondary" onPress={refresh}>
           {t('common.retry')}
-        </Button>
+        </AppButton>
       </div>
     );
   }
@@ -72,13 +74,13 @@ function CourseHomeTab() {
               </p>
             </div>
           </div>
-          <Button
+          <AppButton
             variant="primary"
             onPress={() => navigate(buildCourseLearningPath(course.courseId))}
           >
             {canEditOutline ? t('home.enterEditing') : t('home.enterLearning')}
             <ArrowRight size={16} aria-hidden />
-          </Button>
+          </AppButton>
         </section>
 
         <section className={styles.homeSection}>
@@ -89,13 +91,13 @@ function CourseHomeTab() {
               </span>
               <h2>{t('home.pendingAssignments')}</h2>
             </div>
-            <Button
+            <AppButton
               variant="secondary"
               size="sm"
               onPress={() => navigate(buildCourseAssignmentPath(course.courseId))}
             >
               {t('home.viewAll')}
-            </Button>
+            </AppButton>
           </div>
           {visibleAssignments.length > 0 ? (
             <div className={styles.assignmentList}>
@@ -132,13 +134,13 @@ function CourseHomeTab() {
               </span>
               <h2>{t('home.announcements')}</h2>
             </div>
-            <Button
+            <AppButton
               variant="secondary"
               size="sm"
               onPress={() => navigate(buildCoursePath(course.courseId, 'announcements'))}
             >
               {t('home.viewAll')}
-            </Button>
+            </AppButton>
           </div>
           {visibleAnnouncements.length > 0 ? (
             <div className={styles.announcementList}>

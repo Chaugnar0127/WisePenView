@@ -1,7 +1,8 @@
+import { AppButton } from '@/components/Button';
 import { AppModal } from '@/components/Overlay';
 import Tree, { type DataNode } from '@/components/Tree';
 import type { CourseOutlineNode } from '@/domains/Course';
-import { Button } from '@heroui/react';
+
 import { BookOpen, BookOpenText, BookText, NotebookText } from 'lucide-react';
 import { useState, type Key } from 'react';
 import styles from '../../style.module.less';
@@ -68,14 +69,14 @@ function CourseOutlineMoveModal(props: CourseOutlineMoveModalProps) {
       isDismissable={!props.isSubmitting}
       actions={
         <>
-          <Button
+          <AppButton
             variant="secondary"
             isDisabled={props.isSubmitting}
             onPress={() => handleOpenChange(false)}
           >
             {props.cancelText}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={props.isSubmitting || !selectedTargetId}
             aria-busy={props.isSubmitting || undefined}
@@ -84,7 +85,7 @@ function CourseOutlineMoveModal(props: CourseOutlineMoveModalProps) {
             }}
           >
             {props.confirmText}
-          </Button>
+          </AppButton>
         </>
       }
     >

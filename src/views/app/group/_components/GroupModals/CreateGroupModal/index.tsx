@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import { Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
@@ -9,7 +10,8 @@ import {
   assertImageProxyUploadLimit,
   IMAGE_UPLOAD_MAX_SIZE_LABEL,
 } from '@/utils/image/uploadLimit';
-import { Button, Label, TextField, toast } from '@heroui/react';
+import { Label, TextField, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateGroupModalProps } from './index.type';
@@ -123,17 +125,17 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
       isDismissable={!submitting}
       actions={
         <>
-          <Button variant="secondary" isDisabled={submitting} onPress={handleCancel}>
+          <AppButton variant="secondary" isDisabled={submitting} onPress={handleCancel}>
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="primary"
             isDisabled={submitting}
             aria-busy={submitting || undefined}
             onPress={handleConfirm}
           >
             {t('actions.confirm', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

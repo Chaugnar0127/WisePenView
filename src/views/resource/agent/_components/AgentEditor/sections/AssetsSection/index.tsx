@@ -1,7 +1,9 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import type { AgentAsset } from '@/domains/Agent';
 import { formatFileSize } from '@/utils/format/formatFileSize';
-import { Button, Table } from '@heroui/react';
+import { Table } from '@heroui/react';
+
 import { Trash2, Upload } from 'lucide-react';
 import { useRef, useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -73,7 +75,7 @@ export default function AssetsSection({ assets, disabled, uploading, onUpload, o
       title={t('assets.title')}
       description={t('assets.description')}
       actions={
-        <Button
+        <AppButton
           size="sm"
           variant="secondary"
           isDisabled={uploadDisabled}
@@ -81,7 +83,7 @@ export default function AssetsSection({ assets, disabled, uploading, onUpload, o
         >
           <Upload size={14} />
           {t('assets.upload')}
-        </Button>
+        </AppButton>
       }
     >
       <div

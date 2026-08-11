@@ -1,8 +1,10 @@
 import AppAvatar from '@/components/Avatar';
+import { AppButton } from '@/components/Button';
 import { Input } from '@/components/Input';
 import type { UserSearchUser } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
-import { Button, TextField } from '@heroui/react';
+import { TextField } from '@heroui/react';
+
 import { useUnmount } from 'ahooks';
 import clsx from 'clsx';
 import type { KeyboardEvent } from 'react';
@@ -216,7 +218,7 @@ function UserSearchCombobox({
           />
         </TextField>
         {submitLabel ? (
-          <Button
+          <AppButton
             variant="secondary"
             className={styles.submitButton}
             isDisabled={disabled || loading}
@@ -224,7 +226,7 @@ function UserSearchCombobox({
           >
             {submitIcon}
             {submitLabel}
-          </Button>
+          </AppButton>
         ) : null}
       </div>
       {shouldShowList ? (

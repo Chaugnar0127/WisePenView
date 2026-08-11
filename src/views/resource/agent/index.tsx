@@ -1,7 +1,8 @@
+import { AppButton } from '@/components/Button';
 import { ResultState, Spin } from '@/components/Feedback';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button } from '@heroui/react';
+
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ResourceLayoutConfig from '../_components/ResourceLayoutConfig';
@@ -27,7 +28,7 @@ export default function AgentView({ resourceId }: AgentViewProps) {
             subTitle={parseErrorMessage(version.error)}
             extra={
               <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                <Button variant="secondary">{t('agent:page.backToDrive')}</Button>
+                <AppButton variant="secondary">{t('agent:page.backToDrive')}</AppButton>
               </Link>
             }
           />

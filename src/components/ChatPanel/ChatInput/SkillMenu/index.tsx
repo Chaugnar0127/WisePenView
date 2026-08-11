@@ -1,9 +1,11 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { AppPopover } from '@/components/Overlay';
 import { useChatService } from '@/domains';
 import { buildSkillMenuSections } from '@/domains/Chat';
 import { useApi } from '@/hooks/useApi';
-import { Button, Header, ListBox, ListBoxSection, Skeleton } from '@heroui/react';
+import { Header, ListBox, ListBoxSection, Skeleton } from '@heroui/react';
+
 import { Settings, Sparkles, Wrench } from 'lucide-react';
 import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -237,7 +239,7 @@ function SkillMenu() {
               ) : null}
             </ListBox>
 
-            <Button
+            <AppButton
               size="sm"
               variant="ghost"
               className={styles.agentGroupAction}
@@ -247,7 +249,7 @@ function SkillMenu() {
                 <Sparkles size={14} aria-hidden="true" />
                 <span>{t('input.skillMenu.selectOther')}</span>
               </span>
-            </Button>
+            </AppButton>
           </div>
         )}
       </AppPopover.Content>

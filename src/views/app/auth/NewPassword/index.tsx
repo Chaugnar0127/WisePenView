@@ -1,11 +1,13 @@
 import { getCurrentRouteSearch } from '@/bootstrap/authContinuation';
+import { AppButton } from '@/components/Button';
 import { FormField, PasswordInput } from '@/components/Input';
 import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
 import { useAuthService } from '@/domains';
 import type { NewPasswordRequest } from '@/domains/Auth';
 import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Button, Form, toast } from '@heroui/react';
+import { Form, toast } from '@heroui/react';
+
 import { useMount } from 'ahooks';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -143,7 +145,7 @@ function NewPassword() {
         </FormField>
 
         <div className={auth.formActions}>
-          <Button
+          <AppButton
             variant="primary"
             size="lg"
             type="submit"
@@ -151,7 +153,7 @@ function NewPassword() {
             isDisabled={loading}
           >
             {t('newPassword.submit')}
-          </Button>
+          </AppButton>
           <div className={auth.centerLinks}>
             <Link to={APP_ROUTE_PATH.AUTH_LOGIN}>{t('newPassword.backToLogin')}</Link>
           </div>

@@ -1,4 +1,5 @@
-import { Button } from '@heroui/react';
+import { AppButton } from '@/components/Button';
+
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useRouteError } from 'react-router-dom';
 
@@ -25,10 +26,10 @@ function RouteError() {
         subTitle={errorInfo.subTitle}
         extra={
           <div className={shellStyles.actions}>
-            <Button variant="primary" onPress={() => window.location.reload()}>
+            <AppButton variant="primary" onPress={() => window.location.reload()}>
               {t('page.reload')}
-            </Button>
-            <Button onPress={() => navigate(-1)}>{t('page.backPrevious')}</Button>
+            </AppButton>
+            <AppButton onPress={() => navigate(-1)}>{t('page.backPrevious')}</AppButton>
           </div>
         }
       >

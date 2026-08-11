@@ -1,11 +1,15 @@
+import { AppButton, type AppButtonProps } from '@/components/Button';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
-import { Button, ToggleButton, Tooltip } from '@heroui/react';
+import { ToggleButton, Tooltip } from '@heroui/react';
+
 import clsx from 'clsx';
-import { cloneElement, type ComponentProps, type ReactElement, type ReactNode } from 'react';
+import { cloneElement, type ReactElement, type ReactNode } from 'react';
 import styles from '../style.module.less';
 import { stopToolbarMouseDown } from '../utils';
 
-export type ButtonGroupChildProps = Pick<ComponentProps<typeof Button>, '__button_group_child'>;
+export interface ButtonGroupChildProps {
+  __button_group_child?: AppButtonProps['__button_group_child'];
+}
 
 interface ToolbarButtonProps extends ButtonGroupChildProps {
   label: string;
@@ -13,7 +17,7 @@ interface ToolbarButtonProps extends ButtonGroupChildProps {
   isDisabled?: boolean;
   isActive?: boolean;
   className?: string;
-  onHoverChange?: ComponentProps<typeof Button>['onHoverChange'];
+  onHoverChange?: AppButtonProps['onHoverChange'];
   onPress?: () => void;
   overlayTrigger?: ReactElement;
 }
@@ -30,7 +34,7 @@ export function ToolbarButton({
   __button_group_child: isButtonGroupChild,
 }: ToolbarButtonProps) {
   const button = (
-    <Button
+    <AppButton
       __button_group_child={isButtonGroupChild}
       aria-label={label}
       aria-pressed={isActive}
@@ -44,7 +48,7 @@ export function ToolbarButton({
       onPress={onPress}
     >
       {icon}
-    </Button>
+    </AppButton>
   );
 
   return (

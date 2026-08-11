@@ -1,14 +1,7 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import AppModal from '@/components/Overlay/AppModal';
-import {
-  Autocomplete,
-  Button,
-  EmptyState,
-  ListBox,
-  SearchField,
-  useFilter,
-  type Key,
-} from '@heroui/react';
+import { Autocomplete, EmptyState, ListBox, SearchField, useFilter, type Key } from '@heroui/react';
 import { Plus, Sparkles, Trash2, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -140,9 +133,9 @@ export default function CapabilityPolicyPanel({
         description={description}
         size="lg"
         actions={
-          <Button variant="primary" onPress={() => setIsPickerOpen(false)}>
+          <AppButton variant="primary" onPress={() => setIsPickerOpen(false)}>
             {t('common.done')}
-          </Button>
+          </AppButton>
         }
       >
         <div className={styles.modalPicker}>

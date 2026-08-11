@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import TagPermissionActionEditor from '@/components/Drive/PermissionActionEditor';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService } from '@/domains';
@@ -8,7 +9,8 @@ import {
   type TagResourceAction,
 } from '@/domains/Tag';
 import { useApi } from '@/hooks/useApi';
-import { Button, Tabs, toast } from '@heroui/react';
+import { Tabs, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -136,12 +138,16 @@ function GroupDefaultAccessPermissionModal({
       isDismissable={!saving}
       actions={
         <>
-          <Button variant="secondary" isDisabled={saving} onPress={() => handleOpenChange(false)}>
+          <AppButton
+            variant="secondary"
+            isDisabled={saving}
+            onPress={() => handleOpenChange(false)}
+          >
             {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button variant="primary" isPending={saving} onPress={() => runSave(selectedActions)}>
+          </AppButton>
+          <AppButton variant="primary" isPending={saving} onPress={() => runSave(selectedActions)}>
             {t('actions.save', { ns: 'common' })}
-          </Button>
+          </AppButton>
         </>
       }
     >

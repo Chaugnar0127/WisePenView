@@ -1,11 +1,13 @@
 /**
  * 高级组组长：个人计算点与小组池之间的 Token 划拨（transferTokenBetweenGroupAndUser）。
  */
+import { AppButton } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { useGroupService, useWalletService } from '@/domains';
 import { WALLET_TOKEN_TRANSFER_TYPE } from '@/domains/Wallet';
 import { useApi } from '@/hooks/useApi';
-import { Button, Skeleton, TextField, toast } from '@heroui/react';
+import { Skeleton, TextField, toast } from '@heroui/react';
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OwnerGroupTokenTransferProps } from './index.type';
@@ -119,9 +121,9 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
 
       <div className={styles.balanceHeader}>
         <h3 className={styles.balanceTitle}>{t('transfer.currentBalance')}</h3>
-        <Button onPress={() => void loadBalances()} isDisabled={balanceLoading}>
+        <AppButton onPress={() => void loadBalances()} isDisabled={balanceLoading}>
           {t('transfer.refresh')}
-        </Button>
+        </AppButton>
       </div>
       <div className={styles.balanceRow}>
         <div className={styles.balanceItem}>
@@ -174,13 +176,13 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
             placeholder={t('transfer.amountPlaceholder')}
           />
         </TextField>
-        <Button
+        <AppButton
           variant="primary"
           isDisabled={submittingToGroup || balanceLoading}
           onPress={() => void handleGiveToGroup()}
         >
           {t('transfer.toGroupConfirm')}
-        </Button>
+        </AppButton>
       </div>
 
       <hr className={styles.divider} />
@@ -209,13 +211,13 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
             placeholder={t('transfer.amountPlaceholder')}
           />
         </TextField>
-        <Button
+        <AppButton
           variant="primary"
           isDisabled={submittingToOwner || balanceLoading}
           onPress={() => void handleGiveToOwner()}
         >
           {t('transfer.toOwnerConfirm')}
-        </Button>
+        </AppButton>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { AppModal, AppPopover } from '@/components/Overlay';
 import type { TreeDataNode } from '@/components/Tree';
@@ -7,7 +8,8 @@ import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from
 import type { Group } from '@/domains/Group';
 import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
-import { Button, ListBox, Skeleton, toast } from '@heroui/react';
+import { ListBox, Skeleton, toast } from '@heroui/react';
+
 import { useInfiniteScroll, useLatest } from 'ahooks';
 import { Bot, Folder } from 'lucide-react';
 import type { Key } from 'react';
@@ -227,7 +229,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
             </div>
           )}
           {hasMorePersonalAgents ? (
-            <Button
+            <AppButton
               size="sm"
               variant="ghost"
               className={styles.popoverLoadMore}
@@ -235,9 +237,9 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
               onPress={loadMorePersonal}
             >
               {t('session.loadMore')}
-            </Button>
+            </AppButton>
           ) : null}
-          <Button
+          <AppButton
             size="sm"
             variant="ghost"
             className={styles.agentGroupAction}
@@ -247,7 +249,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
               <Folder size={14} color="var(--resource-icon-folder)" />
               <span>{t('input.agentPicker.selectFromGroup')}</span>
             </span>
-          </Button>
+          </AppButton>
         </AppPopover.Content>
       </AppPopover>
       <GroupAgentPickerModal
@@ -477,7 +479,7 @@ function GroupAgentPickerModalContent({
                   />
                 )}
                 {!loading && hasMoreGroups ? (
-                  <Button
+                  <AppButton
                     size="sm"
                     variant="ghost"
                     className={styles.popoverLoadMore}
@@ -485,7 +487,7 @@ function GroupAgentPickerModalContent({
                     onPress={handleLoadMoreGroups}
                   >
                     {t('session.loadMore')}
-                  </Button>
+                  </AppButton>
                 ) : null}
               </div>
             </div>

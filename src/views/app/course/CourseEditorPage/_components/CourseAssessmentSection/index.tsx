@@ -1,8 +1,10 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import { PieChart } from '@/components/Chart';
 import { Input } from '@/components/Input';
 import type { CourseAssessmentItem, CourseFinalAssessment } from '@/domains/Course';
-import { Button, Label, ListBox, Select, TextField } from '@heroui/react';
+import { Label, ListBox, Select, TextField } from '@heroui/react';
+
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -87,7 +89,7 @@ function CourseAssessmentSection({
               </div>
             ))}
           </div>
-          <Button
+          <AppButton
             variant="secondary"
             onPress={() =>
               onUpdate('assessmentItems', [
@@ -98,7 +100,7 @@ function CourseAssessmentSection({
           >
             <Plus size={16} aria-hidden />
             {t('editor.actions.addAssessment')}
-          </Button>
+          </AppButton>
         </div>
         <PieChart
           items={form.assessmentItems.map((item) => ({

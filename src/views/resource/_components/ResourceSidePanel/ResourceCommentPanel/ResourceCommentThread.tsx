@@ -1,7 +1,8 @@
+import { AppButton } from '@/components/Button';
 import { useInteractService } from '@/domains';
 import type { ResourceComment } from '@/domains/Interact';
 import { parseErrorMessage } from '@/utils/error';
-import { Button } from '@heroui/react';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll } from 'ahooks';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -168,7 +169,7 @@ function ResourceCommentThread({
       />
 
       {rootComment.replyCount > 0 ? (
-        <Button
+        <AppButton
           variant="ghost"
           size="sm"
           className={styles.replyToggle}
@@ -178,7 +179,7 @@ function ResourceCommentThread({
           {expanded
             ? t('comment.collapseReplies')
             : t('comment.replyCount', { count: rootComment.replyCount })}
-        </Button>
+        </AppButton>
       ) : null}
 
       {expanded ? (
@@ -231,7 +232,7 @@ function ResourceCommentThread({
             <p className={styles.errorText}>{parseErrorMessage(repliesError)}</p>
           ) : null}
           {replyPageData && !repliesNoMore ? (
-            <Button
+            <AppButton
               variant="ghost"
               size="sm"
               className={styles.loadMoreButton}
@@ -239,7 +240,7 @@ function ResourceCommentThread({
               onPress={loadMoreReplies}
             >
               {repliesLoadingMore ? t('comment.loadingShort') : t('comment.moreReplies')}
-            </Button>
+            </AppButton>
           ) : null}
         </div>
       ) : null}

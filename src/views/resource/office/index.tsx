@@ -1,4 +1,5 @@
 import { ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL } from '@/apis/clientUrls';
+import { AppButton } from '@/components/Button';
 import { ResultState, Spin } from '@/components/Feedback';
 import { useDocumentService, useInteractService } from '@/domains';
 import type { ResourceItem } from '@/domains/Resource';
@@ -17,7 +18,7 @@ import {
   useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
-import { Button } from '@heroui/react';
+
 import type { Config } from '@onlyoffice/doceditor-types';
 import { DocumentEditor } from '@onlyoffice/document-editor-react';
 import { useMemoizedFn } from 'ahooks';
@@ -205,7 +206,7 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
               title={t('office.cannotOpen')}
               extra={
                 <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                  <Button variant="secondary">{t('viewer.backToDrive')}</Button>
+                  <AppButton variant="secondary">{t('viewer.backToDrive')}</AppButton>
                 </Link>
               }
             />
@@ -226,7 +227,7 @@ function OfficeView({ resourceId }: OfficeViewProps = {}) {
               subTitle={parseErrorMessage(error)}
               extra={
                 <Link to={APP_ROUTE_PATH.DRIVE_PERSONAL}>
-                  <Button variant="secondary">{t('viewer.backToDrive')}</Button>
+                  <AppButton variant="secondary">{t('viewer.backToDrive')}</AppButton>
                 </Link>
               }
             />

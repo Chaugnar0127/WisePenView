@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react';
 
-import type { Button } from '@heroui/react';
+import type { AppButtonProps } from '@/components/Button';
 
 import type { Modal } from '../Modal';
 
@@ -8,12 +8,9 @@ export type AppDisplayDialogSize = ComponentProps<typeof Modal.Container>['size'
 
 export type AppDisplayDialogPlacement = ComponentProps<typeof Modal.Container>['placement'];
 
-export type AppDisplayDialogButtonVariant = ComponentProps<typeof Button>['variant'];
+export type AppDisplayDialogButtonVariant = AppButtonProps['variant'];
 
-export interface AppDisplayDialogAction extends Omit<
-  ComponentProps<typeof Button>,
-  'children' | 'variant'
-> {
+export interface AppDisplayDialogAction extends Omit<AppButtonProps, 'children' | 'variant'> {
   label: ReactNode;
   icon?: ReactNode;
   variant?: AppDisplayDialogButtonVariant;

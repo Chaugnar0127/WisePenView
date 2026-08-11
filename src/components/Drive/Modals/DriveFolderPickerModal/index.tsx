@@ -1,8 +1,8 @@
 import { AppButton } from '@/components/Button';
 import AppModal from '@/components/Overlay/AppModal';
+import { usePickerSelection } from '@/components/Picker';
 import type { DriveContainerNode } from '@/domains/Drive';
 
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DriveNavigator from '../../DriveNavigator';
 import type { DriveFolderPickerModalProps } from './index.type';
@@ -23,17 +23,20 @@ function DriveFolderPickerDialog({
   onConfirm,
 }: DriveFolderPickerModalProps) {
   const { t } = useTranslation('common');
-  const [selectedTarget, setSelectedTarget] = useState<DriveContainerNode>();
+  const selection = usePickerSelection<DriveContainerNode | undefined>({
+    initialValue: undefined,
+    getCount: (value) => (value ? 1 : 0),
+  });
 
   const handleOpenChange = (open: boolean) => {
     if (!open && isSubmitting) return;
-    if (!open) setSelectedTarget(undefined);
+    if (!open) selection.clear();
     onOpenChange(open);
   };
 
   const handleConfirm = () => {
-    if (!selectedTarget || isSubmitting) return;
-    onConfirm(selectedTarget);
+    if (!selection.value || isSubmitting) return;
+    onConfirm(selection.value);
   };
 
   return (
@@ -54,7 +57,7 @@ function DriveFolderPickerDialog({
           </AppButton>
           <AppButton
             variant="primary"
-            isDisabled={isSubmitting || !selectedTarget}
+            isDisabled={isSubmitting || !selection.canConfirm}
             aria-busy={isSubmitting || undefined}
             onPress={handleConfirm}
           >
@@ -76,7 +79,7 @@ function DriveFolderPickerDialog({
             disabled={isSubmitting}
             onNodeChange={(selected) => {
               const node = selected[0];
-              setSelectedTarget(
+              selection.setValue(
                 node && (node.type === 'root' || node.type === 'folder') ? node : undefined
               );
             }}

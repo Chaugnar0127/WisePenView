@@ -2,8 +2,8 @@ import { AppButton } from '@/components/Button';
 import DriveNavigator from '@/components/Drive/DriveNavigator';
 import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
+import { usePickerSelection } from '@/components/Picker';
 
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
 import type { LocalResourcePayload } from '../index.type';
@@ -22,10 +22,13 @@ function mapDriveSelectionToDocRef(item: DriveSelectionItem): LocalResourcePaylo
 function DocumentPickerContent() {
   const { t } = useTranslation(['chat', 'common']);
   const { addDocRefs, setDocumentPickerOpen } = useChatInputStoreApi().getState();
-  const [selectedResources, setSelectedResources] = useState<LocalResourcePayload[]>([]);
+  const selection = usePickerSelection<LocalResourcePayload[]>({
+    initialValue: [],
+    getCount: (value) => value.length,
+  });
 
   function handleSelectionChange(items: DriveSelectionItem[]): void {
-    setSelectedResources(
+    selection.setValue(
       items
         .map((item) => mapDriveSelectionToDocRef(item))
         .filter((item): item is LocalResourcePayload => item != null)
@@ -33,12 +36,12 @@ function DocumentPickerContent() {
   }
 
   function handleClose(): void {
-    setSelectedResources([]);
+    selection.clear();
     setDocumentPickerOpen(false);
   }
 
   function handleConfirm(): void {
-    addDocRefs(selectedResources);
+    addDocRefs(selection.value);
     handleClose();
   }
 
@@ -63,11 +66,7 @@ function DocumentPickerContent() {
         <AppButton variant="secondary" onPress={handleClose}>
           {t('actions.cancel', { ns: 'common' })}
         </AppButton>
-        <AppButton
-          variant="primary"
-          onPress={handleConfirm}
-          isDisabled={selectedResources.length === 0}
-        >
+        <AppButton variant="primary" onPress={handleConfirm} isDisabled={!selection.canConfirm}>
           {t('actions.confirm', { ns: 'common' })}
         </AppButton>
       </AppModal.Footer>

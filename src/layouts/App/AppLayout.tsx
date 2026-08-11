@@ -10,6 +10,7 @@ import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
 import { focusVisibleSidebarToggle } from '@/layouts/_common/a11y/sidebarToggle';
 import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
+import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
 import AppSidebar from '@/layouts/_common/Sidebar/AppSidebar';
 import {
   clampSidebarWidth,
@@ -84,10 +85,14 @@ const AppMainColumn = memo(function AppMainColumn({
       onGoForward={onGoForward}
       onToggleLeftSidebar={onToggleSidebar}
     >
-      <Outlet />
+      <RouteOutletBoundary>
+        <Outlet />
+      </RouteOutletBoundary>
     </AppResourceShell>
   ) : (
-    <Outlet />
+    <RouteOutletBoundary>
+      <Outlet />
+    </RouteOutletBoundary>
   );
 
   return (

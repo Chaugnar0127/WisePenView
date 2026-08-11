@@ -8,6 +8,7 @@ import {
 import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
 import { focusVisibleSidebarToggle } from '@/layouts/_common/a11y/sidebarToggle';
 import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
+import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
 import AdminSidebar from '@/layouts/_common/Sidebar/AdminSidebar';
 import {
   RESIZE_TARGET_MINIMUM_SIZE,
@@ -118,7 +119,9 @@ function AdminLayout() {
           className={styles.middleLayout}
         >
           <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.middleContent}>
-            <Outlet />
+            <RouteOutletBoundary>
+              <Outlet />
+            </RouteOutletBoundary>
           </main>
         </SystemResizablePanel>
       </SystemResizablePanelGroup>

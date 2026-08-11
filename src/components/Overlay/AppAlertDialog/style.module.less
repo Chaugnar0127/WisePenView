@@ -15,6 +15,14 @@
 
 .icon {
   flex: 0 0 auto;
+
+  &[data-status='warning'] {
+    color: var(--warning-text);
+  }
+
+  &[data-status='danger'] {
+    color: var(--danger-text);
+  }
 }
 
 .headerContent {

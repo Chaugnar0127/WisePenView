@@ -1,6 +1,5 @@
 import { AppButton } from '@/components/Button';
-import { AppMenu } from '@/components/Overlay';
-
+import { Dropdown, Label } from '@heroui/react';
 import { ChevronDown, GitBranch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { VersionDropdownProps } from './index.type';
@@ -10,16 +9,16 @@ function VersionDropdown({ items, disabledKeys, formatVersion, onSelect }: Versi
   const currentItem = items.find((item) => item.current) ?? items[0];
 
   return (
-    <AppMenu>
-      <AppMenu.Trigger>
+    <Dropdown>
+      <Dropdown.Trigger>
         <AppButton aria-label={t('version.selectAria')} variant="secondary">
           <GitBranch size={16} />
           <span>{currentItem ? formatVersion(currentItem.version) : '-'}</span>
           <ChevronDown size={10} />
         </AppButton>
-      </AppMenu.Trigger>
-      <AppMenu.Popover>
-        <AppMenu.Menu
+      </Dropdown.Trigger>
+      <Dropdown.Popover>
+        <Dropdown.Menu
           disabledKeys={disabledKeys}
           onAction={(key) => {
             const item = items.find((versionItem) => versionItem.key === key);
@@ -27,14 +26,16 @@ function VersionDropdown({ items, disabledKeys, formatVersion, onSelect }: Versi
           }}
         >
           {items.map((item) => (
-            <AppMenu.Item key={item.key} id={item.key} textValue={formatVersion(item.version)}>
-              {formatVersion(item.version)}
-              {item.current ? t('version.current') : ''}
-            </AppMenu.Item>
+            <Dropdown.Item key={item.key} id={item.key} textValue={formatVersion(item.version)}>
+              <Label>
+                {formatVersion(item.version)}
+                {item.current ? t('version.current') : ''}
+              </Label>
+            </Dropdown.Item>
           ))}
-        </AppMenu.Menu>
-      </AppMenu.Popover>
-    </AppMenu>
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }
 

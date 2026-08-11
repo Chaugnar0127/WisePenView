@@ -196,29 +196,18 @@
   box-shadow: var(--card-shadow);
 }
 
-.popoverPanel,
 .modelMenu {
   min-width: 220px;
   max-width: 340px;
   padding: var(--space-xs);
-  background: var(--surface);
 }
 
 .popoverPanelScrollable {
-  box-sizing: border-box;
   width: min(320px, calc(100vw - var(--space-xl, 32px)));
   height: min(360px, 70vh);
   max-height: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xs);
-  padding-inline: 0;
   overflow-y: auto;
   .appSubtleScrollbar();
-}
-
-.compactPopoverHeader {
-  padding-inline: var(--space-sm, var(--space-sm));
 }
 
 .modelMenu {
@@ -226,13 +215,8 @@
 }
 
 .popoverPanelAgent {
-  box-sizing: border-box;
   width: 240px;
   max-height: 280px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xs);
-  padding-inline: 0;
   overflow-y: auto;
   .appSubtleScrollbar();
 }
@@ -241,75 +225,11 @@
   min-height: 96px;
 }
 
-.listBox {
-  width: 100%;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xs);
-  background: transparent;
-}
-
-.listBoxItem {
-  width: 100%;
-  border-radius: var(--app-radius-popover-item, var(--radius-xl));
-}
-
-.listBoxSection {
-  min-width: 0;
-}
-
-.listBoxSectionTitle {
-  display: block;
-  padding: var(--space-2xs) var(--space-sm);
-  color: var(--muted);
-  font-size: var(--font-size-xs, var(--font-size-xs));
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-xs, 16px);
-}
-
-.listItemContent {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-xs);
-  width: 100%;
-  min-width: 0;
-}
-
-.listItemLeading {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--muted);
-}
-
 .listItemText {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: var(--space-3xs);
-}
-
-.listItemLabel,
-.listItemDescription {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.listItemLabel {
-  color: var(--overlay-foreground, var(--foreground));
-  font-size: var(--font-size-sm, 14px);
-  line-height: var(--line-height-sm, 20px);
-}
-
-.listItemDescription {
-  color: var(--muted);
-  font-size: var(--font-size-xs, var(--font-size-xs));
-  line-height: var(--line-height-xs, 16px);
 }
 
 .popoverSkeletonList {
@@ -382,12 +302,6 @@
   line-height: 16px;
   text-align: center;
   pointer-events: none;
-}
-
-.agentGroupAction {
-  justify-content: flex-start;
-  width: 100%;
-  margin-top: var(--space-xs);
 }
 
 .agentGroupTreeWrap {

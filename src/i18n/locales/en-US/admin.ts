@@ -69,7 +69,7 @@ const enUSAdmin = {
       contentLabel: 'Content',
       contentPlaceholder: 'Enter announcement content',
       jumpUrlLabel: 'Destination URL',
-      jumpUrlPlaceholder: 'Optional, for example /app/group',
+      jumpUrlPlaceholder: 'Optional, for example /groups',
       receiverLabel: 'Recipient user IDs',
       receiverPlaceholder: 'Separate multiple IDs with commas, semicolons, or spaces',
     },

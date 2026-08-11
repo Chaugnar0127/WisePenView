@@ -7,5 +7,6 @@ export interface FolderTableNameCellProps<T extends FolderTableRow> {
   expanded: boolean;
   expandable: boolean;
   onToggleExpand?: () => void;
+  renderEntryIcon?: (row: T, ctx: FolderTableRowContext<T>) => ReactNode;
   renderNameContent?: (content: ReactNode, row: T, ctx: FolderTableRowContext<T>) => ReactNode;
 }

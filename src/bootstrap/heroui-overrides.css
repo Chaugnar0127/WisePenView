@@ -1,5 +1,53 @@
 /* 第三方组件的全局覆盖集中放在 bootstrap，业务样式只保留上下文差异。 */
 
+/* Dropdown 沿用 HeroUI 结构与交互，只将视觉语义接入 WisePen 的 Radix 主题。 */
+.dropdown__popover {
+  --app-popover-surface: var(--background);
+
+  color: var(--muted);
+  font-family: var(--app-font-family);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+}
+
+.dropdown__popover .header {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-xs);
+}
+
+.dropdown__popover .menu-item:not(.menu-item--danger) {
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-sm);
+}
+
+.dropdown__popover [data-slot='label'] {
+  color: inherit;
+  font: inherit;
+}
+
+.dropdown__popover [data-slot='description'] {
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-xs);
+}
+
+@media (hover: hover) {
+  .dropdown__popover .menu-item:not(.menu-item--danger):is(:hover, [data-hovered='true']) {
+    background-color: var(--accent-soft);
+  }
+}
+
+.dropdown__popover
+  .menu-item:not(.menu-item--danger):is(:active, [data-pressed='true'], [data-focus='true']) {
+  background-color: var(--accent-soft-hover);
+}
+
 .table-root
   :is(
     .table__column:focus-visible,

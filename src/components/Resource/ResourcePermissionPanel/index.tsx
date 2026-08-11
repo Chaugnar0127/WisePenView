@@ -3,7 +3,6 @@ import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
 import ResourcePermissionActionIcon from '@/components/Drive/common/resourcePermissionActionIcon';
 import { buildResourcePermissionActionKeySet } from '@/components/Drive/common/resourcePermissionPolicy';
-import { AppPopover } from '@/components/Overlay';
 import UserSearchCombobox from '@/components/UserSearchCombobox';
 import {
   type ResourcePermissionActionOption,
@@ -11,7 +10,7 @@ import {
   type ResourcePermissionSubject,
 } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
-import { Chip, ListBox, Skeleton } from '@heroui/react';
+import { Chip, Dropdown, Label, Skeleton } from '@heroui/react';
 
 import type { TFunction } from 'i18next';
 import { ChevronDown, Trash2, UserPlus } from 'lucide-react';
@@ -98,39 +97,29 @@ function SubjectPermissionPopover({
   }
 
   return (
-    <AppPopover deferContent={false}>
-      <AppPopover.Trigger>{trigger}</AppPopover.Trigger>
-      <AppPopover.Content
-        className={styles.permissionPopover}
-        placement="bottom end"
-        bodyPadding="none"
-      >
-        <ListBox
+    <Dropdown>
+      <Dropdown.Trigger>{trigger}</Dropdown.Trigger>
+      <Dropdown.Popover className={styles.permissionPopover} placement="bottom end">
+        <Dropdown.Menu
           aria-label={t('permission.optionsAria', { name: subject.name })}
           selectionMode="multiple"
           selectedKeys={selectedActionKeys}
           className={styles.actionList}
+          onAction={(key) => {
+            const option = actionOptions.find((item) => item.key === key);
+            if (option) onActionToggle(subject, option.action);
+          }}
         >
           {actionOptions.map((option) => (
-            <ListBox.Item
-              id={option.key}
-              key={option.key}
-              textValue={option.label}
-              onPress={() => onActionToggle(subject, option.action)}
-            >
-              <span className={styles.actionLabel}>
-                <ResourcePermissionActionIcon
-                  action={option.action}
-                  className={styles.actionIcon}
-                />
-                <span className={styles.actionText}>{option.label}</span>
-              </span>
-              <ListBox.ItemIndicator />
-            </ListBox.Item>
+            <Dropdown.Item id={option.key} key={option.key} textValue={option.label}>
+              <ResourcePermissionActionIcon action={option.action} className={styles.actionIcon} />
+              <Label>{option.label}</Label>
+              <Dropdown.ItemIndicator />
+            </Dropdown.Item>
           ))}
-        </ListBox>
-      </AppPopover.Content>
-    </AppPopover>
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }
 

@@ -15,14 +15,12 @@ import { useShallow } from 'zustand/react/shallow';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
 import styles from '../style.module.less';
 
-function getUploadAttachmentState(status: 'pending' | 'uploading' | 'failed') {
+function getUploadAttachmentState(status: 'uploading' | 'failed') {
   if (status === 'failed') return 'error';
-  if (status === 'uploading') return 'uploading';
-  return 'idle';
+  return 'uploading';
 }
 
-function getUploadAttachmentDescriptionKey(status: 'pending' | 'uploading' | 'failed') {
-  if (status === 'pending') return 'input.attachments.pending' as const;
+function getUploadAttachmentDescriptionKey(status: 'uploading' | 'failed') {
   if (status === 'uploading') return 'input.attachments.uploading' as const;
   return 'input.attachments.failed' as const;
 }
@@ -30,23 +28,16 @@ function getUploadAttachmentDescriptionKey(status: 'pending' | 'uploading' | 'fa
 function AttachmentStrip() {
   const { t } = useTranslation('chat');
   const store = useChatInputStoreApi();
-  const { resources, attachments, images, uploads } = useChatInputStore(
+  const { resources, attachments, uploads } = useChatInputStore(
     useShallow((state) => ({
       resources: state.activeDocRefs,
       attachments: state.activeAttachments,
-      images: state.pendingImageMetas,
       uploads: state.pendingAttachmentUploads,
     }))
   );
-  const {
-    removeActiveAttachment,
-    removeDocRef,
-    removePendingAttachmentUpload,
-    removePendingImageMeta,
-  } = store.getState();
+  const { removeActiveAttachment, removeDocRef, removePendingAttachmentUpload } = store.getState();
 
-  const hasAny =
-    resources.length > 0 || attachments.length > 0 || images.length > 0 || uploads.length > 0;
+  const hasAny = resources.length > 0 || attachments.length > 0 || uploads.length > 0;
 
   if (!hasAny) return null;
 
@@ -82,8 +73,14 @@ function AttachmentStrip() {
 
         {attachments.map((attachment) => (
           <Attachment key={attachment.attachmentId} size="xs" className={styles.chatAttachment}>
-            <AttachmentMedia>
-              <EntryIcon entryType="resource" size={14} />
+            <AttachmentMedia variant={attachment.thumbnailUrl ? 'image' : 'icon'}>
+              {attachment.thumbnailUrl ? (
+                <img src={attachment.thumbnailUrl} alt="" />
+              ) : attachment.kind === 'image' ? (
+                <Image size={13} aria-hidden="true" />
+              ) : (
+                <EntryIcon entryType="resource" size={14} />
+              )}
             </AttachmentMedia>
             <AttachmentContent>
               <AttachmentTitle title={attachment.filename}>{attachment.filename}</AttachmentTitle>
@@ -100,30 +97,6 @@ function AttachmentStrip() {
           </Attachment>
         ))}
 
-        {images.map((imageMeta) => (
-          <Attachment key={imageMeta.id} size="xs" state="idle" className={styles.chatAttachment}>
-            <AttachmentMedia variant={imageMeta.thumbnailUrl ? 'image' : 'icon'}>
-              {imageMeta.thumbnailUrl ? (
-                <img src={imageMeta.thumbnailUrl} alt="" />
-              ) : (
-                <Image size={13} />
-              )}
-            </AttachmentMedia>
-            <AttachmentContent>
-              <AttachmentTitle title={imageMeta.filename}>{imageMeta.filename}</AttachmentTitle>
-              <AttachmentDescription>{t('input.attachments.imagePending')}</AttachmentDescription>
-            </AttachmentContent>
-            <AttachmentActions>
-              <AttachmentAction
-                label={t('input.attachments.removeImage', { name: imageMeta.filename })}
-                onPress={() => removePendingImageMeta(imageMeta.id)}
-              >
-                <X size={12} />
-              </AttachmentAction>
-            </AttachmentActions>
-          </Attachment>
-        ))}
-
         {uploads.map((upload) => (
           <Attachment
             key={upload.id}
@@ -131,8 +104,14 @@ function AttachmentStrip() {
             state={getUploadAttachmentState(upload.status)}
             className={styles.chatAttachment}
           >
-            <AttachmentMedia>
-              <EntryIcon entryType="resource" size={14} />
+            <AttachmentMedia variant={upload.thumbnailUrl ? 'image' : 'icon'}>
+              {upload.thumbnailUrl ? (
+                <img src={upload.thumbnailUrl} alt="" />
+              ) : upload.kind === 'image' ? (
+                <Image size={13} aria-hidden="true" />
+              ) : (
+                <EntryIcon entryType="resource" size={14} />
+              )}
             </AttachmentMedia>
             <AttachmentContent>
               <AttachmentTitle title={upload.filename}>{upload.filename}</AttachmentTitle>

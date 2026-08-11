@@ -1,8 +1,8 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import ProviderLogo from '@/components/Icons/ProviderLogo';
-import { AppMenu } from '@/components/Overlay';
 import type { ChatModel } from '@/domains/Chat';
-import { Check, ChevronDown, LoaderCircle } from 'lucide-react';
+import { Description, Dropdown, Header, Label } from '@heroui/react';
+import { ChevronDown, LoaderCircle } from 'lucide-react';
 import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -54,7 +54,7 @@ function ModelSelector({
   };
 
   return (
-    <AppMenu isOpen={isOpen} onOpenChange={onOpenChange}>
+    <Dropdown isOpen={isOpen} onOpenChange={onOpenChange}>
       {iconOnly ? (
         <AppIconButton
           icon={
@@ -66,10 +66,10 @@ function ModelSelector({
           }
           label={triggerLabel}
           isDisabled={disabled}
-          overlayTrigger={<AppMenu.Trigger />}
+          overlayTrigger={<Dropdown.Trigger />}
         />
       ) : (
-        <AppMenu.Trigger>
+        <Dropdown.Trigger>
           <button
             type="button"
             className={styles.trigger}
@@ -84,43 +84,36 @@ function ModelSelector({
             <span>{triggerLabel}</span>
             <ChevronDown size={16} />
           </button>
-        </AppMenu.Trigger>
+        </Dropdown.Trigger>
       )}
-      <AppMenu.Popover className={styles.popover} placement={placement} bodyPadding="none">
-        <AppMenu.Header title={t('modelSelector.title')} />
+      <Dropdown.Popover className={styles.popover} placement={placement}>
         {models.length === 0 ? (
           <div className={styles.empty}>{t('modelSelector.empty')}</div>
         ) : (
-          <AppMenu.Menu
+          <Dropdown.Menu
             aria-label={t('modelSelector.select')}
             selectionMode="single"
             selectedKeys={selected ? [selected.id] : []}
             className={styles.list}
             onAction={handleAction}
           >
-            {models.map((model) => (
-              <AppMenu.Item
-                key={model.id}
-                id={model.id}
-                textValue={model.name}
-                selected={selected?.id === model.id}
-              >
-                <span className={styles.item}>
+            <Dropdown.Section>
+              <Header>{t('modelSelector.title')}</Header>
+              {models.map((model) => (
+                <Dropdown.Item key={model.id} id={model.id} textValue={model.name}>
                   <ProviderLogo provider={model.provider} size={18} />
                   <span className={styles.info}>
-                    <span className={styles.name}>{model.name}</span>
-                    <span className={styles.meta}>{renderProviderText(model)}</span>
+                    <Label>{model.name}</Label>
+                    <Description>{renderProviderText(model)}</Description>
                   </span>
-                  {selected?.id === model.id ? (
-                    <Check size={14} className={styles.checkIcon} />
-                  ) : null}
-                </span>
-              </AppMenu.Item>
-            ))}
-          </AppMenu.Menu>
+                  <Dropdown.ItemIndicator />
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Section>
+          </Dropdown.Menu>
         )}
-      </AppMenu.Popover>
-    </AppMenu>
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }
 

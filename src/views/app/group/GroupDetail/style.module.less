@@ -1,5 +1,13 @@
 @import '@/styles/scrollbar.module.less';
 
+.detailPage {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  flex-direction: column;
+}
+
 .fixedPage {
   height: 100%;
   min-height: 0;
@@ -15,6 +23,7 @@
 }
 
 .tabContent {
+  flex: 1;
   min-height: 0;
 }
 
@@ -26,33 +35,13 @@
   .appSubtleScrollbar();
 }
 
-/* 返回行部分占用页顶 padding；略留出一点，避免贴顶 */
-.detailHeader {
-  flex: none;
+.headerActions {
   align-items: flex-start;
-  margin-top: calc(
-    -1 * (var(--control-height-sm) + var(--space-xs) - var(--space-sm))
-  );
 }
 
-.titleStack {
-  display: grid;
-  min-width: 0;
-  justify-items: start;
-  gap: var(--space-xs);
-}
-
-.backButton {
-  justify-self: start;
-  min-width: 0;
-  height: auto;
-  min-height: var(--control-height-sm);
-  /* 保留水平内边距，保证 hover 背景盖住整段文案 */
-  padding-block: var(--space-2xs);
-  padding-inline: var(--space-xs);
-  /* 抵消左侧 padding，让箭头与主标题左缘对齐 */
-  margin-inline-start: calc(-1 * var(--space-xs));
-  gap: var(--space-2xs);
+.detailTabs {
+  flex: none;
+  margin-top: 0;
 }
 
 .contextLink {
@@ -73,11 +62,10 @@
 }
 
 .fixedPage .fileTabPane {
-  --table-drive-layout-max-height: 100%;
-
   display: flex;
   flex: 1;
   min-height: 0;
+  box-sizing: border-box;
   flex-direction: column;
 }
 

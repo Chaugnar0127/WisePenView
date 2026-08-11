@@ -45,7 +45,7 @@ const zhCNAdmin = {
       contentLabel: '公告内容',
       contentPlaceholder: '请输入公告内容',
       jumpUrlLabel: '跳转地址',
-      jumpUrlPlaceholder: '可选，例如 /app/group',
+      jumpUrlPlaceholder: '可选，例如 /groups',
       receiverLabel: '接收用户 ID',
       receiverPlaceholder: '多个 ID 用逗号、分号或空格分隔',
     },

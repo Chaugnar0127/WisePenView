@@ -34,9 +34,9 @@ const heroUiButtonPrimitiveImportRule = {
 
 const heroUiInputPrimitiveImportRule = {
   name: '@heroui/react',
-  importNames: ['Input', 'TextArea', 'TextField', 'Label', 'Select'],
+  importNames: ['Input', 'TextArea', 'TextField', 'Select'],
   message:
-    '业务输入控件请使用 src/components/Input 下的 FormField、Input、TextArea 或 Select；底层输入原语只允许 Input 封装内部或明确特殊组件使用。',
+    '业务输入控件请使用 src/components/Input 下的 FormField、Input、TextArea 或 Select；底层输入控件只允许 Input 封装内部或明确特殊组件使用。',
 };
 
 const heroUiFeedbackPrimitiveImportRule = {
@@ -256,13 +256,15 @@ const noHardcodedFrontendRouteRule = {
     },
     schema: [],
     messages: {
-      hardcoded:
-        '禁止直接硬编码 /app、/auth 或 /admin 前端路径；请使用 APP_ROUTE_PATH 或领域 route builder。',
+      hardcoded: '禁止直接硬编码前端路径；请使用 APP_ROUTE_PATH 或领域 route builder。',
     },
   },
   create(context) {
     const isFrontendRoute = (value) =>
-      typeof value === 'string' && /^\/(?:app|auth|admin)(?:\/|$)/.test(value);
+      typeof value === 'string' &&
+      /^\/(?:chat|notifications|drive|resources|groups|courses|invite|profile|login|register|onboarding|password|email|auth|admin)(?:\/|$)/.test(
+        value
+      );
     const reportIfRoute = (node, value) => {
       if (isFrontendRoute(value)) context.report({ node, messageId: 'hardcoded' });
     };

@@ -1,13 +1,13 @@
 /* eslint-disable react-refresh/only-export-components -- BlockNote block spec 与展示组件同文件 */
 import type { BlockConfig } from '@blocknote/core';
 import { createReactBlockSpec, type ReactCustomBlockRenderProps } from '@blocknote/react';
+import { Dropdown, Label } from '@heroui/react';
 import { useRequest } from 'ahooks';
 import { Check, Copy, Eye, LayoutTemplate } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/Button/AppIconButton';
-import { AppMenu } from '@/components/Overlay';
 import i18n from '@/i18n';
 import { copyText } from '@/utils/browser/copyText';
 import { SVG_HTML_SANITIZE_CONFIG, sanitizeHtml } from '@/utils/sanitizeHtml';
@@ -139,61 +139,62 @@ function MermaidBlockView({ block, contentRef, editor }: MermaidBlockRenderProps
         <div className={styles.header} contentEditable={false}>
           <span className={styles.title}>mermaid</span>
           <div className={styles.toolbarActions} data-mermaid-toolbar-actions="">
-            <AppMenu isOpen={viewOpen} onOpenChange={setViewOpen}>
+            <Dropdown isOpen={viewOpen} onOpenChange={setViewOpen}>
               <AppIconButton
                 icon={<Eye size={14} aria-hidden="true" />}
                 label={t('mermaid.displayMode')}
                 size="sm"
                 className={styles.viewButton}
-                overlayTrigger={<AppMenu.Trigger />}
+                overlayTrigger={<Dropdown.Trigger />}
                 tooltip={{ content: currentViewOption ? t(currentViewOption.labelKey) : undefined }}
                 onMouseDown={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
                 }}
               />
-              <AppMenu.Popover placement="bottom end">
-                <AppMenu.Menu
+              <Dropdown.Popover placement="bottom end">
+                <Dropdown.Menu
                   aria-label={t('mermaid.displayMode')}
                   selectedKeys={[view]}
                   selectionMode="single"
                   onAction={(key) => handleViewChange(String(key) as MermaidView)}
                 >
                   {MERMAID_VIEW_OPTIONS.map((option) => (
-                    <AppMenu.Item key={option.key} id={option.key} textValue={t(option.labelKey)}>
-                      {t(option.labelKey)}
-                    </AppMenu.Item>
+                    <Dropdown.Item key={option.key} id={option.key} textValue={t(option.labelKey)}>
+                      <Label>{t(option.labelKey)}</Label>
+                      <Dropdown.ItemIndicator />
+                    </Dropdown.Item>
                   ))}
-                </AppMenu.Menu>
-              </AppMenu.Popover>
-            </AppMenu>
-            <AppMenu isOpen={templateOpen} onOpenChange={setTemplateOpen}>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+            <Dropdown isOpen={templateOpen} onOpenChange={setTemplateOpen}>
               <AppIconButton
                 icon={<LayoutTemplate size={14} aria-hidden="true" />}
                 label={t('mermaid.template')}
                 size="sm"
                 isDisabled={readOnly}
                 className={styles.templateButton}
-                overlayTrigger={<AppMenu.Trigger />}
+                overlayTrigger={<Dropdown.Trigger />}
                 tooltip={{ content: t('mermaid.template') }}
                 onMouseDown={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
                 }}
               />
-              <AppMenu.Popover placement="bottom end">
-                <AppMenu.Menu
+              <Dropdown.Popover placement="bottom end">
+                <Dropdown.Menu
                   aria-label={t('mermaid.template')}
                   onAction={(key) => applyTemplate(String(key) as MermaidTemplateKey)}
                 >
                   {MERMAID_TEMPLATE_OPTIONS.map((option) => (
-                    <AppMenu.Item key={option.key} id={option.key} textValue={t(option.labelKey)}>
-                      {t(option.labelKey)}
-                    </AppMenu.Item>
+                    <Dropdown.Item key={option.key} id={option.key} textValue={t(option.labelKey)}>
+                      <Label>{t(option.labelKey)}</Label>
+                    </Dropdown.Item>
                   ))}
-                </AppMenu.Menu>
-              </AppMenu.Popover>
-            </AppMenu>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
             <AppIconButton
               icon={
                 copied ? (

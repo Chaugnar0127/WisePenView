@@ -6,7 +6,7 @@ import {
   type DataTableColumn,
   type ManageTableColumn,
 } from '@/components/Table';
-import { ROLE, type GroupMember } from '@/domains/Group';
+import { GROUP_TYPE, ROLE, type GroupMember } from '@/domains/Group';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { ListBox } from '@heroui/react';
 import type { TFunction } from 'i18next';
@@ -237,8 +237,8 @@ function buildReadonlyColumns(
     },
   ];
 
-  columns.push(
-    {
+  if (props.groupDisplayConfig.groupType !== GROUP_TYPE.NORMAL) {
+    columns.push({
       id: 'email',
       label: t('member.table.columns.email'),
       width: 'lg',
@@ -249,7 +249,10 @@ function buildReadonlyColumns(
         const email = member.email?.trim();
         return <DataTable.TextCell title={email}>{email || EMPTY_TEXT}</DataTable.TextCell>;
       },
-    },
+    });
+  }
+
+  columns.push(
     {
       id: 'role',
       label: t('member.table.columns.role'),

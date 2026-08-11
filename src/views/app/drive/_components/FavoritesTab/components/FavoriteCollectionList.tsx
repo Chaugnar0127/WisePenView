@@ -1,7 +1,6 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { AppMenu } from '@/components/Overlay';
 import type { FavoriteCollection } from '@/domains/Interact';
-import { ListBox, ListBoxItem } from '@heroui/react';
+import { Dropdown, Label, ListBox, ListBoxItem } from '@heroui/react';
 import { EllipsisVertical, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import styles from '../style.module.less';
@@ -67,7 +66,7 @@ function FavoriteCollectionList({
                 onClick={collection.isDefault ? undefined : (event) => event.stopPropagation()}
               >
                 {!collection.isDefault ? (
-                  <AppMenu>
+                  <Dropdown>
                     <AppIconButton
                       icon={<EllipsisVertical size={16} aria-hidden="true" />}
                       label={t('favorite.collection.actionsAria', {
@@ -77,19 +76,28 @@ function FavoriteCollectionList({
                       size="sm"
                       className={styles.collectionMoreButton}
                       tooltip={{ content: t('favorite.collection.moreActions') }}
-                      overlayTrigger={<AppMenu.Trigger />}
+                      overlayTrigger={<Dropdown.Trigger />}
                     />
-                    <AppMenu.Popover placement="bottom end">
-                      <AppMenu.Menu aria-label={t('favorite.collection.menuAria')}>
-                        <AppMenu.Item id="edit" onAction={() => onEdit(collection)}>
-                          {t('actions.edit', { ns: 'common' })}
-                        </AppMenu.Item>
-                        <AppMenu.DangerItem id="delete" onAction={() => onDelete(collection)}>
-                          {t('actions.delete', { ns: 'common' })}
-                        </AppMenu.DangerItem>
-                      </AppMenu.Menu>
-                    </AppMenu.Popover>
-                  </AppMenu>
+                    <Dropdown.Popover placement="bottom end">
+                      <Dropdown.Menu aria-label={t('favorite.collection.menuAria')}>
+                        <Dropdown.Item
+                          id="edit"
+                          textValue={t('actions.edit', { ns: 'common' })}
+                          onAction={() => onEdit(collection)}
+                        >
+                          <Label>{t('actions.edit', { ns: 'common' })}</Label>
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          id="delete"
+                          textValue={t('actions.delete', { ns: 'common' })}
+                          variant="danger"
+                          onAction={() => onDelete(collection)}
+                        >
+                          <Label>{t('actions.delete', { ns: 'common' })}</Label>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
                 ) : null}
               </span>
             </span>

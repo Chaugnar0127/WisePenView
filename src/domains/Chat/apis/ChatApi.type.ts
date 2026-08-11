@@ -105,6 +105,7 @@ export interface InitTemporaryAttachmentUploadApiRequest {
 export interface InitTemporaryAttachmentUploadApiResponse {
   attachment_id: string;
   object_key: string;
-  put_url: string;
-  callback_header?: string;
+  put_url?: string | null;
+  callback_header?: string | null;
+  flash_uploaded?: boolean;
 }

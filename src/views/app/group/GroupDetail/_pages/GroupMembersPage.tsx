@@ -12,7 +12,6 @@ function GroupMembersPage() {
       <MemberList
         groupDisplayConfig={displayConfig}
         groupId={group.groupId}
-        inviteCode={group.inviteCode}
         pagination={{
           defaultPageSize: 10,
           pageSizeOptions: [5, 10, 20, 50],

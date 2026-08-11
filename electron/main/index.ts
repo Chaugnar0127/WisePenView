@@ -21,7 +21,7 @@ import {
   WINDOW_MIN_WIDTH,
 } from '../../src/constants/layoutScale';
 import { COLOR_SCHEME, DEFAULT_COLOR_SCHEME, type ColorScheme } from '../../src/theme/constants';
-import { APP_ROUTE_PATH } from '../../src/utils/navigation/appRoute';
+import { APP_ROUTE_PATH, isAuthenticatedAppRoutePath } from '../../src/utils/navigation/appRoute';
 import { DESKTOP_CHANNEL, type DesktopNavigationState } from '../shared/channels';
 
 const APP_SCHEME = 'app';
@@ -127,8 +127,10 @@ function isRendererUrl(url: string): boolean {
 function isAppRouteUrl(url: string): boolean {
   if (!isRendererUrl(url)) return false;
   try {
-    const pathname = new URL(url).pathname;
-    return pathname === APP_ROUTE_PATH.APP || pathname.startsWith(`${APP_ROUTE_PATH.APP}/`);
+    const parsedUrl = new URL(url);
+    const hashRoute = parsedUrl.hash.startsWith('#/') ? parsedUrl.hash.slice(1) : '';
+    const pathname = hashRoute.split('?')[0] || parsedUrl.pathname;
+    return isAuthenticatedAppRoutePath(pathname);
   } catch {
     return false;
   }
@@ -154,7 +156,7 @@ function sendAppNavigationState(contents: WebContents): void {
 
 function buildRendererEntryUrl(): string {
   const baseUrl = DEV_RENDERER_URL ?? APP_ORIGIN;
-  return new URL(APP_ROUTE_PATH.PUBLIC_CHAT, baseUrl).toString();
+  return new URL(APP_ROUTE_PATH.HOME, baseUrl).toString();
 }
 
 function protectWindowNavigation(contents: WebContents): void {

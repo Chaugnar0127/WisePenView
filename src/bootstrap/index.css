@@ -7,6 +7,7 @@
 @import '../theme/heroui/palette.css' layer(base);
 /* 与 HeroUI token 位于同一层，通过选择器明确覆盖主题。 */
 @import '../theme/heroui/wisepen.css' layer(base);
+@import './heroui-overrides.css' layer(components);
 
 @theme inline {
   --font-sans: var(--app-font-family);

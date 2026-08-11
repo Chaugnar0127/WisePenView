@@ -31,43 +31,6 @@
   min-width: 240px;
 }
 
-.profileMenu {
-  padding: var(--app-popover-content-padding, var(--space-xs));
-}
-
-.profileMenuItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  min-height: 36px;
-  padding: 0 var(--space-sm);
-  color: var(--muted);
-  outline: none;
-  cursor: pointer;
-}
-
-.profileMenuItem[data-hovered],
-.profileMenuItem[data-focus-visible],
-.profileMenu :global(.menu-item[data-hovered]),
-.profileMenu :global(.menu-item[data-focus-visible]) {
-  .clearHeroFocusRing();
-  color: var(--foreground);
-  background: var(--surface-tertiary) !important;
-}
-
-.profileMenuItem:global(.menu-item--danger) {
-  color: var(--danger-text);
-}
-
-.profileMenuItem:global(.menu-item--danger)[data-hovered],
-.profileMenuItem:global(.menu-item--danger)[data-focus-visible],
-.profileMenu :global(.menu-item--danger[data-hovered]),
-.profileMenu :global(.menu-item--danger[data-focus-visible]) {
-  .clearHeroFocusRing();
-  color: var(--danger-text);
-  background: var(--danger-soft) !important;
-}
-
 .aboutContent {
   display: flex;
   flex-direction: column;

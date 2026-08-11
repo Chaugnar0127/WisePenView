@@ -1,7 +1,6 @@
 import { AppButton } from '@/components/Button';
 import EntryIcon from '@/components/Icons/EntryIcon';
-import { AppPopover } from '@/components/Overlay';
-
+import { Dropdown, Label } from '@heroui/react';
 import { CloudUpload, FileInput, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -49,36 +48,32 @@ function CreateMenu({ disabled = false, items, onSelect }: CreateMenuProps) {
   };
 
   return (
-    <AppPopover isOpen={open} onOpenChange={setOpen}>
-      <AppPopover.Trigger>
+    <Dropdown isOpen={open} onOpenChange={setOpen}>
+      <Dropdown.Trigger>
         <AppButton variant="secondary" size="sm" isDisabled={disabled}>
           <Plus size={16} aria-hidden="true" />
           {t('create.menu')}
         </AppButton>
-      </AppPopover.Trigger>
-      <AppPopover.Content className={styles.menuPopover} placement="bottom start">
-        <div role="menu" aria-label={t('create.menuAria')}>
-          <ul className={styles.menuList}>
-            {items.map((item) => (
-              <li key={item.id} role="none">
-                <button
-                  type="button"
-                  role="menuitem"
-                  className={styles.menuItem}
-                  disabled={item.disabled}
-                  onClick={() => handleSelect(item.id)}
-                >
-                  <span className={styles.menuIcon}>
-                    <CreateMenuIcon id={item.id} />
-                  </span>
-                  {item.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </AppPopover.Content>
-    </AppPopover>
+      </Dropdown.Trigger>
+      <Dropdown.Popover className={styles.menuPopover} placement="bottom start">
+        <Dropdown.Menu
+          aria-label={t('create.menuAria')}
+          onAction={(key) => handleSelect(String(key) as CreateMenuItem['id'])}
+        >
+          {items.map((item) => (
+            <Dropdown.Item
+              key={item.id}
+              id={item.id}
+              textValue={item.label}
+              isDisabled={item.disabled}
+            >
+              <CreateMenuIcon id={item.id} />
+              <Label>{item.label}</Label>
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }
 

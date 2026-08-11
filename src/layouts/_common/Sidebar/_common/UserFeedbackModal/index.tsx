@@ -1,6 +1,5 @@
 import { AppButton } from '@/components/Button';
 import { FormField, Input, TextArea, UploadZone } from '@/components/Input';
-import { AppPopover } from '@/components/Overlay';
 import AppModal from '@/components/Overlay/AppModal';
 import { FEEDBACK_TYPE, useImageService, useUserService, type FeedbackType } from '@/domains';
 import { useApi } from '@/hooks/useApi';
@@ -9,7 +8,7 @@ import {
   assertImageProxyUploadLimit,
   IMAGE_UPLOAD_MAX_SIZE_LABEL,
 } from '@/utils/image/uploadLimit';
-import { ListBox, toast, type Selection } from '@heroui/react';
+import { Dropdown, Label, toast, type Selection } from '@heroui/react';
 
 import { ChevronDown } from 'lucide-react';
 import { useState, type Key } from 'react';
@@ -191,8 +190,8 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
             *
           </span>
         </span>
-        <AppPopover>
-          <AppPopover.Trigger>
+        <Dropdown>
+          <Dropdown.Trigger>
             <AppButton
               variant="outline"
               className={styles.typeTrigger}
@@ -206,9 +205,9 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
               </span>
               <ChevronDown size={16} aria-hidden className={styles.typeChevron} />
             </AppButton>
-          </AppPopover.Trigger>
-          <AppPopover.Content className={styles.typePopover} placement="bottom start">
-            <ListBox
+          </Dropdown.Trigger>
+          <Dropdown.Popover className={styles.typePopover} placement="bottom start">
+            <Dropdown.Menu
               aria-label={t('feedback.typeOptionsAria')}
               selectionMode="multiple"
               selectedKeys={new Set(formValues.types)}
@@ -216,18 +215,18 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
               className={styles.typeList}
             >
               {FEEDBACK_TYPE.options.map((option) => (
-                <ListBox.Item
+                <Dropdown.Item
                   key={option.value}
                   id={option.value}
                   textValue={t(`feedback.type.${option.key}`)}
                 >
-                  {t(`feedback.type.${option.key}`)}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
+                  <Label>{t(`feedback.type.${option.key}`)}</Label>
+                  <Dropdown.ItemIndicator />
+                </Dropdown.Item>
               ))}
-            </ListBox>
-          </AppPopover.Content>
-        </AppPopover>
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
       </div>
 
       <FormField

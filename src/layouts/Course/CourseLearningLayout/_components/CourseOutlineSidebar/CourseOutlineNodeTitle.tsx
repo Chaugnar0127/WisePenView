@@ -1,6 +1,6 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { AppPopover } from '@/components/Overlay';
 import type { CourseOutlineNode } from '@/domains/Course';
+import { Dropdown, Label } from '@heroui/react';
 import {
   ArrowDown,
   ArrowUp,
@@ -103,32 +103,44 @@ function CourseOutlineNodeTitle({
         >
           {!isResource ? (
             <>
-              <AppPopover isOpen={createMenuOpen} onOpenChange={setCreateMenuOpen}>
+              <Dropdown isOpen={createMenuOpen} onOpenChange={setCreateMenuOpen}>
                 <AppIconButton
                   icon={<Plus size={14} aria-hidden />}
                   label={t('editor.outline.createIn', { name: node.title })}
                   size="sm"
                   className={styles.outlineNodeActionButton}
                   tooltip={{ content: t('editor.outline.addContent') }}
-                  overlayTrigger={<AppPopover.Trigger />}
+                  overlayTrigger={<Dropdown.Trigger />}
                 />
-                <AppPopover.Content placement="right">
-                  <div className={styles.outlineActionMenu}>
-                    <button type="button" onClick={() => closeAndRun(() => onCreateChild(node))}>
+                <Dropdown.Popover className={styles.outlineActionMenu} placement="right">
+                  <Dropdown.Menu aria-label={t('editor.outline.addContent')}>
+                    <Dropdown.Item
+                      id="create-section"
+                      textValue={t('editor.outline.createSection')}
+                      onAction={() => closeAndRun(() => onCreateChild(node))}
+                    >
                       <FolderPlus size={15} aria-hidden />
-                      {t('editor.outline.createSection')}
-                    </button>
-                    <button type="button" onClick={() => closeAndRun(() => onMountFromDrive(node))}>
+                      <Label>{t('editor.outline.createSection')}</Label>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      id="mount-from-drive"
+                      textValue={t('editor.outline.uploadDrive')}
+                      onAction={() => closeAndRun(() => onMountFromDrive(node))}
+                    >
                       <CloudUpload size={15} aria-hidden />
-                      {t('editor.outline.uploadDrive')}
-                    </button>
-                    <button type="button" onClick={() => closeAndRun(() => onUploadLocal(node))}>
+                      <Label>{t('editor.outline.uploadDrive')}</Label>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      id="upload-local"
+                      textValue={t('editor.outline.uploadLocal')}
+                      onAction={() => closeAndRun(() => onUploadLocal(node))}
+                    >
                       <Upload size={15} aria-hidden />
-                      {t('editor.outline.uploadLocal')}
-                    </button>
-                  </div>
-                </AppPopover.Content>
-              </AppPopover>
+                      <Label>{t('editor.outline.uploadLocal')}</Label>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown.Popover>
+              </Dropdown>
               <AppIconButton
                 icon={<Pencil size={14} aria-hidden />}
                 label={t('editor.outline.renameNode', { name: node.title })}
@@ -140,69 +152,74 @@ function CourseOutlineNodeTitle({
             </>
           ) : null}
 
-          <AppPopover isOpen={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
+          <Dropdown isOpen={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
             <AppIconButton
               icon={<Ellipsis size={14} aria-hidden />}
               label={t('editor.outline.moreActions', { name: node.title })}
               size="sm"
               className={styles.outlineNodeActionButton}
               tooltip={{ content: t('editor.outline.moreActionsLabel') }}
-              overlayTrigger={<AppPopover.Trigger />}
+              overlayTrigger={<Dropdown.Trigger />}
             />
-            <AppPopover.Content placement="right">
-              <div className={styles.outlineActionMenu}>
+            <Dropdown.Popover className={styles.outlineActionMenu} placement="right">
+              <Dropdown.Menu aria-label={t('editor.outline.moreActionsLabel')}>
                 {isResource && parentId ? (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => closeAndRun(() => onMoveResource({ node, parentId }))}
+                    <Dropdown.Item
+                      id="move-resource"
+                      textValue={t('editor.outline.moveResource')}
+                      onAction={() => closeAndRun(() => onMoveResource({ node, parentId }))}
                     >
                       <FolderInput size={15} aria-hidden />
-                      {t('editor.outline.moveResource')}
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.dangerAction}
-                      onClick={() => closeAndRun(() => onRemoveResource({ node, parentId }))}
+                      <Label>{t('editor.outline.moveResource')}</Label>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      id="remove-resource"
+                      textValue={t('editor.outline.removeResource')}
+                      variant="danger"
+                      onAction={() => closeAndRun(() => onRemoveResource({ node, parentId }))}
                     >
                       <Trash2 size={15} aria-hidden />
-                      {t('editor.outline.removeResource')}
-                    </button>
+                      <Label>{t('editor.outline.removeResource')}</Label>
+                    </Dropdown.Item>
                   </>
                 ) : null}
                 {!isResource ? (
                   <>
                     {canMoveContainer(node, -1) ? (
-                      <button
-                        type="button"
-                        onClick={() => closeAndRun(() => onMoveContainer(node, -1))}
+                      <Dropdown.Item
+                        id="move-up"
+                        textValue={t('editor.actions.moveUp')}
+                        onAction={() => closeAndRun(() => onMoveContainer(node, -1))}
                       >
                         <ArrowUp size={15} aria-hidden />
-                        {t('editor.actions.moveUp')}
-                      </button>
+                        <Label>{t('editor.actions.moveUp')}</Label>
+                      </Dropdown.Item>
                     ) : null}
                     {canMoveContainer(node, 1) ? (
-                      <button
-                        type="button"
-                        onClick={() => closeAndRun(() => onMoveContainer(node, 1))}
+                      <Dropdown.Item
+                        id="move-down"
+                        textValue={t('editor.actions.moveDown')}
+                        onAction={() => closeAndRun(() => onMoveContainer(node, 1))}
                       >
                         <ArrowDown size={15} aria-hidden />
-                        {t('editor.actions.moveDown')}
-                      </button>
+                        <Label>{t('editor.actions.moveDown')}</Label>
+                      </Dropdown.Item>
                     ) : null}
-                    <button
-                      type="button"
-                      className={styles.dangerAction}
-                      onClick={() => closeAndRun(() => onDelete(node))}
+                    <Dropdown.Item
+                      id="delete"
+                      textValue={t('editor.actions.delete')}
+                      variant="danger"
+                      onAction={() => closeAndRun(() => onDelete(node))}
                     >
                       <Trash2 size={15} aria-hidden />
-                      {t('editor.actions.delete')}
-                    </button>
+                      <Label>{t('editor.actions.delete')}</Label>
+                    </Dropdown.Item>
                   </>
                 ) : null}
-              </div>
-            </AppPopover.Content>
-          </AppPopover>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
         </span>
       ) : null}
     </span>

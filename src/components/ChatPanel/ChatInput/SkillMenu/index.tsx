@@ -1,10 +1,8 @@
-import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
-import { AppPopover } from '@/components/Overlay';
 import { useChatService } from '@/domains';
 import { buildSkillMenuSections } from '@/domains/Chat';
 import { useApi } from '@/hooks/useApi';
-import { Header, ListBox, ListBoxSection, Skeleton } from '@heroui/react';
+import { Description, Dropdown, Header, Label, Separator, Skeleton } from '@heroui/react';
 
 import { Settings, Sparkles, Wrench } from 'lucide-react';
 import type { Key } from 'react';
@@ -15,15 +13,13 @@ import styles from '../style.module.less';
 
 const SKILL_SKELETON_PRIMARY_ROWS = [0, 1] as const;
 const SKILL_SKELETON_TOOL_ROWS = [0, 1, 2, 3, 4, 5] as const;
+const SELECT_OTHER_SKILL_ACTION = 'skill-action:select-other';
 
 function SkillMenuSkeleton({ ariaLabel }: { ariaLabel: string }) {
   return (
-    <div
-      className={`${styles.popoverPanel} ${styles.popoverPanelScrollable}`}
-      aria-busy="true"
-      aria-label={ariaLabel}
-    >
+    <div aria-busy="true" aria-label={ariaLabel}>
       <div className={styles.popoverSkeletonList}>
+        <Skeleton className={styles.popoverSkeletonSection} />
         {SKILL_SKELETON_PRIMARY_ROWS.map((row) => (
           <div key={`skill-${row}`} className={styles.popoverSkeletonRow}>
             <Skeleton className={styles.popoverSkeletonIcon} />
@@ -83,8 +79,11 @@ function SkillMenu() {
   const selectedToolIds = selectedTools.map((tool) => tool.toolId);
   const externalItems =
     externalSection?.items.filter((item) => item.kind === 'external-skill') ?? [];
+  const hasPrimaryItems = Boolean(primarySection?.items.length);
+  const hasExternalItems = externalItems.length > 0;
+  const hasToolItems = Boolean(toolSection?.items.length);
+  const hasCapabilityItems = hasPrimaryItems || hasExternalItems || hasToolItems;
   const selectedOptionCount = selectedSkills.length + selectedTools.length;
-  const selectedMenuKeys = new Set([...selectedSkillIds, ...selectedToolIds]);
   const skeleton = <SkillMenuSkeleton ariaLabel={t('input.skillMenu.loadingAria')} />;
 
   function handleToggleSkill(skillId: string): void {
@@ -105,6 +104,10 @@ function SkillMenu() {
   }
 
   function handleMenuAction(key: Key): void {
+    if (key === SELECT_OTHER_SKILL_ACTION) {
+      handleSelectOther();
+      return;
+    }
     if (primarySection?.items.some((item) => item.key === key)) {
       handleToggleSkill(String(key));
       return;
@@ -130,7 +133,7 @@ function SkillMenu() {
   }
 
   return (
-    <AppPopover isOpen={skillMenuOpen} onOpenChange={setSkillMenuOpen}>
+    <Dropdown isOpen={skillMenuOpen} onOpenChange={setSkillMenuOpen}>
       <span className={styles.toolButtonWrap}>
         {selectedOptionCount > 0 ? (
           <span className={styles.skillMenuBadge}>{selectedOptionCount}</span>
@@ -138,122 +141,91 @@ function SkillMenu() {
         <AppIconButton
           icon={<Settings size={17} aria-hidden="true" />}
           label={t('input.skillMenu.configure')}
-          overlayTrigger={<AppPopover.Trigger />}
+          overlayTrigger={<Dropdown.Trigger />}
         />
       </span>
-      <AppPopover.Content
-        placement="top"
-        title={t('input.skillMenu.title')}
-        bodyPadding="none"
-        classNames={{ header: styles.compactPopoverHeader }}
-      >
+      <Dropdown.Popover className={styles.popoverPanelScrollable} placement="top">
         {showSkeleton ? (
           skeleton
         ) : (
-          <div className={styles.popoverPanelScrollable}>
-            <ListBox
-              aria-label={t('input.skillMenu.configure')}
-              selectionMode="multiple"
-              selectedKeys={selectedMenuKeys}
-              className={styles.listBox}
-              onAction={handleMenuAction}
-            >
-              {primarySection && primarySection.items.length > 0 ? (
-                <ListBoxSection id="primary-skills">
-                  {primarySection.items.map((item) => (
-                    <ListBox.Item
-                      key={item.key}
-                      id={item.key}
-                      textValue={item.label}
-                      className={styles.listBoxItem}
-                    >
-                      <span className={styles.listItemContent}>
-                        <span className={styles.listItemLeading}>
-                          <Sparkles size={16} aria-hidden="true" />
-                        </span>
-                        <span className={styles.listItemText}>
-                          <span className={styles.listItemLabel}>{item.label}</span>
-                        </span>
-                        <ListBox.ItemIndicator />
-                      </span>
-                    </ListBox.Item>
-                  ))}
-                </ListBoxSection>
-              ) : null}
+          <Dropdown.Menu aria-label={t('input.skillMenu.configure')} onAction={handleMenuAction}>
+            {hasPrimaryItems ? (
+              <Dropdown.Section
+                id="primary-skills"
+                selectionMode="multiple"
+                selectedKeys={selectedSkillIds}
+              >
+                <Header>{t('input.skillMenu.title')}</Header>
+                {primarySection?.items.map((item) => (
+                  <Dropdown.Item key={item.key} id={item.key} textValue={item.label}>
+                    <Sparkles size={16} aria-hidden="true" />
+                    <Label>{item.label}</Label>
+                    <Dropdown.ItemIndicator />
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Section>
+            ) : null}
 
-              {externalItems.length > 0 ? (
-                <ListBoxSection id="external-skills" className={styles.listBoxSection}>
-                  <Header className={styles.listBoxSectionTitle}>
-                    {t('input.skillMenu.otherTitle')}
-                  </Header>
-                  {externalItems.map((item) => (
-                    <ListBox.Item
-                      key={item.key}
-                      id={item.key}
-                      textValue={item.label}
-                      className={styles.listBoxItem}
-                    >
-                      <span className={styles.listItemContent}>
-                        <span className={styles.listItemLeading}>
-                          <Sparkles size={16} aria-hidden="true" />
-                        </span>
-                        <span className={styles.listItemText}>
-                          <span className={styles.listItemLabel}>{item.label}</span>
-                          {getSkillSourceText(item.key) ? (
-                            <span className={styles.listItemDescription}>
-                              {getSkillSourceText(item.key)}
-                            </span>
-                          ) : null}
-                        </span>
-                        <ListBox.ItemIndicator />
-                      </span>
-                    </ListBox.Item>
-                  ))}
-                </ListBoxSection>
-              ) : null}
+            {hasPrimaryItems && hasExternalItems ? <Separator /> : null}
+            {hasExternalItems ? (
+              <Dropdown.Section
+                id="external-skills"
+                selectionMode="multiple"
+                selectedKeys={externalItems.map((item) => item.key)}
+              >
+                <Header>
+                  {t(hasPrimaryItems ? 'input.skillMenu.otherTitle' : 'input.skillMenu.title')}
+                </Header>
+                {externalItems.map((item) => (
+                  <Dropdown.Item key={item.key} id={item.key} textValue={item.label}>
+                    <Sparkles size={16} aria-hidden="true" />
+                    <span className={styles.listItemText}>
+                      <Label>{item.label}</Label>
+                      {getSkillSourceText(item.key) ? (
+                        <Description>{getSkillSourceText(item.key)}</Description>
+                      ) : null}
+                    </span>
+                    <Dropdown.ItemIndicator />
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Section>
+            ) : null}
 
-              {toolSection && toolSection.items.length > 0 ? (
-                <ListBoxSection id="tools" className={styles.listBoxSection}>
-                  <Header className={styles.listBoxSectionTitle}>
-                    {t('input.skillMenu.toolsTitle')}
-                  </Header>
-                  {toolSection.items.map((item) => (
-                    <ListBox.Item
-                      key={item.key}
-                      id={item.key}
-                      textValue={item.label}
-                      className={styles.listBoxItem}
-                    >
-                      <span className={styles.listItemContent}>
-                        <span className={styles.listItemLeading}>
-                          <Wrench size={16} aria-hidden="true" />
-                        </span>
-                        <span className={styles.listItemText}>
-                          <span className={styles.listItemLabel}>{item.label}</span>
-                        </span>
-                        <ListBox.ItemIndicator />
-                      </span>
-                    </ListBox.Item>
-                  ))}
-                </ListBoxSection>
-              ) : null}
-            </ListBox>
+            {(hasPrimaryItems || hasExternalItems) && hasToolItems ? <Separator /> : null}
+            {hasToolItems ? (
+              <Dropdown.Section id="tools" selectionMode="multiple" selectedKeys={selectedToolIds}>
+                <Header>
+                  {t(
+                    hasPrimaryItems || hasExternalItems
+                      ? 'input.skillMenu.toolsTitle'
+                      : 'input.skillMenu.title'
+                  )}
+                </Header>
+                {toolSection?.items.map((item) => (
+                  <Dropdown.Item key={item.key} id={item.key} textValue={item.label}>
+                    <Wrench size={16} aria-hidden="true" />
+                    <Label>{item.label}</Label>
+                    <Dropdown.ItemIndicator />
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Section>
+            ) : null}
 
-            <AppButton
-              size="sm"
-              variant="ghost"
-              className={styles.agentGroupAction}
-              onPress={handleSelectOther}
-            >
-              <span className={styles.agentGroupTitle}>
+            {hasCapabilityItems ? <Separator /> : null}
+            <Dropdown.Section>
+              {!hasCapabilityItems ? <Header>{t('input.skillMenu.title')}</Header> : null}
+              <Dropdown.Item
+                id={SELECT_OTHER_SKILL_ACTION}
+                textValue={t('input.skillMenu.selectOther')}
+              >
                 <Sparkles size={14} aria-hidden="true" />
-                <span>{t('input.skillMenu.selectOther')}</span>
-              </span>
-            </AppButton>
-          </div>
+                <Label>{t('input.skillMenu.selectOther')}</Label>
+              </Dropdown.Item>
+            </Dropdown.Section>
+          </Dropdown.Menu>
         )}
-      </AppPopover.Content>
-    </AppPopover>
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }
 

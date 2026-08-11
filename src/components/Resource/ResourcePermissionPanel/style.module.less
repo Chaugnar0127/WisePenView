@@ -123,26 +123,9 @@
   white-space: nowrap;
 }
 
-.actionLabel {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: var(--space-xs);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .actionIcon {
   flex: 0 0 auto;
   color: var(--muted);
-}
-
-.actionText {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .sourceChip {
@@ -198,19 +181,8 @@
 
 .actionList {
   max-height: min(360px, calc(100vh - 140px));
-  background: transparent;
   overflow: auto;
   .appSubtleScrollbar();
-  padding: var(--space-sm);
-
-  :global(.list-box-item) {
-    border-radius: var(--app-radius-popover-item, var(--radius-xl));
-  }
-
-  :global(.list-box-item:hover),
-  :global(.list-box-item[data-hovered='true']) {
-    background: transparent;
-  }
 }
 
 .skeletonShell {

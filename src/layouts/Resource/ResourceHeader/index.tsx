@@ -1,11 +1,11 @@
 import AppIconButton from '@/components/Button/AppIconButton';
 import EntryIcon from '@/components/Icons/EntryIcon';
 import AppBreadcrumb, { type AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
-import { AppMenu } from '@/components/Overlay';
 import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import { useUserService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { normalizeId } from '@/utils/normalize/normalizeId';
+import { Dropdown, Label } from '@heroui/react';
 import {
   ChevronRight,
   Copy,
@@ -46,13 +46,11 @@ function ResourceHeaderMenuItemContent({
   trailing,
 }: ResourceHeaderMenuItemContentProps) {
   return (
-    <span className={styles.menuItemContent}>
-      <Icon className={styles.menuItemIcon} size={16} aria-hidden="true" />
-      <span className={styles.menuItemLabel} data-slot="label">
-        {label}
-      </span>
-      {trailing ? <span className={styles.menuItemTrailing}>{trailing}</span> : null}
-    </span>
+    <>
+      <Icon size={16} aria-hidden="true" />
+      <Label>{label}</Label>
+      {trailing}
+    </>
   );
 }
 
@@ -122,67 +120,63 @@ function ResourceHeaderMore({
   };
 
   return (
-    <AppMenu>
+    <Dropdown>
       <AppIconButton
         icon={<Ellipsis className={styles.moreIcon} size={22} aria-hidden="true" />}
         label={t('header.more')}
         size="sm"
         isDisabled={isDisabled || isMenuPending}
         aria-busy={isPending || undefined}
-        overlayTrigger={<AppMenu.Trigger />}
+        overlayTrigger={<Dropdown.Trigger />}
       />
-      <AppMenu.Popover placement="bottom end" className={styles.popover} bodyPadding="none">
-        <AppMenu.Menu
-          aria-label={t('header.menuAria')}
-          className={styles.moreMenu}
-          onAction={handleAction}
-        >
+      <Dropdown.Popover placement="bottom end" className={styles.popover}>
+        <Dropdown.Menu aria-label={t('header.menuAria')} onAction={handleAction}>
           {operations.onOpenOriginal ? (
-            <AppMenu.Section>
-              <AppMenu.Item id="open-original" textValue={t('header.openOriginal')}>
+            <Dropdown.Section>
+              <Dropdown.Item id="open-original" textValue={t('header.openOriginal')}>
                 <ResourceHeaderMenuItemContent
                   icon={ExternalLink}
                   label={t('header.openOriginal')}
                 />
-              </AppMenu.Item>
-            </AppMenu.Section>
+              </Dropdown.Item>
+            </Dropdown.Section>
           ) : null}
           {operations.onCopy ? (
-            <AppMenu.Section>
-              <AppMenu.Item id="create-copy" textValue={t('header.createCopy')}>
+            <Dropdown.Section>
+              <Dropdown.Item id="create-copy" textValue={t('header.createCopy')}>
                 <ResourceHeaderMenuItemContent icon={Copy} label={t('header.createCopy')} />
-              </AppMenu.Item>
-            </AppMenu.Section>
+              </Dropdown.Item>
+            </Dropdown.Section>
           ) : null}
           {operations.onCreateLink || operations.onMove || operations.onShare ? (
-            <AppMenu.Section>
+            <Dropdown.Section>
               {operations.onCreateLink ? (
-                <AppMenu.Item id="add-link" textValue={t('header.addLink')}>
+                <Dropdown.Item id="add-link" textValue={t('header.addLink')}>
                   <ResourceHeaderMenuItemContent icon={Link2} label={t('header.addLink')} />
-                </AppMenu.Item>
+                </Dropdown.Item>
               ) : null}
               {operations.onMove ? (
-                <AppMenu.Item id="move-to" textValue={t('header.moveTo')}>
+                <Dropdown.Item id="move-to" textValue={t('header.moveTo')}>
                   <ResourceHeaderMenuItemContent icon={FolderInput} label={t('header.moveTo')} />
-                </AppMenu.Item>
+                </Dropdown.Item>
               ) : null}
               {operations.onShare ? (
-                <AppMenu.Item id="share-to" textValue={t('header.shareToGroup')}>
+                <Dropdown.Item id="share-to" textValue={t('header.shareToGroup')}>
                   <ResourceHeaderMenuItemContent icon={Share2} label={t('header.shareToGroup')} />
-                </AppMenu.Item>
+                </Dropdown.Item>
               ) : null}
-            </AppMenu.Section>
+            </Dropdown.Section>
           ) : null}
           {canManagePermission ? (
-            <AppMenu.Section>
-              <AppMenu.Item id="permission" textValue={t('header.permission')}>
+            <Dropdown.Section>
+              <Dropdown.Item id="permission" textValue={t('header.permission')}>
                 <ResourceHeaderMenuItemContent icon={ShieldCheck} label={t('header.permission')} />
-              </AppMenu.Item>
-            </AppMenu.Section>
+              </Dropdown.Item>
+            </Dropdown.Section>
           ) : null}
           {menu?.showInlineCommentHistory ? (
-            <AppMenu.Section>
-              <AppMenu.Item
+            <Dropdown.Section>
+              <Dropdown.Item
                 id="comment-history"
                 textValue={t('header.inlineCommentHistory')}
                 isDisabled={!menu.onInlineCommentHistory}
@@ -191,78 +185,78 @@ function ResourceHeaderMore({
                   icon={MessageSquare}
                   label={t('header.inlineCommentHistory')}
                 />
-              </AppMenu.Item>
-            </AppMenu.Section>
+              </Dropdown.Item>
+            </Dropdown.Section>
           ) : null}
           {menu?.onSearch ? (
-            <AppMenu.Section>
-              <AppMenu.Item id="search" textValue={t('header.fullTextSearch')}>
+            <Dropdown.Section>
+              <Dropdown.Item id="search" textValue={t('header.fullTextSearch')}>
                 <ResourceHeaderMenuItemContent icon={Search} label={t('header.fullTextSearch')} />
-              </AppMenu.Item>
-            </AppMenu.Section>
+              </Dropdown.Item>
+            </Dropdown.Section>
           ) : null}
           {menu?.actions?.length ? (
-            <AppMenu.Section>
+            <Dropdown.Section>
               {menu.actions.map((action) => (
-                <AppMenu.Item key={action.id} id={action.id} textValue={action.label}>
+                <Dropdown.Item key={action.id} id={action.id} textValue={action.label}>
                   <ResourceHeaderMenuItemContent icon={action.icon} label={action.label} />
-                </AppMenu.Item>
+                </Dropdown.Item>
               ))}
-            </AppMenu.Section>
+            </Dropdown.Section>
           ) : null}
           {menu?.onPrint || menu?.download ? (
-            <AppMenu.Section>
+            <Dropdown.Section>
               {menu.onPrint ? (
-                <AppMenu.Item id="print" textValue={menu.printLabel ?? t('header.print')}>
+                <Dropdown.Item id="print" textValue={menu.printLabel ?? t('header.print')}>
                   <ResourceHeaderMenuItemContent
                     icon={menu.printIcon ?? Printer}
                     label={menu.printLabel ?? t('header.print')}
                   />
-                </AppMenu.Item>
+                </Dropdown.Item>
               ) : null}
               {menu.download ? (
-                <AppMenu.Item id="download" textValue={menu.download.label}>
+                <Dropdown.Item id="download" textValue={menu.download.label}>
                   <ResourceHeaderMenuItemContent icon={Download} label={menu.download.label} />
-                </AppMenu.Item>
+                </Dropdown.Item>
               ) : null}
-            </AppMenu.Section>
+            </Dropdown.Section>
           ) : null}
           {menu?.advanced ? (
-            <AppMenu.Section>
-              <AppMenu.SubmenuTrigger>
-                <AppMenu.Item id="advanced" textValue={t('header.advanced')}>
+            <Dropdown.Section>
+              <Dropdown.SubmenuTrigger>
+                <Dropdown.Item id="advanced" textValue={t('header.advanced')}>
                   <ResourceHeaderMenuItemContent
                     icon={Settings2}
                     label={t('header.advanced')}
-                    trailing={<AppMenu.SubmenuIndicator />}
+                    trailing={<Dropdown.SubmenuIndicator />}
                   />
-                </AppMenu.Item>
-                <AppMenu.Popover
+                </Dropdown.Item>
+                <Dropdown.Popover
                   placement="right top"
                   className={`${styles.popover} ${styles.advancedPopover}`}
-                  bodyPadding="none"
                 >
                   <div className={styles.advancedPanel}>{menu.advanced}</div>
-                </AppMenu.Popover>
-              </AppMenu.SubmenuTrigger>
-            </AppMenu.Section>
+                </Dropdown.Popover>
+              </Dropdown.SubmenuTrigger>
+            </Dropdown.Section>
           ) : null}
           {operations.onDelete ? (
-            <AppMenu.Section>
-              <AppMenu.DangerItem
+            <Dropdown.Section>
+              <Dropdown.Item
                 id="delete"
                 textValue={operations.deleteLabel ?? t('header.deleteFile')}
+                variant="danger"
               >
                 <ResourceHeaderMenuItemContent
                   icon={Trash2}
                   label={operations.deleteLabel ?? t('header.deleteFile')}
                 />
-              </AppMenu.DangerItem>
-            </AppMenu.Section>
+              </Dropdown.Item>
+            </Dropdown.Section>
           ) : null}
-        </AppMenu.Menu>
-      </AppMenu.Popover>
-    </AppMenu>
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }
 

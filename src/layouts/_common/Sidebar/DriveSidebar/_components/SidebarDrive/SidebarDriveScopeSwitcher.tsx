@@ -1,11 +1,12 @@
+import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
-import { AppPopover } from '@/components/Overlay';
 import { useGroupService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
 import type { Group } from '@/domains/Group';
 import { useApi } from '@/hooks/useApi';
 import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
-import { Check, ChevronsUpDown, HardDrive, UsersRound } from 'lucide-react';
+import { Dropdown, Header, Label } from '@heroui/react';
+import { ChevronsUpDown, HardDrive, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -51,71 +52,62 @@ function SidebarDriveScopeSwitcher() {
   };
 
   return (
-    <AppPopover isOpen={open} onOpenChange={setOpen}>
+    <Dropdown isOpen={open} onOpenChange={setOpen}>
       <AppIconButton
         icon={<ChevronsUpDown size={14} aria-hidden="true" />}
         label={t('sidebar.switchScope')}
         size="sm"
         className={styles.nodeActionBtn}
         tooltip={{ content: t('sidebar.switchDrive') }}
-        overlayTrigger={<AppPopover.Trigger />}
+        overlayTrigger={<Dropdown.Trigger />}
       />
-      <AppPopover.Content placement="right" title={t('sidebar.switchDrive')}>
-        <div
-          className={styles.scopeMenuPanel}
-          onClick={(event) => event.stopPropagation()}
-          onKeyDown={(event) => event.stopPropagation()}
+      <Dropdown.Popover className={styles.scopeMenuPanel} placement="right">
+        <Dropdown.Menu
+          aria-label={t('sidebar.switchScope')}
+          className={styles.scopeList}
+          selectionMode="single"
+          selectedKeys={[selectedKey]}
+          onAction={(key) =>
+            handleSelectScope(key === PERSONAL_SCOPE_KEY ? undefined : String(key))
+          }
         >
-          <div role="menu" aria-label={t('sidebar.switchScope')} className={styles.scopeList}>
-            <button
-              type="button"
-              role="menuitemradio"
-              aria-checked={selectedKey === PERSONAL_SCOPE_KEY}
-              className={styles.scopeMenuItem}
-              onClick={() => handleSelectScope(undefined)}
-            >
+          <Dropdown.Section>
+            <Header>{t('sidebar.switchDrive')}</Header>
+            <Dropdown.Item id={PERSONAL_SCOPE_KEY} textValue={t('navigator.personalDrive')}>
               <HardDrive size={15} aria-hidden="true" />
-              <span className={styles.scopeMenuItemText}>{t('navigator.personalDrive')}</span>
-              {selectedKey === PERSONAL_SCOPE_KEY ? (
-                <Check size={14} className={styles.scopeCheckIcon} aria-hidden="true" />
-              ) : null}
-            </button>
+              <Label>{t('navigator.personalDrive')}</Label>
+              <Dropdown.ItemIndicator type="dot" />
+            </Dropdown.Item>
             {groups.map((group) => (
-              <button
+              <Dropdown.Item
                 key={group.groupId}
-                type="button"
-                role="menuitemradio"
-                aria-checked={selectedKey === group.groupId}
-                className={styles.scopeMenuItem}
-                onClick={() => handleSelectScope(group.groupId)}
+                id={group.groupId}
+                textValue={group.groupName || t('navigator.unnamedGroup')}
               >
                 <UsersRound size={15} aria-hidden="true" />
-                <span className={styles.scopeMenuItemText}>
-                  {group.groupName || t('navigator.unnamedGroup')}
-                </span>
-                {selectedKey === group.groupId ? (
-                  <Check size={14} className={styles.scopeCheckIcon} aria-hidden="true" />
-                ) : null}
-              </button>
+                <Label>{group.groupName || t('navigator.unnamedGroup')}</Label>
+                <Dropdown.ItemIndicator type="dot" />
+              </Dropdown.Item>
             ))}
-          </div>
-          {hasMoreGroups ? (
-            <button
-              type="button"
-              className={styles.scopeLoadMoreButton}
-              onClick={() => setGroupPage((page) => page + 1)}
-              disabled={loading}
-            >
-              {loading ? t('sidebar.loadingGroups') : t('sidebar.loadMoreGroups')}
-            </button>
-          ) : null}
-          {loading ? <div className={styles.scopeHint}>{t('sidebar.loadingGroups')}</div> : null}
-          {!loading && groups.length === 0 ? (
-            <div className={styles.scopeHint}>{t('sidebar.noGroups')}</div>
-          ) : null}
-        </div>
-      </AppPopover.Content>
-    </AppPopover>
+          </Dropdown.Section>
+        </Dropdown.Menu>
+        {hasMoreGroups ? (
+          <AppButton
+            size="sm"
+            variant="ghost"
+            className={styles.scopeLoadMoreButton}
+            isDisabled={loading}
+            onPress={() => setGroupPage((page) => page + 1)}
+          >
+            {loading ? t('sidebar.loadingGroups') : t('sidebar.loadMoreGroups')}
+          </AppButton>
+        ) : null}
+        {loading ? <div className={styles.scopeHint}>{t('sidebar.loadingGroups')}</div> : null}
+        {!loading && groups.length === 0 ? (
+          <div className={styles.scopeHint}>{t('sidebar.noGroups')}</div>
+        ) : null}
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }
 

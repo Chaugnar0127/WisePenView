@@ -1,10 +1,9 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { AppMenu } from '@/components/Overlay';
+import { Dropdown, Header, Label } from '@heroui/react';
 import { Cloud, Plus, Upload } from 'lucide-react';
 import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
-import styles from '../style.module.less';
 import { useChatInputFiles } from '../useChatInputFiles';
 
 function UploadMenu() {
@@ -26,34 +25,28 @@ function UploadMenu() {
   };
 
   return (
-    <AppMenu isOpen={open} onOpenChange={setAttachmentOpen}>
+    <Dropdown isOpen={open} onOpenChange={setAttachmentOpen}>
       <AppIconButton
         icon={<Plus size={18} aria-hidden="true" />}
         label={t('input.uploadMenu.trigger')}
-        overlayTrigger={<AppMenu.Trigger />}
+        overlayTrigger={<Dropdown.Trigger />}
       />
-      <AppMenu.Popover placement="top" bodyPadding="none">
-        <AppMenu.Header title={t('input.uploadMenu.title')} />
-        <AppMenu.Menu
-          aria-label={t('input.uploadMenu.aria')}
-          className={styles.popoverPanel}
-          onAction={handleAction}
-        >
-          <AppMenu.Item
-            id="local-file"
-            textValue={t('input.uploadMenu.local')}
-            icon={<Upload size={16} />}
-            label={t('input.uploadMenu.local')}
-          />
-          <AppMenu.Item
-            id="cloud-file"
-            textValue={t('input.uploadMenu.cloud')}
-            icon={<Cloud size={16} />}
-            label={t('input.uploadMenu.cloud')}
-          />
-        </AppMenu.Menu>
-      </AppMenu.Popover>
-    </AppMenu>
+      <Dropdown.Popover placement="top">
+        <Dropdown.Menu aria-label={t('input.uploadMenu.aria')} onAction={handleAction}>
+          <Dropdown.Section>
+            <Header>{t('input.uploadMenu.title')}</Header>
+            <Dropdown.Item id="local-file" textValue={t('input.uploadMenu.local')}>
+              <Upload size={16} />
+              <Label>{t('input.uploadMenu.local')}</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="cloud-file" textValue={t('input.uploadMenu.cloud')}>
+              <Cloud size={16} />
+              <Label>{t('input.uploadMenu.cloud')}</Label>
+            </Dropdown.Item>
+          </Dropdown.Section>
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }
 

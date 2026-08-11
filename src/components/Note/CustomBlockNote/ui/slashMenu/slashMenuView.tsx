@@ -1,8 +1,7 @@
-import { AppMenu } from '@/components/Overlay';
 import i18n from '@/i18n';
 import { cn } from '@/utils/cn';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
-import { Header, ListBoxItem, ListBoxSection } from '@heroui/react';
+import { Dropdown, Header, Label, ListBoxItem, ListBoxSection } from '@heroui/react';
 import {
   Braces,
   CheckSquare,
@@ -94,7 +93,7 @@ function SlashMenuItemContent({ item }: { item: DefaultReactSuggestionItem }) {
       <span className={cn(styles.icon, resolveSlashMenuIconColor(item))}>
         {resolveSlashMenuIcon(item)}
       </span>
-      <span className={styles.label}>{resolveSlashMenuTitle(item)}</span>
+      <Label className={styles.label}>{resolveSlashMenuTitle(item)}</Label>
     </>
   );
 }
@@ -112,28 +111,23 @@ export function SlashMenuDropdownItems({
     <>
       {groupedItems.map(([group, groupItems, currentOffset]) => {
         return (
-          <AppMenu.Section
-            id={`slash-group-${group}`}
-            className={styles.section}
-            key={group}
-            title={resolveSlashMenuGroupLabel(group)}
-          >
+          <Dropdown.Section id={`slash-group-${group}`} key={group}>
+            <Header>{resolveSlashMenuGroupLabel(group)}</Header>
             {groupItems.map((item, itemIndexInGroup) => {
               const itemIndex = currentOffset + itemIndexInGroup;
               const title = resolveSlashMenuTitle(item);
 
               return (
-                <AppMenu.Item
+                <Dropdown.Item
                   key={getItemId(item, itemIndex)}
                   id={getItemId(item, itemIndex)}
                   textValue={title}
-                  className={styles.item}
                 >
                   <SlashMenuItemContent item={item} />
-                </AppMenu.Item>
+                </Dropdown.Item>
               );
             })}
-          </AppMenu.Section>
+          </Dropdown.Section>
         );
       })}
     </>

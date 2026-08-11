@@ -239,39 +239,7 @@
 }
 
 .createMenuPanel {
-  display: flex;
-  flex-direction: column;
   width: 176px;
-  gap: var(--space-3xs);
-}
-
-.createMenuItem {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: 32px;
-  min-width: 0;
-  padding: 0 var(--space-xs);
-  gap: var(--space-xs);
-  color: var(--foreground);
-  text-align: left;
-  background: transparent;
-  border: 0;
-  border-radius: var(--app-radius-popover-item, var(--radius-xl));
-  cursor: pointer;
-  transition:
-    color var(--motion-duration-fast) var(--motion-ease-standard),
-    background-color var(--motion-duration-fast) var(--motion-ease-standard);
-
-  &:hover {
-    background: var(--surface-tertiary);
-  }
-
-  &:focus-visible {
-    background: var(--surface-tertiary);
-    outline: 2px solid var(--focus);
-    outline-offset: 1px;
-  }
 }
 
 .scopeMenuPanel {
@@ -280,60 +248,9 @@
 }
 
 .scopeList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3xs);
   max-height: 260px;
   overflow-y: auto;
   .appSubtleScrollbar();
-  background: transparent;
-}
-
-.scopeMenuItem {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: 32px;
-  min-width: 0;
-  padding: 0 var(--space-xs);
-  gap: var(--space-xs);
-  color: var(--foreground);
-  text-align: left;
-  background: transparent;
-  border: 0;
-  border-radius: var(--app-radius-popover-item, var(--radius-xl));
-  cursor: pointer;
-  transition:
-    color var(--motion-duration-fast) var(--motion-ease-standard),
-    background-color var(--motion-duration-fast) var(--motion-ease-standard);
-
-  &:hover {
-    background: var(--surface-tertiary);
-  }
-
-  &:focus-visible {
-    background: var(--surface-tertiary);
-    outline: 2px solid var(--focus);
-    outline-offset: 1px;
-  }
-
-  &[aria-checked='true'] {
-    color: var(--accent-text-strong);
-    background: var(--accent-selected);
-  }
-}
-
-.scopeMenuItemText {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.scopeCheckIcon {
-  flex: 0 0 auto;
-  color: var(--accent-text);
 }
 
 .scopeHint {

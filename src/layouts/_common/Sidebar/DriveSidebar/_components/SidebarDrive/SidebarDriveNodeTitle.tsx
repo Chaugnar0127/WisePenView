@@ -1,4 +1,4 @@
-import { AppPopover } from '@/components/Overlay';
+import { Dropdown, Label } from '@heroui/react';
 import {
   CloudUpload,
   FileInput,
@@ -145,101 +145,72 @@ function SidebarDriveNodeTitle({
           onKeyDown={stopTreeAction}
         >
           {canCreateFolder ? (
-            <AppPopover isOpen={createMenuOpen} onOpenChange={setCreateMenuOpen}>
+            <Dropdown isOpen={createMenuOpen} onOpenChange={setCreateMenuOpen}>
               <AppIconButton
                 icon={<Plus size={14} aria-hidden="true" />}
                 label={t('drive:sidebar.createIn', { name: label })}
                 size="sm"
                 className={styles.nodeActionBtn}
                 tooltip={{ content: t('drive:create.menu') }}
-                overlayTrigger={<AppPopover.Trigger />}
+                overlayTrigger={<Dropdown.Trigger />}
               />
-              <AppPopover.Content placement="right">
-                <div
-                  className={styles.createMenuPanel}
-                  onClick={stopTreeAction}
-                  onKeyDown={stopTreeAction}
+              <Dropdown.Popover className={styles.createMenuPanel} placement="right">
+                <Dropdown.Menu
+                  aria-label={t('drive:sidebar.createIn', { name: label })}
+                  onAction={(key) => handleCreate(String(key) as SidebarDriveCreateAction)}
                 >
-                  <button
-                    type="button"
-                    className={styles.createMenuItem}
-                    onClick={() => handleCreate('folder')}
-                  >
+                  <Dropdown.Item id="folder" textValue={t('drive:create.folder')}>
                     <FolderPlus size={15} color="var(--accent)" aria-hidden="true" />
-                    <span>{t('drive:create.folder')}</span>
-                  </button>
+                    <Label>{t('drive:create.folder')}</Label>
+                  </Dropdown.Item>
                   {canCreateResource ? (
                     <>
-                      <button
-                        type="button"
-                        className={styles.createMenuItem}
-                        onClick={() => handleCreate('note')}
-                      >
+                      <Dropdown.Item id="note" textValue={t('drive:create.note')}>
                         <EntryIcon
                           entryType="resource"
                           resourceIconType="note"
                           size={15}
                           color="var(--accent)"
                         />
-                        <span>{t('drive:create.note')}</span>
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.createMenuItem}
-                        onClick={() => handleCreate('importNote')}
-                      >
+                        <Label>{t('drive:create.note')}</Label>
+                      </Dropdown.Item>
+                      <Dropdown.Item id="importNote" textValue={t('drive:create.importNote')}>
                         <FileInput size={15} color="var(--accent)" aria-hidden="true" />
-                        <span>{t('drive:create.importNote')}</span>
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.createMenuItem}
-                        onClick={() => handleCreate('drawio')}
-                      >
+                        <Label>{t('drive:create.importNote')}</Label>
+                      </Dropdown.Item>
+                      <Dropdown.Item id="drawio" textValue={t('drive:create.drawio')}>
                         <EntryIcon
                           entryType="resource"
                           resourceIconType="drawio"
                           size={15}
                           color="var(--accent)"
                         />
-                        <span>{t('drive:create.drawio')}</span>
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.createMenuItem}
-                        onClick={() => handleCreate('skill')}
-                      >
+                        <Label>{t('drive:create.drawio')}</Label>
+                      </Dropdown.Item>
+                      <Dropdown.Item id="skill" textValue={t('drive:create.skill')}>
                         <EntryIcon
                           entryType="resource"
                           resourceIconType="skill"
                           size={15}
                           color="var(--accent)"
                         />
-                        <span>{t('drive:create.skill')}</span>
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.createMenuItem}
-                        onClick={() => handleCreate('agent')}
-                      >
+                        <Label>{t('drive:create.skill')}</Label>
+                      </Dropdown.Item>
+                      <Dropdown.Item id="agent" textValue={t('drive:create.agent')}>
                         <EntryIcon entryType="resource" resourceIconType="agent" size={15} />
-                        <span>{t('drive:create.agent')}</span>
-                      </button>
+                        <Label>{t('drive:create.agent')}</Label>
+                      </Dropdown.Item>
                       {canUploadDocument ? (
-                        <button
-                          type="button"
-                          className={styles.createMenuItem}
-                          onClick={() => handleCreate('upload')}
-                        >
+                        <Dropdown.Item id="upload" textValue={t('drive:create.upload')}>
                           <CloudUpload size={15} color="var(--accent)" aria-hidden="true" />
-                          <span>{t('drive:create.upload')}</span>
-                        </button>
+                          <Label>{t('drive:create.upload')}</Label>
+                        </Dropdown.Item>
                       ) : null}
                     </>
                   ) : null}
-                </div>
-              </AppPopover.Content>
-            </AppPopover>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
           ) : null}
           {canRename ? (
             <AppIconButton

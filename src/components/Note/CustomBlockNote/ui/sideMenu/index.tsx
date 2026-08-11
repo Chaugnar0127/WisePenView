@@ -34,7 +34,6 @@ import {
   sortSuggestionItemsForDisplay,
 } from '@/components/Note/CustomBlockNote/ui/slashMenu/slashMenuModel';
 import { SlashMenuDropdownItems } from '@/components/Note/CustomBlockNote/ui/slashMenu/slashMenuView';
-import { AppMenu } from '@/components/Overlay';
 import { copyText } from '@/utils/browser/copyText';
 import { cn } from '@/utils/cn';
 import { blockHasType, defaultProps, editorHasBlockWithType } from '@blocknote/core';
@@ -46,6 +45,7 @@ import {
   useExtension,
   useExtensionState,
 } from '@blocknote/react';
+import { Dropdown, Label, Separator } from '@heroui/react';
 import { useEventListener } from 'ahooks';
 import {
   AlignCenter,
@@ -162,13 +162,9 @@ function MenuItemContent({
 }) {
   return (
     <>
-      <span className={styles.menuIcon}>
-        <Icon size={18} aria-hidden="true" />
-      </span>
-      <span className={styles.menuLabel}>{label}</span>
-      <span className={styles.menuTrailing} aria-hidden="true">
-        {trailing}
-      </span>
+      <Icon size={18} aria-hidden="true" />
+      <Label>{label}</Label>
+      {trailing}
     </>
   );
 }
@@ -480,22 +476,17 @@ function CustomSideMenu({
   };
 
   const indentAlignMenu = (
-    <AppMenu.SubmenuTrigger>
-      <AppMenu.Item
-        id="indent-align"
-        textValue={t('editor.indent.align')}
-        className={styles.menuItem}
-      >
+    <Dropdown.SubmenuTrigger>
+      <Dropdown.Item id="indent-align" textValue={t('editor.indent.align')}>
         <MenuItemContent
           icon={AlignLeft}
           label={t('editor.indent.align')}
           trailing={<ChevronRight size={16} />}
         />
-      </AppMenu.Item>
-      <AppMenu.Popover className={styles.popover} placement="right top" bodyPadding="none">
-        <AppMenu.Menu
+      </Dropdown.Item>
+      <Dropdown.Popover placement="right top">
+        <Dropdown.Menu
           aria-label={t('editor.indent.align')}
-          className={styles.menu}
           onAction={(key) => {
             const action = String(key);
             if (action === 'nest') {
@@ -509,52 +500,43 @@ function CustomSideMenu({
             }
           }}
         >
-          <AppMenu.Item
-            id="nest"
-            textValue={t('editor.indent.increase')}
-            className={styles.menuItem}
-          >
+          <Dropdown.Item id="nest" textValue={t('editor.indent.increase')}>
             <MenuItemContent icon={IndentIncrease} label={t('editor.indent.increase')} />
-          </AppMenu.Item>
-          <AppMenu.Item
-            id="unnest"
-            textValue={t('editor.indent.decrease')}
-            className={styles.menuItem}
-          >
+          </Dropdown.Item>
+          <Dropdown.Item id="unnest" textValue={t('editor.indent.decrease')}>
             <MenuItemContent icon={IndentDecrease} label={t('editor.indent.decrease')} />
-          </AppMenu.Item>
+          </Dropdown.Item>
           {canUseTextAlignment
             ? textAlignItems.map((item) => (
-                <AppMenu.Item
+                <Dropdown.Item
                   key={item.key}
                   id={`align-${item.key}`}
                   textValue={t(`editor.align.${item.key}`)}
-                  className={styles.menuItem}
                 >
                   <MenuItemContent
                     icon={item.icon}
                     label={t(`editor.align.${item.key}`)}
                     trailing={textAlignment === item.key ? <Check size={16} /> : null}
                   />
-                </AppMenu.Item>
+                </Dropdown.Item>
               ))
             : null}
-        </AppMenu.Menu>
-      </AppMenu.Popover>
-    </AppMenu.SubmenuTrigger>
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown.SubmenuTrigger>
   );
 
   const colorMenu =
     canUseColor && !isStructured ? (
-      <AppMenu.SubmenuTrigger>
-        <AppMenu.Item id="colors" textValue={t('editor.color.label')} className={styles.menuItem}>
+      <Dropdown.SubmenuTrigger>
+        <Dropdown.Item id="colors" textValue={t('editor.color.label')}>
           <MenuItemContent
             icon={Paintbrush}
             label={t('editor.color.label')}
             trailing={<ChevronRight size={16} />}
           />
-        </AppMenu.Item>
-        <AppMenu.Popover className={styles.popover} placement="right top" bodyPadding="none">
+        </Dropdown.Item>
+        <Dropdown.Popover placement="right top">
           <ColorPaletteContent
             className={styles.colorPanel}
             text={
@@ -575,23 +557,22 @@ function CustomSideMenu({
             }
             onReset={resetBlockColor}
           />
-        </AppMenu.Popover>
-      </AppMenu.SubmenuTrigger>
+        </Dropdown.Popover>
+      </Dropdown.SubmenuTrigger>
     ) : null;
 
   const structuredIndentMenu = (
-    <AppMenu.SubmenuTrigger>
-      <AppMenu.Item id="indent" textValue={t('editor.indent.label')} className={styles.menuItem}>
+    <Dropdown.SubmenuTrigger>
+      <Dropdown.Item id="indent" textValue={t('editor.indent.label')}>
         <MenuItemContent
           icon={IndentIncrease}
           label={t('editor.indent.label')}
           trailing={<ChevronRight size={16} />}
         />
-      </AppMenu.Item>
-      <AppMenu.Popover className={styles.popover} placement="right top" bodyPadding="none">
-        <AppMenu.Menu
+      </Dropdown.Item>
+      <Dropdown.Popover placement="right top">
+        <Dropdown.Menu
           aria-label={t('editor.indent.label')}
-          className={styles.menu}
           onAction={(key) => {
             const action = String(key);
             if (action === 'nest') {
@@ -602,23 +583,15 @@ function CustomSideMenu({
             }
           }}
         >
-          <AppMenu.Item
-            id="nest"
-            textValue={t('editor.indent.increase')}
-            className={styles.menuItem}
-          >
+          <Dropdown.Item id="nest" textValue={t('editor.indent.increase')}>
             <MenuItemContent icon={IndentIncrease} label={t('editor.indent.increase')} />
-          </AppMenu.Item>
-          <AppMenu.Item
-            id="unnest"
-            textValue={t('editor.indent.decrease')}
-            className={styles.menuItem}
-          >
+          </Dropdown.Item>
+          <Dropdown.Item id="unnest" textValue={t('editor.indent.decrease')}>
             <MenuItemContent icon={IndentDecrease} label={t('editor.indent.decrease')} />
-          </AppMenu.Item>
-        </AppMenu.Menu>
-      </AppMenu.Popover>
-    </AppMenu.SubmenuTrigger>
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown.SubmenuTrigger>
   );
 
   return (
@@ -666,80 +639,63 @@ function CustomSideMenu({
             ) : null}
             <GripVertical size={16} aria-hidden="true" />
           </button>
-          <AppMenu isOpen={open} onOpenChange={handleOpenChange}>
-            <AppMenu.Trigger className={styles.dropdownAnchor} isDisabled aria-hidden="true">
+          <Dropdown isOpen={open} onOpenChange={handleOpenChange}>
+            <Dropdown.Trigger className={styles.dropdownAnchor} isDisabled aria-hidden="true">
               <span />
-            </AppMenu.Trigger>
-            <AppMenu.Popover
-              className={styles.popover}
-              placement="left top"
-              offset={8}
-              bodyPadding="none"
-            >
-              <div className={styles.menuSurface}>
-                {!isStructured ? (
-                  <QuickBlockTypes block={block} items={quickItems} onSelect={applyBlockType} />
-                ) : null}
-                <AppMenu.Menu
-                  aria-label={t('sideMenu.blockMenu')}
-                  className={styles.menu}
-                  onAction={(key) => {
-                    const action = String(key);
-                    if (action === 'nest') {
-                      nestBlock('nest');
-                    }
-                    if (action === 'unnest') {
-                      nestBlock('unnest');
-                    }
-                    if (action === 'copy') {
-                      void copyOrCutBlock('copy');
-                    }
-                    if (action === 'cut') {
-                      void copyOrCutBlock('cut');
-                    }
-                    if (action === 'delete') {
-                      deleteBlock();
-                    }
-                    if (action.startsWith('content:')) {
-                      applyContentAction(action.slice('content:'.length));
-                    }
-                  }}
-                >
-                  {isStructured ? structuredIndentMenu : indentAlignMenu}
-                  {!isStructured ? colorMenu : null}
+            </Dropdown.Trigger>
+            <Dropdown.Popover placement="left top" offset={8} className={styles.menuSurface}>
+              {!isStructured ? (
+                <QuickBlockTypes block={block} items={quickItems} onSelect={applyBlockType} />
+              ) : null}
+              <Dropdown.Menu
+                aria-label={t('sideMenu.blockMenu')}
+                onAction={(key) => {
+                  const action = String(key);
+                  if (action === 'nest') {
+                    nestBlock('nest');
+                  }
+                  if (action === 'unnest') {
+                    nestBlock('unnest');
+                  }
+                  if (action === 'copy') {
+                    void copyOrCutBlock('copy');
+                  }
+                  if (action === 'cut') {
+                    void copyOrCutBlock('cut');
+                  }
+                  if (action === 'delete') {
+                    deleteBlock();
+                  }
+                  if (action.startsWith('content:')) {
+                    applyContentAction(action.slice('content:'.length));
+                  }
+                }}
+              >
+                {isStructured ? structuredIndentMenu : indentAlignMenu}
+                {!isStructured ? colorMenu : null}
 
-                  <AppMenu.Section showDivider>
-                    <AppMenu.Item
-                      id="cut"
-                      textValue={t('sideMenu.cut')}
-                      className={styles.menuItem}
-                    >
-                      <MenuItemContent icon={Scissors} label={t('sideMenu.cut')} />
-                    </AppMenu.Item>
-                    <AppMenu.Item
-                      id="copy"
-                      textValue={t('sideMenu.copy')}
-                      className={styles.menuItem}
-                    >
-                      <MenuItemContent icon={Copy} label={t('sideMenu.copy')} />
-                    </AppMenu.Item>
-                    <AppMenu.DangerItem
-                      id="delete"
-                      textValue={t('sideMenu.delete')}
-                      className={styles.menuItem}
-                    >
-                      <MenuItemContent icon={Trash2} label={t('sideMenu.delete')} />
-                    </AppMenu.DangerItem>
-                  </AppMenu.Section>
+                <Separator />
+                <Dropdown.Section>
+                  <Dropdown.Item id="cut" textValue={t('sideMenu.cut')}>
+                    <MenuItemContent icon={Scissors} label={t('sideMenu.cut')} />
+                  </Dropdown.Item>
+                  <Dropdown.Item id="copy" textValue={t('sideMenu.copy')}>
+                    <MenuItemContent icon={Copy} label={t('sideMenu.copy')} />
+                  </Dropdown.Item>
+                  <Dropdown.Item id="delete" textValue={t('sideMenu.delete')} variant="danger">
+                    <MenuItemContent icon={Trash2} label={t('sideMenu.delete')} />
+                  </Dropdown.Item>
+                </Dropdown.Section>
 
-                  {contentActions.length > 0 ? (
-                    <AppMenu.Section showDivider>
+                {contentActions.length > 0 ? (
+                  <>
+                    <Separator />
+                    <Dropdown.Section>
                       {contentActions.map((action) => (
-                        <AppMenu.Item
+                        <Dropdown.Item
                           key={action.id}
                           id={`content:${action.id}`}
                           textValue={action.label}
-                          className={styles.menuItem}
                         >
                           <MenuItemContent
                             icon={action.icon}
@@ -750,53 +706,45 @@ function CustomSideMenu({
                               ) : null
                             }
                           />
-                        </AppMenu.Item>
+                        </Dropdown.Item>
                       ))}
-                    </AppMenu.Section>
-                  ) : null}
+                    </Dropdown.Section>
+                  </>
+                ) : null}
 
-                  <AppMenu.Section showDivider>
-                    <AppMenu.SubmenuTrigger>
-                      <AppMenu.Item
-                        id="insert-below"
-                        textValue={t('sideMenu.addBelow')}
-                        className={styles.menuItem}
+                <Separator />
+                <Dropdown.Section>
+                  <Dropdown.SubmenuTrigger>
+                    <Dropdown.Item id="insert-below" textValue={t('sideMenu.addBelow')}>
+                      <MenuItemContent
+                        icon={PlusSquare}
+                        label={t('sideMenu.addBelow')}
+                        trailing={<ChevronRight size={16} />}
+                      />
+                    </Dropdown.Item>
+                    <Dropdown.Popover placement="right top">
+                      <Dropdown.Menu
+                        aria-label={t('sideMenu.addBelow')}
+                        onAction={(key) => {
+                          const item = slashInsertItems.find(
+                            (_candidate, index) => `insert-slash-item-${index}` === String(key)
+                          );
+                          if (item) {
+                            insertSlashItemBelow(item);
+                          }
+                        }}
                       >
-                        <MenuItemContent
-                          icon={PlusSquare}
-                          label={t('sideMenu.addBelow')}
-                          trailing={<ChevronRight size={16} />}
+                        <SlashMenuDropdownItems
+                          items={slashInsertItems}
+                          getItemId={(_item, index) => `insert-slash-item-${index}`}
                         />
-                      </AppMenu.Item>
-                      <AppMenu.Popover
-                        className={styles.popover}
-                        placement="right top"
-                        bodyPadding="none"
-                      >
-                        <AppMenu.Menu
-                          aria-label={t('sideMenu.addBelow')}
-                          className={styles.menu}
-                          onAction={(key) => {
-                            const item = slashInsertItems.find(
-                              (_candidate, index) => `insert-slash-item-${index}` === String(key)
-                            );
-                            if (item) {
-                              insertSlashItemBelow(item);
-                            }
-                          }}
-                        >
-                          <SlashMenuDropdownItems
-                            items={slashInsertItems}
-                            getItemId={(_item, index) => `insert-slash-item-${index}`}
-                          />
-                        </AppMenu.Menu>
-                      </AppMenu.Popover>
-                    </AppMenu.SubmenuTrigger>
-                  </AppMenu.Section>
-                </AppMenu.Menu>
-              </div>
-            </AppMenu.Popover>
-          </AppMenu>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown.SubmenuTrigger>
+                </Dropdown.Section>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
         </div>
       ) : null}
     </div>

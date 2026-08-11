@@ -1,7 +1,7 @@
 import { AppButton } from '@/components/Button';
-import { Input, TextArea } from '@/components/Input';
+import { FormField, Input, TextArea } from '@/components/Input';
 import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
-import { Label, TextField, Tooltip } from '@heroui/react';
+import { Tooltip } from '@heroui/react';
 
 import { Pencil, Save } from 'lucide-react';
 import type { SyntheticEvent } from 'react';
@@ -51,18 +51,27 @@ function CourseBasicSection({
       </div>
       <div className={styles.basicLayout}>
         <div className={styles.basicFields}>
-          <TextField value={form.name} onChange={(value) => onUpdate('name', value)}>
-            <Label>{t('editor.fields.name')}</Label>
+          <FormField
+            label={t('editor.fields.name')}
+            value={form.name}
+            onChange={(value) => onUpdate('name', value)}
+          >
             <Input />
-          </TextField>
-          <TextField value={form.term} onChange={(value) => onUpdate('term', value)}>
-            <Label>{t('editor.fields.term')}</Label>
+          </FormField>
+          <FormField
+            label={t('editor.fields.term')}
+            value={form.term}
+            onChange={(value) => onUpdate('term', value)}
+          >
             <Input placeholder="2026-2027 春季" />
-          </TextField>
-          <TextField value={form.category} onChange={(value) => onUpdate('category', value)}>
-            <Label>{t('editor.fields.category')}</Label>
+          </FormField>
+          <FormField
+            label={t('editor.fields.category')}
+            value={form.category}
+            onChange={(value) => onUpdate('category', value)}
+          >
             <Input placeholder={t('editor.fields.categoryPlaceholder')} />
-          </TextField>
+          </FormField>
         </div>
         <div className={styles.coverField}>
           <span className={styles.coverLabel}>{t('editor.fields.cover')}</span>
@@ -88,14 +97,14 @@ function CourseBasicSection({
           </Tooltip>
         </div>
       </div>
-      <TextField
+      <FormField
+        label={t('editor.fields.description')}
         className={styles.descriptionField}
         value={form.description}
         onChange={(value) => onUpdate('description', value)}
       >
-        <Label>{t('editor.fields.description')}</Label>
         <TextArea className={styles.courseTextArea} rows={3} />
-      </TextField>
+      </FormField>
     </section>
   );
 }

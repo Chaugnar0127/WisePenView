@@ -5,11 +5,15 @@ import type {
   SelectTriggerProps as HeroSelectTriggerProps,
   SelectValueProps as HeroSelectValueProps,
 } from '@heroui/react';
+import type { ReactNode } from 'react';
 
-export type SelectProps<
+export interface SelectProps<
   T extends object = object,
   M extends 'single' | 'multiple' = 'single',
-> = HeroSelectProps<T, M>;
+> extends HeroSelectProps<T, M> {
+  label?: ReactNode;
+  labelClassName?: string;
+}
 export type SelectTriggerProps = HeroSelectTriggerProps;
 export type SelectValueProps = HeroSelectValueProps;
 export type SelectIndicatorProps = HeroSelectIndicatorProps;

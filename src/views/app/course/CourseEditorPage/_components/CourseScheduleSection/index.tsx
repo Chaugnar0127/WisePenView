@@ -1,6 +1,6 @@
 import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
-import { Input } from '@/components/Input';
+import { Input, Select } from '@/components/Input';
 import {
   FUDAN_COURSE_PERIODS,
   getCoursePeriodTimeRange,
@@ -9,7 +9,7 @@ import {
   type CoursePeriod,
   type CourseWeekPattern,
 } from '@/domains/Course';
-import { ListBox, Select } from '@heroui/react';
+import { ListBox } from '@heroui/react';
 
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

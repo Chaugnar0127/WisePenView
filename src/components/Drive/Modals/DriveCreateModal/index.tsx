@@ -6,7 +6,7 @@ import { useAgentService, useDriveService, useNoteService, useSkillService } fro
 import { useApi } from '@/hooks/useApi';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { validateReservedName } from '@/utils/tag/validateReservedName';
-import { Label, TextField, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -210,27 +210,31 @@ function DriveCreateModal({
           }
         >
           <div className={styles.form}>
-            <TextField
+            <FormField
               aria-label={t('create.asset.displayName')}
+              label={t('create.asset.displayName')}
               value={title}
               onChange={setTitle}
               isRequired
             >
-              <Label>{t('create.asset.displayName')}</Label>
               <Input autoFocus placeholder={t('create.asset.agentDisplayPlaceholder')} />
-            </TextField>
-            <TextField aria-label={t('create.asset.agentName')} value={name} onChange={setName}>
-              <Label>{t('create.asset.agentName')}</Label>
+            </FormField>
+            <FormField
+              aria-label={t('create.asset.agentName')}
+              label={t('create.asset.agentName')}
+              value={name}
+              onChange={setName}
+            >
               <Input placeholder="course_research_assistant" />
-            </TextField>
-            <TextField
+            </FormField>
+            <FormField
               aria-label={t('create.asset.description')}
+              label={t('create.asset.description')}
               value={description}
               onChange={setDescription}
             >
-              <Label>{t('create.asset.description')}</Label>
               <TextArea rows={3} placeholder={t('create.asset.agentDescriptionPlaceholder')} />
-            </TextField>
+            </FormField>
           </div>
         </AppModal>
       );
@@ -263,27 +267,31 @@ function DriveCreateModal({
           }
         >
           <div className={styles.form}>
-            <TextField
+            <FormField
               aria-label={t('create.asset.displayName')}
+              label={t('create.asset.displayName')}
               value={title}
               onChange={setTitle}
               isRequired
             >
-              <Label>{t('create.asset.displayName')}</Label>
               <Input autoFocus placeholder={t('create.asset.skillDisplayPlaceholder')} />
-            </TextField>
-            <TextField aria-label={t('create.asset.skillName')} value={name} onChange={setName}>
-              <Label>{t('create.asset.skillName')}</Label>
+            </FormField>
+            <FormField
+              aria-label={t('create.asset.skillName')}
+              label={t('create.asset.skillName')}
+              value={name}
+              onChange={setName}
+            >
               <Input placeholder="paper_reading_assistant" />
-            </TextField>
-            <TextField
+            </FormField>
+            <FormField
               aria-label={t('create.asset.description')}
+              label={t('create.asset.description')}
               value={description}
               onChange={setDescription}
             >
-              <Label>{t('create.asset.description')}</Label>
               <TextArea rows={3} placeholder={t('create.asset.skillDescriptionPlaceholder')} />
-            </TextField>
+            </FormField>
           </div>
         </AppModal>
       );

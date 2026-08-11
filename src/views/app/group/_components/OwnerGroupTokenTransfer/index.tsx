@@ -2,11 +2,11 @@
  * 高级组组长：个人计算点与小组池之间的 Token 划拨（transferTokenBetweenGroupAndUser）。
  */
 import { AppButton } from '@/components/Button';
-import { Input } from '@/components/Input';
+import { FormField, Input } from '@/components/Input';
 import { useGroupService, useWalletService } from '@/domains';
 import { WALLET_TOKEN_TRANSFER_TYPE } from '@/domains/Wallet';
 import { useApi } from '@/hooks/useApi';
-import { Skeleton, TextField, toast } from '@heroui/react';
+import { Skeleton, toast } from '@heroui/react';
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -154,7 +154,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
 
       <h4 className={styles.transferTitle}>{t('transfer.toGroupTitle')}</h4>
       <div className={styles.formRow}>
-        <TextField
+        <FormField
           aria-label={t('transfer.toGroupAria')}
           className={styles.amountInput}
           value={amtToGroup != null ? String(amtToGroup) : ''}
@@ -175,7 +175,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
             step={1}
             placeholder={t('transfer.amountPlaceholder')}
           />
-        </TextField>
+        </FormField>
         <AppButton
           variant="primary"
           isDisabled={submittingToGroup || balanceLoading}
@@ -189,7 +189,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
 
       <h4 className={styles.transferTitle}>{t('transfer.toOwnerTitle')}</h4>
       <div className={styles.formRow}>
-        <TextField
+        <FormField
           aria-label={t('transfer.toOwnerAria')}
           className={styles.amountInput}
           value={amtToOwner != null ? String(amtToOwner) : ''}
@@ -210,7 +210,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
             step={1}
             placeholder={t('transfer.amountPlaceholder')}
           />
-        </TextField>
+        </FormField>
         <AppButton
           variant="primary"
           isDisabled={submittingToOwner || balanceLoading}

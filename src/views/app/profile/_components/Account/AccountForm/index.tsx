@@ -1,13 +1,13 @@
 import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
-import { Input, Select } from '@/components/Input';
+import { FormField, Input, Select } from '@/components/Input';
 import { useUserService } from '@/domains';
 import type { UpdateUserInfoRequest } from '@/domains/User';
 import { DEGREE, SEX } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
 import type { ProfileFieldKey } from '@/views/app/profile/profile.config';
 import { getVisibleProfileFieldGroups } from '@/views/app/profile/profile.config';
-import { Form, Label, ListBox, TextField, toast } from '@heroui/react';
+import { Form, ListBox, toast } from '@heroui/react';
 
 import { Pencil, X } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
@@ -158,31 +158,32 @@ function AccountForm({
     const fieldPlaceholder = t(field.placeholderKey);
     if (lockedByServer) {
       return (
-        <TextField
+        <FormField
           key={field.key}
+          label={fieldLabel}
           aria-label={fieldLabel}
           value={getReadonlyInputValue(formValues, field.key, t)}
           isDisabled
           className={styles.formField}
         >
-          <Label>{fieldLabel}</Label>
           <Input readOnly className={styles.editableInput} />
-        </TextField>
+        </FormField>
       );
     }
     return (
       <div key={field.key} className={styles.formField}>
         {field.type === 'input' ? (
-          <TextField
+          <FormField
+            label={fieldLabel}
             aria-label={fieldLabel}
             value={getFieldInputValue(formValues, field.key)}
             onChange={(value) => updateFormValue(field.key, value)}
           >
-            <Label>{fieldLabel}</Label>
             <Input placeholder={fieldPlaceholder} className={styles.editableInput} />
-          </TextField>
+          </FormField>
         ) : (
           <Select
+            label={fieldLabel}
             aria-label={fieldLabel}
             placeholder={fieldPlaceholder}
             value={getFieldInputValue(formValues, field.key) || null}
@@ -194,7 +195,6 @@ function AccountForm({
             }
             className={styles.editableInput}
           >
-            <Label>{fieldLabel}</Label>
             <Select.Trigger>
               <Select.Value />
               {getFieldValue(formValues, field.key) != null ? (

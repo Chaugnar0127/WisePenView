@@ -1,5 +1,5 @@
 import { AppButton } from '@/components/Button';
-import { Input, TextArea, UploadZone } from '@/components/Input';
+import { FormField, Input, TextArea, UploadZone } from '@/components/Input';
 import { AppPopover } from '@/components/Overlay';
 import AppModal from '@/components/Overlay/AppModal';
 import { FEEDBACK_TYPE, useImageService, useUserService, type FeedbackType } from '@/domains';
@@ -9,7 +9,7 @@ import {
   assertImageProxyUploadLimit,
   IMAGE_UPLOAD_MAX_SIZE_LABEL,
 } from '@/utils/image/uploadLimit';
-import { Label, ListBox, TextField, toast, type Selection } from '@heroui/react';
+import { ListBox, toast, type Selection } from '@heroui/react';
 
 import { ChevronDown } from 'lucide-react';
 import { useState, type Key } from 'react';
@@ -230,16 +230,16 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
         </AppPopover>
       </div>
 
-      <TextField
+      <FormField
+        label={t('feedback.contentLabel')}
         aria-label={t('feedback.contentLabel')}
         value={formValues.content}
         onChange={(value) => updateFormValue('content', value)}
         isDisabled={submitting}
         isRequired
       >
-        <Label>{t('feedback.contentLabel')}</Label>
         <TextArea rows={5} placeholder={t('feedback.contentPlaceholder')} />
-      </TextField>
+      </FormField>
 
       <div className={styles.imageField}>
         <span className={styles.fieldLabel}>{t('feedback.imageLabel')}</span>
@@ -253,16 +253,16 @@ function UserFeedbackModal({ isOpen, onOpenChange }: UserFeedbackModalProps) {
         />
       </div>
 
-      <TextField
+      <FormField
+        label={t('feedback.contactLabel')}
         aria-label={t('feedback.contactLabel')}
         value={formValues.contact}
         onChange={(value) => updateFormValue('contact', value)}
         isDisabled={submitting}
         isRequired
       >
-        <Label>{t('feedback.contactLabel')}</Label>
         <Input placeholder={t('feedback.contactPlaceholder')} />
-      </TextField>
+      </FormField>
     </AppModal>
   );
 }

@@ -1,5 +1,5 @@
 import { AppButton } from '@/components/Button';
-import { Input, TextArea, UploadZone } from '@/components/Input';
+import { FormField, Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
 import type { CreateGroupRequest } from '@/domains/Group';
@@ -10,7 +10,7 @@ import {
   assertImageProxyUploadLimit,
   IMAGE_UPLOAD_MAX_SIZE_LABEL,
 } from '@/utils/image/uploadLimit';
-import { Label, TextField, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -139,24 +139,24 @@ function CreateGroupModal({ isOpen, onOpenChange, onSuccess }: CreateGroupModalP
         </>
       }
     >
-      <TextField
+      <FormField
+        label={t('fields.name')}
         aria-label={t('fields.name')}
         value={formValues.groupName}
         onChange={(value) => updateFormValue('groupName', value)}
         isRequired
       >
-        <Label>{t('fields.name')}</Label>
         <Input placeholder={t('fields.namePlaceholder')} />
-      </TextField>
-      <TextField
+      </FormField>
+      <FormField
+        label={t('fields.description')}
         aria-label={t('fields.description')}
         value={formValues.groupDesc}
         onChange={(value) => updateFormValue('groupDesc', value)}
         isRequired
       >
-        <Label>{t('fields.description')}</Label>
         <TextArea rows={4} placeholder={t('fields.descriptionPlaceholder')} />
-      </TextField>
+      </FormField>
       <div className={styles.coverField}>
         <span className={styles.fieldLabel}>{t('fields.cover')}</span>
         <UploadZone

@@ -1,10 +1,10 @@
 import { AppButton } from '@/components/Button';
-import { Input } from '@/components/Input';
+import { FormField, Input } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import SelectedMemberList from '@/components/SelectedMemberList';
 import { useQuotaService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
-import { Alert, Label, TextField, toast } from '@heroui/react';
+import { Alert, toast } from '@heroui/react';
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +38,8 @@ function QuotaInput({
   const { t } = useTranslation('group');
   return (
     <div className={className}>
-      <TextField
+      <FormField
+        label={t('quota.assign.limitLabel')}
         aria-label={t('quota.assign.limitAria')}
         value={value != null ? String(value) : ''}
         onChange={(nextValue) => {
@@ -52,9 +53,8 @@ function QuotaInput({
         isDisabled={disabled}
         aria-invalid={Boolean(errorMessage)}
       >
-        <Label>{t('quota.assign.limitLabel')}</Label>
         <Input type="number" min={min} max={max} step={1} placeholder={placeholder} />
-      </TextField>
+      </FormField>
       {errorMessage ? <div className={styles.fieldError}>{errorMessage}</div> : null}
     </div>
   );

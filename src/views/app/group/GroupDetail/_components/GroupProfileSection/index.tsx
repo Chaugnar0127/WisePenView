@@ -1,5 +1,5 @@
 import { AppButton } from '@/components/Button';
-import { Input, TextArea, UploadZone } from '@/components/Input';
+import { FormField, Input, TextArea, UploadZone } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useGroupService, useImageService } from '@/domains';
 import { GROUP_TYPE, type EditGroupRequest, type Group } from '@/domains/Group';
@@ -9,7 +9,7 @@ import { parseErrorMessage } from '@/utils/error';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { PLACEHOLDER_IMAGE } from '@/utils/image/placeholder';
 import { assertImageProxyUploadLimit } from '@/utils/image/uploadLimit';
-import { Label, TextField, toast, Tooltip } from '@heroui/react';
+import { toast, Tooltip } from '@heroui/react';
 
 import { Pencil } from 'lucide-react';
 import { useRef, useState, type SyntheticEvent } from 'react';
@@ -229,27 +229,27 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
           <div className={styles.fields}>
             {canEdit ? (
               <>
-                <TextField
+                <FormField
+                  label={nameLabel}
                   aria-label={nameLabel}
                   value={draft.groupName}
                   onChange={(value) => updateDraft('groupName', value)}
                   isRequired
                 >
-                  <Label>{nameLabel}</Label>
                   <Input placeholder={namePlaceholder} />
-                </TextField>
-                <TextField
+                </FormField>
+                <FormField
+                  label={descriptionLabel}
                   aria-label={descriptionLabel}
                   value={draft.groupDesc}
                   onChange={(value) => updateDraft('groupDesc', value)}
                 >
-                  <Label>{descriptionLabel}</Label>
                   <TextArea
                     rows={5}
                     className={styles.descriptionTextArea}
                     placeholder={descriptionPlaceholder}
                   />
-                </TextField>
+                </FormField>
               </>
             ) : (
               <dl className={styles.readonlyFields}>

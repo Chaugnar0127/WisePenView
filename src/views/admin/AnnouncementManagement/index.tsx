@@ -1,11 +1,12 @@
 import { AppButton } from '@/components/Button';
+import { Select } from '@/components/Input';
 import { DataTable, type DataTableColumn } from '@/components/Table';
 import { useUserService } from '@/domains';
 import type { AdminMessage } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import AdminPageHeader from '@/views/admin/_common/AdminPageHeader';
-import { Chip, ListBox, Select } from '@heroui/react';
+import { Chip, ListBox } from '@heroui/react';
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';

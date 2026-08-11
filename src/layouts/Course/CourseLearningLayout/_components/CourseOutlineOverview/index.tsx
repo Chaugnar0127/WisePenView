@@ -1,7 +1,7 @@
 import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
+import { FormField, TextArea } from '@/components/Input';
 import type { CourseOutlineContainerNode, CourseOutlineResourceNode } from '@/domains/Course';
-import { Label, TextArea, TextField } from '@heroui/react';
 
 import { ChevronRight, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -52,14 +52,15 @@ function CourseOutlineOverview({
 
           {description.editing ? (
             <div className={styles.descriptionEditor}>
-              <TextField
+              <FormField
+                label={t('outline.descriptionLabel')}
+                labelClassName={styles.visuallyHidden}
                 aria-label={t('outline.descriptionLabel')}
                 value={description.draft}
                 onChange={description.setDraft}
               >
-                <Label className={styles.visuallyHidden}>{t('outline.descriptionLabel')}</Label>
                 <TextArea rows={5} placeholder={t('outline.descriptionPlaceholder')} />
-              </TextField>
+              </FormField>
               <div className={styles.editorActions}>
                 <AppButton
                   size="sm"

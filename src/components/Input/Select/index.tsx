@@ -1,5 +1,6 @@
-import { Select as HeroSelect } from '@heroui/react';
+import { Select as HeroSelect, Label } from '@heroui/react';
 import clsx from 'clsx';
+import type { ReactNode } from 'react';
 
 import type {
   SelectIndicatorProps,
@@ -12,10 +13,28 @@ import styles from './style.module.less';
 
 function SelectRoot<T extends object = object, M extends 'single' | 'multiple' = 'single'>({
   className,
+  label,
+  labelClassName,
   variant = 'secondary',
+  isRequired,
+  children,
   ...props
 }: SelectProps<T, M>) {
-  return <HeroSelect variant={variant} className={clsx(styles.select, className)} {...props} />;
+  return (
+    <HeroSelect
+      variant={variant}
+      className={clsx(styles.select, className)}
+      isRequired={isRequired}
+      {...props}
+    >
+      {label ? (
+        <Label className={labelClassName} isRequired={isRequired}>
+          {label}
+        </Label>
+      ) : null}
+      {children as ReactNode}
+    </HeroSelect>
+  );
 }
 
 function SelectTrigger({ children, className, ...props }: SelectTriggerProps) {

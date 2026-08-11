@@ -1,9 +1,9 @@
 import { AppButton } from '@/components/Button';
-import { Input, TextArea } from '@/components/Input';
+import { FormField, Input, TextArea } from '@/components/Input';
 import AppModal from '@/components/Overlay/AppModal';
 import { useCourseService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
-import { Label, TextField, toast } from '@heroui/react';
+import { toast } from '@heroui/react';
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -82,41 +82,41 @@ function CreateCourseModal({ isOpen, onOpenChange, onCreated }: CreateCourseModa
       }
     >
       <div className={styles.createForm}>
-        <TextField
+        <FormField
+          label={t('create.name')}
           value={form.name}
           onChange={(name) => setForm((current) => ({ ...current, name }))}
           aria-label={t('create.name')}
           isRequired
         >
-          <Label>{t('create.name')}</Label>
           <Input placeholder={t('create.namePlaceholder')} />
-        </TextField>
-        <TextField
+        </FormField>
+        <FormField
+          label={t('create.term')}
           value={form.term}
           onChange={(term) => setForm((current) => ({ ...current, term }))}
           aria-label={t('create.term')}
           isRequired
         >
-          <Label>{t('create.term')}</Label>
           <Input placeholder={t('create.termPlaceholder')} />
-        </TextField>
-        <TextField
+        </FormField>
+        <FormField
+          label={t('create.category')}
           value={form.category}
           onChange={(category) => setForm((current) => ({ ...current, category }))}
           aria-label={t('create.category')}
         >
-          <Label>{t('create.category')}</Label>
           <Input placeholder={t('create.categoryPlaceholder')} />
-        </TextField>
-        <TextField
+        </FormField>
+        <FormField
+          label={t('create.intro')}
           value={form.description}
           onChange={(description) => setForm((current) => ({ ...current, description }))}
           aria-label={t('create.intro')}
           isRequired
         >
-          <Label>{t('create.intro')}</Label>
           <TextArea rows={4} placeholder={t('create.introPlaceholder')} />
-        </TextField>
+        </FormField>
       </div>
     </AppModal>
   );

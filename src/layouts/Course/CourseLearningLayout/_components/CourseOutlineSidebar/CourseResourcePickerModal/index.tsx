@@ -4,10 +4,8 @@ import type { DriveSelectionItem } from '@/components/Drive/common/driveComponen
 import AppModal from '@/components/Overlay/AppModal';
 import { usePickerSelection } from '@/components/Picker';
 import { useCourseService } from '@/domains';
-import type { CourseOutlineMountResource } from '@/domains/Course';
 import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -30,7 +28,7 @@ function CourseResourcePickerModal({
 }: CourseResourcePickerModalProps) {
   const { t } = useTranslation('course');
   const courseService = useCourseService();
-  const selection = usePickerSelection<CourseOutlineMountResource[]>({
+  const selection = usePickerSelection<string[]>({
     initialValue: [],
     getCount: (value) => value.length,
   });
@@ -45,7 +43,7 @@ function CourseResourcePickerModal({
       courseService.mountCourseOutlineResources({
         courseId,
         targetNodeId,
-        resources: selection.value,
+        resourceIds: selection.value,
       }),
     {
       manual: true,
@@ -61,12 +59,8 @@ function CourseResourcePickerModal({
     selection.setValue(
       items
         .filter((item) => item.kind === 'resource' || item.kind === 'link')
-        .filter((item) => Boolean(item.resourceId))
-        .map((item) => ({
-          resourceId: item.resourceId ?? '',
-          name: item.label,
-          resourceType: item.resourceType ?? '',
-        }))
+        .map((item) => item.resourceId)
+        .filter((resourceId): resourceId is string => Boolean(resourceId))
     );
   };
 

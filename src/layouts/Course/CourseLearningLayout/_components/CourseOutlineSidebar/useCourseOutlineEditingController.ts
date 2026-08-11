@@ -160,6 +160,8 @@ export const useCourseOutlineEditingController = ({
         courseId,
         resourceId: removeTarget.node.resourceId,
         sourceNodeId: removeTarget.parentId,
+        mainTagId: removeTarget.node.mainTagId,
+        currentTagIds: removeTarget.node.currentTagIds ?? [removeTarget.parentId],
       });
     },
     {

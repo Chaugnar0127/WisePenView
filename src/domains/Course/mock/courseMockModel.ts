@@ -5,6 +5,7 @@ import type {
   CourseDetail,
   CourseOutlineEditorNode,
   CourseOutlineNode,
+  CourseOutlineResourceNode,
   CourseSummary,
 } from '../entity/course';
 import { CourseServicesMap } from '../mapper/CourseServices.map';
@@ -159,6 +160,92 @@ export const findCourseMockOutlineContainer = (
     if (child) return child;
   }
   return undefined;
+};
+
+const reorderCourseMockContainerResources = (
+  container: Extract<CourseOutlineNode, { nodeType: 'CHAPTER' | 'SECTION' }>,
+  orderedResourceIds: string[]
+): void => {
+  const resourceById = new Map(
+    container.children
+      .filter((node): node is CourseOutlineResourceNode => node.nodeType === 'RESOURCE')
+      .map((node) => [node.resourceId, node] as const)
+  );
+  const orderedResources = orderedResourceIds.flatMap((resourceId) => {
+    const resource = resourceById.get(resourceId);
+    if (!resource) return [];
+    resourceById.delete(resourceId);
+    return [resource];
+  });
+  const childContainers = container.children.filter((node) => node.nodeType !== 'RESOURCE');
+  container.children = [...childContainers, ...orderedResources, ...resourceById.values()];
+};
+
+export const mountCourseMockOutlineResources = (
+  nodes: CourseOutlineNode[],
+  targetNodeId: string,
+  resources: CourseOutlineResourceNode[]
+): boolean => {
+  const target = findCourseMockOutlineContainer(nodes, targetNodeId);
+  if (!target) return false;
+  const mountedResourceIds = new Set(
+    target.children
+      .filter((node): node is CourseOutlineResourceNode => node.nodeType === 'RESOURCE')
+      .map((node) => node.resourceId)
+  );
+  target.children.push(
+    ...resources.filter((resource) => {
+      if (mountedResourceIds.has(resource.resourceId)) return false;
+      mountedResourceIds.add(resource.resourceId);
+      return true;
+    })
+  );
+  return true;
+};
+
+export const moveCourseMockOutlineResource = (
+  nodes: CourseOutlineNode[],
+  resourceId: string,
+  sourceNodeId: string,
+  targetNodeId: string,
+  orderedResourceIds?: string[]
+): boolean => {
+  const source = findCourseMockOutlineContainer(nodes, sourceNodeId);
+  const target = findCourseMockOutlineContainer(nodes, targetNodeId);
+  if (!source || !target) return false;
+  const sourceIndex = source.children.findIndex(
+    (node) => node.nodeType === 'RESOURCE' && node.resourceId === resourceId
+  );
+  if (sourceIndex < 0) return false;
+
+  if (source !== target) {
+    const [resource] = source.children.splice(sourceIndex, 1);
+    if (
+      resource?.nodeType === 'RESOURCE' &&
+      !target.children.some(
+        (node) => node.nodeType === 'RESOURCE' && node.resourceId === resourceId
+      )
+    ) {
+      target.children.push(resource);
+    }
+  }
+  if (orderedResourceIds) reorderCourseMockContainerResources(target, orderedResourceIds);
+  return true;
+};
+
+export const removeCourseMockOutlineResource = (
+  nodes: CourseOutlineNode[],
+  resourceId: string,
+  sourceNodeId: string
+): boolean => {
+  const source = findCourseMockOutlineContainer(nodes, sourceNodeId);
+  if (!source) return false;
+  const sourceIndex = source.children.findIndex(
+    (node) => node.nodeType === 'RESOURCE' && node.resourceId === resourceId
+  );
+  if (sourceIndex < 0) return false;
+  source.children.splice(sourceIndex, 1);
+  return true;
 };
 
 export const deleteCourseMockOutlineNode = (

@@ -119,9 +119,12 @@ function CourseLearningLayout() {
             expandSearchResults={Boolean(navigation.normalizedQuery)}
             loading={navigation.loading}
             error={navigation.error}
+            resourcePageStateMap={navigation.resourcePageStateMap}
             onSearchQueryChange={navigation.setSearchQuery}
             onSelectNode={navigation.openOutlineNode}
             onOpenCourseHome={navigation.openCourseHome}
+            onExpandNode={navigation.expandOutlineNode}
+            onLoadMoreResources={navigation.loadMoreOutlineResources}
             onRefresh={navigation.refresh}
             onRetry={navigation.refresh}
           />

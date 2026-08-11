@@ -7,12 +7,11 @@ import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
 import Tree, { type DataNode, type TreeAllowDropInfo, type TreeDropInfo } from '@/components/Tree';
 import type { CourseOutlineContainerNode, CourseOutlineNode } from '@/domains/Course';
 import { parseErrorMessage } from '@/utils/error';
-
-import { ArrowLeft, CheckCircle2, Circle, Plus, Search } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, LoaderCircle, Plus, Search } from 'lucide-react';
 import type { Key, KeyboardEvent } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { findOutlineNode } from '../../model';
+import { findOutlineNode, type CourseOutlineResourcePageState } from '../../model';
 import styles from '../../style.module.less';
 import CourseOutlineMoveModal from './CourseOutlineMoveModal';
 import CourseOutlineNodeTitle from './CourseOutlineNodeTitle';
@@ -35,9 +34,12 @@ interface CourseOutlineSidebarProps {
   expandSearchResults: boolean;
   loading: boolean;
   error?: Error;
+  resourcePageStateMap: Map<string, CourseOutlineResourcePageState>;
   onSearchQueryChange: (value: string) => void;
   onSelectNode: (nodeId: string) => void;
   onOpenCourseHome: () => void;
+  onExpandNode: (nodeId: string) => void;
+  onLoadMoreResources: (nodeId: string) => void;
   onRefresh: () => void;
   onRetry: () => void;
 }
@@ -52,12 +54,47 @@ interface CourseOutlineTreeActions {
   onDelete: (node: CourseOutlineContainerNode) => void;
   onMoveResource: (target: CourseOutlineResourceTarget) => void;
   onRemoveResource: (target: CourseOutlineResourceTarget) => void;
+  onLoadMoreResources: (nodeId: string) => void;
+}
+
+interface CourseOutlineResourcePageTitleProps {
+  state: CourseOutlineResourcePageState;
+  onLoadMore: () => void;
+}
+
+function CourseOutlineResourcePageTitle({
+  state,
+  onLoadMore,
+}: CourseOutlineResourcePageTitleProps) {
+  const { t } = useTranslation('course');
+  return (
+    <button
+      type="button"
+      className={styles.outlineLoadMore}
+      disabled={state.loading}
+      onClick={(event) => {
+        event.stopPropagation();
+        if (!state.loading) onLoadMore();
+      }}
+    >
+      {state.loading ? <LoaderCircle size={14} className={styles.outlineLoadingIcon} /> : null}
+      <span>
+        {state.loading
+          ? t('outline.loadingResources')
+          : t('outline.loadMoreResources', {
+              loaded: state.loadedCount,
+              total: state.total,
+            })}
+      </span>
+    </button>
+  );
 }
 
 const toTreeData = (
   nodes: CourseOutlineNode[],
   editable: boolean,
   actions: CourseOutlineTreeActions,
+  resourcePageStateMap: Map<string, CourseOutlineResourcePageState>,
   parentId?: string
 ): DataNode[] =>
   nodes.map((node) => {
@@ -100,7 +137,26 @@ const toTreeData = (
       isLeaf: false,
       draggable: false,
       title,
-      children: toTreeData(node.children, editable, actions, node.nodeId),
+      children: [
+        ...toTreeData(node.children, editable, actions, resourcePageStateMap, node.nodeId),
+        ...(resourcePageStateMap.get(node.nodeId)?.loading ||
+        resourcePageStateMap.get(node.nodeId)?.nextCursor
+          ? [
+              {
+                key: `course-outline-resource-page:${node.nodeId}`,
+                isLeaf: true,
+                selectable: false,
+                draggable: false,
+                title: (
+                  <CourseOutlineResourcePageTitle
+                    state={resourcePageStateMap.get(node.nodeId)!}
+                    onLoadMore={() => actions.onLoadMoreResources(node.nodeId)}
+                  />
+                ),
+              },
+            ]
+          : []),
+      ],
     };
   });
 
@@ -123,6 +179,7 @@ function CourseOutlineSidebar(props: CourseOutlineSidebarProps) {
     onDelete: editor.sectionDeletion.open,
     onMoveResource: editor.resourceMovement.open,
     onRemoveResource: editor.resourceRemoval.open,
+    onLoadMoreResources: props.onLoadMoreResources,
   };
 
   const allowTreeDrop = ({ dragNode, dropNode, dropPosition }: TreeAllowDropInfo) => {
@@ -259,13 +316,20 @@ function CourseOutlineSidebar(props: CourseOutlineSidebarProps) {
             <Tree
               blockNode
               className={styles.outlineTreeControl}
-              treeData={toTreeData(props.nodes, props.editable, treeActions)}
+              treeData={toTreeData(
+                props.nodes,
+                props.editable,
+                treeActions,
+                props.resourcePageStateMap
+              )}
               draggable={props.editable && !editor.resourceMovement.loading}
               allowDrop={allowTreeDrop}
               onDrop={handleTreeDrop}
               selectedKeys={props.selectedNodeId ? [props.selectedNodeId] : []}
               defaultExpandAll={props.expandSearchResults}
-              defaultExpandedKeys={props.nodes.slice(0, 2).map((node) => node.nodeId)}
+              onExpand={(_keys, info) => {
+                if (info.expanded) props.onExpandNode(String(info.node.key));
+              }}
               onSelect={(_keys: Key[], info: { node: DataNode }) =>
                 props.onSelectNode(String(info.node.key))
               }

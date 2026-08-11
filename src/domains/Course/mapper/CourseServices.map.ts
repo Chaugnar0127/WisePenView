@@ -13,6 +13,7 @@ import type {
   CourseMember,
   CourseOutlineEditorNode,
   CourseOutlineNode,
+  CourseOutlineResourceNode,
   CourseProgress,
   CourseSummary,
 } from '@/domains/Course/entity/course';
@@ -24,7 +25,7 @@ import {
 } from '@/domains/Course/enum';
 import type { Group, GroupMember } from '@/domains/Group';
 import type { ResourceItem } from '@/domains/Resource';
-import type { TagMetaInfo, TagTreeNode } from '@/domains/Tag';
+import { TAG_META_SCHEMA, type TagMetaInfo, type TagTreeNode } from '@/domains/Tag';
 import { isPlainRecord } from '@/utils/typeGuards';
 
 const COURSE_META_SCHEMA = 'wisepen.course.v1';
@@ -71,6 +72,15 @@ const getCourseOutlineResourceOrder = (tagMetaInfo?: TagMetaInfo): string[] =>
     ? tagMetaInfo.resourceOrder.filter((value): value is string => typeof value === 'string')
     : [];
 
+const mapCourseOutlineResourceOrderMeta = (
+  tagMetaInfo: TagMetaInfo | undefined,
+  orderedResourceIds: string[]
+): TagMetaInfo => ({
+  ...tagMetaInfo,
+  schema: tagMetaInfo?.schema ?? TAG_META_SCHEMA,
+  resourceOrder: orderedResourceIds,
+});
+
 const sortCourseOutlineResources = <T extends { resourceId: string }>(
   resources: T[],
   tagMetaInfo?: TagMetaInfo
@@ -91,45 +101,34 @@ const sortCourseOutlineResources = <T extends { resourceId: string }>(
 const collectCourseOutlineTagIds = (tags: TagTreeNode[]): string[] =>
   tags.flatMap((tag) => [tag.tagId, ...collectCourseOutlineTagIds(tag.children ?? [])]);
 
-const mapCourseOutlineNodes = (
-  tags: TagTreeNode[],
-  resources: ResourceItem[]
-): CourseOutlineNode[] => {
-  const outlineTagIds = new Set(collectCourseOutlineTagIds(tags));
-  const resourcesByTagId = new Map<string, ResourceItem[]>();
-
-  for (const resource of resources) {
-    for (const tagId of Object.keys(resource.currentTags ?? {})) {
-      if (!outlineTagIds.has(tagId)) continue;
-      const tagResources = resourcesByTagId.get(tagId) ?? [];
-      tagResources.push(resource);
-      resourcesByTagId.set(tagId, tagResources);
-    }
-  }
-
+const mapCourseOutlineNodes = (tags: TagTreeNode[]): CourseOutlineNode[] => {
   const mapTags = (items: TagTreeNode[], depth: number): CourseOutlineNode[] =>
     items.map((tag) => ({
       nodeId: tag.tagId,
       title: tag.tagName,
       nodeType: depth === 0 ? ('CHAPTER' as const) : ('SECTION' as const),
       description: tag.tagDesc,
-      children: [
-        ...mapTags(tag.children ?? [], depth + 1),
-        ...sortCourseOutlineResources(resourcesByTagId.get(tag.tagId) ?? [], tag.tagMetaInfo).map(
-          (resource) => ({
-            nodeId: `${tag.tagId}:${resource.resourceId}`,
-            title: resource.resourceName,
-            nodeType: 'RESOURCE' as const,
-            resourceId: resource.resourceId,
-            resourceType: resource.resourceType ?? 'file',
-            read: resource.myInteraction?.read ?? false,
-          })
-        ),
-      ],
+      children: mapTags(tag.children ?? [], depth + 1),
     }));
 
   return mapTags(tags, 0);
 };
+
+const mapCourseOutlineResourceNodes = (
+  resources: ResourceItem[],
+  tagId: string,
+  tagMetaInfo?: TagMetaInfo
+): CourseOutlineResourceNode[] =>
+  sortCourseOutlineResources(resources, tagMetaInfo).map((resource) => ({
+    nodeId: `${tagId}:${resource.resourceId}`,
+    title: resource.resourceName,
+    nodeType: 'RESOURCE',
+    resourceId: resource.resourceId,
+    resourceType: resource.resourceType ?? 'file',
+    read: resource.myInteraction?.read ?? false,
+    mainTagId: resource.mainTagId,
+    currentTagIds: Object.keys(resource.currentTags ?? {}),
+  }));
 
 const mapCourseOutlineEditorNodes = (
   nodes: CourseOutlineNode[],
@@ -330,8 +329,11 @@ const mapGroupToCourseDetail = (group: Group, role: 'OWNER' | 'ADMIN' | 'MEMBER'
 export const CourseServicesMap = {
   parseCourseMeta,
   serializeCourseMeta,
+  getCourseOutlineResourceOrder,
+  mapCourseOutlineResourceOrderMeta,
   collectCourseOutlineTagIds,
   mapCourseOutlineNodes,
+  mapCourseOutlineResourceNodes,
   mapCourseOutlineEditorNodes,
   calculateCourseOutlineProgress,
   mapGroupToCourseSummary,

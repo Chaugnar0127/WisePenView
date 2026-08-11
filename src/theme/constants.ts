@@ -1,6 +1,6 @@
-export const DEFAULT_HEROUI_THEME = 'light' as const;
-
 export const HEROUI_SYSTEM_THEME = 'system' as const;
+
+export const DEFAULT_HEROUI_THEME = HEROUI_SYSTEM_THEME;
 
 /** 明暗模式 */
 export const THEME_MODE = {
@@ -89,6 +89,11 @@ export const THEME_MODE_OPTIONS: Array<{
   descriptionKey: string;
 }> = [
   {
+    id: THEME_MODE.SYSTEM,
+    labelKey: 'appearance.modeOption.system.label',
+    descriptionKey: 'appearance.modeOption.system.description',
+  },
+  {
     id: THEME_MODE.LIGHT,
     labelKey: 'appearance.modeOption.light.label',
     descriptionKey: 'appearance.modeOption.light.description',
@@ -97,11 +102,6 @@ export const THEME_MODE_OPTIONS: Array<{
     id: THEME_MODE.DARK,
     labelKey: 'appearance.modeOption.dark.label',
     descriptionKey: 'appearance.modeOption.dark.description',
-  },
-  {
-    id: THEME_MODE.SYSTEM,
-    labelKey: 'appearance.modeOption.system.label',
-    descriptionKey: 'appearance.modeOption.system.description',
   },
 ];
 

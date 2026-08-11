@@ -266,8 +266,8 @@ function Appearance() {
     <>
       <AppearanceHeader />
       <div className={styles.body}>
-        <LanguageSection />
-        <Separator className={styles.divider} />
+        {/* <LanguageSection />
+        <Separator className={styles.divider} /> */}
         <ThemeModeSection value={theme} onChange={setTheme} />
         <Separator className={styles.divider} />
         <ColorSchemeSection value={colorScheme} onChange={setColorScheme} />

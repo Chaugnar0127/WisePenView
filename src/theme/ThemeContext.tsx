@@ -1,5 +1,6 @@
 import { useTheme as useHeroUITheme } from '@heroui/react';
 import { useEffect, type ReactNode } from 'react';
+import { DEFAULT_HEROUI_THEME } from './constants';
 import { ThemeContext, type ResolvedTheme, type ThemeMode } from './ThemeContextValue';
 
 export { ThemeContext } from './ThemeContextValue';
@@ -27,14 +28,14 @@ function resolveTheme(mode: ThemeMode): ResolvedTheme {
 
 export function ThemeContextProvider({
   children,
-  defaultTheme = 'light',
+  defaultTheme = DEFAULT_HEROUI_THEME,
 }: {
   children: ReactNode;
   defaultTheme?: string;
 }) {
   const { theme: heroTheme, setTheme: heroSetTheme } = useHeroUITheme(defaultTheme);
 
-  const resolved = resolveTheme((heroTheme as ThemeMode) || 'light');
+  const resolved = resolveTheme((heroTheme as ThemeMode) || DEFAULT_HEROUI_THEME);
 
   /**
    * @wisepen-manual-effect

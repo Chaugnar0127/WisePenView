@@ -155,6 +155,7 @@ function CourseLearningLayout() {
                         if (target.resourceId) navigation.openResource(target.resourceId);
                       }}
                       onLayoutConfigChange={setResourceLayoutConfig}
+                      onOpenChatPanel={chatDock.openPanel}
                       onSetChatContext={setResourceChatContext}
                       onClearChatContext={handleClearResourceChatContext}
                       onClose={navigation.openCourseHome}

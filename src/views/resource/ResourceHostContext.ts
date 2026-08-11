@@ -66,6 +66,7 @@ export interface ResourceHostContextValue {
   openResource: OpenResourceFn;
   setLayoutConfig: (config: ResourceHostLayoutConfig) => void;
   resetLayoutConfig: () => void;
+  openChatPanel: () => void;
   setChatContext: (context: ResourceChatContext) => void;
   clearChatContext: (context?: ResourceChatContext) => void;
 }
@@ -89,8 +90,8 @@ export function useResourceHostId() {
 }
 
 export function useResourceHostChatContextActions() {
-  const { setChatContext, clearChatContext } = useResourceHostContext();
-  return { setChatContext, clearChatContext };
+  const { openChatPanel, setChatContext, clearChatContext } = useResourceHostContext();
+  return { openChatPanel, setChatContext, clearChatContext };
 }
 
 export function useResourceHostLayoutConfig(

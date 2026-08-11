@@ -42,7 +42,7 @@
   transition: transform var(--motion-duration-slow) var(--motion-ease-emphasized), opacity var(--motion-duration-mid) var(--motion-ease-standard);
   will-change: transform;
   pointer-events: none;
-  z-index: 0;
+  z-index: var(--app-z-index-base);
 }
 
 .menuSection {
@@ -59,7 +59,7 @@
 
 .menuItem:global(.list-box-item) {
   position: relative;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   box-sizing: border-box;
   width: 100%;
   height: var(--app-header-nav-item-height);

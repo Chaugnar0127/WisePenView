@@ -61,7 +61,7 @@
 
 .scrollToBottomButton {
   bottom: calc(var(--chat-footer-scroll-offset, 132px) + var(--space-md)) !important;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -116,7 +116,7 @@
   --history-nav-item-stagger: 0.016s;
 
   position: absolute;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
 }
 
 .historyNavigatorRail {
@@ -131,7 +131,7 @@
 
 .historyNavigatorRailTriggerWrap {
   position: relative;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   max-height: min(50vh, 280px);
   border-radius: var(--radius-sm);
   opacity: 1;
@@ -149,7 +149,7 @@
 
 .historyNavigatorRailTrigger {
   position: relative;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -251,7 +251,7 @@
   position: absolute;
   right: 0;
   top: 50%;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   display: flex;
   flex-direction: column;
   gap: var(--space-2xs, var(--space-3xs));

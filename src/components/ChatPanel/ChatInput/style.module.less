@@ -371,7 +371,7 @@
   position: absolute;
   top: -5px;
   right: -4px;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   min-width: 16px;
   height: 16px;
   padding: 0 var(--space-2xs);
@@ -494,7 +494,7 @@
 .dropOverlay {
   position: absolute;
   inset: 0;
-  z-index: 30;
+  z-index: var(--app-z-index-dock);
   display: flex;
   align-items: center;
   justify-content: center;

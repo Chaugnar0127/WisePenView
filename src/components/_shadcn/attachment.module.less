@@ -201,7 +201,7 @@
 
 .actions {
   position: relative;
-  z-index: 20;
+  z-index: var(--app-z-index-local-overlay);
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -225,7 +225,7 @@
 .trigger {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: var(--app-z-index-floating);
   border: 0;
   background: transparent;
   outline: none;

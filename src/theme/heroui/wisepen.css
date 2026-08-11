@@ -186,6 +186,16 @@ html[data-theme-radius='large'] {
   --table-overlay-radius: var(--table-shell-radius);
   --table-inner-radius: var(--radius-lg);
   /* Overlay 层级统一由主题维护，避免业务样式各自猜数字造成互相遮挡。 */
+  --app-z-index-base: 0;
+  --app-z-index-raised: 1;
+  --app-z-index-elevated: 2;
+  --app-z-index-sticky: 3;
+  --app-z-index-sticky-raised: 4;
+  --app-z-index-sticky-header: 5;
+  --app-z-index-floating: 10;
+  --app-z-index-local-overlay: 20;
+  --app-z-index-dock: 30;
+  --app-z-index-command: 50;
   --app-z-index-editor-menu: 180;
   --app-z-index-editor-toolbar: 220;
   --app-z-index-popover: 400;

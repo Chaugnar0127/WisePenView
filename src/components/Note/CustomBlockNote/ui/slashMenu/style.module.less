@@ -38,7 +38,7 @@
 .menuShell::before,
 .menuShell::after {
   position: absolute;
-  z-index: 3;
+  z-index: var(--app-z-index-sticky);
   right: 0;
   left: 0;
   height: calc(var(--control-height) * 1.5);
@@ -65,7 +65,7 @@
 
 .keyboardFrame {
   position: absolute;
-  z-index: 1;
+  z-index: var(--app-z-index-raised);
   top: 0;
   left: 0;
   width: var(--note-slash-menu-frame-width, 0);
@@ -88,7 +88,7 @@
 
 .menuViewport {
   position: relative;
-  z-index: 2;
+  z-index: var(--app-z-index-elevated);
   max-height: var(--note-slash-menu-effective-max-height);
   overflow-y: auto;
   .appSubtleScrollbar();

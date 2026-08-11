@@ -218,12 +218,12 @@
 .stickyCheckboxCell:global(.table__cell) {
   position: sticky;
   left: 0;
-  z-index: 4;
+  z-index: var(--app-z-index-sticky-raised);
   background: var(--surface);
 }
 
 .stickyCheckboxColumn:global(.table__column) {
-  z-index: 5;
+  z-index: var(--app-z-index-sticky-header);
   background: var(--table-chrome-bg);
 }
 
@@ -231,12 +231,12 @@
 .stickyRowHeaderCell:global(.table__cell) {
   position: sticky;
   left: var(--table-sticky-leading-offset);
-  z-index: 3;
+  z-index: var(--app-z-index-sticky);
   background: var(--surface);
 }
 
 .stickyRowHeaderColumn:global(.table__column) {
-  z-index: 4;
+  z-index: var(--app-z-index-sticky-raised);
   background: var(--table-chrome-bg);
 }
 
@@ -244,12 +244,12 @@
 .stickyActionCell:global(.table__cell) {
   position: sticky;
   right: 0;
-  z-index: 3;
+  z-index: var(--app-z-index-sticky);
   background: var(--surface);
 }
 
 .stickyActionColumn:global(.table__column) {
-  z-index: 4;
+  z-index: var(--app-z-index-sticky-raised);
   background: var(--table-chrome-bg);
 }
 

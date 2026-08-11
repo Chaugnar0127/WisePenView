@@ -19,9 +19,9 @@
   align-items: center;
   justify-content: center;
   transition:
-    color 0.2s ease,
-    background-color 0.2s ease,
-    opacity 0.2s ease;
+    color var(--motion-duration-mid) var(--motion-ease-standard),
+    background-color var(--motion-duration-mid) var(--motion-ease-standard),
+    opacity var(--motion-duration-mid) var(--motion-ease-standard);
 
   &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
     color: var(--foreground);

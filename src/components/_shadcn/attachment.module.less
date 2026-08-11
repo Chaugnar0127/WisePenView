@@ -12,9 +12,9 @@
   background: var(--surface);
   color: var(--foreground);
   transition:
-    border-color var(--motion-duration-mid) ease,
-    background var(--motion-duration-mid) ease,
-    box-shadow var(--motion-duration-mid) ease;
+    border-color var(--motion-duration-mid) var(--motion-ease-standard),
+    background var(--motion-duration-mid) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-mid) var(--motion-ease-standard);
 
   &:focus-within {
     box-shadow: 0 0 0 2px var(--accent-soft);

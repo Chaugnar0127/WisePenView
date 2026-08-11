@@ -22,8 +22,8 @@
   pointer-events: none;
   transform: translateX(2px);
   transition:
-    opacity 0.14s ease,
-    transform 0.14s ease;
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .sessionActionBtn {
@@ -39,8 +39,8 @@
   color: var(--muted);
   cursor: pointer;
   transition:
-    color 0.14s ease,
-    background-color 0.14s ease;
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .sessionMenuLabel:hover .sessionActions {

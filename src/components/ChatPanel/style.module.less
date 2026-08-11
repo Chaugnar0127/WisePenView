@@ -204,7 +204,7 @@
   flex-direction: column;
   padding-top: 0;
   --chat-footer-scroll-offset: 0px;
-  transition: opacity 0.32s ease;
+  transition: opacity var(--motion-duration-slow) var(--motion-ease-standard);
 }
 
 .composerCluster {
@@ -222,9 +222,9 @@
   opacity: 1;
   margin-bottom: var(--space-lg);
   transition:
-    grid-template-rows 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.28s ease,
-    margin-bottom 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    grid-template-rows var(--motion-duration-emphasis) var(--motion-ease-fluid),
+    opacity var(--motion-duration-mid) var(--motion-ease-standard),
+    margin-bottom var(--motion-duration-emphasis) var(--motion-ease-fluid);
 }
 
 .welcomeSlotInner {
@@ -255,9 +255,9 @@
     var(--chat-shell-bg, var(--surface)) 20%
   );
   transition:
-    margin-top 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-    padding-top 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-    background 0.32s ease;
+    margin-top var(--motion-duration-emphasis) var(--motion-ease-fluid),
+    padding-top var(--motion-duration-emphasis) var(--motion-ease-fluid),
+    background var(--motion-duration-slow) var(--motion-ease-standard);
 }
 
 .inputColumn {
@@ -271,7 +271,7 @@
 .composerBottomSpacer {
   flex: 1 1 0;
   min-height: 0;
-  transition: flex-grow 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: flex-grow var(--motion-duration-emphasis) var(--motion-ease-fluid);
 }
 
 .conversationPanel[data-welcome='true'] {
@@ -332,8 +332,8 @@
   gap: var(--space-xs);
   text-align: left;
   transition:
-    color 0.2s ease,
-    background-color 0.2s ease;
+    color var(--motion-duration-mid) var(--motion-ease-standard),
+    background-color var(--motion-duration-mid) var(--motion-ease-standard);
 
   &:hover {
     background: var(--surface-hover);
@@ -400,8 +400,8 @@
   cursor: pointer;
   font-size: var(--font-size-sm);
   transition:
-    color 0.2s ease,
-    background-color 0.2s ease;
+    color var(--motion-duration-mid) var(--motion-ease-standard),
+    background-color var(--motion-duration-mid) var(--motion-ease-standard);
 
   &:hover {
     color: var(--foreground);

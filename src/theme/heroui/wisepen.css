@@ -205,5 +205,16 @@ html[data-theme-radius='large'] {
   --line-width: 1px;
   --motion-duration-fast: 0.1s;
   --motion-duration-mid: 0.2s;
+  --motion-duration-slow: 0.3s;
+  --motion-duration-emphasis: 0.52s;
+  --motion-duration-reduced: 0.01ms;
+  --motion-ease-standard: ease;
+  --motion-ease-in: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  --motion-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --motion-ease-in-out: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  --motion-ease-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --transition-fast: var(--motion-duration-fast);
+  --transition-mid: var(--motion-duration-mid);
+  --transition-slow: var(--motion-duration-slow);
 }

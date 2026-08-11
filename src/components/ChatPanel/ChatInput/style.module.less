@@ -20,8 +20,8 @@
   container-type: inline-size;
   container-name: chat-input;
   transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color var(--motion-duration-mid),
+    box-shadow var(--motion-duration-mid);
 
   &:focus-within {
     border-color: var(--accent-softer);
@@ -509,24 +509,24 @@
   visibility: hidden;
   transform: scale(0.98);
   transition:
-    opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 0.22s,
-    background-color 0.22s ease;
+    opacity var(--motion-duration-mid) var(--motion-ease-fluid),
+    transform var(--motion-duration-mid) var(--motion-ease-fluid),
+    visibility 0s linear var(--motion-duration-mid),
+    background-color var(--motion-duration-mid) var(--motion-ease-standard);
 
   &[data-visible='true'] {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
     transition:
-      opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity var(--motion-duration-mid) var(--motion-ease-fluid),
+      transform var(--motion-duration-mid) var(--motion-ease-fluid),
       visibility 0s linear 0s,
-      background-color 0.22s ease;
+      background-color var(--motion-duration-mid) var(--motion-ease-standard);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-duration-reduced);
     transform: none;
 
     &[data-visible='true'] {

@@ -47,8 +47,8 @@
     border-radius: var(--radius-md, var(--radius-md));
     box-sizing: border-box;
     transition:
-      background 0.2s ease,
-      color 0.2s ease;
+      background var(--motion-duration-mid) var(--motion-ease-standard),
+      color var(--motion-duration-mid) var(--motion-ease-standard);
 
     &:hover,
     &:focus-within {
@@ -190,8 +190,8 @@
   pointer-events: none;
   transform: translateX(2px);
   transition:
-    opacity 0.14s ease,
-    transform 0.14s ease;
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .tree :global(.wisepen-tree__item:hover) .nodeActions,
@@ -220,8 +220,8 @@
   border: 0;
   cursor: pointer;
   transition:
-    color 0.14s ease,
-    background-color 0.14s ease;
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
   &:hover:not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
     color: var(--foreground);
@@ -260,8 +260,8 @@
   border-radius: var(--app-radius-popover-item, var(--radius-xl));
   cursor: pointer;
   transition:
-    color 0.14s ease,
-    background-color 0.14s ease;
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
   &:hover {
     background: var(--surface-tertiary);
@@ -304,8 +304,8 @@
   border-radius: var(--app-radius-popover-item, var(--radius-xl));
   cursor: pointer;
   transition:
-    color 0.14s ease,
-    background-color 0.14s ease;
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
   &:hover {
     background: var(--surface-tertiary);

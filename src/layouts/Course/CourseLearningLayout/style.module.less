@@ -192,8 +192,8 @@
     padding-right: 0;
     border-radius: var(--radius-md, var(--radius-md));
     transition:
-      background 0.2s ease,
-      color 0.2s ease;
+      background var(--motion-duration-mid) var(--motion-ease-standard),
+      color var(--motion-duration-mid) var(--motion-ease-standard);
 
     &:hover,
     &:focus-within {
@@ -323,8 +323,8 @@
   transform: translate(2px, -50%);
   background: linear-gradient(to right, transparent, var(--accent-soft) var(--space-xs));
   transition:
-    opacity 140ms ease,
-    transform 140ms ease;
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .outlineNodeActionButton {

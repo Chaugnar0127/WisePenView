@@ -35,8 +35,8 @@
     box-sizing: border-box;
     border-radius: var(--radius-md, var(--radius-md));
     transition:
-      background 0.2s ease,
-      color 0.2s ease;
+      background var(--motion-duration-mid) var(--motion-ease-standard),
+      color var(--motion-duration-mid) var(--motion-ease-standard);
 
     &:hover:not([aria-selected='true']),
     &:focus-within:not([aria-selected='true']) {

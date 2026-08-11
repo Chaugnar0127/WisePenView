@@ -80,8 +80,8 @@
   border: 0;
   cursor: pointer;
   transition:
-    color 0.16s ease,
-    background-color 0.16s ease;
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
   &[data-expanded='true'] .switcherIcon {
     transform: rotate(90deg);
@@ -92,7 +92,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.16s ease;
+  transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .loadingIcon {
@@ -124,8 +124,8 @@
   cursor: default;
   outline: none;
   transition:
-    color 0.16s ease,
-    background-color 0.16s ease;
+    color var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
   &[data-selectable='true'] {
     cursor: pointer;

@@ -1,6 +1,7 @@
 import { APP_HEADER_NAV_KEY, type AppHeaderNavKey } from '@/bootstrap/routeMeta';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
 import { clearNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
+import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_HEADER_NAV_ITEMS } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import { cn } from '@/utils/cn';
@@ -8,23 +9,21 @@ import { ListBox, ListBoxItem } from '@heroui/react';
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useAppHeaderNavStore } from '../_store/useAppHeaderNavStore';
 import styles from './style.module.less';
 
 function AppHeaderNav() {
   const { t } = useTranslation('shell');
   const navigate = useNavigate();
+  const routeMeta = useAppRouteMeta();
   const appAuth = useAppAuth();
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
-  const selectedKey = useAppHeaderNavStore((state) => state.selectedKey);
-  const setSelectedKey = useAppHeaderNavStore((state) => state.setSelectedKey);
+  const selectedKey = routeMeta?.headerNav;
 
   const handleNavItemPress = (navKey: AppHeaderNavKey) => {
     if (!appAuth.isAuthenticated) {
       appAuth.requireLogin();
       return;
     }
-    setSelectedKey(navKey);
     const navItem = APP_HEADER_NAV_ITEMS.find((item) => item.key === navKey);
     if (!navItem) return;
     if (navKey === APP_HEADER_NAV_KEY.CHAT) {
@@ -86,7 +85,7 @@ function AppHeaderNav() {
   return (
     <div ref={containerRef} className={styles.navContainer}>
       <div ref={indicatorRef} className={styles.indicator} />
-      {/* selectionMode=none + onAction：导航走 action；选中态由共享 store 保持，不再跟随路由切换 */}
+      {/* selectionMode=none + onAction：导航走 action；选中态由当前路由元信息计算，刷新后保持一致。 */}
       <ListBox
         aria-label={t('navigation.appAria')}
         selectionMode="none"

@@ -280,7 +280,7 @@ function MemberList({ groupDisplayConfig, pagination, groupId, inviteCode }: Mem
         {!batchEditMode && hasBatchActions ? (
           <AppButton onPress={enterBatchEditMode}>{t('member.actions.batchEdit')}</AppButton>
         ) : null}
-        {groupDisplayConfig.canInviteMember ? (
+        {inviteCode && groupDisplayConfig.canInviteMember ? (
           <AppButton variant="primary" onPress={() => setActiveModal('invite')}>
             {t('member.actions.invite')}
           </AppButton>

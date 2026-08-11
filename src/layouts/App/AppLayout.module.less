@@ -121,6 +121,7 @@
 .appPageContainer {
   .flexColumnFill();
 
+  position: relative;
   min-height: 0;
   width: 100%;
   max-width: var(--app-page-max-width);
@@ -128,14 +129,15 @@
   padding: var(--app-page-padding-block-start) var(--app-page-padding-inline)
     var(--app-page-padding-block-end);
   box-sizing: border-box;
-  overflow-x: hidden;
   overflow-y: auto;
   .appSubtleScrollbar();
 }
 
 .appPageContainerFixed {
+  max-width: none;
+  margin-inline: 0;
   min-width: var(--layout-drive-page-min-width, 956px);
-  overflow: hidden;
+  overflow-y: hidden;
 }
 
 @import '@/layouts/_common/desktopTitleBar.less';

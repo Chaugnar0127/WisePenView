@@ -4,6 +4,7 @@ import AppBreadcrumb, { type AppBreadcrumbItem } from '@/components/Navigation/A
 import { FolderTable } from '@/components/Table';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { buildDrivePath } from '@/utils/navigation/driveRoute';
+import type { ResourceViewer } from '@/utils/navigation/resourceTarget';
 import {
   DndContext,
   DragOverlay,
@@ -147,12 +148,12 @@ function TableDrive({
 
   // 封装一个通用的点击节点回调，清理选中状态并刷新列表
   const handleClickNode = useClickNode({ enterFolder: handleEnterFolder });
-  const handleActivateNode = (row: DriveTableRow) => {
+  const handleActivateNode = (row: DriveTableRow, viewer?: ResourceViewer) => {
     if (row.node.type === 'loading') {
       void navigation.loadMoreChildren(row.node.parentId);
       return;
     }
-    handleClickNode(row);
+    handleClickNode(row, viewer);
   };
 
   // 初始化回收站控制器

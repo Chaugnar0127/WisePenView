@@ -218,6 +218,7 @@ const enUSDrive = {
     operations: 'Actions',
     openWith: 'Open with',
     pdfPreview: 'PDF preview',
+    officeEditor: 'Office editor',
     enter: 'Enter',
     open: 'Open',
     move: 'Move',

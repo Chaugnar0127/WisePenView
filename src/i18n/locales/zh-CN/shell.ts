@@ -38,6 +38,7 @@ const zhCNShell = {
     login: '去登录',
     loginRequired: '请先登录后使用该功能',
     sessionExpired: '登录已过期',
+    guardHint: '登录后可继续使用对话、云盘、课程和通知。',
     sidebarTitle: '未登录',
     sidebarHint: '登录后可查看会话历史、云盘和课程内容。',
   },

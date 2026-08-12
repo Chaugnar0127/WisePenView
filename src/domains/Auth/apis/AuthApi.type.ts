@@ -11,7 +11,7 @@ export interface RegisterApiRequest {
 }
 
 export interface ResetPasswordApiRequest {
-  username: string;
+  userName: string;
   code?: string;
   uuid?: string;
 }

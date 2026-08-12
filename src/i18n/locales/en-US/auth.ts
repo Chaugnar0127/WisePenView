@@ -58,16 +58,14 @@ const enUSAuth = {
   resetPassword: {
     title: 'Reset Password',
     alertPrefix: 'Password reset: ',
-    alertHighlight:
-      'You need to sign in to your campus email to receive the reset link. The default mailbox is your campus ID mailbox.',
-    alertSuffix:
-      'If you cannot access your campus email unexpectedly, please contact the administrator.',
-    campusNumLabel: 'Campus ID',
-    campusNumRequired: 'Please enter your campus ID',
-    campusNumPlaceholder: 'Enter campus ID',
+    alertHighlight: 'Enter your username to start password reset.',
+    alertSuffix: 'If you cannot complete recovery, please contact the administrator.',
+    userNameLabel: 'Username',
+    userNameRequired: 'Please enter your username',
+    userNamePlaceholder: 'Enter username',
     submit: 'Send verification code',
     backToLogin: 'Back to Sign In',
-    sendSuccess: 'An email will be sent to your campus mailbox. Please check it.',
+    sendSuccess: 'A password reset email has been sent. Please check it.',
     sendFailed: 'Failed to send',
   },
   verifyEmail: {

@@ -38,6 +38,7 @@ const enUSShell = {
     login: 'Sign in',
     loginRequired: 'Sign in to use this feature',
     sessionExpired: 'Sign-in expired',
+    guardHint: 'Sign in to continue with chat, Drive, courses, and notifications.',
     sidebarTitle: 'Not signed in',
     sidebarHint: 'Sign in to view chat history, Drive, and courses.',
   },

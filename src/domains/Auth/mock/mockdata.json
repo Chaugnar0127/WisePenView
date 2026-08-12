@@ -13,7 +13,7 @@
   },
   "resetPassword": {
     "sampleRequest": {
-      "campusNum": "12345678"
+      "userName": "testuser"
     }
   },
   "newPassword": {

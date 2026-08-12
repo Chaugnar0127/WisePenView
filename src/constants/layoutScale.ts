@@ -25,18 +25,20 @@ export const MAIN_SCROLL_MIN_WIDTH = 400;
  * 笔记编辑区本体下限
  */
 export const NOTE_EDITOR_MIN_WIDTH = 560;
+/** 资源宿主主内容下限：避免复用 App 主区下限挤占右侧 Chat 拖拽空间。 */
+export const RESOURCE_MAIN_MIN_WIDTH = NOTE_EDITOR_MIN_WIDTH;
 
 /** 笔记大纲展开宽度与收起宽度；对齐飞书文档目录的可读宽度。 */
 export const NOTE_OUTLINE_OPEN_WIDTH = 280;
 export const NOTE_OUTLINE_COLLAPSED_WIDTH = 40;
 
-/** Chat 侧栏/分栏面板下限：扣除输入区两侧留白后，卡片至少保留 480px */
-export const CHAT_PANEL_MIN_WIDTH = 480;
+/** Chat 侧栏/分栏面板宽度边界：保证输入卡片可读，并限制拖拽到超宽。 */
+export const CHAT_PANEL_MIN_WIDTH = 380;
+export const CHAT_PANEL_MAX_WIDTH = 1020;
 /**
  * Chat fullWidth 页最小宽
  */
 export const CHAT_FULL_WIDTH_MIN_WIDTH = 720;
-export const WORKSPACE_CHAT_PANEL_MAX_WIDTH = 1020;
 
 /** 分栏拖拽条预留 */
 export const LAYOUT_RESIZE_HANDLE_RESERVE = 24;
@@ -57,7 +59,7 @@ export const WORKSPACE_TWO_COLUMN_MIN_WIDTH =
  * Workspace 内层（笔记编辑区 + Chat）下限。
  */
 export const WORKSPACE_INNER_WITH_CHAT_MIN_WIDTH =
-  NOTE_EDITOR_MIN_WIDTH + CHAT_PANEL_MIN_WIDTH + LAYOUT_RESIZE_HANDLE_RESERVE;
+  RESOURCE_MAIN_MIN_WIDTH + CHAT_PANEL_MIN_WIDTH + LAYOUT_RESIZE_HANDLE_RESERVE;
 
 /** 评论/批注栏默认最小宽（过窄时线程/排序条易挤坏） */
 export const RESOURCE_SIDE_PANEL_MIN_WIDTH = 320;
@@ -194,8 +196,8 @@ export const resolveLayoutHeightDensity = (viewportHeight: number): LayoutHeight
 export const clampSidebarWidth = (width: number): number =>
   Math.min(Math.max(Math.round(width), SIDEBAR_MIN_WIDTH), SIDEBAR_MAX_WIDTH);
 
-export const clampWorkspaceChatPanelWidth = (width: number): number =>
-  Math.min(Math.max(Math.round(width), CHAT_PANEL_MIN_WIDTH), WORKSPACE_CHAT_PANEL_MAX_WIDTH);
+export const clampChatPanelWidth = (width: number): number =>
+  Math.min(Math.max(Math.round(width), CHAT_PANEL_MIN_WIDTH), CHAT_PANEL_MAX_WIDTH);
 
 export const clampResourceSidePanelWidth = (width: number): number =>
   Math.min(
@@ -236,6 +238,7 @@ export const getLayoutScaleCssVars = (
     '--layout-app-main-min-width': `${APP_MAIN_MIN_WIDTH}px`,
     '--layout-main-scroll-min-width': `${MAIN_SCROLL_MIN_WIDTH}px`,
     '--layout-note-editor-min-width': `${NOTE_EDITOR_MIN_WIDTH}px`,
+    '--layout-resource-main-min-width': `${RESOURCE_MAIN_MIN_WIDTH}px`,
     '--layout-resource-side-panel-min-width': `${RESOURCE_SIDE_PANEL_MIN_WIDTH}px`,
     '--layout-note-with-side-panel-min-width': `${NOTE_WITH_SIDE_PANEL_MIN_WIDTH}px`,
     '--layout-workspace-inner-chat-min-width': `${WORKSPACE_INNER_WITH_CHAT_MIN_WIDTH}px`,
@@ -243,7 +246,7 @@ export const getLayoutScaleCssVars = (
     '--layout-resize-handle-reserve': `${LAYOUT_RESIZE_HANDLE_RESERVE}px`,
     '--layout-note-outline-open-width': `${NOTE_OUTLINE_OPEN_WIDTH}px`,
     '--layout-note-outline-collapsed-width': `${NOTE_OUTLINE_COLLAPSED_WIDTH}px`,
-    '--layout-chat-panel-max-width': `${WORKSPACE_CHAT_PANEL_MAX_WIDTH}px`,
+    '--layout-chat-panel-max-width': `${CHAT_PANEL_MAX_WIDTH}px`,
     '--layout-model-selector-max-width': `${MODEL_SELECTOR_LABEL_MAX_WIDTH}px`,
     '--layout-compact-max-width': `${LAYOUT_COMPACT_MAX_WIDTH}px`,
     '--layout-short-max-height': `${LAYOUT_SHORT_MAX_HEIGHT}px`,

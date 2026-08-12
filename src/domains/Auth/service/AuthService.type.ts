@@ -12,7 +12,7 @@ export interface RegisterRequest {
 
 /** 忘记密码-发送邮件请求参数 */
 export interface ResetPasswordRequest {
-  campusNum: string;
+  userName: string;
 }
 
 /** 忘记密码-重置新密码请求参数 */

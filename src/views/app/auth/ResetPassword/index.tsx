@@ -7,7 +7,7 @@ import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Alert, Form, toast } from '@heroui/react';
 
 import { hasFieldErrors, runFieldValidation, type FieldErrors } from '@/utils/formValidation';
-import { Mail } from 'lucide-react';
+import { User } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -16,7 +16,7 @@ import auth from '../Auth.module.less';
 type ResetPasswordField = keyof ResetPasswordRequest;
 
 const DEFAULT_RESET_PASSWORD_VALUES: ResetPasswordRequest = {
-  campusNum: '',
+  userName: '',
 };
 
 function ResetPassword() {
@@ -42,10 +42,10 @@ function ResetPassword() {
 
   const validateForm = () => {
     const nextErrors: FieldErrors<ResetPasswordField> = {
-      campusNum: runFieldValidation([
+      userName: runFieldValidation([
         {
-          test: () => formValues.campusNum.trim().length > 0,
-          message: t('resetPassword.campusNumRequired'),
+          test: () => formValues.userName.trim().length > 0,
+          message: t('resetPassword.userNameRequired'),
         },
       ]),
     };
@@ -56,7 +56,7 @@ function ResetPassword() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!validateForm()) return;
-    submitResetPassword({ campusNum: formValues.campusNum.trim() });
+    submitResetPassword({ userName: formValues.userName.trim() });
   };
 
   return (
@@ -74,17 +74,17 @@ function ResetPassword() {
       </Alert>
       <Form onSubmit={handleSubmit} className={auth.form}>
         <FormField
-          aria-label={t('resetPassword.campusNumLabel')}
-          label={t('resetPassword.campusNumLabel')}
-          name="campusNum"
-          value={formValues.campusNum}
-          onChange={(value) => updateFormValue('campusNum', value)}
-          errorMessage={formErrors.campusNum}
+          aria-label={t('resetPassword.userNameLabel')}
+          label={t('resetPassword.userNameLabel')}
+          name="userName"
+          value={formValues.userName}
+          onChange={(value) => updateFormValue('userName', value)}
+          errorMessage={formErrors.userName}
           isRequired
         >
           <div className={auth.inputWithIcon}>
-            <Mail className={auth.inputIcon} size={18} aria-hidden="true" />
-            <Input placeholder={t('resetPassword.campusNumPlaceholder')} />
+            <User className={auth.inputIcon} size={18} aria-hidden="true" />
+            <Input placeholder={t('resetPassword.userNamePlaceholder')} autoComplete="username" />
           </div>
         </FormField>
 

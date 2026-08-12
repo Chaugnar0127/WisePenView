@@ -79,7 +79,7 @@ export function useTableDriveRowActionsController({
         },
         {
           key: 'open-office',
-          label: 'Office',
+          label: t('table.officeEditor'),
           onPress: () => onOpenNode(row, RESOURCE_VIEWER.OFFICE),
         }
       );

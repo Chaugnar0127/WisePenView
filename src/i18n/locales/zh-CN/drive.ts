@@ -215,6 +215,7 @@ const zhCNDrive = {
     operations: '操作',
     openWith: '打开方式',
     pdfPreview: 'PDF 预览',
+    officeEditor: 'Office 编辑器',
     enter: '进入',
     open: '打开',
     move: '移动',

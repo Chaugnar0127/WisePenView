@@ -1,6 +1,7 @@
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { useApi } from '@/hooks/useApi';
+import { resolveTrashViewState } from '../trashViewModel';
 
 interface UseTableDriveTrashControllerParams {
   currentNodeId: string;
@@ -23,11 +24,11 @@ export function useTableDriveTrashController({
     }
   );
   const trashFolderNodeId = trashFolder?.id;
-  const isTrashView = Boolean(
-    canOpenTrash &&
-    trashFolderNodeId &&
-    (currentNodeId === trashFolderNodeId || pathNodes.some((node) => node.id === trashFolderNodeId))
-  );
 
-  return { isTrashView };
+  return resolveTrashViewState({
+    canOpenTrash,
+    currentNodeId,
+    pathNodeIds: pathNodes.map((node) => node.id),
+    trashFolderNodeId,
+  });
 }

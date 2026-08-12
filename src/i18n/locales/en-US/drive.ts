@@ -227,7 +227,7 @@ const enUSDrive = {
     movedSingle: 'Moved',
     trashNotFound: 'Trash not found',
     trashEmpty: 'Trash is empty',
-    trashDescription: 'Files and folders moved to Trash will appear here',
+    trashDescription: 'Files moved to Trash will appear here',
     dropToUpload: 'Drop to upload documents',
     addFromPersonal: 'Add from Personal Drive',
     expandDetails: 'Expand details sidebar',

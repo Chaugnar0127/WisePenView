@@ -359,8 +359,20 @@ function TableDrive({
                 totalCount={navigation.totalCount}
                 summary={t('table.summary', { count: navigation.totalCount })}
                 className={styles.table}
-                emptyText={trash.isTrashView ? t('table.trashEmpty') : undefined}
-                emptyDescription={trash.isTrashView ? t('table.trashDescription') : undefined}
+                emptyText={
+                  trash.isTrashView
+                    ? trash.isTrashRootView
+                      ? t('table.trashEmpty')
+                      : t('empty.folderEmpty', { ns: 'table' })
+                    : undefined
+                }
+                emptyDescription={
+                  trash.isTrashView
+                    ? trash.isTrashRootView
+                      ? t('table.trashDescription')
+                      : ''
+                    : undefined
+                }
                 emptyIcon={trash.isTrashView ? <Trash2 size={20} aria-hidden /> : undefined}
                 sortDescriptor={interaction.sortDescriptor}
                 onSortChange={interaction.handleSortChange}

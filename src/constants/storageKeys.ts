@@ -1,6 +1,5 @@
 export const STORAGE_KEYS = {
   language: 'wisepen:language',
-  anonymousAuthCheckNotified: 'wisepen:anonymous-auth-check-notified',
   authSessionEvent: 'wisepen:auth-session-event',
   authContinuationActive: 'wisepen:auth-continuation:active',
   readingMode: 'wisepen-reading-mode',

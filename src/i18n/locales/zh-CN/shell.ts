@@ -2,7 +2,7 @@ const zhCNShell = {
   navigation: {
     appAria: '应用导航',
     newChat: '新建对话',
-    drive: '文档与云盘',
+    drive: '我的云盘',
     notifications: '通知',
     groups: '我的小组',
     back: '后退',
@@ -23,7 +23,7 @@ const zhCNShell = {
   sidebar: {
     contentAria: '侧边栏内容',
     sessions: '对话',
-    drive: '云盘',
+    drive: '文件',
     notifications: '通知',
     courses: '课程',
     notificationsLoading: '正在加载通知',

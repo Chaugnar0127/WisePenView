@@ -6,13 +6,17 @@ import packageJson from './package.json' with { type: 'json' };
 
 const REQUIRED_CLIENT_URL_KEYS = [
   'VITE_API_BASE_URL',
-  'VITE_NOTE_COLLAB_WS_URL',
   'VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL',
 ] as const;
 const OPTIONAL_CLIENT_URL_KEYS = ['VITE_DRAWIO_EMBED_URL'] as const;
+const REQUIRED_PRODUCTION_ONLY_KEYS = [
+  'VITE_API_BASE_URL_INTRANET',
+  'VITE_INTRANET_PING_PATH',
+  'VITE_NETWORK_PROBE_TIMEOUT',
+] as const;
 const NO_TRAILING_SLASH_URL_KEYS = new Set<string>([
   'VITE_API_BASE_URL',
-  'VITE_NOTE_COLLAB_WS_URL',
+  'VITE_API_BASE_URL_INTRANET',
 ]);
 
 function assertClientUrl(key: string, value: string, mode: string): void {
@@ -50,6 +54,18 @@ export default defineConfig(({ mode }) => {
     const value = env[key];
     if (value) {
       assertClientUrl(key, value, mode);
+    }
+  }
+
+  if (mode === 'production') {
+    for (const key of REQUIRED_PRODUCTION_ONLY_KEYS) {
+      const value = env[key];
+      if (!value) {
+        throw new Error(`[vite] 缺少 ${key}。请检查 .env.${mode}`);
+      }
+      if (key === 'VITE_API_BASE_URL_INTRANET') {
+        assertClientUrl(key, value, mode);
+      }
     }
   }
 

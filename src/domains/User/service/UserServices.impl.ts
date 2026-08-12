@@ -113,14 +113,20 @@ export const createUserServices = (): IUserService => {
   registerServiceCacheCleaner(clearUserCache);
 
   /** 展示用精简信息，带缓存；无缓存或 forceRefresh 时走 getFullUserInfo 再落缓存 */
-  const getUserInfo = async (options?: { forceRefresh?: boolean }): Promise<User> => {
+  const getUserInfo = async (options?: {
+    forceRefresh?: boolean;
+    silentUnauthorized?: boolean;
+  }): Promise<User> => {
     const forceRefresh = options?.forceRefresh ?? false;
     const cachedUserInfo = userInfoCache.get(USER_INFO_CACHE_KEY);
     if (!forceRefresh && cachedUserInfo) {
       return cachedUserInfo;
     }
-    const data = await getFullUserInfo();
-    const userInfo = UserServicesMap.mapUserSafeFromAccountProfile(data);
+    const data = await UserApi.getUserInfo(
+      options?.silentUnauthorized ? { skipUnauthorizedHandling: true } : undefined
+    );
+    const accountProfile = UserServicesMap.mapAccountProfileFromApi(data);
+    const userInfo = UserServicesMap.mapUserSafeFromAccountProfile(accountProfile);
     userInfoCache.set(USER_INFO_CACHE_KEY, userInfo);
     return userInfo;
   };

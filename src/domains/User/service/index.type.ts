@@ -7,7 +7,7 @@ export interface IUserService {
   /** 全量拉取用户信息（为 Account 等页服务），不缓存 */
   getFullUserInfo(): Promise<UserAccountProfile>;
   /** 展示用精简用户信息，带缓存，供侧栏等展示 */
-  getUserInfo(options?: { forceRefresh?: boolean }): Promise<User>;
+  getUserInfo(options?: { forceRefresh?: boolean; silentUnauthorized?: boolean }): Promise<User>;
   /** 精确搜索可见用户：完整用户名或邮箱 */
   searchUsers(params: SearchUsersRequest): Promise<UserSearchUser[]>;
   /** 当前用户小组范围内的用户搜索补全 */

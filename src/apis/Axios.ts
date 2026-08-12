@@ -13,6 +13,7 @@ declare module 'axios' {
   interface AxiosRequestConfig {
     retry?: number | false;
     retryDelayMs?: number;
+    skipUnauthorizedHandling?: boolean;
   }
 }
 
@@ -173,7 +174,7 @@ Axios.interceptors.response.use(
       return retryRequest;
     }
 
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config?.skipUnauthorizedHandling) {
       notifyUnauthorized();
       authSessionCoordinator.unauthorized();
     }

@@ -1,12 +1,13 @@
 import { apiGet, apiPost, apiPut } from '@/apis/request';
+import type { AxiosRequestConfig } from 'axios';
 import type {
+  AddFeedbackApiRequest,
   ChangeUserInfoApiRequest,
   ChangeUserProfileApiRequest,
   CheckEmailVerifyApiRequest,
   GetUserInfoApiResponse,
   InitiateEmailVerifyApiRequest,
   InitiateFudanUISVerifyApiRequest,
-  AddFeedbackApiRequest,
   ListAdminMessagesApiRequest,
   ListAdminMessagesApiResponse,
   ListTransactionsApiRequest,
@@ -20,8 +21,8 @@ import type {
 
 /** User API: /user/* */
 
-function getUserInfo(): Promise<GetUserInfoApiResponse> {
-  return apiGet('/user/getUserInfo');
+function getUserInfo(config?: AxiosRequestConfig): Promise<GetUserInfoApiResponse> {
+  return apiGet('/user/getUserInfo', config);
 }
 
 function searchUser(req: SearchUserApiRequest): Promise<UserSearchUserApiResponse[]> {

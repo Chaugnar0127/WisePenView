@@ -1,3 +1,4 @@
+import type { Node as PMNode } from '@tiptap/pm/model';
 import {
   absolutePositionToRelativePosition,
   relativePositionToAbsolutePosition,
@@ -149,8 +150,21 @@ function projectSelectedText(
   registry: NotePluginRegistry,
   range: SelectedRange
 ): string {
-  const { doc } = editor.prosemirrorState;
-  const selectedText = doc.textBetween(range.from, range.to, '\n', (leafNode) => {
+  const selectedText = projectInlineCommentRangeText(editor.prosemirrorState.doc, registry, range);
+  const selectedBlocks = editor.getSelection()?.blocks ?? [];
+  if (selectedBlocks.length !== 1) return selectedText;
+  const block = selectedBlocks[0] as unknown as Record<string, unknown> & { type?: string };
+  const owner = block.type ? registry.blockPlugins.get(block.type) : undefined;
+  const pluginSelection = owner?.selection.inspect(block, { selected: true, selectedText });
+  return pluginSelection?.selected ? pluginSelection.text : selectedText;
+}
+
+export function projectInlineCommentRangeText(
+  doc: PMNode,
+  registry: NotePluginRegistry,
+  range: SelectedRange
+): string {
+  return doc.textBetween(range.from, range.to, '\n', (leafNode) => {
     const owner =
       registry.inlinePlugins.get(leafNode.type.name) ??
       registry.blockPlugins.get(leafNode.type.name);
@@ -161,12 +175,6 @@ function projectSelectedText(
     );
     return pluginSelection.selected ? pluginSelection.text : '';
   });
-  const selectedBlocks = editor.getSelection()?.blocks ?? [];
-  if (selectedBlocks.length !== 1) return selectedText;
-  const block = selectedBlocks[0] as unknown as Record<string, unknown> & { type?: string };
-  const owner = block.type ? registry.blockPlugins.get(block.type) : undefined;
-  const pluginSelection = owner?.selection.inspect(block, { selected: true, selectedText });
-  return pluginSelection?.selected ? pluginSelection.text : selectedText;
 }
 
 export function captureInlineCommentDraft(

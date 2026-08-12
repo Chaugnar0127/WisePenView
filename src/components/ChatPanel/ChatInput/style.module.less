@@ -204,8 +204,7 @@
 
 .popoverPanelScrollable {
   width: min(320px, calc(100vw - var(--space-xl, 32px)));
-  height: min(360px, 70vh);
-  max-height: 420px;
+  max-height: min(360px, 70vh);
   overflow-y: auto;
   .appSubtleScrollbar();
 }

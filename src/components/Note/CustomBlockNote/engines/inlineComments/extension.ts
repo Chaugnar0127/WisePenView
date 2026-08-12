@@ -5,8 +5,9 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { ySyncPluginKey, type ProsemirrorBinding } from 'y-prosemirror';
 import type { XmlFragment } from 'yjs';
 
-import type { NoteInlineCommentSession } from '@/domains/Note';
-import { resolveInlineCommentAnchor } from './relativePosition';
+import type { NoteInlineCommentAnchorReference, NoteInlineCommentSession } from '@/domains/Note';
+import type { NotePluginRegistry } from '../../registry/types';
+import { projectInlineCommentRangeText, resolveInlineCommentAnchor } from './relativePosition';
 import styles from './style.module.less';
 
 interface InlineCommentExtensionState {
@@ -99,27 +100,34 @@ function mapAnchorRanges(
   });
 }
 
-function collectThreadAnchorPositions(params: {
+function collectThreadAnchorReferences(params: {
+  doc: PMNode;
   fragment: XmlFragment;
   binding: ProsemirrorBinding;
+  registry: NotePluginRegistry;
   session: NoteInlineCommentSession;
-}): Map<string, number> {
-  const { fragment, binding, session } = params;
+}): Map<string, NoteInlineCommentAnchorReference> {
+  const { doc, fragment, binding, registry, session } = params;
   const snapshot = session.getSnapshot();
-  const positions = new Map<string, number>();
+  const references = new Map<string, NoteInlineCommentAnchorReference>();
   [...snapshot.threads, ...snapshot.resolvedThreads].forEach((thread) => {
     const range = resolveInlineCommentAnchor({ anchor: thread.anchor, fragment, binding });
-    if (range) positions.set(thread.threadId, range.from);
+    if (!range) return;
+    references.set(thread.threadId, {
+      position: range.from,
+      quoteText: projectInlineCommentRangeText(doc, registry, range),
+    });
   });
-  return positions;
+  return references;
 }
 
 export function createInlineCommentExtension(params: {
   fragment: XmlFragment;
+  registry: NotePluginRegistry;
   session: NoteInlineCommentSession;
   onThreadSelect(threadId: string): void;
 }): ExtensionFactoryInstance {
-  const { fragment, session, onThreadSelect } = params;
+  const { fragment, registry, session, onThreadSelect } = params;
   return createExtension(({ editor: _editor }) => ({
     key: 'noteInlineComments',
     prosemirrorPlugins: [
@@ -156,17 +164,23 @@ export function createInlineCommentExtension(params: {
         },
         view: (view) => {
           let synchronizeFrame: number | undefined;
-          const synchronizeThreadOrder = () => {
+          const synchronizeThreadReferences = () => {
             synchronizeFrame = undefined;
             const binding = readBinding(view.state);
             if (!binding) return;
-            session.setThreadAnchorPositions(
-              collectThreadAnchorPositions({ fragment, binding, session })
+            session.setThreadAnchorReferences(
+              collectThreadAnchorReferences({
+                doc: view.state.doc as unknown as PMNode,
+                fragment,
+                binding,
+                registry,
+                session,
+              })
             );
           };
-          const scheduleThreadOrderSynchronization = () => {
+          const scheduleThreadReferenceSynchronization = () => {
             if (synchronizeFrame !== undefined) return;
-            synchronizeFrame = window.requestAnimationFrame(synchronizeThreadOrder);
+            synchronizeFrame = window.requestAnimationFrame(synchronizeThreadReferences);
           };
           const refresh = () => {
             view.dispatch(
@@ -174,13 +188,15 @@ export function createInlineCommentExtension(params: {
             );
           };
           const unsubscribe = session.subscribe(() => {
-            // 文本编辑不会改变批注锚点的相对顺序，仅在批注列表变更时同步侧栏排序。
-            scheduleThreadOrderSynchronization();
+            scheduleThreadReferenceSynchronization();
             refresh();
           });
-          scheduleThreadOrderSynchronization();
+          scheduleThreadReferenceSynchronization();
           refresh();
           return {
+            update: () => {
+              scheduleThreadReferenceSynchronization();
+            },
             destroy: () => {
               unsubscribe();
               if (synchronizeFrame !== undefined) {

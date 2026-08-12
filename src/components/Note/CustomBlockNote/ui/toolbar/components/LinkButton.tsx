@@ -41,7 +41,7 @@ export function CreateLinkToolbarButton({
   const { t } = useTranslation(['note', 'common']);
   const editor = useBlockNoteEditor(blockNoteSchema);
   const formattingToolbar = useExtension(FormattingToolbarExtension);
-  const { editLink } = useExtension(LinkToolbarExtension);
+  const { deleteLink, editLink } = useExtension(LinkToolbarExtension);
   const { showSelection } = useExtension(ShowSelectionExtension);
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState('');
@@ -117,9 +117,20 @@ export function CreateLinkToolbarButton({
   const saveLink = () => {
     const nextUrl = normalizeUrl(url);
     if (!nextUrl) {
+      deleteLink(state.range.from);
+      formattingToolbar.store.setState(false);
+      closeLinkPopover();
+      window.setTimeout(() => editor.focus());
       return;
     }
     editLink(nextUrl, state.text, state.range.from);
+    formattingToolbar.store.setState(false);
+    closeLinkPopover();
+    window.setTimeout(() => editor.focus());
+  };
+
+  const removeLink = () => {
+    deleteLink(state.range.from);
     formattingToolbar.store.setState(false);
     closeLinkPopover();
     window.setTimeout(() => editor.focus());
@@ -136,7 +147,7 @@ export function CreateLinkToolbarButton({
     <AppPopover isOpen={open} onOpenChange={handleOpenChange} deferContent={false}>
       <ToolbarButton
         {...buttonGroupProps}
-        label={t('editor.link.add')}
+        label={state.url ? t('editor.link.edit') : t('editor.link.add')}
         icon={<Link size={20} />}
         overlayTrigger={<AppPopover.Trigger />}
       />
@@ -153,6 +164,11 @@ export function CreateLinkToolbarButton({
           <AppButton size="sm" variant="primary" onPress={saveLink}>
             {t('actions.confirm', { ns: 'common' })}
           </AppButton>
+          {state.url ? (
+            <AppButton size="sm" variant="danger" onPress={removeLink}>
+              {t('actions.remove', { ns: 'common' })}
+            </AppButton>
+          ) : null}
         </div>
       </AppPopover.Content>
     </AppPopover>

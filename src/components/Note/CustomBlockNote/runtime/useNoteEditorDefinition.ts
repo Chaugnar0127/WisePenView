@@ -141,6 +141,7 @@ export function useNoteEditorDefinition(
       ? [
           createInlineCommentExtension({
             fragment: noteFragment,
+            registry: notePluginRegistry,
             session: inlineComments.session,
             onThreadSelect: inlineComments.onThreadSelect ?? (() => undefined),
           }),

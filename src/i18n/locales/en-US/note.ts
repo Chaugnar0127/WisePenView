@@ -157,7 +157,12 @@ const enUSNote = {
       search: 'Search document',
       addComment: 'Add comment',
     },
-    link: { add: 'Add link', address: 'Link address', placeholder: 'Enter a link address' },
+    link: {
+      add: 'Add link',
+      edit: 'Edit link',
+      address: 'Link address',
+      placeholder: 'Enter a link address',
+    },
     image: {
       editCaption: 'Edit image caption',
       caption: 'Image caption',

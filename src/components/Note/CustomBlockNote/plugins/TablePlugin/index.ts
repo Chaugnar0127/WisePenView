@@ -57,13 +57,32 @@ export const tablePlugin = {
   },
   print: {
     styles: [
-      `.note-print-body .bn-block-content[data-content-type='table'],
+      `.note-print-body .bn-block-outer:has(> .bn-block > .bn-block-content[data-content-type='table']),
+.note-print-body .bn-block:has(> .bn-block-content[data-content-type='table']),
+.note-print-body .bn-block-content[data-content-type='table'],
+.note-print-body table,
+.note-print-body tbody {
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
 .note-print-body table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed;
+}
+.note-print-body thead {
+  display: table-header-group;
+}
+.note-print-body tfoot {
+  display: table-footer-group;
+}
+.note-print-body tr {
   break-inside: avoid-page;
   page-break-inside: avoid;
 }
-.note-print-body table {
-  max-width: 100% !important;
+.note-print-body th,
+.note-print-body td {
+  overflow-wrap: anywhere;
 }`,
     ],
   },

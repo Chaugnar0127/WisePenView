@@ -19,6 +19,7 @@ import AppError from '@/views/app/error/AppError';
 import ResourceNotFound from '@/views/app/error/ResourceNotFound';
 import RouteError from '@/views/app/error/RouteError';
 import ScopedRouteNotFound from '@/views/app/error/ScopedRouteNotFound';
+import AnonymousGuardPage from '@/views/app/guard/AnonymousGuardPage';
 import AuthenticatedRouteGuard from '@/views/app/guard/AuthenticatedRouteGuard';
 
 const UserManagement = lazy(() => import('@/views/admin/UserManagement'));
@@ -142,6 +143,11 @@ const router = createBrowserRouter([
   },
   {
     path: APP_ROUTE_PATH.HOME,
+    element: <RootRouteGuard />,
+    errorElement: <AppError />,
+  },
+  {
+    path: APP_ROUTE_PATH.ANONYMOUS,
     element: (
       <AppAuthProvider mode="anonymous">
         <AppNavigationLayout />
@@ -155,7 +161,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <RootRouteGuard />,
+            element: <AnonymousGuardPage />,
             handle: chatHandle,
           },
         ],

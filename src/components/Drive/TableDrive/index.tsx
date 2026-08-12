@@ -13,7 +13,7 @@ import {
   type Modifiers,
 } from '@dnd-kit/core';
 
-import { HardDrive, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { HardDrive, PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -359,6 +359,9 @@ function TableDrive({
                 totalCount={navigation.totalCount}
                 summary={t('table.summary', { count: navigation.totalCount })}
                 className={styles.table}
+                emptyText={trash.isTrashView ? t('table.trashEmpty') : undefined}
+                emptyDescription={trash.isTrashView ? t('table.trashDescription') : undefined}
+                emptyIcon={trash.isTrashView ? <Trash2 size={20} aria-hidden /> : undefined}
                 sortDescriptor={interaction.sortDescriptor}
                 onSortChange={interaction.handleSortChange}
                 isPinnedFirst={isDrivePinnedFirstRow}

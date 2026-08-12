@@ -1,14 +1,10 @@
-import { AppButton } from '@/components/Button';
 import AppIconButton from '@/components/Button/AppIconButton';
+import DriveNavigator from '@/components/Drive/DriveNavigator';
+import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import { AppModal } from '@/components/Overlay';
-import type { TreeDataNode } from '@/components/Tree';
-import Tree from '@/components/Tree';
 import { useChatService } from '@/domains';
 import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from '@/domains/Chat';
-import type { Group } from '@/domains/Group';
-import { useApi } from '@/hooks/useApi';
-import { parseErrorMessage } from '@/utils/error';
-import { Description, Dropdown, Header, Label, Separator, Skeleton, toast } from '@heroui/react';
+import { Description, Dropdown, Header, Label, Separator, Skeleton } from '@heroui/react';
 
 import { useInfiniteScroll, useLatest } from 'ahooks';
 import { Bot, ChevronDown, Folder } from 'lucide-react';
@@ -25,19 +21,8 @@ interface AgentPickerProps {
 
 const AGENT_SKELETON_ROWS = [0, 1] as const;
 const AGENT_PAGE_SIZE = 30;
-const GROUP_PAGE_SIZE = 20;
-const GROUP_NODE_PREFIX = 'group:';
-const LOAD_MORE_NODE_PREFIX = 'load-more-agent:';
 const LOAD_MORE_PERSONAL_ACTION = 'agent-action:load-more-personal';
 const SELECT_FROM_GROUP_ACTION = 'agent-action:select-from-group';
-
-interface AgentGroupState {
-  groupId: string;
-  groupName: string;
-  items: ChatAgentOption[];
-  page: number;
-  totalPage: number;
-}
 
 interface AgentPageState extends PageResult<ChatAgentOption> {
   list: ChatAgentOption[];
@@ -283,153 +268,24 @@ function GroupAgentPickerModalContent({
   onSelect,
 }: Omit<GroupAgentPickerModalProps, 'open'>) {
   const { t } = useTranslation(['chat', 'common']);
-  const chatService = useChatService();
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [groupPage, setGroupPage] = useState<PageResult<Group> | null>(null);
-  const [loadingMoreGroups, setLoadingMoreGroups] = useState(false);
-  const [groupStateMap, setGroupStateMap] = useState<Record<string, AgentGroupState>>({});
-  const { loading } = useApi(
-    () => chatService.listChatInputGroups({ page: 1, size: GROUP_PAGE_SIZE }),
-    {
-      onBefore: () => {
-        setGroups([]);
-        setGroupPage(null);
-        setGroupStateMap({});
-      },
-      onSuccess: (page) => {
-        setGroups(page.list);
-        setGroupPage(page);
-      },
-    }
-  );
+  const selectedResourceId = selectedAgentId.startsWith('agent-')
+    ? selectedAgentId.slice('agent-'.length)
+    : selectedAgentId;
 
-  const buildGroupNodeTitle = (groupName: string) => (
-    <span className={styles.agentGroupTitle}>
-      <Folder size={14} color="var(--resource-icon-folder)" />
-      <span>{groupName || t('input.agentPicker.groupFallback')}</span>
-    </span>
-  );
-
-  const loadGroupAgents = async (
-    ownerKey: string,
-    group: Pick<Group, 'groupId' | 'groupName'>,
-    page: number
-  ) => {
-    const result = await chatService.listChatInputAgents({
-      scope: 'GROUP',
-      groupId: group.groupId,
-      groupName: group.groupName,
-      page,
-      size: AGENT_PAGE_SIZE,
+  const handleSelectionChange = (items: DriveSelectionItem[]) => {
+    const item = items[0];
+    if (!item?.resourceId || item.kind !== 'resource') return;
+    onSelect({
+      agentId: `agent-${item.resourceId}`,
+      agentType: 'GROUP',
+      label: item.label,
+      source: 'RESOURCE',
+      resourceId: item.resourceId,
+      groupId: item.groupId,
+      groupName: item.scopeLabel,
     });
-    setGroupStateMap((prev) => {
-      const current = prev[ownerKey];
-      return {
-        ...prev,
-        [ownerKey]: {
-          groupId: group.groupId,
-          groupName: group.groupName,
-          items: page === 1 || !current ? result.list : [...current.items, ...result.list],
-          page: result.page,
-          totalPage: result.totalPage,
-        },
-      };
-    });
-  };
-
-  const groupTreeData: TreeDataNode[] = groups.map((group) => {
-    const ownerKey = `${GROUP_NODE_PREFIX}${group.groupId}`;
-    const state = groupStateMap[ownerKey];
-    const children = state
-      ? [
-          ...state.items.map((agent) => ({
-            key: agent.agentId,
-            title: (
-              <span className={styles.agentTreeLeaf}>
-                <Bot size={14} />
-                <span>{agent.isDefault ? t('input.agentPicker.defaultAgent') : agent.label}</span>
-              </span>
-            ),
-            isLeaf: true,
-          })),
-          ...(state.page < state.totalPage
-            ? [
-                {
-                  key: `${LOAD_MORE_NODE_PREFIX}${ownerKey}:${state.page + 1}`,
-                  title: t('session.loadMore'),
-                  isLeaf: true,
-                },
-              ]
-            : []),
-        ]
-      : undefined;
-
-    return {
-      key: ownerKey,
-      title: buildGroupNodeTitle(group.groupName),
-      selectable: false,
-      isLeaf: false,
-      children,
-    };
-  });
-
-  const handleLoadData = async (node: TreeDataNode) => {
-    const key = String(node.key);
-    if (!key.startsWith(GROUP_NODE_PREFIX)) return;
-    const groupId = key.slice(GROUP_NODE_PREFIX.length);
-    const group = groups.find((item) => item.groupId === groupId);
-    if (!group) return;
-    await loadGroupAgents(key, group, 1);
-  };
-
-  const handleLoadMoreGroups = async () => {
-    if (!groupPage || loadingMoreGroups) return;
-    setLoadingMoreGroups(true);
-    try {
-      const page = await chatService.listChatInputGroups({
-        page: groupPage.page + 1,
-        size: groupPage.size,
-      });
-      setGroups((prev) => [...prev, ...page.list]);
-      setGroupPage(page);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-    } finally {
-      setLoadingMoreGroups(false);
-    }
-  };
-
-  const handleSelectKeys = (keys: Key[]) => {
-    const selectedLoadMore = keys.map(String).find((key) => key.startsWith(LOAD_MORE_NODE_PREFIX));
-    if (selectedLoadMore) {
-      const [, ownerKey, pageText] = selectedLoadMore.match(/^load-more-agent:(.+):(\d+)$/) ?? [];
-      const state = ownerKey ? groupStateMap[ownerKey] : undefined;
-      if (state) {
-        void loadGroupAgents(
-          ownerKey,
-          { groupId: state.groupId, groupName: state.groupName },
-          Number(pageText)
-        ).catch((error) => toast.danger(parseErrorMessage(error)));
-      }
-      return;
-    }
-    const selectedAgentId = keys
-      .map(String)
-      .find((key) =>
-        Object.values(groupStateMap).some((state) =>
-          state.items.some((agent) => agent.agentId === key)
-        )
-      );
-    if (!selectedAgentId) return;
-    const groupAgent = Object.values(groupStateMap)
-      .flatMap((state) => state.items)
-      .find((agent) => agent.agentId === selectedAgentId);
-    if (!groupAgent) return;
-    onSelect(groupAgent);
     onOpenChange(false);
   };
-
-  const hasMoreGroups = groupPage != null && groupPage.page < groupPage.totalPage;
 
   return (
     <AppModal
@@ -455,32 +311,14 @@ function GroupAgentPickerModalContent({
             <div className={styles.agentGroupModalBody}>
               <div className={styles.agentGroupModalHint}>{t('input.agentPicker.groupHint')}</div>
               <div className={styles.agentGroupModalTree}>
-                {loading ? (
-                  <div className={styles.agentGroupModalHint}>
-                    {t('input.agentPicker.groupLoading')}
-                  </div>
-                ) : (
-                  <Tree
-                    treeData={groupTreeData}
-                    className={styles.agentGroupTree}
-                    selectedKeys={[selectedAgentId]}
-                    selectable
-                    blockNode
-                    loadData={handleLoadData}
-                    onSelect={(keys) => handleSelectKeys(keys)}
-                  />
-                )}
-                {!loading && hasMoreGroups ? (
-                  <AppButton
-                    size="sm"
-                    variant="ghost"
-                    className={styles.popoverLoadMore}
-                    isDisabled={loadingMoreGroups}
-                    onPress={handleLoadMoreGroups}
-                  >
-                    {t('session.loadMore')}
-                  </AppButton>
-                ) : null}
+                <DriveNavigator
+                  scopeMode="public"
+                  resourceType="AGENT"
+                  selectableTypes={['resource']}
+                  initialSelectedIds={[selectedResourceId]}
+                  dimUnselectableNodes={false}
+                  onChange={handleSelectionChange}
+                />
               </div>
             </div>
           </AppModal.Body>

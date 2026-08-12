@@ -58,15 +58,14 @@ const zhCNAuth = {
   resetPassword: {
     title: '找回密码',
     alertPrefix: '找回密码：',
-    alertHighlight:
-      '您需要登录校内邮箱查收密码重置链接，校内邮箱将默认为您的学号数字邮箱（与别名邮箱不冲突）。',
-    alertSuffix: '如因意外无法登录校内邮箱，请联系管理员协助重置你的密码。',
-    campusNumLabel: '学工号',
-    campusNumRequired: '请输入学工号',
-    campusNumPlaceholder: '输入学工号',
+    alertHighlight: '请输入用户名发起密码重置。',
+    alertSuffix: '如无法完成找回，请联系管理员协助重置你的密码。',
+    userNameLabel: '用户名',
+    userNameRequired: '请输入用户名',
+    userNamePlaceholder: '输入用户名',
     submit: '发送验证码',
     backToLogin: '返回登录',
-    sendSuccess: '邮件将发送至您的学工号邮箱，请注意查收。',
+    sendSuccess: '密码重置邮件已发送，请注意查收。',
     sendFailed: '发送失败',
   },
   verifyEmail: {

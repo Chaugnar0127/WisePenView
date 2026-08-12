@@ -1,5 +1,6 @@
 export const APP_ROUTE_PATH = {
   HOME: '/',
+  ANONYMOUS: '/anonymous',
   AUTH_LOGIN: '/login',
   AUTH_REGISTER: '/register',
   AUTH_ONBOARDING_BIND: '/onboarding/bind',

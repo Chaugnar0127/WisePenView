@@ -3,7 +3,6 @@ import { useUserService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { Navigate } from 'react-router-dom';
-import AnonymousGuardPage from '../AnonymousGuardPage';
 import styles from '../AuthenticatedRouteGuard/style.module.less';
 
 function RootRouteGuard() {
@@ -25,7 +24,7 @@ function RootRouteGuard() {
     return <Navigate to={APP_ROUTE_PATH.CHAT} replace />;
   }
 
-  return <AnonymousGuardPage />;
+  return <Navigate to={APP_ROUTE_PATH.ANONYMOUS} replace />;
 }
 
 export default RootRouteGuard;

@@ -1,7 +1,6 @@
 .appSubtleScrollbar() {
   scrollbar-width: var(--scrollbar-width, thin);
   scrollbar-color: transparent transparent;
-  scrollbar-gutter: stable;
 
   &::-webkit-scrollbar {
     width: var(--scrollbar-size, 8px);
@@ -34,4 +33,10 @@
     background: var(--scrollbar-thumb-hover);
     background-clip: content-box;
   }
+}
+
+.appSubtleScrollbarStable() {
+  .appSubtleScrollbar();
+  /* 仅在需要避免滚动条出现/消失造成布局抖动的局部容器中显式启用。 */
+  scrollbar-gutter: stable;
 }

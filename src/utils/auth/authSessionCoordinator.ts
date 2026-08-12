@@ -1,7 +1,4 @@
-import {
-  buildLoginHrefForCurrentLocation,
-  getCurrentRoutePath,
-} from '@/bootstrap/authContinuation';
+import { buildLoginPathForCurrentLocation } from '@/bootstrap/authContinuation';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
 import { resetSessionStores } from '@/store/lifecycle';
@@ -43,8 +40,8 @@ const resetSessionState = (): void => {
 };
 
 const redirectToLogin = (): void => {
-  if (getCurrentRoutePath() !== APP_ROUTE_PATH.AUTH_LOGIN) {
-    window.location.replace(buildLoginHrefForCurrentLocation());
+  if (window.location.pathname !== APP_ROUTE_PATH.AUTH_LOGIN) {
+    window.location.replace(buildLoginPathForCurrentLocation());
   }
 };
 

@@ -128,9 +128,7 @@ function isAppRouteUrl(url: string): boolean {
   if (!isRendererUrl(url)) return false;
   try {
     const parsedUrl = new URL(url);
-    const hashRoute = parsedUrl.hash.startsWith('#/') ? parsedUrl.hash.slice(1) : '';
-    const pathname = hashRoute.split('?')[0] || parsedUrl.pathname;
-    return isAuthenticatedAppRoutePath(pathname);
+    return isAuthenticatedAppRoutePath(parsedUrl.pathname);
   } catch {
     return false;
   }

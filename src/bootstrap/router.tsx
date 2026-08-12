@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { createHashRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import {
   APP_HEADER_NAV_KEY,
@@ -126,7 +126,7 @@ const profileHandle = appRouteHandle({
   contentContainer: 'scrollable',
 });
 
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
     element: <AuthLayout />,
     errorElement: <AppError />,

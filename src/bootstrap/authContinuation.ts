@@ -44,10 +44,8 @@ const createContinuationId = (): string => `${Date.now()}-${Math.random().toStri
 
 const normalizeRoutePath = (path: string): string => (path.startsWith('/') ? path : `/${path}`);
 
-const toCurrentRoutePathWithSearch = (location: Location): string => {
-  if (location.hash.startsWith('#/')) return normalizeRoutePath(location.hash.slice(1));
-  return `${location.pathname}${location.search}`;
-};
+const toCurrentPathWithSearchAndHash = (location: Location): string =>
+  `${location.pathname}${location.search}${location.hash}`;
 
 const splitRoutePathWithSearch = (
   routePathWithSearch: string
@@ -67,13 +65,8 @@ const splitRoutePathWithSearch = (
   };
 };
 
-export const toHashRouteHref = (path: string): string => `/#${normalizeRoutePath(path)}`;
-
-export const getCurrentRoutePath = (): string =>
-  splitRoutePathWithSearch(toCurrentRoutePathWithSearch(window.location)).pathname;
-
 export const getCurrentRouteSearch = (): string =>
-  splitRoutePathWithSearch(toCurrentRoutePathWithSearch(window.location)).search;
+  splitRoutePathWithSearch(toCurrentPathWithSearchAndHash(window.location)).search;
 
 export const sanitizeOptionalRedirectPath = (raw: string | null | undefined): string | null => {
   if (!raw) return null;
@@ -141,16 +134,13 @@ export const consumeActiveAuthContinuation = (): AuthContinuation | null => {
 };
 
 export const getCurrentRedirectPath = (): string =>
-  sanitizeRedirectPath(toCurrentRoutePathWithSearch(window.location));
+  sanitizeRedirectPath(toCurrentPathWithSearchAndHash(window.location));
 
 export const buildLoginPathForCurrentLocation = (): string => {
   const redirectPath = getCurrentRedirectPath();
   saveAuthContinuation('auth', redirectPath);
   return appendRedirectParam(APP_ROUTE_PATH.AUTH_LOGIN, redirectPath);
 };
-
-export const buildLoginHrefForCurrentLocation = (): string =>
-  toHashRouteHref(buildLoginPathForCurrentLocation());
 
 export const buildRegisterOnboardingPath = (redirectPath: string): string => {
   const safeRedirectPath = sanitizeRedirectPath(redirectPath);

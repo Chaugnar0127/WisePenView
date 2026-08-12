@@ -26,6 +26,7 @@
   --chat-content-max-width: none;
   --chat-input-max-width: 100%;
   --chat-user-message-max-width: 72%;
+  --chat-welcome-offset-y: var(--space-2xl);
   --chat-avatar-size: 24px;
   --chat-model-meta-font-size: var(--font-size-base);
   --history-nav-preview-font-size: var(--font-size-xs);
@@ -97,7 +98,7 @@
 
     .welcomeSlot {
       position: static;
-      transform: none;
+      transform: translateY(calc(-1 * var(--chat-welcome-offset-y)));
       pointer-events: auto;
     }
 
@@ -242,12 +243,13 @@
   top: 50%;
   right: var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)));
   left: var(--chat-message-inline-padding, var(--space-lg));
-  transform: translateY(-50%);
+  transform: translateY(calc(-50% - var(--chat-welcome-offset-y)));
   opacity: 1;
   margin-bottom: 0;
   pointer-events: none;
   transition:
     grid-template-rows var(--motion-duration-emphasis) var(--motion-ease-fluid),
+    transform var(--motion-duration-emphasis) var(--motion-ease-fluid),
     opacity var(--motion-duration-mid) var(--motion-ease-standard),
     margin-bottom var(--motion-duration-emphasis) var(--motion-ease-fluid);
 }

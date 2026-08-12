@@ -1,5 +1,13 @@
 import type { CourseOutlineNode, CourseOutlineResourceNode } from '@/domains/Course';
 
+export interface CourseOutlineResourcePageState {
+  loaded: boolean;
+  loading: boolean;
+  loadedCount: number;
+  total: number;
+  nextCursor?: string;
+}
+
 export const findOutlineNode = (
   nodes: CourseOutlineNode[],
   nodeId: string
@@ -52,6 +60,33 @@ export const markCourseOutlineResourceRead = (
       return { ...node, read: true };
     }
     const children = markCourseOutlineResourceRead(node.children, resourceId);
+    if (children === node.children) return node;
+    changed = true;
+    return { ...node, children };
+  });
+  return changed ? nextNodes : nodes;
+};
+
+export const appendCourseOutlineResources = (
+  nodes: CourseOutlineNode[],
+  nodeId: string,
+  resources: CourseOutlineResourceNode[]
+): CourseOutlineNode[] => {
+  let changed = false;
+  const nextNodes = nodes.map((node): CourseOutlineNode => {
+    if (node.nodeType === 'RESOURCE') return node;
+    if (node.nodeId === nodeId) {
+      const childContainers = node.children.filter((child) => child.nodeType !== 'RESOURCE');
+      const resourceById = new Map(
+        node.children
+          .filter((child): child is CourseOutlineResourceNode => child.nodeType === 'RESOURCE')
+          .map((child) => [child.resourceId, child] as const)
+      );
+      resources.forEach((resource) => resourceById.set(resource.resourceId, resource));
+      changed = resources.length > 0;
+      return changed ? { ...node, children: [...childContainers, ...resourceById.values()] } : node;
+    }
+    const children = appendCourseOutlineResources(node.children, nodeId, resources);
     if (children === node.children) return node;
     changed = true;
     return { ...node, children };

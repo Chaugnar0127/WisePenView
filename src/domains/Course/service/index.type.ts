@@ -10,6 +10,7 @@ import type {
   CourseMemberPage,
   CourseOutline,
   CourseOutlineEditorNode,
+  CourseOutlineResourceNode,
   CourseSummary,
 } from '@/domains/Course/entity/course';
 
@@ -27,6 +28,18 @@ export interface ListMyCoursesRequest {
 
 export interface SetCourseResourceReadRequest {
   resourceId: string;
+}
+
+export interface LoadCourseOutlineResourcesRequest {
+  courseId: string;
+  nodeId: string;
+  cursor?: string;
+}
+
+export interface CourseOutlineResourcePage {
+  list: CourseOutlineResourceNode[];
+  total: number;
+  nextCursor?: string;
 }
 
 export interface ListCourseMembersRequest {
@@ -85,16 +98,10 @@ export interface ReorderCourseOutlineSectionsRequest {
   orderedNodeIds: string[];
 }
 
-export interface CourseOutlineMountResource {
-  resourceId: string;
-  name: string;
-  resourceType: string;
-}
-
 export interface MountCourseOutlineResourcesRequest {
   courseId: string;
   targetNodeId: string;
-  resources: CourseOutlineMountResource[];
+  resourceIds: string[];
 }
 
 export interface MoveCourseOutlineResourceRequest {
@@ -110,6 +117,8 @@ export interface RemoveCourseOutlineResourceRequest {
   courseId: string;
   resourceId: string;
   sourceNodeId: string;
+  mainTagId?: string;
+  currentTagIds: string[];
 }
 
 export interface JoinCourseRequest {
@@ -129,6 +138,9 @@ export interface ICourseService {
   getCourseHome(courseId: string): Promise<CourseHomeSnapshot>;
   listCourseAnnouncements(courseId: string): Promise<CourseAnnouncement[]>;
   getCourseOutline(courseId: string): Promise<CourseOutline>;
+  loadCourseOutlineResources(
+    params: LoadCourseOutlineResourcesRequest
+  ): Promise<CourseOutlineResourcePage>;
   setResourceRead(params: SetCourseResourceReadRequest): Promise<void>;
   listCourseMembers(params: ListCourseMembersRequest): Promise<CourseMemberPage>;
   createCourse(params: CreateCourseRequest): Promise<string>;

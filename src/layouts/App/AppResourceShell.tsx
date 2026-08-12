@@ -112,6 +112,7 @@ function AppResourceShell({
     openResource,
     setLayoutConfig: setLayoutConfigState,
     resetLayoutConfig,
+    openChatPanel: () => setChatPanelCollapsed(false),
     setChatContext: useResourceChatProtocolStore.getState().setContext,
     clearChatContext: useResourceChatProtocolStore.getState().clearContext,
   } satisfies ResourceHostContextValue;

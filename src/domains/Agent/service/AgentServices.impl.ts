@@ -1,4 +1,3 @@
-import type { IUserService } from '@/domains/User';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { computeFileMd5 } from '@/utils/oss/computeFileMd5';
 import { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';
@@ -6,11 +5,7 @@ import { AgentApi } from '../apis/AgentApi';
 import { AgentServicesMap } from '../mapper/AgentServices.map';
 import type { IAgentService } from './index.type';
 
-interface AgentServicesDeps {
-  userService: IUserService;
-}
-
-export const createAgentServices = ({ userService }: AgentServicesDeps): IAgentService => ({
+export const createAgentServices = (): IAgentService => ({
   async createAgent(title, name, description, pathTagId) {
     const resourceId = await AgentApi.createAgent({ title, name, description, pathTagId });
     if (!resourceId) {
@@ -19,19 +14,12 @@ export const createAgentServices = ({ userService }: AgentServicesDeps): IAgentS
     return resourceId;
   },
   async getAgentDetail(resourceId, version) {
-    const [user, info] = await Promise.all([
-      userService.getUserInfo(),
-      AgentApi.getAgentInfo(resourceId),
-    ]);
-    const publishedVersion = info?.agentInfo?.version ?? 0;
-    const targetVersion =
-      version ??
-      (info?.resourceInfo?.ownerId === user.id ? publishedVersion + 1 : publishedVersion);
+    const info = await AgentApi.getAgentInfo(resourceId);
     const bundle =
-      targetVersion > 0
-        ? await AgentApi.getAgentVersionBundleInfo(resourceId, targetVersion)
+      version !== undefined && version > 0
+        ? await AgentApi.getAgentVersionBundleInfo(resourceId, version)
         : undefined;
-    return AgentServicesMap.mapAgentDetail({ resourceId, info, bundle, currentUserId: user.id });
+    return AgentServicesMap.mapAgentDetail({ resourceId, info, bundle });
   },
   async saveAgentDraft(request) {
     const requests = AgentServicesMap.mapSaveAgentDraftRequests(request);

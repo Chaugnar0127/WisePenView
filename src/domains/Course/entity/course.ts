@@ -126,6 +126,8 @@ export interface CourseOutlineResourceNode extends CourseOutlineNodeBase {
   viewer?: string;
   durationLabel?: string;
   read: boolean;
+  mainTagId?: string;
+  currentTagIds?: string[];
 }
 
 export type CourseOutlineNode = CourseOutlineContainerNode | CourseOutlineResourceNode;

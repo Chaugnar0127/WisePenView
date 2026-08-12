@@ -1,6 +1,5 @@
 import type { IResourceService } from '@/domains/Resource';
 import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
-import type { IUserService } from '@/domains/User';
 import type { AssetUploadTicketApiResponse } from '@/domains/_shared/apis/versionAssetApi.type';
 import { createOssStsClientManager } from '@/domains/_shared/ossStsClient';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
@@ -18,7 +17,6 @@ import type {
 
 interface SkillServicesDeps {
   resourceService: IResourceService;
-  userService: IUserService;
 }
 
 const DEFAULT_UPLOAD_CONCURRENCY = 4;
@@ -85,7 +83,7 @@ async function runWithConcurrency<T, R>(
 }
 
 export const createSkillServices = (deps: SkillServicesDeps): ISkillService => {
-  const { resourceService, userService } = deps;
+  const { resourceService } = deps;
   const assetClientManager = createOssStsClientManager<SkillAssetClientKey>({
     loadToken: ({ resourceId, targetVersion }) =>
       SkillApi.getSkillAssetStsToken({ resourceId, targetVersion }),
@@ -147,41 +145,21 @@ export const createSkillServices = (deps: SkillServicesDeps): ISkillService => {
   };
 
   const getSkillDetail = async (resourceId: string) => {
-    const [currentUser, info] = await Promise.all([
-      userService.getUserInfo(),
-      SkillApi.getSkillInfo({ resourceId }),
-    ]);
-    const publishedVersion = info?.skillInfo?.version ?? 0;
-    const isOwner = info?.resourceInfo?.ownerId === currentUser.id;
-    const targetVersion = isOwner ? publishedVersion + 1 : publishedVersion;
-    const bundle =
-      targetVersion > 0
-        ? await SkillApi.getSkillVersionBundleInfo({
-            resourceId,
-            version: targetVersion,
-          })
-        : undefined;
-
+    const info = await SkillApi.getSkillInfo({ resourceId });
     return SkillServicesMap.mapSkillDetail({
       resourceId,
       info,
-      bundle,
-      currentUserId: currentUser.id,
     });
   };
 
   const getSkillVersionFiles = async (resourceId: string, version: number) => {
-    const [currentUser, info, bundle] = await Promise.all([
-      userService.getUserInfo(),
-      SkillApi.getSkillInfo({ resourceId }),
-      SkillApi.getSkillVersionBundleInfo({ resourceId, version }),
-    ]);
+    const info = await SkillApi.getSkillInfo({ resourceId });
+    const bundle = await SkillApi.getSkillVersionBundleInfo({ resourceId, version });
 
     return SkillServicesMap.mapSkillDetail({
       resourceId,
       info,
       bundle,
-      currentUserId: currentUser.id,
     });
   };
 

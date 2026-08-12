@@ -91,6 +91,8 @@ const enUSCourse = {
     resourcePlaceholder: 'The content will appear here after Resource Viewer is connected.',
     videoUnsupported: 'Course video playback is not supported in this version.',
     openResource: 'Open resource',
+    loadingResources: 'Loading resources',
+    loadMoreResources: 'Load more ({{loaded}}/{{total}})',
   },
   learning: {
     chat: 'Course chat',

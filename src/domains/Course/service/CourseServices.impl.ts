@@ -1,6 +1,6 @@
 import { GROUP_TYPE, type IGroupService } from '@/domains/Group';
 import type { IInteractService } from '@/domains/Interact';
-import type { IResourceService, ResourceItem } from '@/domains/Resource';
+import type { IResourceService } from '@/domains/Resource';
 import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR, TAG_QUERY_LOGIC_MODE } from '@/domains/Resource';
 import type { ITagService, TagTreeNode } from '@/domains/Tag';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
@@ -17,7 +17,11 @@ const unavailable = async (..._args: unknown[]): Promise<never> => {
   throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_SERVICE_UNAVAILABLE);
 };
 
-const COURSE_RESOURCE_PAGE_SIZE = 100;
+const COURSE_RESOURCE_PAGE_SIZE = 50;
+const normalizeResourceIds = (resourceIds: string[]): string[] => [
+  ...new Set(resourceIds.map((resourceId) => resourceId.trim()).filter(Boolean)),
+];
+
 const findTag = (nodes: TagTreeNode[], tagId: string): TagTreeNode | undefined => {
   for (const node of nodes) {
     if (node.tagId === tagId) return node;
@@ -25,6 +29,15 @@ const findTag = (nodes: TagTreeNode[], tagId: string): TagTreeNode | undefined =
     if (child) return child;
   }
   return undefined;
+};
+
+const parseCourseResourceCursor = (cursor?: string): number => {
+  if (!cursor) return 1;
+  const page = Number(cursor);
+  if (!Number.isInteger(page) || page < 1) {
+    throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'cursor' });
+  }
+  return page;
 };
 
 interface CourseServicesDeps {
@@ -132,42 +145,47 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
     return outlineRoot;
   };
 
-  const listCourseOutlineResources = async (courseId: string, tagIds: string[]) => {
-    if (tagIds.length === 0) return [];
-    const resources: ResourceItem[] = [];
-    let page = 1;
-
-    while (true) {
-      const result = await resourceService.getGroupResources({
-        groupId: courseId,
-        page,
-        size: COURSE_RESOURCE_PAGE_SIZE,
-        sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
-        sortDir: RESOURCE_SORT_DIR.DESC,
-        tagIds,
-        tagQueryLogicMode: TAG_QUERY_LOGIC_MODE.OR,
-        includeMyInteraction: true,
-      });
-      resources.push(...result.list);
-
-      const reachedKnownTotal = result.total > 0 && resources.length >= result.total;
-      const reachedKnownLastPage = result.totalPage > 0 && page >= result.totalPage;
-      const reachedShortPage = result.list.length < COURSE_RESOURCE_PAGE_SIZE;
-      if (reachedKnownTotal || reachedKnownLastPage || reachedShortPage) break;
-      page += 1;
-    }
-
-    return resources;
-  };
-
   const getCourseOutline: ICourseService['getCourseOutline'] = async (courseId) => {
     const outlineRoot = await getCourseOutlineRoot(courseId);
     const outlineTags = outlineRoot.children ?? [];
-    const tagIds = CourseServicesMap.collectCourseOutlineTagIds(outlineTags);
-    const resources = await listCourseOutlineResources(courseId, tagIds);
     return {
       courseId,
-      nodes: CourseServicesMap.mapCourseOutlineNodes(outlineTags, resources),
+      nodes: CourseServicesMap.mapCourseOutlineNodes(outlineTags),
+    };
+  };
+
+  const loadCourseOutlineResources: ICourseService['loadCourseOutlineResources'] = async ({
+    courseId,
+    nodeId,
+    cursor,
+  }) => {
+    const outlineRoot = await getCourseOutlineRoot(courseId);
+    const tag = findTag(outlineRoot.children ?? [], nodeId);
+    if (!tag) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, { nodeId });
+    }
+    const page = parseCourseResourceCursor(cursor);
+    const result = await resourceService.getGroupResources({
+      groupId: courseId,
+      page,
+      size: COURSE_RESOURCE_PAGE_SIZE,
+      sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
+      sortDir: RESOURCE_SORT_DIR.DESC,
+      tagIds: [nodeId],
+      tagQueryLogicMode: TAG_QUERY_LOGIC_MODE.AND,
+      includeMyInteraction: true,
+    });
+    const resolvedPage = Math.max(1, result.page || page);
+    const resolvedTotal = Math.max(0, result.total || 0);
+    const resolvedTotalPage = Math.max(0, result.totalPage || 0);
+    const hasMore =
+      resolvedTotalPage > 0
+        ? resolvedPage < resolvedTotalPage
+        : resolvedPage * COURSE_RESOURCE_PAGE_SIZE < resolvedTotal;
+    return {
+      list: CourseServicesMap.mapCourseOutlineResourceNodes(result.list, nodeId, tag.tagMetaInfo),
+      total: resolvedTotal,
+      ...(hasMore ? { nextCursor: String(resolvedPage + 1) } : {}),
     };
   };
 
@@ -201,6 +219,127 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
     return tagService.addTag({ groupId: courseId, parentId: targetParentId, tagName: name });
   };
 
+  const updateCourseOutlineResourceOrder = async (
+    courseId: string,
+    tagId: string,
+    orderedResourceIds: string[]
+  ): Promise<void> => {
+    const tags = await tagService.getTagTree(courseId);
+    const tag = findTag(tags, tagId);
+    if (!tag) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
+        nodeId: tagId,
+      });
+    }
+    await tagService.updateTag({
+      groupId: courseId,
+      targetTagId: tagId,
+      tagMetaInfo: CourseServicesMap.mapCourseOutlineResourceOrderMeta(
+        tag.tagMetaInfo,
+        orderedResourceIds
+      ),
+    });
+  };
+
+  const mountCourseOutlineResources: ICourseService['mountCourseOutlineResources'] = async ({
+    courseId,
+    targetNodeId,
+    resourceIds,
+  }) => {
+    const normalizedResourceIds = normalizeResourceIds(resourceIds);
+    if (normalizedResourceIds.length === 0) return;
+
+    const targetTag = await getCourseOutlineRoot(courseId).then((outlineRoot) =>
+      findTag(outlineRoot.children ?? [], targetNodeId)
+    );
+    if (!targetTag) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
+        nodeId: targetNodeId,
+      });
+    }
+
+    await resourceService.mountResourcesToGroup({
+      resourceIds: normalizedResourceIds,
+      groupId: courseId,
+      targetTagId: targetNodeId,
+    });
+
+    const persistedOrder = CourseServicesMap.getCourseOutlineResourceOrder(targetTag.tagMetaInfo);
+    await updateCourseOutlineResourceOrder(
+      courseId,
+      targetNodeId,
+      normalizeResourceIds([...persistedOrder, ...normalizedResourceIds])
+    );
+  };
+
+  const removeCourseOutlineResourceFromOrder = async (
+    courseId: string,
+    tagId: string,
+    resourceId: string
+  ): Promise<void> => {
+    const tags = await tagService.getTagTree(courseId);
+    const tag = findTag(tags, tagId);
+    if (!tag) return;
+    const resourceOrder = CourseServicesMap.getCourseOutlineResourceOrder(tag.tagMetaInfo);
+    const nextOrder = resourceOrder.filter((item) => item !== resourceId);
+    if (nextOrder.length === resourceOrder.length) return;
+    await updateCourseOutlineResourceOrder(courseId, tagId, nextOrder);
+  };
+
+  const moveCourseOutlineResource: ICourseService['moveCourseOutlineResource'] = async ({
+    courseId,
+    resourceId,
+    sourceNodeId,
+    targetNodeId,
+    orderedResourceIds,
+  }) => {
+    if (sourceNodeId !== targetNodeId) {
+      await resourceService.moveResourcesInGroup({
+        groupId: courseId,
+        resourceSourceTagMap: { [resourceId]: sourceNodeId },
+        targetTagId: targetNodeId,
+      });
+      await removeCourseOutlineResourceFromOrder(courseId, sourceNodeId, resourceId);
+    }
+    if (orderedResourceIds) {
+      await updateCourseOutlineResourceOrder(
+        courseId,
+        targetNodeId,
+        normalizeResourceIds(orderedResourceIds)
+      );
+    }
+  };
+
+  const removeCourseOutlineResource: ICourseService['removeCourseOutlineResource'] = async ({
+    courseId,
+    resourceId,
+    sourceNodeId,
+    mainTagId,
+    currentTagIds,
+  }) => {
+    const outlineRoot = await getCourseOutlineRoot(courseId);
+    const outlineTagIds = new Set(
+      CourseServicesMap.collectCourseOutlineTagIds(outlineRoot.children ?? [])
+    );
+    const remainingTagIds = currentTagIds.filter(
+      (tagId) => tagId !== sourceNodeId && outlineTagIds.has(tagId)
+    );
+
+    if (mainTagId === sourceNodeId && remainingTagIds.length > 0) {
+      await resourceService.moveResourcesInGroup({
+        groupId: courseId,
+        resourceSourceTagMap: { [resourceId]: sourceNodeId },
+        targetTagId: remainingTagIds[0],
+      });
+    } else {
+      await resourceService.unmountResourcesToGroup({
+        groupId: courseId,
+        resourceSourceTagMap: { [resourceId]: sourceNodeId },
+      });
+    }
+    await removeCourseOutlineResourceFromOrder(courseId, sourceNodeId, resourceId);
+  };
+
   const listCourseMembers = async ({ courseId, page, size }: ListCourseMembersRequest) => {
     const groupMembers = await groupService.fetchGroupMembers(courseId, page, size);
     return {
@@ -215,6 +354,7 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
     getCourseHome,
     listCourseAnnouncements: unavailable,
     getCourseOutline,
+    loadCourseOutlineResources,
     setResourceRead: ({ resourceId }) => interactService.recordResourceRead(resourceId),
     listCourseMembers,
     createCourse,
@@ -230,9 +370,9 @@ export const createCourseServices = (deps: CourseServicesDeps): ICourseService =
       tagService.removeTags({ groupId: courseId, targetTagIds: [nodeId] }),
     reorderCourseOutlineSections: ({ courseId, orderedNodeIds }) =>
       tagService.reorderSiblingTags({ groupId: courseId, orderedTagIds: orderedNodeIds }),
-    mountCourseOutlineResources: unavailable,
-    moveCourseOutlineResource: unavailable,
-    removeCourseOutlineResource: unavailable,
+    mountCourseOutlineResources,
+    moveCourseOutlineResource,
+    removeCourseOutlineResource,
     joinCourse: (params) => groupService.joinGroup(params),
     listCourseAssignments: unavailable,
     getCourseAssignment: unavailable,

@@ -19,9 +19,10 @@ export function selectSkillFile(
 
 export function canEditSkill(
   skill: SkillDetail | undefined,
-  viewingVersion: number | null
+  viewingVersion: number | null,
+  isOwner: boolean
 ): boolean {
-  return Boolean(skill?.isOwner && skill.draftVersion === viewingVersion);
+  return Boolean(isOwner && skill?.draftVersion === viewingVersion);
 }
 
 export function getSkillVersionItems(
@@ -47,10 +48,10 @@ export function getSkillVersionItems(
 }
 
 export function getDisabledSkillVersionKeys(
-  skill: SkillDetail | undefined,
+  isOwner: boolean,
   versionItems: Array<{ key: string }>
 ): Set<string> {
-  return skill?.isOwner ? new Set<string>() : new Set(versionItems.map((item) => item.key));
+  return isOwner ? new Set<string>() : new Set(versionItems.map((item) => item.key));
 }
 
 export function getSkillConfigBadge(

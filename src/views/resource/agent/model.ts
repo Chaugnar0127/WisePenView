@@ -17,6 +17,7 @@ export interface AgentVersionItem {
 /** 汇总 Agent 编辑工作区所需的详情、可选模型、工具和技能数据。 */
 export interface AgentWorkspaceData {
   agent: AgentDetail;
+  isOwner: boolean;
   models: ChatModel[];
   tools: ToolOption[];
   skills: SkillSummary[];

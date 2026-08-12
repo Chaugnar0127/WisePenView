@@ -25,7 +25,7 @@ export function useAgentAssetsController({
 
   const refreshAssets = async () => {
     try {
-      const latest = await agentService.getAgentDetail(resourceId);
+      const latest = await agentService.getAgentDetail(resourceId, draftVersion);
       setAssetOverride(latest.assets);
     } catch (error) {
       toast.danger(parseErrorMessage(error));

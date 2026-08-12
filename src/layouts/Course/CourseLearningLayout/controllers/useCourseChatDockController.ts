@@ -35,6 +35,7 @@ export const useCourseChatDockController = () => {
     panelSize,
     minSize: open ? CHAT_PANEL_MIN_WIDTH : 0,
     maxSize: open ? WORKSPACE_CHAT_PANEL_MAX_WIDTH : 0,
+    openPanel: () => setCollapsed(false),
     toggle: () => setCollapsed(!collapsed),
     handleResize: (size: PanelSize) => {
       if (open) pendingWidthRef.current = clampWorkspaceChatPanelWidth(size.inPixels);

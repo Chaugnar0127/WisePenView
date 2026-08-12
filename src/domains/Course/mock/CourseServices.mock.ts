@@ -3,6 +3,8 @@ import {
   replaceMockAdvancedGroups,
   upsertMockGroup,
 } from '@/domains/Group/mock/groupStore.mock';
+import type { IResourceService, ResourceItem } from '@/domains/Resource';
+import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { createDefaultCourseAssessmentItems } from '../constants/defaults';
 import {
@@ -36,19 +38,32 @@ import {
   mapCourseMockDetailToSummary,
   mapCourseMockOutlineToEditorNodes,
   markCourseMockResourceRead,
+  mountCourseMockOutlineResources,
+  moveCourseMockOutlineResource,
+  removeCourseMockOutlineResource,
   reorderCourseMockOutlineSections,
   syncCourseMockBaseInfoFromGroup,
 } from './courseMockModel';
 
 const NETWORK_DELAY_MS = 180;
+const COURSE_RESOURCE_PAGE_SIZE = 50;
 
 const delay = async () => new Promise<void>((resolve) => setTimeout(resolve, NETWORK_DELAY_MS));
 
-const unavailable = async (..._args: unknown[]): Promise<never> => {
-  throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_SERVICE_UNAVAILABLE);
-};
+const stripCourseOutlineResources = (nodes: CourseOutlineNode[]): CourseOutlineNode[] =>
+  nodes.flatMap((node) =>
+    node.nodeType === 'RESOURCE'
+      ? []
+      : [{ ...node, children: stripCourseOutlineResources(node.children) }]
+  );
 
-export function createCourseServicesMock(): ICourseService {
+interface CourseServicesMockDeps {
+  resourceService: IResourceService;
+}
+
+export function createCourseServicesMock({
+  resourceService,
+}: CourseServicesMockDeps): ICourseService {
   const details = cloneCourseMockValue(COURSE_MOCK_DETAILS);
   const outlines = cloneCourseMockValue(COURSE_MOCK_OUTLINES);
   const assignmentMap = cloneCourseMockValue(COURSE_MOCK_ASSIGNMENTS);
@@ -73,6 +88,33 @@ export function createCourseServicesMock(): ICourseService {
     const progress = countCourseMockReadResources(nodes);
     detail.readResourceCount = progress.read;
     detail.totalResourceCount = progress.total;
+  };
+
+  const getPersonalResourcesByIds = async (resourceIds: string[]): Promise<ResourceItem[]> => {
+    const pendingIds = new Set(resourceIds);
+    const resources: ResourceItem[] = [];
+    let page = 1;
+
+    while (pendingIds.size > 0) {
+      const result = await resourceService.getUserResources({
+        page,
+        size: 100,
+        sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
+        sortDir: RESOURCE_SORT_DIR.DESC,
+      });
+      result.list.forEach((resource) => {
+        if (!pendingIds.delete(resource.resourceId)) return;
+        resources.push(resource);
+      });
+      if (page >= result.totalPage || result.list.length === 0) break;
+      page += 1;
+    }
+    if (pendingIds.size > 0) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
+        resourceIds: [...pendingIds],
+      });
+    }
+    return resources;
   };
 
   return {
@@ -132,7 +174,38 @@ export function createCourseServicesMock(): ICourseService {
     async getCourseOutline(courseId): Promise<CourseOutline> {
       await delay();
       requireDetail(courseId);
-      return { courseId, nodes: cloneCourseMockValue(outlines[courseId] ?? []) };
+      return {
+        courseId,
+        nodes: stripCourseOutlineResources(cloneCourseMockValue(outlines[courseId] ?? [])),
+      };
+    },
+
+    async loadCourseOutlineResources({ courseId, nodeId, cursor }) {
+      await delay();
+      requireDetail(courseId);
+      const container = findCourseMockOutlineContainer(outlines[courseId] ?? [], nodeId);
+      if (!container) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, { nodeId });
+      }
+      const page = cursor ? Number(cursor) : 1;
+      if (!Number.isInteger(page) || page < 1) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'cursor' });
+      }
+      const resources = container.children.filter(
+        (node): node is Extract<CourseOutlineNode, { nodeType: 'RESOURCE' }> =>
+          node.nodeType === 'RESOURCE'
+      );
+      const start = (page - 1) * COURSE_RESOURCE_PAGE_SIZE;
+      const list = resources.slice(start, start + COURSE_RESOURCE_PAGE_SIZE).map((resource) => ({
+        ...resource,
+        mainTagId: resource.mainTagId ?? nodeId,
+        currentTagIds: resource.currentTagIds ?? [nodeId],
+      }));
+      return {
+        list: cloneCourseMockValue(list),
+        total: resources.length,
+        ...(start + list.length < resources.length ? { nextCursor: String(page + 1) } : {}),
+      };
     },
 
     async setResourceRead({ resourceId }) {
@@ -291,9 +364,66 @@ export function createCourseServicesMock(): ICourseService {
       }
     },
 
-    mountCourseOutlineResources: unavailable,
-    moveCourseOutlineResource: unavailable,
-    removeCourseOutlineResource: unavailable,
+    async mountCourseOutlineResources({ courseId, targetNodeId, resourceIds }) {
+      await delay();
+      requireDetail(courseId);
+      const resources = await getPersonalResourcesByIds(resourceIds);
+      const mounted = mountCourseMockOutlineResources(
+        outlines[courseId] ?? [],
+        targetNodeId,
+        resources.map((resource) => ({
+          nodeId: `${targetNodeId}:${resource.resourceId}`,
+          nodeType: 'RESOURCE',
+          title: resource.resourceName,
+          resourceId: resource.resourceId,
+          resourceType: resource.resourceType?.toLowerCase() ?? 'file',
+          read: false,
+          mainTagId: targetNodeId,
+          currentTagIds: [targetNodeId],
+        }))
+      );
+      if (!mounted) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
+          nodeId: targetNodeId,
+        });
+      }
+      syncProgress(courseId);
+    },
+
+    async moveCourseOutlineResource({
+      courseId,
+      resourceId,
+      sourceNodeId,
+      targetNodeId,
+      orderedResourceIds,
+    }) {
+      await delay();
+      requireDetail(courseId);
+      if (
+        !moveCourseMockOutlineResource(
+          outlines[courseId] ?? [],
+          resourceId,
+          sourceNodeId,
+          targetNodeId,
+          orderedResourceIds
+        )
+      ) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
+          resourceId,
+        });
+      }
+    },
+
+    async removeCourseOutlineResource({ courseId, resourceId, sourceNodeId }) {
+      await delay();
+      requireDetail(courseId);
+      if (!removeCourseMockOutlineResource(outlines[courseId] ?? [], resourceId, sourceNodeId)) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.COURSE_OUTLINE_NODE_NOT_FOUND, {
+          resourceId,
+        });
+      }
+      syncProgress(courseId);
+    },
 
     async joinCourse({ inviteCode }) {
       await delay();

@@ -1,4 +1,4 @@
-import { useAgentService, useChatService, useSkillService } from '@/domains';
+import { useAgentService, useChatService, useSkillService, useUserService } from '@/domains';
 import type { AgentDetail } from '@/domains/Agent';
 import { useApi } from '@/hooks/useApi';
 import { useState } from 'react';
@@ -12,20 +12,27 @@ export function useAgentVersionController({ resourceId }: UseAgentVersionControl
   const agentService = useAgentService();
   const chatService = useChatService();
   const skillService = useSkillService();
+  const userService = useUserService();
   const [agentOverride, setAgentOverride] = useState<AgentDetail | null>(null);
   const [viewingVersion, setViewingVersion] = useState<number | null>(null);
   const [sourceRevision, setSourceRevision] = useState(0);
 
   const load = useApi(
     async (): Promise<AgentWorkspaceData> => {
+      const currentUser = await userService.getUserInfo();
+      const baseAgent = await agentService.getAgentDetail(resourceId);
+      const isOwner = Boolean(baseAgent.ownerId && baseAgent.ownerId === currentUser.id);
       const [sourceAgent, models, tools, skills] = await Promise.all([
-        agentService.getAgentDetail(resourceId),
+        isOwner && baseAgent.draftVersion > 0
+          ? agentService.getAgentDetail(resourceId, baseAgent.draftVersion)
+          : Promise.resolve(baseAgent),
         chatService.getModels(),
         chatService.getTools(),
         skillService.getSkillSummaries(),
       ]);
       return {
         agent: sourceAgent,
+        isOwner,
         models,
         tools,
         skills,
@@ -61,14 +68,14 @@ export function useAgentVersionController({ resourceId }: UseAgentVersionControl
   );
 
   const selectVersion = (version: number) => {
-    if (!data || version === (viewingVersion ?? data.agent.draftVersion)) return;
+    if (!data?.isOwner || version === (viewingVersion ?? data.agent.draftVersion)) return;
     switchVersion.run(version, resourceId);
   };
 
   const currentAgentOverride = agentOverride?.resourceId === resourceId ? agentOverride : undefined;
   const displayAgent = currentAgentOverride ?? data?.agent;
   const versionItems = getAgentVersionItems(data?.agent, viewingVersion);
-  const disabledVersionKeys = data?.agent.isOwner
+  const disabledVersionKeys = data?.isOwner
     ? new Set<string>()
     : new Set(versionItems.map((item) => item.key));
 
@@ -77,6 +84,7 @@ export function useAgentVersionController({ resourceId }: UseAgentVersionControl
     disabledVersionKeys,
     displayAgent,
     error: load.error,
+    isOwner: data?.isOwner ?? false,
     loading: load.loading,
     refresh: load.refresh,
     selectVersion,

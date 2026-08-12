@@ -91,6 +91,8 @@ const zhCNCourse = {
     resourcePlaceholder: 'Resource Viewer 接入后将在这里展示内容。',
     videoUnsupported: '当前版本暂不支持课程视频播放。',
     openResource: '打开资源',
+    loadingResources: '正在加载资源',
+    loadMoreResources: '加载更多（{{loaded}}/{{total}}）',
   },
   learning: {
     chat: '课程对话',

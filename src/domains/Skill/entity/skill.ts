@@ -36,7 +36,6 @@ export interface SkillDetail extends SkillSummary {
   draftVersion: number;
   fileCount: number;
   files: SkillFileNode[];
-  isOwner: boolean;
   ownerId?: string;
   currentActions?: ResourceAction[] | null;
 }

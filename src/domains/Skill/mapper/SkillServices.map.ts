@@ -118,7 +118,6 @@ function mapSkillDetail(params: {
   resourceId: string;
   info?: SkillInfoApiResponse;
   bundle?: SkillVersionBundleApiResponse;
-  currentUserId?: string;
 }): SkillDetail {
   const resourceInfo = params.info?.resourceInfo;
   const skillInfo = params.info?.skillInfo;
@@ -143,7 +142,6 @@ function mapSkillDetail(params: {
     currentActions: coerceResourceActions(resourceInfo?.currentActions),
     fileCount: files.length,
     files,
-    isOwner: Boolean(params.currentUserId && ownerId === params.currentUserId),
     scopeType: 'PERSONAL',
   };
 }

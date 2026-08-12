@@ -54,7 +54,7 @@ export function useNoteWorkspaceController({
   titleEditorRef,
   untitledTitle,
 }: UseNoteWorkspaceControllerOptions) {
-  const { setChatContext } = useResourceHostChatContextActions();
+  const { openChatPanel, setChatContext } = useResourceHostChatContextActions();
   const setResourceSidePanelMode = useResourceSidePanelStore((state) => state.setMode);
   const interactService = useInteractService();
   const inlineCommentService = useInlineCommentService();
@@ -160,6 +160,7 @@ export function useNoteWorkspaceController({
 
   const handleAskAi = useMemoizedFn((selection: NoteSelectionSnapshot) => {
     setChatContext(createNoteSelectionChatContext(resourceId, selection));
+    openChatPanel();
   });
 
   const handleInlineCommentCreateRequest = useMemoizedFn((draft: NoteInlineCommentDraft) => {

@@ -17,6 +17,7 @@ interface CourseResourceHostProps {
   layoutConfig: ResourceHostLayoutConfig;
   onTargetChange: (target: ResourceTarget) => void;
   onLayoutConfigChange: (config: ResourceHostLayoutConfig) => void;
+  onOpenChatPanel: () => void;
   onSetChatContext: (context: ResourceChatContext) => void;
   onClearChatContext: (context?: ResourceChatContext) => void;
   onClose: () => void;
@@ -28,6 +29,7 @@ function CourseResourceHost({
   layoutConfig,
   onTargetChange,
   onLayoutConfigChange,
+  onOpenChatPanel,
   onSetChatContext,
   onClearChatContext,
   onClose,
@@ -52,6 +54,7 @@ function CourseResourceHost({
     openResource,
     setLayoutConfig: onLayoutConfigChange,
     resetLayoutConfig,
+    openChatPanel: onOpenChatPanel,
     setChatContext: onSetChatContext,
     clearChatContext: onClearChatContext,
   };

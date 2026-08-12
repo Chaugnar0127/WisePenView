@@ -1,8 +1,8 @@
 import { useChatPanelStore } from '@/components/ChatPanel/_store/useChatPanelStore';
 import {
+  CHAT_PANEL_MAX_WIDTH,
   CHAT_PANEL_MIN_WIDTH,
-  clampWorkspaceChatPanelWidth,
-  WORKSPACE_CHAT_PANEL_MAX_WIDTH,
+  clampChatPanelWidth,
 } from '@/constants/layoutScale';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
 import { useMount } from 'ahooks';
@@ -22,7 +22,7 @@ export const useCourseChatDockController = () => {
   const setCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
   const setWidth = useChatPanelStore((state) => state.setChatPanelWidth);
   const open = !collapsed;
-  const panelSize = open ? clampWorkspaceChatPanelWidth(width) : 0;
+  const panelSize = open ? clampChatPanelWidth(width) : 0;
 
   useResizablePanelSize({ panelRef, size: panelSize });
 
@@ -34,11 +34,11 @@ export const useCourseChatDockController = () => {
     open,
     panelSize,
     minSize: open ? CHAT_PANEL_MIN_WIDTH : 0,
-    maxSize: open ? WORKSPACE_CHAT_PANEL_MAX_WIDTH : 0,
+    maxSize: open ? CHAT_PANEL_MAX_WIDTH : 0,
     openPanel: () => setCollapsed(false),
     toggle: () => setCollapsed(!collapsed),
     handleResize: (size: PanelSize) => {
-      if (open) pendingWidthRef.current = clampWorkspaceChatPanelWidth(size.inPixels);
+      if (open) pendingWidthRef.current = clampChatPanelWidth(size.inPixels);
     },
     handleLayoutChanged: (_layout: Layout, meta: LayoutChangedMeta) => {
       const pendingWidth = pendingWidthRef.current;

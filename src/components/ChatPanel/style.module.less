@@ -94,6 +94,22 @@
       max-width: none;
       margin: 0;
     }
+
+    .welcomeSlot {
+      position: static;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .conversationPanel[data-welcome='true'] {
+      .welcomeSlot {
+        margin-bottom: var(--space-lg);
+      }
+
+      .composerBottomSpacer {
+        flex-grow: 1;
+      }
+    }
   }
 }
 
@@ -221,8 +237,15 @@
 .welcomeSlot {
   display: grid;
   grid-template-rows: 1fr;
+  position: absolute;
+  z-index: var(--app-z-index-raised);
+  top: 50%;
+  right: var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)));
+  left: var(--chat-message-inline-padding, var(--space-lg));
+  transform: translateY(-50%);
   opacity: 1;
-  margin-bottom: var(--space-lg);
+  margin-bottom: 0;
+  pointer-events: none;
   transition:
     grid-template-rows var(--motion-duration-emphasis) var(--motion-ease-fluid),
     opacity var(--motion-duration-mid) var(--motion-ease-standard),
@@ -269,9 +292,8 @@
   margin-inline: auto;
 }
 
-/* 上下对称 spacer：welcome 时与 messageViewport 一起把输入区顶到视觉中心 */
 .composerBottomSpacer {
-  flex: 1 1 0;
+  flex: 0 1 0;
   min-height: 0;
   transition: flex-grow var(--motion-duration-emphasis) var(--motion-ease-fluid);
 }

@@ -2,10 +2,10 @@ import ChatPanel from '@/components/ChatPanel';
 import { useChatPanelStore } from '@/components/ChatPanel/_store/useChatPanelStore';
 import { createResourceChatStateProvider } from '@/components/ChatPanel/ResourceChatProtocol';
 import {
-  APP_MAIN_MIN_WIDTH,
+  CHAT_PANEL_MAX_WIDTH,
   CHAT_PANEL_MIN_WIDTH,
-  WORKSPACE_CHAT_PANEL_MAX_WIDTH,
-  clampWorkspaceChatPanelWidth,
+  RESOURCE_MAIN_MIN_WIDTH,
+  clampChatPanelWidth,
 } from '@/constants/layoutScale';
 import { useOpenResource } from '@/hooks/useOpenResource';
 import {
@@ -97,7 +97,7 @@ function AppResourceShell({
     routeContext.driveLocation
   );
   const chatPanelOpen = !chatPanelCollapsed;
-  const chatPanelSize = chatPanelOpen ? clampWorkspaceChatPanelWidth(chatPanelWidth) : 0;
+  const chatPanelSize = chatPanelOpen ? clampChatPanelWidth(chatPanelWidth) : 0;
 
   useResizablePanelSize({ panelRef: chatPanelRef, size: chatPanelSize });
 
@@ -182,7 +182,7 @@ function AppResourceShell({
 
   const handleChatResize = (size: PanelSize) => {
     if (chatPanelOpen) {
-      pendingChatWidthRef.current = clampWorkspaceChatPanelWidth(size.inPixels);
+      pendingChatWidthRef.current = clampChatPanelWidth(size.inPixels);
     }
   };
 
@@ -202,7 +202,7 @@ function AppResourceShell({
         resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
         onLayoutChanged={handleLayoutChanged}
       >
-        <SystemResizablePanel minSize={APP_MAIN_MIN_WIDTH} className={styles.resourcePanel}>
+        <SystemResizablePanel minSize={RESOURCE_MAIN_MIN_WIDTH} className={styles.resourcePanel}>
           <ResourceFrame
             className={layoutConfig.className}
             bodyClassName={layoutConfig.bodyClassName}
@@ -222,7 +222,7 @@ function AppResourceShell({
           panelRef={chatPanelRef}
           defaultSize={chatPanelSize}
           minSize={chatPanelOpen ? CHAT_PANEL_MIN_WIDTH : 0}
-          maxSize={chatPanelOpen ? WORKSPACE_CHAT_PANEL_MAX_WIDTH : 0}
+          maxSize={chatPanelOpen ? CHAT_PANEL_MAX_WIDTH : 0}
           groupResizeBehavior="preserve-pixel-size"
           className={styles.chatDock}
           aria-label={t('shell.chatPanel')}

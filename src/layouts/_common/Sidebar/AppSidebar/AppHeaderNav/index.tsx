@@ -9,6 +9,7 @@ import { ListBox, ListBoxItem } from '@heroui/react';
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useSidebarViewTabStore } from '../_store/useSidebarViewTabStore';
 import styles from './style.module.less';
 
 function AppHeaderNav() {
@@ -17,7 +18,9 @@ function AppHeaderNav() {
   const routeMeta = useAppRouteMeta();
   const appAuth = useAppAuth();
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
-  const selectedKey = routeMeta?.headerNav;
+  const storedHeaderNavKey = useSidebarViewTabStore((state) => state.headerNavKey);
+  const setHeaderNavKey = useSidebarViewTabStore((state) => state.setHeaderNavKey);
+  const selectedKey = routeMeta?.headerNav ?? storedHeaderNavKey;
 
   const handleNavItemPress = (navKey: AppHeaderNavKey) => {
     if (!appAuth.isAuthenticated) {
@@ -26,6 +29,7 @@ function AppHeaderNav() {
     }
     const navItem = APP_HEADER_NAV_ITEMS.find((item) => item.key === navKey);
     if (!navItem) return;
+    setHeaderNavKey(navKey);
     if (navKey === APP_HEADER_NAV_KEY.CHAT) {
       clearCurrentSession();
       clearNewChatSessionStore();

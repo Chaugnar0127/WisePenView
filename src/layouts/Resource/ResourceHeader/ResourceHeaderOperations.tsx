@@ -284,7 +284,7 @@ function ResourceHeaderOperations({
         isOpen={targetModal === 'share'}
         title={t('resource:header.shareDialog.title')}
         hint={t('resource:header.shareDialog.hint')}
-        scopeMode="groups"
+        scopeMode="public"
         scope={scope}
         excludedGroupIds={groupId ? [groupId] : undefined}
         submitting={sharing}

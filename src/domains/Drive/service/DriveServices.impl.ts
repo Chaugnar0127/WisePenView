@@ -170,6 +170,7 @@ export const createDriveService = (
     cursor,
     pageSize,
     kinds = ['folder', 'resource', 'link'],
+    resourceType,
     refresh = false,
   }: LoadDriveNodeChildrenParams): Promise<DriveNodeChildrenPage> => {
     const resolvedSize = normalizePageSize(pageSize, defaultPageSize);
@@ -209,6 +210,7 @@ export const createDriveService = (
             size: resourcePageSize,
             sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
             sortDir: RESOURCE_SORT_DIR.DESC,
+            resourceType,
             tagIds: [parentTagId],
             tagQueryLogicMode: 'AND',
             groupId: parent.scope.groupId,
@@ -218,6 +220,7 @@ export const createDriveService = (
             size: resourcePageSize,
             sortBy: RESOURCE_SORT_BY.UPDATE_TIME,
             sortDir: RESOURCE_SORT_DIR.DESC,
+            resourceType,
             tagIds: [parentTagId],
             tagQueryLogicMode: 'AND',
           });

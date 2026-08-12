@@ -48,6 +48,7 @@ export interface LoadDriveNodeChildrenParams {
   cursor?: string;
   pageSize?: number;
   kinds?: Array<'folder' | 'resource' | 'link'>;
+  resourceType?: string;
   refresh?: boolean;
 }
 

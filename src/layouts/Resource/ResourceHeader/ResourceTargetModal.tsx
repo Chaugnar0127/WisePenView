@@ -1,5 +1,6 @@
 import { AppButton } from '@/components/Button';
 import DriveNavigator from '@/components/Drive/DriveNavigator';
+import type { DriveNavigatorScopeMode } from '@/components/Drive/DriveNavigator/index.type';
 import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
 import type { DriveContainerNode, DriveNode, DriveNodeScope } from '@/domains/Drive';
@@ -13,7 +14,7 @@ interface ResourceTargetModalProps {
   isOpen: boolean;
   title: string;
   hint: string;
-  scopeMode?: 'single' | 'all' | 'groups';
+  scopeMode?: DriveNavigatorScopeMode;
   scope: DriveNodeScope;
   excludedGroupIds?: string[];
   submitting: boolean;

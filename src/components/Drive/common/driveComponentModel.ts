@@ -35,6 +35,7 @@ export interface DriveSelectionItem {
   scope: DriveNodeScope;
   rootId: string;
   groupId?: string;
+  scopeLabel?: string;
   resourceId?: string;
   resourceType?: string;
   tagId?: string;

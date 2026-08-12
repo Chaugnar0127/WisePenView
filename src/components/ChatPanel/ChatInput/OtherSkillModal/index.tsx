@@ -1,41 +1,18 @@
 import { AppButton } from '@/components/Button';
+import DriveNavigator from '@/components/Drive/DriveNavigator';
+import type { DriveSelectionItem } from '@/components/Drive/common/driveComponentModel';
 import AppModal from '@/components/Overlay/AppModal';
-import type { TreeDataNode } from '@/components/Tree';
-import Tree from '@/components/Tree';
-import { useChatService } from '@/domains';
-import {
-  buildDefaultPersonalAgent,
-  type ChatAgentOption,
-  type ChatInputResourceScope,
-  type PageResult,
-} from '@/domains/Chat';
-import type { Group } from '@/domains/Group';
+import { type ChatAgentOption } from '@/domains/Chat';
 import type { ResourceSkillSummary } from '@/domains/Resource';
-import { useApi } from '@/hooks/useApi';
-import { parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
-
-import { Folder } from 'lucide-react';
-import type { Key } from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useChatInputStore, useChatInputStoreApi } from '../_store/ChatInputStore';
 import styles from './style.module.less';
 
-const GROUP_PAGE_SIZE = 30;
-const SKILL_PAGE_SIZE = 50;
-const PERSONAL_NODE_KEY = 'personal';
-const GROUP_NODE_PREFIX = 'group:';
-const LOAD_MORE_NODE_PREFIX = 'load-more:';
-
-interface SkillNodeState {
-  scope: ChatInputResourceScope;
-  groupId?: string;
-  groupName?: string;
-  items: ResourceSkillSummary[];
-  page: number;
-  totalPage: number;
+interface SkillSelectionOption {
+  skill: ResourceSkillSummary;
+  sourceAgent: ChatAgentOption | null;
 }
 
 function OtherSkillModal() {
@@ -46,7 +23,6 @@ function OtherSkillModal() {
 
 function OtherSkillModalContent() {
   const { t } = useTranslation(['chat', 'common']);
-  const chatService = useChatService();
   const { currentAgent, selectedSkills } = useChatInputStore(
     useShallow((state) => ({
       currentAgent: state.selectedAgent,
@@ -54,189 +30,80 @@ function OtherSkillModalContent() {
     }))
   );
   const { replaceExternalSkills, setOtherSkillModalOpen } = useChatInputStoreApi().getState();
-  const [selectedKeys, setSelectedKeys] = useState<Key[]>(() =>
-    selectedSkills.filter((s) => s.external).map((s) => s.skillId)
+  const initialSelectedSkills = selectedSkills.filter((skill) => skill.external);
+  const [selectedSkillMap, setSelectedSkillMap] = useState<Map<string, SkillSelectionOption>>(
+    () =>
+      new Map(
+        initialSelectedSkills.map((skill) => [
+          skill.skillId,
+          {
+            skill: {
+              skillId: skill.skillId,
+              displayName: skill.displayName,
+              currentVersionId: skill.currentVersionId,
+              scopeType: skill.scopeType ?? (skill.groupId ? 'GROUP' : 'PERSONAL'),
+              groupId: skill.groupId,
+              groupName: skill.groupName,
+            },
+            sourceAgent: skill.groupId
+              ? {
+                  agentId: skill.sourceAgentId ?? `agent-group-${skill.groupId}`,
+                  agentType: 'GROUP',
+                  label: skill.sourceAgentLabel ?? skill.groupName ?? '',
+                  source: 'RESOURCE',
+                  groupId: skill.groupId,
+                  groupName: skill.groupName,
+                }
+              : null,
+          },
+        ])
+      )
   );
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [groupPage, setGroupPage] = useState<PageResult<Group> | null>(null);
-  const [loadingMoreGroups, setLoadingMoreGroups] = useState(false);
-  const [skillStateMap, setSkillStateMap] = useState<Record<string, SkillNodeState>>({});
-  const { loading } = useApi(
-    () => chatService.listChatInputGroups({ page: 1, size: GROUP_PAGE_SIZE }),
-    {
-      refreshDeps: [currentAgent.agentId],
-      onBefore: () => {
-        setGroups([]);
-        setGroupPage(null);
-        setSkillStateMap({});
-      },
-      onSuccess: (page) => {
-        setGroups(page.list);
-        setGroupPage(page);
-      },
-    }
-  );
+  const hasNavigatorSelectionRef = useRef(false);
 
-  const buildSourceAgent = (ownerKey: string, state: SkillNodeState): ChatAgentOption | null => {
-    if (ownerKey === PERSONAL_NODE_KEY) return buildDefaultPersonalAgent();
-    if (!state.groupId) return null;
+  const buildSourceAgent = (item: DriveSelectionItem): ChatAgentOption | null => {
+    if (!item.groupId) return null;
     return {
       agentId:
-        currentAgent.groupId === state.groupId
+        currentAgent.groupId === item.groupId
           ? currentAgent.agentId
-          : `agent-group-${state.groupId}`,
+          : `agent-group-${item.groupId}`,
       agentType: 'GROUP',
-      label: state.groupName ?? '',
+      label: item.scopeLabel ?? '',
       source: 'RESOURCE',
-      groupId: state.groupId,
-      groupName: state.groupName,
+      groupId: item.groupId,
+      groupName: item.scopeLabel,
     };
   };
 
-  const { skillMap, treeData } = (() => {
-    const mapping = new Map<
-      string,
-      { skill: ResourceSkillSummary; sourceAgent: ChatAgentOption | null }
-    >();
-
-    const buildSkillChildren = (ownerKey: string): TreeDataNode[] | undefined => {
-      const state = skillStateMap[ownerKey];
-      if (!state) return undefined;
-      const sourceAgent = buildSourceAgent(ownerKey, state);
-      const children: TreeDataNode[] = state.items.map((skill) => {
-        mapping.set(skill.skillId, { skill, sourceAgent });
-        return {
-          key: skill.skillId,
-          title: skill.displayName,
-          isLeaf: true,
-        };
-      });
-      if (state.page < state.totalPage) {
-        children.push({
-          key: `${LOAD_MORE_NODE_PREFIX}${ownerKey}:${state.page + 1}`,
-          title: t('session.loadMore'),
-          isLeaf: true,
-        });
-      }
-      return children;
+  const mapSelectionItem = (item: DriveSelectionItem): SkillSelectionOption | null => {
+    if (!item.resourceId || (item.kind !== 'resource' && item.kind !== 'link')) return null;
+    return {
+      skill: {
+        skillId: item.resourceId,
+        displayName: item.label,
+        description: '',
+        scopeType: item.groupId ? 'GROUP' : 'PERSONAL',
+        groupId: item.groupId,
+        groupName: item.scopeLabel,
+      },
+      sourceAgent: buildSourceAgent(item),
     };
+  };
 
-    const nodes: TreeDataNode[] = [];
-    if (currentAgent.agentType === 'GROUP') {
-      nodes.push({
-        key: PERSONAL_NODE_KEY,
-        title: (
-          <span className={styles.nodeTitle}>
-            <Folder size={14} color="var(--resource-icon-folder)" />
-            <span>{t('input.otherSkillPicker.personal')}</span>
-          </span>
-        ),
-        selectable: false,
-        isLeaf: false,
-        children: buildSkillChildren(PERSONAL_NODE_KEY),
+  const handleSelectionChange = (items: DriveSelectionItem[]) => {
+    if (items.length === 0 && !hasNavigatorSelectionRef.current) return;
+    hasNavigatorSelectionRef.current = true;
+    const selectedIds = new Set(items.map((item) => item.resourceId).filter(Boolean));
+    setSelectedSkillMap((current) => {
+      const next = new Map([...current.entries()].filter(([skillId]) => selectedIds.has(skillId)));
+      items.forEach((item) => {
+        const option = mapSelectionItem(item);
+        if (option) next.set(option.skill.skillId, option);
       });
-    }
-
-    groups
-      .filter((group) => group.groupId !== currentAgent.groupId)
-      .forEach((group) => {
-        const ownerKey = `${GROUP_NODE_PREFIX}${group.groupId}`;
-        const groupLabel = group.groupName || t('input.otherSkillPicker.group');
-        nodes.push({
-          key: ownerKey,
-          title: (
-            <span className={styles.nodeTitle}>
-              <Folder size={14} color="var(--resource-icon-folder)" />
-              <span>{groupLabel}</span>
-            </span>
-          ),
-          selectable: false,
-          isLeaf: false,
-          children: buildSkillChildren(ownerKey),
-        });
-      });
-
-    return { skillMap: mapping, treeData: nodes };
-  })();
-
-  const loadSkillPage = async (
-    ownerKey: string,
-    scope: ChatInputResourceScope,
-    page: number,
-    group?: Pick<Group, 'groupId' | 'groupName'>
-  ) => {
-    const result = await chatService.listChatInputSkills({
-      scope,
-      groupId: group?.groupId,
-      groupName: group?.groupName,
-      page,
-      size: SKILL_PAGE_SIZE,
-    });
-    setSkillStateMap((prev) => {
-      const current = prev[ownerKey];
-      return {
-        ...prev,
-        [ownerKey]: {
-          scope,
-          groupId: group?.groupId,
-          groupName: group?.groupName,
-          items: page === 1 || !current ? result.list : [...current.items, ...result.list],
-          page: result.page,
-          totalPage: result.totalPage,
-        },
-      };
+      return next;
     });
   };
-
-  const handleLoadData = async (node: TreeDataNode) => {
-    const nodeKey = String(node.key);
-    if (nodeKey === PERSONAL_NODE_KEY) {
-      await loadSkillPage(PERSONAL_NODE_KEY, 'PERSONAL', 1);
-      return;
-    }
-    if (!nodeKey.startsWith(GROUP_NODE_PREFIX)) return;
-    const groupId = nodeKey.slice(GROUP_NODE_PREFIX.length);
-    const group = groups.find((item) => item.groupId === groupId);
-    if (!group) return;
-    await loadSkillPage(nodeKey, 'GROUP', 1, group);
-  };
-
-  const handleLoadMoreGroups = async () => {
-    if (!groupPage || loadingMoreGroups) return;
-    setLoadingMoreGroups(true);
-    try {
-      const page = await chatService.listChatInputGroups({
-        page: groupPage.page + 1,
-        size: groupPage.size,
-      });
-      setGroups((prev) => [...prev, ...page.list]);
-      setGroupPage(page);
-    } catch (error) {
-      toast.danger(parseErrorMessage(error));
-    } finally {
-      setLoadingMoreGroups(false);
-    }
-  };
-
-  const handleSelectKeys = (keys: Key[]) => {
-    const latestKey = keys.map(String).find((key) => key.startsWith(LOAD_MORE_NODE_PREFIX));
-    if (latestKey) {
-      const [, ownerKey, pageText] = latestKey.match(/^load-more:(.+):(\d+)$/) ?? [];
-      const state = ownerKey ? skillStateMap[ownerKey] : undefined;
-      if (state) {
-        void loadSkillPage(
-          ownerKey,
-          state.scope,
-          Number(pageText),
-          state.groupId ? { groupId: state.groupId, groupName: state.groupName ?? '' } : undefined
-        ).catch((error) => toast.danger(parseErrorMessage(error)));
-      }
-      return;
-    }
-    setSelectedKeys(keys);
-  };
-
-  const hasMoreGroups = groupPage != null && groupPage.page < groupPage.totalPage;
 
   function handleClose(): void {
     setOtherSkillModalOpen(false);
@@ -247,11 +114,7 @@ function OtherSkillModalContent() {
   };
 
   const handleConfirm = () => {
-    const selected = selectedKeys.map((key) => skillMap.get(String(key))).filter(Boolean) as Array<{
-      skill: ResourceSkillSummary;
-      sourceAgent: ChatAgentOption | null;
-    }>;
-    replaceExternalSkills(selected);
+    replaceExternalSkills([...selectedSkillMap.values()]);
     handleClose();
   };
 
@@ -278,30 +141,16 @@ function OtherSkillModalContent() {
             <div className={styles.wrapper}>
               <div className={styles.hint}>{t('input.otherSkillPicker.hint')}</div>
               <div className={styles.treeNav}>
-                {loading ? (
-                  <div className={styles.hint}>{t('input.otherSkillPicker.loading')}</div>
-                ) : (
-                  <Tree
-                    treeData={treeData}
-                    className={styles.tree}
-                    multiple
-                    selectedKeys={selectedKeys}
-                    blockNode
-                    loadData={handleLoadData}
-                    onSelect={(keys: Key[]) => handleSelectKeys(keys)}
-                  />
-                )}
-                {!loading && hasMoreGroups ? (
-                  <AppButton
-                    size="sm"
-                    variant="ghost"
-                    className={styles.loadMoreButton}
-                    isDisabled={loadingMoreGroups}
-                    onPress={handleLoadMoreGroups}
-                  >
-                    {t('session.loadMore')}
-                  </AppButton>
-                ) : null}
+                <DriveNavigator
+                  scopeMode="public"
+                  resourceType="SKILL"
+                  selectableTypes={['resource', 'link']}
+                  excludedGroupIds={currentAgent.groupId ? [currentAgent.groupId] : undefined}
+                  initialSelectedIds={initialSelectedSkills.map((skill) => skill.skillId)}
+                  multiple
+                  dimUnselectableNodes={false}
+                  onChange={handleSelectionChange}
+                />
               </div>
             </div>
           </AppModal.Body>

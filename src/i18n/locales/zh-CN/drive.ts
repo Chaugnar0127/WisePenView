@@ -223,6 +223,8 @@ const zhCNDrive = {
     batchDeleted: '已删除 {{count}} 项',
     movedSingle: '已移动',
     trashNotFound: '未找到回收站',
+    trashEmpty: '回收站为空',
+    trashDescription: '移入回收站的文件和文件夹会显示在这里',
     dropToUpload: '松开以上传文档',
     addFromPersonal: '从个人云盘添加',
     expandDetails: '展开详情侧栏',

@@ -70,7 +70,7 @@ const zhCNNote = {
   },
   comments: {
     selectTextFirst: '请先选中一段文字再添加批注',
-    history: '历史评论{{count}}',
+    history: '历史批注{{count}}',
   },
   ai: {
     selectTextFirst: '请先选中一段文字再问 AI',

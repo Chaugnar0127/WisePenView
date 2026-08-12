@@ -9,6 +9,7 @@
   min-height: 0;
   position: relative;
   --chat-shell-bg: var(--surface);
+  --chat-footer-bg: var(--chat-shell-bg);
   background-color: var(--chat-shell-bg);
   overflow: hidden;
   --chat-message-font-size: 14px;
@@ -48,7 +49,8 @@
     min-width: 0;
     width: 100%;
     height: 100%;
-    --chat-shell-bg: var(--surface);
+    --chat-shell-bg: transparent;
+    --chat-footer-bg: var(--background);
     --chat-message-font-size: 15px;
     --chat-message-line-height: 1.6;
     --chat-thinking-font-size: var(--font-size-sm);
@@ -251,8 +253,8 @@
   padding: var(--space-lg) var(--chat-message-inline-padding, var(--space-lg)) var(--space-xs);
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--chat-shell-bg, var(--surface)) 0%, transparent) 0%,
-    var(--chat-shell-bg, var(--surface)) 20%
+    color-mix(in srgb, var(--chat-footer-bg, var(--surface)) 0%, transparent) 0%,
+    var(--chat-footer-bg, var(--surface)) 20%
   );
   transition:
     margin-top var(--motion-duration-emphasis) var(--motion-ease-fluid),

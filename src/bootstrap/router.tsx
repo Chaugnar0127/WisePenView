@@ -19,7 +19,6 @@ import AppError from '@/views/app/error/AppError';
 import ResourceNotFound from '@/views/app/error/ResourceNotFound';
 import RouteError from '@/views/app/error/RouteError';
 import ScopedRouteNotFound from '@/views/app/error/ScopedRouteNotFound';
-import AnonymousGuardPage from '@/views/app/guard/AnonymousGuardPage';
 import AuthenticatedRouteGuard from '@/views/app/guard/AuthenticatedRouteGuard';
 
 const UserManagement = lazy(() => import('@/views/admin/UserManagement'));
@@ -82,6 +81,7 @@ const CourseEditorPage = lazy(() => import('@/views/app/course/CourseEditorPage'
 const CourseSettingsRouteGuard = lazy(
   () => import('@/views/app/course/_guards/CourseSettingsRouteGuard')
 );
+const RootRouteGuard = lazy(() => import('@/views/app/guard/RootRouteGuard'));
 
 const chatHandle = appRouteHandle({
   pageKey: 'chat',
@@ -155,7 +155,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <AnonymousGuardPage />,
+            element: <RootRouteGuard />,
             handle: chatHandle,
           },
         ],

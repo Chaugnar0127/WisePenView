@@ -29,7 +29,10 @@ export {
   encodeNoteClientContentSignature,
 } from './session/contentSignature';
 export { NoteInlineCommentSession } from './session/NoteInlineCommentSession';
-export type { NoteInlineCommentSessionSnapshot } from './session/NoteInlineCommentSession';
+export type {
+  NoteInlineCommentAnchorReference,
+  NoteInlineCommentSessionSnapshot,
+} from './session/NoteInlineCommentSession';
 export { NoteSaveStatusObserver } from './session/NoteSaveStatusObserver';
 export type { NoteSaveStatus } from './session/NoteSaveStatusObserver';
 export { NoteStatusObserver } from './session/NoteStatusObserver';

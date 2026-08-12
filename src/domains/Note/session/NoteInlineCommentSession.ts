@@ -11,6 +11,11 @@ export interface NoteInlineCommentSessionSnapshot {
   error?: unknown;
 }
 
+export interface NoteInlineCommentAnchorReference {
+  position: number;
+  quoteText: string;
+}
+
 interface NoteInlineCommentSessionOptions {
   resourceId: string;
   inlineCommentService: IInlineCommentService;
@@ -22,6 +27,7 @@ export class NoteInlineCommentSession {
   private readonly threadsById = new Map<string, NoteInlineCommentThread>();
   private resolvedThreads: NoteInlineCommentThread[] = [];
   private threadAnchorPositions = new Map<string, number>();
+  private threadAnchorQuoteTexts = new Map<string, string>();
   private readonly addedItemIdsByRequestKey = new Map<string, string>();
   private readonly subscribers = new Set<() => void>();
   private snapshot: NoteInlineCommentSessionSnapshot = {
@@ -53,6 +59,26 @@ export class NoteInlineCommentSession {
   setThreadAnchorPositions(positions: ReadonlyMap<string, number>): void {
     if (this.hasSameThreadAnchorPositions(positions)) return;
     this.threadAnchorPositions = new Map(positions);
+    this.publish();
+  }
+
+  setThreadAnchorReferences(
+    references: ReadonlyMap<string, NoteInlineCommentAnchorReference>
+  ): void {
+    const positions = new Map<string, number>();
+    const quoteTexts = new Map<string, string>();
+    references.forEach((reference, threadId) => {
+      positions.set(threadId, reference.position);
+      quoteTexts.set(threadId, reference.quoteText);
+    });
+    if (
+      this.hasSameThreadAnchorPositions(positions) &&
+      this.hasSameThreadAnchorQuoteTexts(quoteTexts)
+    ) {
+      return;
+    }
+    this.threadAnchorPositions = positions;
+    this.threadAnchorQuoteTexts = quoteTexts;
     this.publish();
   }
 
@@ -247,11 +273,21 @@ export class NoteInlineCommentSession {
 
   private publish(patch: Partial<NoteInlineCommentSessionSnapshot> = {}): void {
     this.updateSnapshot({
-      threads: [...this.threadsById.values()].sort(this.compareThreads),
-      resolvedThreads: [...this.resolvedThreads].sort(this.compareThreads),
+      threads: [...this.threadsById.values()]
+        .map(this.applyAnchorQuoteText)
+        .sort(this.compareThreads),
+      resolvedThreads: [...this.resolvedThreads]
+        .map(this.applyAnchorQuoteText)
+        .sort(this.compareThreads),
       ...patch,
     });
   }
+
+  private applyAnchorQuoteText = (thread: NoteInlineCommentThread): NoteInlineCommentThread => {
+    const quoteText = this.threadAnchorQuoteTexts.get(thread.threadId);
+    if (quoteText === undefined || quoteText === thread.quoteText) return thread;
+    return { ...thread, quoteText };
+  };
 
   private compareThreads = (a: NoteInlineCommentThread, b: NoteInlineCommentThread): number => {
     const aPosition = this.threadAnchorPositions.get(a.threadId);
@@ -268,6 +304,13 @@ export class NoteInlineCommentSession {
     if (this.threadAnchorPositions.size !== positions.size) return false;
     return [...positions].every(
       ([threadId, position]) => this.threadAnchorPositions.get(threadId) === position
+    );
+  }
+
+  private hasSameThreadAnchorQuoteTexts(quoteTexts: ReadonlyMap<string, string>): boolean {
+    if (this.threadAnchorQuoteTexts.size !== quoteTexts.size) return false;
+    return [...quoteTexts].every(
+      ([threadId, quoteText]) => this.threadAnchorQuoteTexts.get(threadId) === quoteText
     );
   }
 }

@@ -82,6 +82,26 @@
   max-width: calc(100vw - var(--space-xl));
 }
 
+.menuItemContent {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1.125rem minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-xs);
+}
+
+.menuItemLabel {
+  min-width: 0;
+}
+
+.menuItemTrailing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: inherit;
+}
+
 .quickTypes {
   width: 100%;
   display: flex;

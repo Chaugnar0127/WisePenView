@@ -40,7 +40,7 @@ import { blockHasType, defaultProps, editorHasBlockWithType } from '@blocknote/c
 import { SideMenuExtension, SuggestionMenu } from '@blocknote/core/extensions';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
 import {
-  SideMenuController,
+  BlockPopover,
   useBlockNoteEditor,
   useExtension,
   useExtensionState,
@@ -64,7 +64,7 @@ import {
   Trash2,
   type LucideIcon,
 } from 'lucide-react';
-import { useState, type DragEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
 
@@ -161,11 +161,11 @@ function MenuItemContent({
   trailing?: ReactNode;
 }) {
   return (
-    <>
+    <span className={styles.menuItemContent}>
       <Icon size={18} aria-hidden="true" />
-      <Label>{label}</Label>
-      {trailing}
-    </>
+      <Label className={styles.menuItemLabel}>{label}</Label>
+      {trailing ? <span className={styles.menuItemTrailing}>{trailing}</span> : null}
+    </span>
   );
 }
 
@@ -755,12 +755,51 @@ export default function NoteSideMenu({ plugins }: { plugins: readonly NoteConten
   const readOnly = useNoteEditorReadOnlyContext();
   const editor = useBlockNoteEditor(blockNoteSchema);
   const [isPointerSelectingText, setIsPointerSelectingText] = useState(false);
+  const [dismissedBlockId, setDismissedBlockId] = useState<string | null>(null);
+  const previousShowRef = useRef(false);
   const handleEditorPointerDown = (event: Event) => {
     if (!(event instanceof globalThis.PointerEvent) || event.button !== 0) return;
     if (event.target instanceof Element && event.target.closest('.bn-side-menu')) return;
     setIsPointerSelectingText(true);
   };
   const handlePointerSelectionEnd = () => setIsPointerSelectingText(false);
+  const sideMenuState = useExtensionState(SideMenuExtension, {
+    editor,
+    selector: (state) =>
+      state
+        ? {
+            blockId: state.block.id,
+            show: state.show,
+          }
+        : undefined,
+  });
+  const hoveredBlockId = sideMenuState?.blockId ?? null;
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：BlockNote 侧边菜单从隐藏切换为显示时。
+   * 不可替代原因：这里需要把第三方 hover 状态同步为本地点击关闭状态，普通事件处理函数无法覆盖第三方内部状态变更。
+   * cleanup：没有订阅外部资源，无需清理。
+   */
+  useEffect(() => {
+    if (sideMenuState?.show && !previousShowRef.current) {
+      setDismissedBlockId(null);
+    }
+    previousShowRef.current = Boolean(sideMenuState?.show);
+  }, [sideMenuState?.show]);
+
+  useEventListener(
+    'pointerdown',
+    (event) => {
+      if (!(event.target instanceof Element)) return;
+      if (event.target.closest('.bn-side-menu')) return;
+      if (event.target.closest('.dropdown__popover')) return;
+      if (hoveredBlockId) {
+        setDismissedBlockId(hoveredBlockId);
+      }
+    },
+    { target: document }
+  );
 
   useEventListener('pointerdown', handleEditorPointerDown, { target: editor.domElement });
   useEventListener('pointerup', handlePointerSelectionEnd);
@@ -771,15 +810,18 @@ export default function NoteSideMenu({ plugins }: { plugins: readonly NoteConten
   }
 
   return (
-    <SideMenuController
-      sideMenu={() => (
-        <CustomSideMenu hiddenByTextInteraction={isPointerSelectingText} plugins={plugins} />
-      )}
-      floatingUIOptions={{
-        useFloatingOptions: {
-          placement: 'left-start',
-        },
+    <BlockPopover
+      blockId={hoveredBlockId && dismissedBlockId !== hoveredBlockId ? hoveredBlockId : undefined}
+      useFloatingOptions={{
+        open: Boolean(hoveredBlockId && dismissedBlockId !== hoveredBlockId),
+        placement: 'left-start',
       }}
-    />
+      useDismissProps={{ enabled: false }}
+      focusManagerProps={{ disabled: true }}
+    >
+      {hoveredBlockId ? (
+        <CustomSideMenu hiddenByTextInteraction={isPointerSelectingText} plugins={plugins} />
+      ) : null}
+    </BlockPopover>
   );
 }

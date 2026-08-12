@@ -163,6 +163,7 @@ const zhCNNote = {
     },
     link: {
       add: '添加链接',
+      edit: '编辑链接',
       address: '链接地址',
       placeholder: '输入链接地址',
     },

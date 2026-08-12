@@ -21,7 +21,7 @@ const PRINT_IFRAME_CLEANUP_MS = 120_000;
 const STYLESHEET_LOAD_TIMEOUT_MS = 5_000;
 
 const PRINT_BASE_CSS = `
-  @page { size: A4; margin: 18mm 16mm 20mm; }
+  @page { size: A4; margin: 17mm 16mm 18mm; }
   *,
   *::before,
   *::after {
@@ -40,20 +40,22 @@ const PRINT_BASE_CSS = `
     print-color-adjust: exact;
   }
   body {
-    padding: 0 8px;
+    padding: 0;
     color: var(--foreground, #111827);
     font-family: var(--app-font-family, sans-serif);
+    font-size: 11pt;
+    line-height: 1.45;
   }
   .print-doc-title {
-    font-size: 34px;
+    font-size: 20pt;
     font-weight: 500;
-    line-height: 1.625;
-    margin: 0 0 1em;
+    line-height: 1.25;
+    margin: 0 0 12pt;
     color: inherit;
     page-break-after: avoid;
   }
   .note-print-title {
-    margin: 0 0 1em;
+    margin: 0 0 12pt;
     page-break-after: avoid;
     color: inherit;
   }
@@ -84,8 +86,73 @@ const PRINT_BASE_CSS = `
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
+    padding-inline: 0 !important;
     padding-bottom: 0 !important;
     overflow: visible !important;
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+  }
+  .note-print-body .bn-block-outer {
+    line-height: 1.45 !important;
+  }
+  .note-print-body .bn-block-outer:has(> .bn-block > .bn-block-content[data-content-type='heading']) {
+    margin-top: 12pt !important;
+    margin-bottom: 4pt !important;
+  }
+  .note-print-body .bn-block-content {
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+    margin-top: 0 !important;
+    margin-bottom: 3pt !important;
+  }
+  .note-print-body .bn-block-content:not([data-content-type='heading']) .bn-inline-content,
+  .note-print-body .bn-block-content:not([data-content-type='heading']) .bn-inline-content * {
+    line-height: 1.45 !important;
+  }
+  .note-print-body .bn-block-content[data-content-type='heading'],
+  .note-print-title .bn-block-content[data-content-type='heading'] {
+    font-size: 18pt !important;
+    line-height: 1.25 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .note-print-body .bn-block-content[data-content-type='heading'][data-level='2'],
+  .note-print-title .bn-block-content[data-content-type='heading'][data-level='2'] {
+    font-size: 15pt !important;
+    line-height: 1.3 !important;
+  }
+  .note-print-body .bn-block-content[data-content-type='heading'][data-level='3'],
+  .note-print-title .bn-block-content[data-content-type='heading'][data-level='3'] {
+    font-size: 13pt !important;
+    line-height: 1.35 !important;
+  }
+  .note-print-body .bn-block-content[data-content-type='heading'][data-level='4'],
+  .note-print-title .bn-block-content[data-content-type='heading'][data-level='4'] {
+    font-size: 12pt !important;
+    line-height: 1.4 !important;
+  }
+  .note-print-body .bn-block-content[data-content-type='heading'][data-level='5'],
+  .note-print-body .bn-block-content[data-content-type='heading'][data-level='6'],
+  .note-print-title .bn-block-content[data-content-type='heading'][data-level='5'],
+  .note-print-title .bn-block-content[data-content-type='heading'][data-level='6'] {
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+  }
+  .note-print-body .bn-block-content[data-content-type='bulletListItem']::before {
+    font-size: 1em !important;
+    line-height: 1.45 !important;
+  }
+  .note-print-body .bn-block-content[data-content-type='codeBlock'] {
+    margin: 6pt 0 8pt !important;
+  }
+  .note-print-body .bn-block-content[data-content-type='codeBlock'] > pre {
+    padding: 8pt !important;
+    font-size: 9pt !important;
+    line-height: 1.45 !important;
+  }
+  .note-print-body table {
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
   }
   .note-print-body .bodyBlockNoteView {
     padding-right: 0 !important;

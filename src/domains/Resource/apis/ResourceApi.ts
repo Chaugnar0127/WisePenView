@@ -30,10 +30,7 @@ function changeResourceActionPermission(
 }
 
 function removeResources(req: RemoveResourcesApiRequest): Promise<void> {
-  return apiPost('/resource/item/removeResources', null, {
-    params: req,
-    paramsSerializer: serializeRepeatKeyQuery,
-  });
+  return apiPost('/resource/item/removeResources', req);
 }
 
 function globalSearch(req: GlobalSearchApiRequest): Promise<GlobalSearchApiResponse> {

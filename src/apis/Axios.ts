@@ -1,7 +1,7 @@
 import { isRecord } from '@/utils/typeGuards';
 // axios request 封装
 import type { ApiErrorBody } from '@/apis/api.type';
-import { API_BASE_URL } from '@/apis/clientUrls';
+import { awaitAddrReady, getApiBaseUrl, notifyAddrFailure } from '@/apis/apiServerAddr';
 import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
 import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
 import { WisePenError } from '@/utils/error';
@@ -152,8 +152,9 @@ const mapAxiosErrorToWisePenError = (error: AxiosError): WisePenError => {
   });
 };
 
-Axios.interceptors.request.use((config) => {
-  config.baseURL = API_BASE_URL;
+Axios.interceptors.request.use(async (config) => {
+  await awaitAddrReady();
+  config.baseURL = getApiBaseUrl();
   config.headers = AxiosHeaders.from(config.headers);
   applyXDeveloperHeader(new Headers()).forEach((value, key) => {
     config.headers.set(key, value);
@@ -164,6 +165,9 @@ Axios.interceptors.request.use((config) => {
 Axios.interceptors.response.use(
   (response) => response.data,
   async (error: AxiosError) => {
+    if (!error.response) {
+      notifyAddrFailure();
+    }
     const retryRequest = retryAxiosRequest(error);
     if (retryRequest) {
       return retryRequest;

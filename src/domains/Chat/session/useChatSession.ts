@@ -1,3 +1,4 @@
+import { awaitAddrReady, notifyAddrFailure } from '@/apis/apiServerAddr';
 import { buildApiUrl } from '@/apis/clientUrls';
 import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
 import { useChat } from '@ai-sdk/react';
@@ -6,7 +7,6 @@ import type { ChatMessageMetadata, WisePenUIMessage } from '../entity/message';
 import { mapChatCompletionRequest } from '../mapper/chatCompletion.mapper';
 import type { SendSessionMessageOptions, UseChatSessionOptions } from './index.type';
 
-const CHAT_COMPLETIONS_API = buildApiUrl('/chat/completions');
 const CHAT_STREAM_THROTTLE_MS = 50;
 
 function buildChatFetchInit(init?: RequestInit): RequestInit {
@@ -15,6 +15,25 @@ function buildChatFetchInit(init?: RequestInit): RequestInit {
     credentials: 'include',
     headers: applyXDeveloperHeader(new Headers(init?.headers)),
   };
+}
+
+function resolveChatApiUrl(input: RequestInfo | URL): string {
+  return typeof input === 'string' || input instanceof URL
+    ? new URL(input.toString(), buildApiUrl('/')).toString()
+    : input.url;
+}
+
+async function fetchChatCompletion(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> {
+  await awaitAddrReady();
+  try {
+    return await fetch(resolveChatApiUrl(input), buildChatFetchInit(init));
+  } catch (error) {
+    notifyAddrFailure();
+    throw error;
+  }
 }
 
 /**
@@ -27,8 +46,8 @@ export const useChatSession = ({ sessionId, model }: UseChatSessionOptions) => {
   const chat = useChat<WisePenUIMessage>({
     experimental_throttle: CHAT_STREAM_THROTTLE_MS,
     transport: new DefaultChatTransport<WisePenUIMessage>({
-      api: CHAT_COMPLETIONS_API,
-      fetch: (input, init) => fetch(input, buildChatFetchInit(init)),
+      api: '/chat/completions',
+      fetch: fetchChatCompletion,
     }),
   });
 

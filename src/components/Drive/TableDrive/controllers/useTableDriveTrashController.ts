@@ -1,7 +1,7 @@
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
 import { useApi } from '@/hooks/useApi';
-import { resolveTrashViewState } from '../trashViewModel';
+import { useTranslation } from 'react-i18next';
 
 interface UseTableDriveTrashControllerParams {
   currentNodeId: string;
@@ -14,6 +14,7 @@ export function useTableDriveTrashController({
   pathNodes,
   scope,
 }: UseTableDriveTrashControllerParams) {
+  const { t } = useTranslation(['drive', 'table']);
   const driveService = useDriveService();
   const canOpenTrash = scope.type === 'personal';
   const { data: trashFolder } = useApi(
@@ -24,11 +25,28 @@ export function useTableDriveTrashController({
     }
   );
   const trashFolderNodeId = trashFolder?.id;
+  const isTrashRootView = Boolean(
+    canOpenTrash && trashFolderNodeId && currentNodeId === trashFolderNodeId
+  );
+  const isTrashView = Boolean(
+    canOpenTrash &&
+    trashFolderNodeId &&
+    (isTrashRootView || pathNodes.some((node) => node.id === trashFolderNodeId))
+  );
+  let emptyText: string | undefined;
+  let emptyDescription: string | undefined;
 
-  return resolveTrashViewState({
-    canOpenTrash,
-    currentNodeId,
-    pathNodeIds: pathNodes.map((node) => node.id),
-    trashFolderNodeId,
-  });
+  if (isTrashRootView) {
+    emptyText = t('table.trashEmpty', { ns: 'drive' });
+    emptyDescription = t('table.trashDescription', { ns: 'drive' });
+  } else if (isTrashView) {
+    emptyText = t('empty.folderEmpty', { ns: 'table' });
+    emptyDescription = '';
+  }
+
+  return {
+    isTrashView,
+    emptyText,
+    emptyDescription,
+  };
 }

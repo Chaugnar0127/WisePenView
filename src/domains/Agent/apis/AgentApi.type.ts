@@ -66,7 +66,7 @@ export interface CreateAgentApiRequest {
   title: string;
   name?: string;
   description?: string;
-  pathTagId?: string;
+  mountTargetTagId?: string;
   sourceType?: string;
 }
 

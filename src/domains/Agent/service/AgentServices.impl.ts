@@ -7,7 +7,12 @@ import type { IAgentService } from './index.type';
 
 export const createAgentServices = (): IAgentService => ({
   async createAgent(title, name, description, pathTagId) {
-    const resourceId = await AgentApi.createAgent({ title, name, description, pathTagId });
+    const resourceId = await AgentApi.createAgent({
+      title,
+      name,
+      description,
+      mountTargetTagId: pathTagId,
+    });
     if (!resourceId) {
       throw createClientError(FRONTEND_CLIENT_ERROR.AGENT_CREATE_RESOURCE_ID_MISSING);
     }

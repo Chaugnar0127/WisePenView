@@ -95,6 +95,7 @@ const zhCNDrive = {
       selectFolderStep: '选择目标文件夹',
       selectFilesHint: '选择要添加的文件（可多选）',
       selectFolderHint: '选择文件要添加到的小组文件夹（只能选择一个）',
+      createFolderHint: '不允许直接上传到小组，请先新建文件夹',
       previous: '上一步',
       next: '下一步',
       success: '已添加 {{count}} 个文件到小组',

@@ -97,6 +97,8 @@ const enUSDrive = {
       selectFolderStep: 'Select destination folder',
       selectFilesHint: 'Select files to add (multiple allowed)',
       selectFolderHint: 'Select a group folder for the files (one only)',
+      createFolderHint:
+        'Direct uploads to the group are not allowed. Please create a folder first.',
       previous: 'Previous',
       next: 'Next',
       success: '{{count}} files added to the group',

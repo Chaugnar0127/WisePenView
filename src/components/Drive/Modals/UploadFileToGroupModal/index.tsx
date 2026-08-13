@@ -150,6 +150,7 @@ function UploadFileToGroupModal({
                     key={`group-tree-tag-${groupId}-${navRefreshKey}`}
                     scope={{ type: 'group', groupId }}
                     selectableTypes={['folder']}
+                    emptyText={t('upload.group.createFolderHint')}
                     disabled={submitting}
                     onNodeChange={handleTagsChange}
                   />

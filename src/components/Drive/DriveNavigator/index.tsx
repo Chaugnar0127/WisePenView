@@ -139,6 +139,7 @@ function DriveNavigator({
   renderableTypes = DEFAULT_RENDERABLE_TYPES,
   selectableTypes = DEFAULT_SELECTABLE_TYPES,
   resourcePreviewLimit = DEFAULT_RESOURCE_PREVIEW_LIMIT,
+  emptyText,
   disabled = false,
   dimUnselectableNodes = true,
   disabledNodeIds,
@@ -502,7 +503,7 @@ function DriveNavigator({
     return (
       <div className={styles.wrapper}>
         <div className={styles.stateBlock}>
-          <Empty description={t('navigator.empty')} />
+          <Empty description={emptyText ?? t('navigator.empty')} />
         </div>
       </div>
     );

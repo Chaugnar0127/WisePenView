@@ -393,10 +393,8 @@
 
 /* —— 段右侧工具条：左缘对齐灰块右缘，垂直对齐当前改动 —— */
 .blockActions {
-  position: absolute;
+  position: fixed;
   z-index: var(--app-z-index-editor-floating);
-  top: 50%;
-  left: 100%;
   right: auto;
   bottom: auto;
   margin-left: var(--space-xs);
@@ -410,20 +408,10 @@
   border-radius: var(--radius-lg);
   background: var(--overlay);
   box-shadow: var(--shadow-md);
-  opacity: 0;
-  pointer-events: none;
-  white-space: nowrap;
-  transform: translateY(-50%);
-  transition:
-    opacity var(--motion-duration-fast) var(--motion-ease-standard),
-    transform var(--motion-duration-fast) var(--motion-ease-standard);
-}
-
-/* 选中态：显示工具条（在灰块右侧外侧） */
-.reviewSelected > .blockActions,
-.review[data-ai-diff-selected='true'] > .blockActions {
   opacity: 1;
   pointer-events: auto;
+  white-space: nowrap;
+  transform: translateY(-50%);
 }
 
 .segmentNavigator {

@@ -129,7 +129,12 @@ export const createSkillServices = (deps: SkillServicesDeps): ISkillService => {
     description?: string,
     pathTagId?: string
   ) => {
-    const resourceId = await SkillApi.createSkill({ title, name, description, pathTagId });
+    const resourceId = await SkillApi.createSkill({
+      title,
+      name,
+      description,
+      mountTargetTagId: pathTagId,
+    });
     if (!resourceId) {
       throw createClientError(FRONTEND_CLIENT_ERROR.SKILL_CREATE_RESOURCE_ID_MISSING);
     }

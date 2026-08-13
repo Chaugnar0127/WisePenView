@@ -2,6 +2,8 @@ const zhCNShell = {
   navigation: {
     appAria: '应用导航',
     newChat: '新建对话',
+    newNote: '新建笔记',
+    defaultNoteTitle: '未命名笔记',
     drive: '我的云盘',
     notifications: '消息通知',
     groups: '我的小组',

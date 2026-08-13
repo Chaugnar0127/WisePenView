@@ -256,6 +256,7 @@ export function useFloatingToolbarState(
     document.addEventListener('dragend', handleDragEnd, true);
     document.addEventListener('drop', handleDragEnd, true);
     document.addEventListener('keyup', syncToolbarStateIfNeeded, true);
+    window.addEventListener('pointermove', syncToolbarStateIfNeeded, true);
     return () => {
       tiptapEditor.off('selectionUpdate', syncToolbarStateIfNeeded);
       tiptapEditor.off('update', syncToolbarStateIfNeeded);
@@ -268,6 +269,7 @@ export function useFloatingToolbarState(
       document.removeEventListener('dragend', handleDragEnd, true);
       document.removeEventListener('drop', handleDragEnd, true);
       document.removeEventListener('keyup', syncToolbarStateIfNeeded, true);
+      window.removeEventListener('pointermove', syncToolbarStateIfNeeded, true);
     };
   });
 

@@ -9,7 +9,7 @@ import type {
   NotePluginRegistry,
 } from '../../registry/types';
 import type { NoteAiDiffActionRequest } from './action';
-import { addAiDiffDomListener } from './domCleanup';
+import { addAiDiffDomCleanup, addAiDiffDomListener } from './domCleanup';
 import styles from './style.module.less';
 
 export interface AiDiffReviewUnit {
@@ -173,14 +173,48 @@ function createSegmentToolbar(params: {
 }
 
 function pinToolbar(toolbar: HTMLElement, host: HTMLElement, anchor: HTMLElement): void {
-  host.appendChild(toolbar);
-  window.requestAnimationFrame(() => {
+  let frameId: number | null = null;
+  const updatePosition = () => {
+    frameId = null;
     if (!toolbar.isConnected) return;
-    const hostRect = host.getBoundingClientRect();
-    const rowRect = (anchor.closest('.bn-block') ?? host).getBoundingClientRect();
-    const anchorRect = anchor.getBoundingClientRect();
-    toolbar.style.top = `${anchorRect.top - hostRect.top + anchorRect.height / 2}px`;
-    toolbar.style.left = `${rowRect.right - hostRect.left}px`;
+    const row = anchor.closest<HTMLElement>('.bn-block') ?? host;
+    const rowRect = row.getBoundingClientRect();
+    toolbar.style.top = `${rowRect.top + rowRect.height / 2}px`;
+    toolbar.style.left = `${rowRect.right}px`;
+  };
+  const scheduleUpdate = () => {
+    if (frameId !== null) return;
+    frameId = window.requestAnimationFrame(updatePosition);
+  };
+  const row = anchor.closest<HTMLElement>('.bn-block') ?? host;
+  const observedElements = new Set<HTMLElement>([row]);
+  let ancestor = row.parentElement;
+  while (ancestor && ancestor !== document.body) {
+    observedElements.add(ancestor);
+    ancestor = ancestor.parentElement;
+  }
+  const resizeObserver =
+    typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => {
+          scheduleUpdate();
+        })
+      : null;
+  document.body.appendChild(toolbar);
+  observedElements.forEach((element) => resizeObserver?.observe(element));
+  window.addEventListener('scroll', scheduleUpdate, true);
+  window.addEventListener('resize', scheduleUpdate);
+  window.addEventListener('pointermove', scheduleUpdate, true);
+  scheduleUpdate();
+  addAiDiffDomCleanup(host, () => {
+    if (frameId !== null) {
+      window.cancelAnimationFrame(frameId);
+      frameId = null;
+    }
+    resizeObserver?.disconnect();
+    window.removeEventListener('scroll', scheduleUpdate, true);
+    window.removeEventListener('resize', scheduleUpdate);
+    window.removeEventListener('pointermove', scheduleUpdate, true);
+    toolbar.remove();
   });
 }
 
@@ -323,15 +357,17 @@ export function createAiDiffReviewWidget(params: {
   }
 
   const blockNavigation = blockUnit ? navigationByKey.get(blockUnit.key) : undefined;
-  if (blockUnit && blockNavigation && onAction) {
-    root.appendChild(
+  if (selected && blockUnit && blockNavigation && onAction) {
+    pinToolbar(
       createSegmentToolbar({
         blockId,
         target: blockUnit.target,
         navigation: blockNavigation,
         onAction,
         onSelectChange,
-      })
+      }),
+      root,
+      root
     );
   }
   return root;

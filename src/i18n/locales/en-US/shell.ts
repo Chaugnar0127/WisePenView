@@ -2,6 +2,8 @@ const enUSShell = {
   navigation: {
     appAria: 'Application navigation',
     newChat: 'New chat',
+    newNote: 'New note',
+    defaultNoteTitle: 'Untitled note',
     drive: 'Documents and Drive',
     notifications: 'Notifications',
     groups: 'My Groups',

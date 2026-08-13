@@ -10,6 +10,10 @@ function registerAiDiffDomCleanup(element: Element, cleanup: () => void): void {
   disposable[AI_DIFF_DOM_CLEANUPS].push(cleanup);
 }
 
+export function addAiDiffDomCleanup(element: HTMLElement, cleanup: () => void): void {
+  registerAiDiffDomCleanup(element, cleanup);
+}
+
 export function addAiDiffDomListener<K extends keyof HTMLElementEventMap>(
   element: HTMLElement,
   type: K,

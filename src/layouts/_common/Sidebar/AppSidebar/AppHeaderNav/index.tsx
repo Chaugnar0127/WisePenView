@@ -1,11 +1,17 @@
 import { APP_HEADER_NAV_KEY, type AppHeaderNavKey } from '@/bootstrap/routeMeta';
 import { useCurrentChatSessionStore } from '@/components/ChatPanel/_store/useCurrentChatSessionStore';
 import { clearNewChatSessionStore } from '@/components/ChatPanel/_store/useNewChatSessionStore';
+import { useDriveService, useNoteService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
+import { useOpenResource } from '@/hooks/useOpenResource';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { APP_HEADER_NAV_ITEMS } from '@/layouts/_common/Sidebar/appSidebarNavigation';
 import { cn } from '@/utils/cn';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import { ListBox, ListBoxItem } from '@heroui/react';
+import { NotebookPen } from 'lucide-react';
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -17,10 +23,43 @@ function AppHeaderNav() {
   const navigate = useNavigate();
   const routeMeta = useAppRouteMeta();
   const appAuth = useAppAuth();
+  const driveService = useDriveService();
+  const noteService = useNoteService();
+  const openResource = useOpenResource();
   const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
   const storedHeaderNavKey = useSidebarViewTabStore((state) => state.headerNavKey);
   const setHeaderNavKey = useSidebarViewTabStore((state) => state.setHeaderNavKey);
   const selectedKey = routeMeta?.headerNav ?? storedHeaderNavKey;
+
+  const { loading: creatingNote, run: createNote } = useApi(
+    async () => {
+      const root = await driveService.getRoot();
+      if (!root.canMountResources || !root.tagId) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
+          reason: '个人云盘根目录不可挂载资源',
+        });
+      }
+      const mountTagId = root.tagId;
+
+      const title = t('navigation.defaultNoteTitle');
+      const result = await noteService.createNote({ title, pathTagId: mountTagId });
+      if (!result.resourceId) {
+        throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_CREATE_RESOURCE_ID_MISSING);
+      }
+      return { resourceId: result.resourceId, root, title, mountTagId };
+    },
+    {
+      manual: true,
+      onSuccess: ({ resourceId, root, title, mountTagId }) => {
+        openResource({
+          resourceId,
+          resourceType: RESOURCE_KIND.NOTE,
+          resourceName: title,
+          driveLocation: { scope: root.scope, mountTagId },
+        });
+      },
+    }
+  );
 
   const handleNavItemPress = (navKey: AppHeaderNavKey) => {
     if (!appAuth.isAuthenticated) {
@@ -35,6 +74,14 @@ function AppHeaderNav() {
       clearNewChatSessionStore();
     }
     navigate(navItem.to);
+  };
+
+  const handleCreateNote = () => {
+    if (!appAuth.isAuthenticated) {
+      appAuth.requireLogin();
+      return;
+    }
+    if (!creatingNote) createNote();
   };
 
   // 滑动指示器直接同步 DOM，避免在布局副作用中触发额外渲染。
@@ -96,11 +143,11 @@ function AppHeaderNav() {
         className={styles.headerMenu}
         onAction={(key) => handleNavItemPress(String(key) as AppHeaderNavKey)}
       >
-        {APP_HEADER_NAV_ITEMS.map((item) => {
+        {APP_HEADER_NAV_ITEMS.flatMap((item) => {
           const Icon = item.icon;
           const label = t(item.labelKey);
           const isActive = item.key === selectedKey;
-          return (
+          const navItem = (
             <ListBoxItem
               key={item.key}
               id={item.key}
@@ -116,6 +163,24 @@ function AppHeaderNav() {
               <span className={styles.menuLabel}>{label}</span>
             </ListBoxItem>
           );
+          if (item.key !== APP_HEADER_NAV_KEY.CHAT) return [navItem];
+
+          return [
+            navItem,
+            <ListBoxItem
+              key="create-note"
+              id="create-note"
+              textValue={t('navigation.newNote')}
+              isDisabled={creatingNote}
+              onAction={handleCreateNote}
+              className={styles.menuItem}
+            >
+              <span className={styles.menuIcon}>
+                <NotebookPen size={18} />
+              </span>
+              <span className={styles.menuLabel}>{t('navigation.newNote')}</span>
+            </ListBoxItem>,
+          ];
         })}
       </ListBox>
     </div>

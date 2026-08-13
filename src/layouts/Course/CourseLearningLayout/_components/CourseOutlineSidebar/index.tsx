@@ -6,6 +6,7 @@ import { FormField, Input } from '@/components/Input';
 import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
 import Tree, { type DataNode, type TreeAllowDropInfo, type TreeDropInfo } from '@/components/Tree';
 import type { CourseOutlineContainerNode, CourseOutlineNode } from '@/domains/Course';
+import ResourceShellHeader from '@/layouts/Resource/ResourceShellHeader';
 import { parseErrorMessage } from '@/utils/error';
 import { ArrowLeft, CheckCircle2, Circle, LoaderCircle, Plus, Search } from 'lucide-react';
 import type { Key, KeyboardEvent } from 'react';
@@ -278,16 +279,19 @@ function CourseOutlineSidebar(props: CourseOutlineSidebarProps) {
   return (
     <>
       <aside className={styles.outlineSidebar}>
-        <div className={styles.outlineHeader}>
-          <div className={styles.courseRow}>
-            <AppIconButton
-              icon={<ArrowLeft size={18} aria-hidden />}
-              label={t('nav.home')}
-              onPress={props.onOpenCourseHome}
-            />
-            <strong>{props.courseName}</strong>
-          </div>
-        </div>
+        <ResourceShellHeader
+          className={styles.outlineHeader}
+          inlineTitle={
+            <span className={styles.courseRow}>
+              <AppIconButton
+                icon={<ArrowLeft size={18} aria-hidden />}
+                label={t('nav.home')}
+                onPress={props.onOpenCourseHome}
+              />
+              <strong>{props.courseName}</strong>
+            </span>
+          }
+        />
 
         <div className={styles.outlineTools}>
           <div className={styles.outlineSearch}>

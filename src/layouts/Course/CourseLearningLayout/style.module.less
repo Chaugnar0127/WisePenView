@@ -49,11 +49,7 @@
 }
 
 .outlineHeader {
-  display: grid;
   flex: 0 0 auto;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  border-bottom: 1px solid var(--border-light);
 }
 
 .courseRow {
@@ -81,13 +77,17 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-xs);
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-sm);
 }
 
 .outlineSearch {
   position: relative;
   width: 100%;
   min-width: 0;
+}
+
+.outlineSearch > :global(.input) {
+  width: 100%;
 }
 
 .outlineSearch > svg {
@@ -188,6 +188,8 @@
   width: 100%;
 
   :global(.wisepen-tree__item) {
+    --outline-node-actions-background: var(--background);
+
     min-height: 32px;
     width: 100%;
     padding-right: 0;
@@ -198,18 +200,24 @@
 
     &:hover,
     &:focus-within {
+      --outline-node-actions-background: var(--item-hover);
+
       color: var(--foreground);
       background: var(--item-hover);
     }
   }
 
   :global(.wisepen-tree__item[aria-selected='true']) {
+    --outline-node-actions-background: var(--item-selected);
+
     color: var(--accent-text-strong);
     background: var(--item-selected);
     font-weight: var(--font-weight-semibold);
 
     &:hover,
     &:focus-within {
+      --outline-node-actions-background: var(--item-selected-hover);
+
       color: var(--accent-text-strong);
       background: var(--item-selected-hover);
     }
@@ -356,7 +364,11 @@
   opacity: 0;
   pointer-events: none;
   transform: translate(2px, -50%);
-  background: linear-gradient(to right, transparent, var(--accent-soft) var(--space-xs));
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--outline-node-actions-background) var(--space-xs)
+  );
   transition:
     opacity var(--motion-duration-fast) var(--motion-ease-standard),
     transform var(--motion-duration-fast) var(--motion-ease-standard);

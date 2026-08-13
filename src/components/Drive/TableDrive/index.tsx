@@ -359,8 +359,8 @@ function TableDrive({
                 totalCount={navigation.totalCount}
                 summary={t('table.summary', { count: navigation.totalCount })}
                 className={styles.table}
-                emptyText={trash.isTrashView ? t('table.trashEmpty') : undefined}
-                emptyDescription={trash.isTrashView ? t('table.trashDescription') : undefined}
+                emptyText={trash.emptyText}
+                emptyDescription={trash.emptyDescription}
                 emptyIcon={trash.isTrashView ? <Trash2 size={20} aria-hidden /> : undefined}
                 sortDescriptor={interaction.sortDescriptor}
                 onSortChange={interaction.handleSortChange}

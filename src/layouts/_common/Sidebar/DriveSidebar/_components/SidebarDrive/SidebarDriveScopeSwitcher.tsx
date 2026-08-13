@@ -6,7 +6,7 @@ import type { Group } from '@/domains/Group';
 import { useApi } from '@/hooks/useApi';
 import { useSidebarDriveScopeStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveScopeStore';
 import { Dropdown, Header, Label } from '@heroui/react';
-import { ChevronsUpDown, HardDrive, UsersRound } from 'lucide-react';
+import { ChevronsUpDown, HardDrive } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -84,7 +84,7 @@ function SidebarDriveScopeSwitcher() {
                 id={group.groupId}
                 textValue={group.groupName || t('navigator.unnamedGroup')}
               >
-                <UsersRound size={15} aria-hidden="true" />
+                <HardDrive size={15} aria-hidden="true" />
                 <Label>{group.groupName || t('navigator.unnamedGroup')}</Label>
                 <Dropdown.ItemIndicator type="dot" />
               </Dropdown.Item>

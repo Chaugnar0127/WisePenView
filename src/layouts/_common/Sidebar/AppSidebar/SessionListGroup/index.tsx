@@ -112,6 +112,10 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
     void refresh();
   }, [refresh, refreshVersion]);
 
+  if (!sessionListLoading && sessionItems.length === 0) {
+    return <div className={styles.sessionEmptyState}>{t('session.empty')}</div>;
+  }
+
   return (
     <ListBox
       aria-label={t('session.listAria')}
@@ -132,33 +136,17 @@ function SessionListGroup({ selectedKeys, refreshVersion = 0 }: SessionListGroup
           </ListBoxItem>
         ) : (
           <>
-            {sessionItems.length === 0 ? (
+            {sessionItems.map((session) => (
               <ListBoxItem
-                key="empty-normal-session"
-                id="empty-normal-session"
-                textValue={t('session.empty')}
-                isDisabled
-                className={styles.sessionItem}
+                key={session.id}
+                id={`session-${session.id}`}
+                textValue={session.title || t('session.untitled')}
+                className={cn(styles.sessionItem, styles.sessionItemWithActions)}
+                onPress={() => selectSession(session)}
               >
-                {t('session.empty')}
+                <SessionMenuItem session={session} onUpdated={refresh} onDeleted={handleDeleted} />
               </ListBoxItem>
-            ) : (
-              sessionItems.map((session) => (
-                <ListBoxItem
-                  key={session.id}
-                  id={`session-${session.id}`}
-                  textValue={session.title || t('session.untitled')}
-                  className={cn(styles.sessionItem, styles.sessionItemWithActions)}
-                  onPress={() => selectSession(session)}
-                >
-                  <SessionMenuItem
-                    session={session}
-                    onUpdated={refresh}
-                    onDeleted={handleDeleted}
-                  />
-                </ListBoxItem>
-              ))
-            )}
+            ))}
             {(hasMoreSessions || loadingMoreSessions) && (
               <ListBoxItem
                 key="session-load-more"

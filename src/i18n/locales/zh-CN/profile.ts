@@ -1,7 +1,7 @@
 const zhCNProfile = {
   account: {
     title: '账号管理',
-    subtitle: '管理您的账号信息',
+    subtitle: '管理账号信息',
     sectionTitle: '账号',
     username: '用户名',
     campusNo: '学工号',
@@ -9,12 +9,12 @@ const zhCNProfile = {
     mobile: '手机号',
   },
   usage: {
-    title: '余额与使用量',
-    subtitle: '查看个人计算点余额、点卡充值记录，以及在各小组中的配额使用情况',
+    title: '余额与用量',
+    subtitle: '查看计算点余额、充值记录与配额用量',
   },
   appearance: {
     title: '外观与语言',
-    subtitle: '设置界面语言、明暗模式与主题',
+    subtitle: '设置界面语言、显示模式与主题',
     language: '界面语言',
     languageAria: '选择界面语言',
     mode: '明暗模式',

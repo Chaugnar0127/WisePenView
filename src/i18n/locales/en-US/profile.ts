@@ -1,7 +1,7 @@
 const enUSProfile = {
   account: {
     title: 'Account',
-    subtitle: 'Manage your account information',
+    subtitle: 'Manage account information',
     sectionTitle: 'Account details',
     username: 'Username',
     campusNo: 'Campus ID',
@@ -9,12 +9,12 @@ const enUSProfile = {
     mobile: 'Mobile',
   },
   usage: {
-    title: 'Balance and usage',
-    subtitle: 'View compute credit balances, top-up history, and quota usage across your groups',
+    title: 'Credits & Usage',
+    subtitle: 'View credit balance, top-up history, and quota usage',
   },
   appearance: {
-    title: 'Appearance and language',
-    subtitle: 'Set the interface language, color mode, and theme',
+    title: 'Appearance & Language',
+    subtitle: 'Set interface language, display mode, and theme',
     language: 'Interface language',
     languageAria: 'Select interface language',
     mode: 'Color mode',

@@ -61,7 +61,7 @@ const enUSShell = {
     openAria: 'Open user menu',
     openSettingsAria: 'Open user settings menu',
     backToApp: 'Back to app',
-    usage: 'Balance and usage',
+    usage: 'Credits & Usage',
     account: 'Account',
     appearance: 'Appearance and language',
     feedback: 'Feedback',

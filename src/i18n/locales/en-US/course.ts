@@ -6,8 +6,8 @@ const enUSCourse = {
     backToCourseGroups: 'Back to group list',
   },
   list: {
-    title: 'My courses',
-    subtitle: 'Learn through your courses',
+    title: 'My Courses',
+    subtitle: 'Manage courses and learning',
     join: 'Join course',
     create: 'Create course',
     empty: 'No courses yet',

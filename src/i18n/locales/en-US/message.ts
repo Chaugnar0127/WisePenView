@@ -1,7 +1,7 @@
 const enUSMessage = {
   page: {
     title: 'Notifications',
-    subtitle: 'Read system and course-related in-app notifications.',
+    subtitle: 'View in-app notifications',
     back: 'Back to notifications',
     backToList: 'Back to notifications',
     refresh: 'Refresh',

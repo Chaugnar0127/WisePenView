@@ -103,7 +103,7 @@ const zhCNChat = {
     untitled: '未命名对话',
     noTime: '暂无时间',
     loading: '加载中...',
-    empty: '暂无会话',
+    empty: '暂无对话',
     loadMore: '加载更多',
     noMore: '没有更多了',
     renameSuccess: '重命名成功',

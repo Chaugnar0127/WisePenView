@@ -56,7 +56,8 @@
 
 .modelRow {
   display: flex;
-  min-height: 76px;
+  min-height: 0;
+  padding: var(--space-sm) 0;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
@@ -66,27 +67,50 @@
   min-width: 0;
 }
 
-.rowCopy strong,
-.rowCopy span,
-.rowCopy small {
+.rowCopy > strong,
+.rowCopy > span,
+.rowCopy > small {
   display: block;
 }
 
 .mappingList {
   display: flex;
+  max-width: min(100%, 56rem);
+  max-height: 116px;
+  align-items: flex-start;
+  overflow-y: auto;
   flex-wrap: wrap;
   gap: var(--space-xs);
   margin-top: var(--space-2xs);
+  padding: 2px 2px 2px 0;
 }
 
-.mapping {
-  display: inline-flex !important;
+.mappingItem {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 0;
+}
+
+.mappingChip {
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2xs);
-  padding: 2px var(--space-xs);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-secondary);
+  min-width: 0;
+  max-width: min(100%, 28rem);
+}
+
+.mappingChipIcon {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.mappingChipLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .unlinkButton {
@@ -96,13 +120,19 @@
   min-height: 22px;
 }
 
-.rowCopy strong {
+.unbound {
+  display: block;
+  color: var(--muted);
+  font-size: var(--font-size-xs);
+}
+
+.rowCopy > strong {
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
 }
 
-.rowCopy span,
-.rowCopy small,
+.rowCopy > span,
+.rowCopy > small,
 .empty,
 .note {
   color: var(--muted);
@@ -110,7 +140,7 @@
   line-height: 1.5;
 }
 
-.rowCopy small {
+.rowCopy > small {
   overflow: hidden;
   max-width: 40rem;
   text-overflow: ellipsis;

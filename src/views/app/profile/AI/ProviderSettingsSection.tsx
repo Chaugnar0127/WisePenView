@@ -1,11 +1,11 @@
-import { AppButton } from '@/components/Button';
+import { AppButton, AppIconButton } from '@/components/Button';
 import { FormField, Input, PasswordInput, Select } from '@/components/Input';
 import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
 import { useChatService } from '@/domains';
-import type { ChatProvider, ChatProviderType } from '@/domains/Chat';
+import type { ChatProvider, ChatProviderType, ChatUserModel } from '@/domains/Chat';
 import { useApi } from '@/hooks/useApi';
-import { ListBox, Switch } from '@heroui/react';
-import { Plus, Settings2, Trash2 } from 'lucide-react';
+import { Chip, ListBox, Switch } from '@heroui/react';
+import { Link, Link2, Plus, Settings2, Trash2, Unlink } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -22,9 +22,19 @@ function ProviderSettingsSection() {
   const { t } = useTranslation('profile');
   const chatService = useChatService();
   const [providers, setProviders] = useState<ChatProvider[]>([]);
+  const [models, setModels] = useState<ChatUserModel[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bindingDialogOpen, setBindingDialogOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState<ChatProvider | null>(null);
   const [deleteProvider, setDeleteProvider] = useState<ChatProvider | null>(null);
+  const [unbindTarget, setUnbindTarget] = useState<{
+    model: ChatUserModel;
+    provider: ChatProvider;
+  } | null>(null);
+  const [bindingForm, setBindingForm] = useState({
+    modelId: '',
+    providerModelName: '',
+  });
   const [form, setForm] = useState({
     name: '',
     type: 'OPENAI' as ChatProviderType,
@@ -32,9 +42,21 @@ function ProviderSettingsSection() {
     baseUrl: '',
   });
 
-  const { loading, runAsync: reload } = useApi(() => chatService.getUserProviders(), {
-    onSuccess: setProviders,
-  });
+  const { loading, runAsync: reload } = useApi(
+    async () => {
+      const [nextProviders, nextModels] = await Promise.all([
+        chatService.getUserProviders(),
+        chatService.getUserModels(),
+      ]);
+      return { providers: nextProviders, models: nextModels };
+    },
+    {
+      onSuccess: (data) => {
+        setProviders(data.providers);
+        setModels(data.models);
+      },
+    }
+  );
   const { loading: saving, runAsync: save } = useApi(
     (params: Parameters<typeof chatService.createUserProvider>[0]) =>
       editingProvider
@@ -80,6 +102,28 @@ function ProviderSettingsSection() {
       },
     }
   );
+  const { loading: savingBinding, runAsync: saveBinding } = useApi(
+    (params: { providerId: string; modelId: string; providerModelName: string }) =>
+      chatService.bindModelProvider(params),
+    {
+      manual: true,
+      onSuccess: () => {
+        setBindingDialogOpen(false);
+        void reload();
+      },
+    }
+  );
+  const { loading: unbinding, runAsync: unbind } = useApi(
+    (target: { model: ChatUserModel; provider: ChatProvider }) =>
+      chatService.unbindModelProvider(target.model.id, target.provider.id),
+    {
+      manual: true,
+      onSuccess: () => {
+        setUnbindTarget(null);
+        void reload();
+      },
+    }
+  );
 
   const openCreate = () => {
     setEditingProvider(null);
@@ -96,6 +140,18 @@ function ProviderSettingsSection() {
       baseUrl: provider.baseUrl ?? '',
     });
     setDialogOpen(true);
+  };
+
+  const openBinding = async (provider: ChatProvider) => {
+    const data = await reload();
+    if (!data || data.models.length === 0) return;
+
+    setBindingForm({
+      modelId: data.models[0].id,
+      providerModelName: '',
+    });
+    setEditingProvider(provider);
+    setBindingDialogOpen(true);
   };
 
   return (
@@ -125,6 +181,46 @@ function ProviderSettingsSection() {
                   {provider.apiKeyFingerprint || t('ai.emptyValue')}
                 </span>
                 {provider.baseUrl ? <small>{provider.baseUrl}</small> : null}
+                <div className={styles.mappingList}>
+                  {models.flatMap((model) =>
+                    model.mappings
+                      .filter((mapping) => mapping.providerId === provider.id)
+                      .map((mapping) => (
+                        <div
+                          key={`${model.id}:${mapping.providerId}`}
+                          className={styles.mappingItem}
+                        >
+                          <Chip
+                            size="sm"
+                            variant="soft"
+                            className={styles.mappingChip}
+                            title={`${model.displayName} · ${mapping.providerModelName}`}
+                          >
+                            <Link2
+                              size={13}
+                              aria-hidden="true"
+                              className={styles.mappingChipIcon}
+                            />
+                            <Chip.Label className={styles.mappingChipLabel}>
+                              {model.displayName} · {mapping.providerModelName}
+                            </Chip.Label>
+                          </Chip>
+                          <AppIconButton
+                            icon={<Unlink size={13} aria-hidden="true" />}
+                            size="sm"
+                            className={styles.unlinkButton}
+                            label={t('ai.models.unbindAria', { name: model.displayName })}
+                            onClick={() => setUnbindTarget({ model, provider })}
+                          />
+                        </div>
+                      ))
+                  )}
+                  {models.every(
+                    (model) => !model.mappings.some((mapping) => mapping.providerId === provider.id)
+                  ) ? (
+                    <span className={styles.unbound}>{t('ai.models.unbound')}</span>
+                  ) : null}
+                </div>
               </div>
               <div className={styles.rowActions}>
                 <Switch
@@ -143,6 +239,15 @@ function ProviderSettingsSection() {
                 <AppButton size="sm" variant="ghost" onPress={() => openEdit(provider)}>
                   <Settings2 size={15} aria-hidden="true" />
                   {t('ai.actions.edit')}
+                </AppButton>
+                <AppButton
+                  size="sm"
+                  variant="ghost"
+                  isDisabled={loading}
+                  onPress={() => void openBinding(provider)}
+                >
+                  <Link size={15} aria-hidden="true" />
+                  {t('ai.models.bind')}
                 </AppButton>
                 <AppButton size="sm" variant="ghost" onPress={() => setDeleteProvider(provider)}>
                   <Trash2 size={15} aria-hidden="true" />
@@ -229,6 +334,63 @@ function ProviderSettingsSection() {
         </div>
       </AppFormDialog>
 
+      <AppFormDialog
+        isOpen={bindingDialogOpen}
+        onOpenChange={setBindingDialogOpen}
+        title={t('ai.models.bindTitle')}
+        description={t('ai.models.bindDescription')}
+        confirmText={t('ai.models.bind')}
+        isSubmitting={savingBinding}
+        isSubmitDisabled={!bindingForm.modelId || !bindingForm.providerModelName.trim()}
+        onSubmit={() => {
+          if (editingProvider) {
+            void saveBinding({
+              providerId: editingProvider.id,
+              modelId: bindingForm.modelId,
+              providerModelName: bindingForm.providerModelName.trim(),
+            });
+          }
+        }}
+      >
+        <div className={styles.formFields}>
+          <Select
+            label={t('ai.models.name')}
+            value={bindingForm.modelId}
+            onChange={(value) => {
+              if (typeof value === 'string') {
+                setBindingForm((current) => ({ ...current, modelId: value }));
+              }
+            }}
+            isRequired
+          >
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {models.map((model) => (
+                  <ListBox.Item key={model.id} id={model.id} textValue={model.displayName}>
+                    {model.displayName}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+          <FormField
+            label={t('ai.models.providerModelName')}
+            value={bindingForm.providerModelName}
+            onChange={(providerModelName) =>
+              setBindingForm((current) => ({ ...current, providerModelName }))
+            }
+            isRequired
+          >
+            <Input placeholder={t('ai.models.providerModelNamePlaceholder')} autoFocus />
+          </FormField>
+        </div>
+      </AppFormDialog>
+
       <AppAlertDialog
         isOpen={deleteProvider != null}
         onOpenChange={(open) => !open && setDeleteProvider(null)}
@@ -239,6 +401,18 @@ function ProviderSettingsSection() {
         isConfirmLoading={deleting}
         onConfirm={() => {
           if (deleteProvider) void remove(deleteProvider.id);
+        }}
+      />
+      <AppAlertDialog
+        isOpen={unbindTarget != null}
+        onOpenChange={(open) => !open && setUnbindTarget(null)}
+        type="danger"
+        title={t('ai.models.unbindTitle')}
+        description={t('ai.models.unbindDescription', { name: unbindTarget?.model.displayName })}
+        confirmText={t('ai.models.unbind')}
+        isConfirmLoading={unbinding}
+        onConfirm={() => {
+          if (unbindTarget) void unbind(unbindTarget);
         }}
       />
     </>

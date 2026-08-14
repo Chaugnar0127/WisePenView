@@ -1,11 +1,11 @@
-import { AppButton, AppIconButton } from '@/components/Button';
+import { AppButton } from '@/components/Button';
 import { FormField, Input, Select } from '@/components/Input';
 import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
 import { useChatService } from '@/domains';
-import type { ChatModelFamily, ChatProvider, ChatUserModel } from '@/domains/Chat';
+import type { ChatModelFamily, ChatUserModel } from '@/domains/Chat';
 import { useApi } from '@/hooks/useApi';
 import { ListBox, Switch } from '@heroui/react';
-import { Link, Pencil, Plus, Trash2, Unlink } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './style.module.less';
@@ -19,12 +19,6 @@ interface ModelFormState {
   supportVision: boolean;
   contextWindowTokens: string;
   maxOutputTokens: string;
-}
-
-interface BindingTarget {
-  model: ChatUserModel;
-  providerId: string;
-  providerName: string;
 }
 
 function createDefaultModelForm(): ModelFormState {
@@ -54,33 +48,14 @@ function ModelSettingsSection() {
   const { t } = useTranslation('profile');
   const chatService = useChatService();
   const [models, setModels] = useState<ChatUserModel[]>([]);
-  const [providers, setProviders] = useState<ChatProvider[]>([]);
   const [modelDialogOpen, setModelDialogOpen] = useState(false);
-  const [bindingDialogOpen, setBindingDialogOpen] = useState(false);
   const [editingModel, setEditingModel] = useState<ChatUserModel | null>(null);
   const [deleteModel, setDeleteModel] = useState<ChatUserModel | null>(null);
-  const [unbindTarget, setUnbindTarget] = useState<BindingTarget | null>(null);
   const [modelForm, setModelForm] = useState<ModelFormState>(createDefaultModelForm);
-  const [bindingForm, setBindingForm] = useState({
-    providerId: '',
-    providerModelName: '',
-  });
 
-  const { loading, runAsync: reload } = useApi(
-    async () => {
-      const [nextModels, nextProviders] = await Promise.all([
-        chatService.getUserModels(),
-        chatService.getUserProviders(),
-      ]);
-      return { models: nextModels, providers: nextProviders };
-    },
-    {
-      onSuccess: (data) => {
-        setModels(data.models);
-        setProviders(data.providers);
-      },
-    }
-  );
+  const { loading, runAsync: reload } = useApi(() => chatService.getUserModels(), {
+    onSuccess: setModels,
+  });
   const { loading: savingModel, runAsync: saveModel } = useApi(
     (form: ModelFormState) =>
       editingModel
@@ -109,21 +84,6 @@ function ModelSettingsSection() {
       },
     }
   );
-  const { loading: savingBinding, runAsync: saveBinding } = useApi(
-    (form: { model: ChatUserModel; providerId: string; providerModelName: string }) =>
-      chatService.bindModelProvider({
-        modelId: form.model.id,
-        providerId: form.providerId,
-        providerModelName: form.providerModelName,
-      }),
-    {
-      manual: true,
-      onSuccess: () => {
-        setBindingDialogOpen(false);
-        void reload();
-      },
-    }
-  );
   const { loading: deletingModel, runAsync: removeModel } = useApi(
     (modelId: string) => chatService.deleteUserModel(modelId),
     {
@@ -134,17 +94,6 @@ function ModelSettingsSection() {
       },
     }
   );
-  const { loading: unbinding, runAsync: unbind } = useApi(
-    (target: BindingTarget) => chatService.unbindModelProvider(target.model.id, target.providerId),
-    {
-      manual: true,
-      onSuccess: () => {
-        setUnbindTarget(null);
-        void reload();
-      },
-    }
-  );
-
   const openCreate = () => {
     setEditingModel(null);
     setModelForm(createDefaultModelForm());
@@ -162,15 +111,6 @@ function ModelSettingsSection() {
       maxOutputTokens: model.maxOutputTokens?.toString() ?? '',
     });
     setModelDialogOpen(true);
-  };
-
-  const openBinding = (model: ChatUserModel) => {
-    setBindingForm({
-      providerId: providers[0]?.id ?? '',
-      providerModelName: '',
-    });
-    setEditingModel(model);
-    setBindingDialogOpen(true);
   };
 
   return (
@@ -196,38 +136,8 @@ function ModelSettingsSection() {
               <div className={styles.rowCopy}>
                 <strong>{model.displayName}</strong>
                 <span>{t(`ai.modelFamily.${model.modelFamily}`)}</span>
-                <div className={styles.mappingList}>
-                  {model.mappings.length > 0 ? (
-                    model.mappings.map((mapping) => (
-                      <span className={styles.mapping} key={mapping.providerId}>
-                        {mapping.providerName ?? mapping.providerId}: {mapping.providerModelName}
-                        <AppIconButton
-                          icon={<Unlink size={13} aria-hidden="true" />}
-                          size="sm"
-                          className={styles.unlinkButton}
-                          label={t('ai.models.unbindAria', {
-                            name: mapping.providerName ?? mapping.providerId,
-                          })}
-                          onClick={() =>
-                            setUnbindTarget({
-                              model,
-                              providerId: mapping.providerId,
-                              providerName: mapping.providerName ?? mapping.providerId,
-                            })
-                          }
-                        />
-                      </span>
-                    ))
-                  ) : (
-                    <span>{t('ai.models.unbound')}</span>
-                  )}
-                </div>
               </div>
               <div className={styles.rowActions}>
-                <AppButton size="sm" variant="ghost" onPress={() => openBinding(model)}>
-                  <Link size={15} aria-hidden="true" />
-                  {t('ai.models.bind')}
-                </AppButton>
                 <AppButton size="sm" variant="ghost" onPress={() => openEdit(model)}>
                   <Pencil size={15} aria-hidden="true" />
                   {t('ai.actions.edit')}
@@ -363,62 +273,6 @@ function ModelSettingsSection() {
         </div>
       </AppFormDialog>
 
-      <AppFormDialog
-        isOpen={bindingDialogOpen}
-        onOpenChange={setBindingDialogOpen}
-        title={t('ai.models.bindTitle')}
-        description={t('ai.models.bindDescription')}
-        confirmText={t('ai.models.bind')}
-        isSubmitting={savingBinding}
-        isSubmitDisabled={!bindingForm.providerId || !bindingForm.providerModelName.trim()}
-        onSubmit={() => {
-          if (editingModel) {
-            void saveBinding({
-              model: editingModel,
-              providerId: bindingForm.providerId,
-              providerModelName: bindingForm.providerModelName.trim(),
-            });
-          }
-        }}
-      >
-        <div className={styles.formFields}>
-          <Select
-            label={t('ai.models.provider')}
-            value={bindingForm.providerId}
-            onChange={(value) => {
-              if (typeof value === 'string')
-                setBindingForm((current) => ({ ...current, providerId: value }));
-            }}
-            isRequired
-          >
-            <Select.Trigger>
-              <Select.Value />
-              <Select.Indicator />
-            </Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                {providers.map((provider) => (
-                  <ListBox.Item key={provider.id} id={provider.id} textValue={provider.name}>
-                    {provider.name} ({provider.type})
-                    <ListBox.ItemIndicator />
-                  </ListBox.Item>
-                ))}
-              </ListBox>
-            </Select.Popover>
-          </Select>
-          <FormField
-            label={t('ai.models.providerModelName')}
-            value={bindingForm.providerModelName}
-            onChange={(providerModelName) =>
-              setBindingForm((current) => ({ ...current, providerModelName }))
-            }
-            isRequired
-          >
-            <Input placeholder={t('ai.models.providerModelNamePlaceholder')} autoFocus />
-          </FormField>
-        </div>
-      </AppFormDialog>
-
       <AppAlertDialog
         isOpen={deleteModel != null}
         onOpenChange={(open) => !open && setDeleteModel(null)}
@@ -429,18 +283,6 @@ function ModelSettingsSection() {
         isConfirmLoading={deletingModel}
         onConfirm={() => {
           if (deleteModel) void removeModel(deleteModel.id);
-        }}
-      />
-      <AppAlertDialog
-        isOpen={unbindTarget != null}
-        onOpenChange={(open) => !open && setUnbindTarget(null)}
-        type="danger"
-        title={t('ai.models.unbindTitle')}
-        description={t('ai.models.unbindDescription', { name: unbindTarget?.providerName })}
-        confirmText={t('ai.models.unbind')}
-        isConfirmLoading={unbinding}
-        onConfirm={() => {
-          if (unbindTarget) void unbind(unbindTarget);
         }}
       />
     </>

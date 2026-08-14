@@ -20,7 +20,7 @@ const enUSProfile = {
     byok: {
       title: 'Custom model providers',
       description:
-        'Connect model providers with your own API key. WisePen uses it only for model requests.',
+        'Connect model providers with your own API key and bind multiple models to each provider.',
       add: 'Add provider',
       empty: 'No custom model providers yet.',
       addTitle: 'Add model provider',
@@ -43,13 +43,13 @@ const enUSProfile = {
     models: {
       title: 'Custom models',
       description:
-        'Model definitions and provider credentials are stored separately. A model becomes usable only after binding.',
+        'Manage available model definitions. Provider bindings are maintained in the provider list above.',
       add: 'Add model',
       empty: 'No custom models yet.',
       addTitle: 'Add model',
       editTitle: 'Edit model',
       formDescription:
-        'Create the model definition first, then use Bind to choose a Provider and its actual model name.',
+        'Create the model definition first, then bind the provider-side model name from the provider list.',
       name: 'Model name',
       namePlaceholder: 'For example: GPT-4o Mini',
       family: 'Model family',
@@ -69,7 +69,7 @@ const enUSProfile = {
       bind: 'Bind',
       bindTitle: 'Bind model Provider',
       bindDescription:
-        'A model can bind multiple Providers. Enter the actual model name used by the provider.',
+        'The current provider can bind multiple models. Enter the actual model name used by this provider.',
       unbound: 'No Provider bound',
       unbind: 'Unbind',
       unbindAria: 'Unbind {{name}}',

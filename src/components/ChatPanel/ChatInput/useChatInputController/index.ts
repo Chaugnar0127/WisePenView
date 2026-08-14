@@ -1,3 +1,6 @@
+import { useChatService } from '@/domains';
+import { mapChatInputToolSelectionOverrides } from '@/domains/Chat';
+import { useApi } from '@/hooks/useApi';
 import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import {
@@ -21,7 +24,7 @@ import { useVoiceInput } from '../VoiceInput/useVoiceInput';
 
 interface UseChatInputControllerOptions {
   onSend: ChatInputProps['onSend'];
-  onStop?: ChatInputProps['onStop'];
+  onCancel?: ChatInputProps['onCancel'];
   onRequireLogin?: ChatInputProps['onRequireLogin'];
   isAuthenticated: boolean;
   sending: boolean;
@@ -29,12 +32,13 @@ interface UseChatInputControllerOptions {
 
 export function useChatInputController({
   onSend,
-  onStop,
+  onCancel,
   onRequireLogin,
   isAuthenticated,
   sending,
 }: UseChatInputControllerOptions) {
   const { t } = useTranslation('chat');
+  const chatService = useChatService();
   const store = useChatInputStoreApi();
   const dragCounterRef = useRef(0);
   const { routeFiles } = useChatInputFiles();
@@ -52,9 +56,29 @@ export function useChatInputController({
     );
   const completionState = useChatInputStore(useShallow(selectChatInputCompletionState));
   const { clearAfterSend, setIsComposing, setIsDragOver, setValue } = store.getState();
+  const selectedAgentId = completionState.selectedAgent.agentId;
+  const capabilityRequest = useApi(
+    async () => ({
+      agentId: selectedAgentId,
+      options: await chatService.getChatInputCapabilityOptions({
+        agent: completionState.selectedAgent,
+      }),
+    }),
+    {
+      ready: isAuthenticated,
+      refreshDeps: [selectedAgentId],
+    }
+  );
+  const capabilityOptions =
+    capabilityRequest.data?.agentId === selectedAgentId
+      ? capabilityRequest.data.options
+      : undefined;
 
   const sendDisabled = isAuthenticated
-    ? !value.trim() || !selectedModel || voiceInputProps.isActive
+    ? !value.trim() ||
+      !selectedModel ||
+      voiceInputProps.isActive ||
+      (!capabilityOptions && capabilityRequest.loading)
     : !value.trim() || voiceInputProps.isActive;
 
   async function handleSend(): Promise<void> {
@@ -65,6 +89,7 @@ export function useChatInputController({
       return;
     }
     if (!selectedModel) return;
+    if (!capabilityOptions && capabilityRequest.loading) return;
     if (pendingAttachmentUploads.some((upload) => upload.status === 'uploading')) {
       toast.warning(t('input.attachmentUploading'));
       return;
@@ -74,6 +99,17 @@ export function useChatInputController({
       return;
     }
 
+    let resolvedCapabilityOptions = capabilityOptions;
+    if (!resolvedCapabilityOptions) {
+      try {
+        const result = await capabilityRequest.runAsync();
+        if (result.agentId !== selectedAgentId) return;
+        resolvedCapabilityOptions = result.options;
+      } catch {
+        return;
+      }
+    }
+
     try {
       const sendAccepted = await onSend(text, {
         model: selectedModel,
@@ -81,7 +117,10 @@ export function useChatInputController({
         activeDocRefs: completionState.activeDocRefs,
         activeAttachments: completionState.activeAttachments,
         selectedSkills: completionState.selectedSkills,
-        selectedTools: completionState.selectedTools,
+        toolSelectionOverrides: mapChatInputToolSelectionOverrides(
+          resolvedCapabilityOptions.tools,
+          completionState.selectedTools
+        ),
       });
       if (sendAccepted === false) return;
       clearAfterSend();
@@ -169,13 +208,15 @@ export function useChatInputController({
       onPaste: handlePaste,
     },
     toolbarProps: {
+      capabilityOptions,
+      capabilityOptionsLoading: capabilityRequest.loading,
       sendDisabled,
       sending,
       voiceInputProps,
       isAuthenticated,
       onRequireLogin,
       onSend: () => void handleSend(),
-      onStop,
+      onCancel,
     },
   };
 }

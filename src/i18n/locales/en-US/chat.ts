@@ -30,6 +30,7 @@ const enUSChat = {
     removeContext: 'Remove context',
     send: 'Send message',
     stop: 'Stop generating',
+    cancelFailed: 'Failed to stop generating: {{error}}',
     dropOverlay: 'Drop to add attachments',
     sendFailed: 'Failed to send: {{error}}',
     attachmentUploading: 'Attachments are still uploading. Try again in a moment.',

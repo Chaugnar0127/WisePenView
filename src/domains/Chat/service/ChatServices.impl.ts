@@ -4,10 +4,11 @@ import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { computeFileMd5 } from '@/utils/oss/computeFileMd5';
 import { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';
 import { parseExtension } from '@/utils/parser/extensionParser';
-import { ChatApi, ChatSessionApi } from '../apis/ChatApi';
+import { ChatApi, ChatCompletionApi, ChatSessionApi } from '../apis/ChatApi';
 import type { ChatAgentOption } from '../entity/agent';
 import type { WisePenUIMessage } from '../entity/message';
 import { buildAgentFromResourceItem } from '../mapper/agent.mapper';
+import { selectChatInputWebSearchTools } from '../mapper/capabilityPicker.mapper';
 import { ChatServicesMap } from '../mapper/ChatServices.map';
 import { getPrimarySkillsForAgent } from '../mapper/skillScope.mapper';
 import { mapResourceItemToResourceSkillSummary } from '../mapper/workspace.mapper';
@@ -38,6 +39,15 @@ const CHAT_RESOURCE_PAGE_SIZE = 100;
 const getModels = async (): Promise<ChatModel[]> => {
   const data = await ChatApi.listModels();
   return ChatServicesMap.mapGetModelsFromApi(data);
+};
+
+const getActiveTurnId = async (sessionId: string): Promise<string | null> => {
+  const data = await ChatCompletionApi.getActiveTurn({ session_id: sessionId });
+  return ChatServicesMap.mapActiveTurnIdFromApi(data);
+};
+
+const cancelTurn = async (sessionId: string): Promise<void> => {
+  await ChatCompletionApi.cancelTurn({ session_id: sessionId });
 };
 
 const buildPageResult = <T>(
@@ -169,7 +179,7 @@ const getChatInputCapabilityOptions = async (
 
   return {
     primarySkills,
-    tools,
+    tools: selectChatInputWebSearchTools(tools),
   };
 };
 
@@ -263,6 +273,8 @@ const uploadAttachment = async ({
 
 export const createChatServices = (deps: ChatServiceDeps): IChatService => ({
   getModels,
+  getActiveTurnId,
+  cancelTurn,
   listChatInputGroups: (params) => listChatInputGroups(deps, params),
   listChatInputAgents: (params) => listChatInputAgents(deps, params),
   listChatInputSkills: (params) => listChatInputSkills(deps, params),

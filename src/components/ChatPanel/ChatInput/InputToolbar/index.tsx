@@ -11,6 +11,8 @@ import VoiceInput from '../VoiceInput';
 import type { InputToolbarProps } from './index.type';
 
 function InputToolbar({
+  capabilityOptions,
+  capabilityOptionsLoading,
   sendDisabled,
   sending,
   voiceInputProps,
@@ -20,7 +22,7 @@ function InputToolbar({
   isAuthenticated,
   onRequireLogin,
   onSend,
-  onStop,
+  onCancel,
 }: InputToolbarProps) {
   const { t } = useTranslation('chat');
   function handlePrimaryAction(): void {
@@ -29,7 +31,7 @@ function InputToolbar({
       return;
     }
     if (sending) {
-      onStop?.();
+      void onCancel?.();
       return;
     }
     onSend();
@@ -42,7 +44,7 @@ function InputToolbar({
           <>
             <UploadMenu />
             <AgentPicker injectedAgents={injectedAgents} preferredAgent={preferredAgent} />
-            <SkillMenu />
+            <SkillMenu options={capabilityOptions} loading={capabilityOptionsLoading} />
           </>
         ) : (
           <>
@@ -99,7 +101,7 @@ function InputToolbar({
           label={sending ? t('input.stop') : t('input.send')}
           variant={sending ? 'ghost' : 'primary'}
           onPress={handlePrimaryAction}
-          isDisabled={sending ? !onStop : sendDisabled}
+          isDisabled={sending ? !onCancel : sendDisabled}
           className={sending ? styles.stopButtonActive : undefined}
         />
       </div>

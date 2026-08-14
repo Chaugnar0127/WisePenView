@@ -1,15 +1,10 @@
-import type {
-  CapabilitySkillSelection,
-  CapabilityToolOption,
-  ChatAgentOption,
-  ChatModel,
-} from '@/domains/Chat';
+import type { CapabilitySkillSelection, ChatAgentOption, ChatModel } from '@/domains/Chat';
 
 export interface ChatInputProps {
   onSend: (text: string, opts?: SendOptions) => boolean | void | Promise<boolean | void>;
   getUploadSessionId: () => Promise<string>;
   sending: boolean;
-  onStop?: () => void;
+  onCancel?: () => void | Promise<void>;
   contextPreview?: string;
   onClearContext?: () => void;
   injectedAgents?: ChatAgentOption[];
@@ -49,5 +44,5 @@ export interface SendOptions {
   activeDocRefs?: LocalResourcePayload[];
   activeAttachments?: LocalAttachmentPayload[];
   selectedSkills?: CapabilitySkillSelection[];
-  selectedTools?: CapabilityToolOption[];
+  toolSelectionOverrides?: Record<string, boolean>;
 }

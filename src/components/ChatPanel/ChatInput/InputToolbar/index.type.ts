@@ -1,7 +1,9 @@
-import type { ChatAgentOption } from '@/domains/Chat';
+import type { ChatAgentOption, ChatInputCapabilityOptions } from '@/domains/Chat';
 import type { VoiceInputProps } from '../VoiceInput';
 
 export interface InputToolbarProps {
+  capabilityOptions?: ChatInputCapabilityOptions;
+  capabilityOptionsLoading: boolean;
   sendDisabled: boolean;
   sending: boolean;
   voiceInputProps: VoiceInputProps;
@@ -12,5 +14,5 @@ export interface InputToolbarProps {
   isAuthenticated: boolean;
   onRequireLogin?: () => void;
   onSend: () => void;
-  onStop?: () => void;
+  onCancel?: () => void | Promise<void>;
 }

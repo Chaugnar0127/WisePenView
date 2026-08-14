@@ -68,11 +68,17 @@ export function useChatPanelController({
   const [sessionBarOpen, setSessionBarOpen] = useState(false);
   const [pendingDebugSend, setPendingDebugSend] = useState<PendingDebugSend | null>(null);
   const [savingDebugDraft, setSavingDebugDraft] = useState(false);
+  const [cancellingSessionId, setCancellingSessionId] = useState<string | null>(null);
 
-  const { messages, status, setMessages, sendSessionMessage, stop } = useChatSession({
-    sessionId: currentSessionId ?? '',
-    model: currentModel?.modelId,
-  });
+  const { messages, status, setMessages, sendSessionMessage, stop, resumeSessionStream } =
+    useChatSession({
+      sessionId: currentSessionId ?? '',
+      model: currentModel?.modelId,
+      getActiveTurnId: chatService.getActiveTurnId,
+      onError: (error) => {
+        toast.danger(parseErrorMessage(error));
+      },
+    });
 
   const { runAsync: runLoadSessionHistory } = useApi(
     async (sessionId: string, page: number, size: number) =>
@@ -164,15 +170,20 @@ export function useChatPanelController({
     return createdSession.id;
   };
 
-  const loadHistoryMessages = async (sessionId: string) => {
+  const loadHistoryMessages = async (sessionId: string): Promise<boolean> => {
     try {
-      await replaceHistory(sessionId);
+      return await replaceHistory(sessionId);
     } catch (error) {
       toast.danger(parseErrorMessage(error));
       clearConversation();
+      return false;
     }
   };
-  const historyActionsLatest = useLatest({ clearConversation, loadHistoryMessages });
+  const historyActionsLatest = useLatest({
+    clearConversation,
+    loadHistoryMessages,
+    resumeSessionStream,
+  });
 
   const loadMoreHistoryMessages = async () => {
     if (!appAuth.isAuthenticated) {
@@ -222,15 +233,6 @@ export function useChatPanelController({
       return false;
     }
 
-    const selectedTools = opts?.selectedTools ?? [];
-    const resourceToolOverrides = resourceStateProvider?.toolSelectionOverrides;
-    const toolSelectionOverrides =
-      selectedTools.length > 0 || resourceToolOverrides !== undefined
-        ? {
-            ...Object.fromEntries(selectedTools.map((tool) => [tool.toolId, true])),
-            ...resourceToolOverrides,
-          }
-        : undefined;
     const selectedSkillIds = opts?.selectedSkills?.map((skill) => skill.skillId);
     const resourceSkillIds = resourceStateProvider?.onDemandSkillIds;
     const onDemandSkillIds =
@@ -248,9 +250,7 @@ export function useChatPanelController({
       ],
       selectedResources: opts?.activeDocRefs,
       uploadedAttachments: opts?.activeAttachments,
-      toolSelectionDefaultEnabled:
-        selectedTools.length > 0 ? false : resourceStateProvider?.toolSelectionDefaultEnabled,
-      toolSelectionOverrides,
+      toolSelectionOverrides: opts?.toolSelectionOverrides,
       onDemandSkillIds,
     }).catch((error) => {
       toast.danger(parseErrorMessage(error));
@@ -273,6 +273,21 @@ export function useChatPanelController({
       });
     }
     return sendImmediately(text, opts);
+  };
+
+  const handleCancel = async (): Promise<void> => {
+    const targetSessionId = currentSessionId;
+    if (!targetSessionId || cancellingSessionId === targetSessionId) return;
+
+    setCancellingSessionId(targetSessionId);
+    void stop();
+    try {
+      await chatService.cancelTurn(targetSessionId);
+    } catch (error) {
+      toast.danger(t('input.cancelFailed', { error: parseErrorMessage(error) }));
+    } finally {
+      setCancellingSessionId((sessionId) => (sessionId === targetSessionId ? null : sessionId));
+    }
   };
 
   const resolvePendingDebugSend = (sent: boolean) => {
@@ -359,9 +374,10 @@ export function useChatPanelController({
 
   /**
    * @wisepen-manual-effect
-   * 执行时机：当前会话 ID 首次可用或发生切换时加载对应历史消息。
-   * 不可替代原因：历史消息来自异步服务，并写入当前 Chat 运行时的消息状态。
-   * cleanup：请求竞态由 useChatHistory 管理，本层没有额外订阅需要清理。
+   * 执行时机：当前会话 ID 首次可用或发生切换时加载历史，并在历史成功后检查 active turn。
+   * 不可替代原因：历史加载和 SSE 重连都是异步外部副作用，必须按顺序写入当前 Chat 运行时。
+   * cleanup：标记本次会话加载失效并中止旧 Chat 的客户端连接，配合 useChatHistory 与
+   * useChatSession 丢弃旧请求结果；stop 不调用后端 cancel，后台 turn 仍可被后续页面恢复。
    */
   useEffect(() => {
     if (!appAuth.isAuthenticated) {
@@ -373,14 +389,28 @@ export function useChatPanelController({
       return;
     }
     if (useNewChatSessionStore.getState().newChatSessionId === currentSessionId) return;
-    void historyActionsLatest.current.loadHistoryMessages(currentSessionId);
-  }, [appAuth.isAuthenticated, currentSessionId, historyActionsLatest]);
+    const targetSessionId = currentSessionId;
+    const actions = historyActionsLatest.current;
+    let cancelled = false;
+    void (async () => {
+      const loaded = await actions.loadHistoryMessages(targetSessionId);
+      if (!loaded || cancelled) return;
+      if (useCurrentChatSessionStore.getState().currentSessionId !== targetSessionId) return;
+      await actions.resumeSessionStream();
+    })();
+    return () => {
+      cancelled = true;
+      void stop();
+    };
+  }, [appAuth.isAuthenticated, currentSessionId, historyActionsLatest, stop]);
 
   return {
     canLoadMoreHistory,
+    cancelling: cancellingSessionId === currentSessionId,
     currentModel,
     currentSessionId,
     handleCancelDebugSend,
+    handleCancel,
     handleCollapsePanel,
     handleCloseSessionBar,
     handleConfirmDebugSend,

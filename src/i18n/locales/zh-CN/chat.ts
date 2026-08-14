@@ -29,6 +29,7 @@ const zhCNChat = {
     removeContext: '移除上下文',
     send: '发送消息',
     stop: '停止生成',
+    cancelFailed: '停止生成失败：{{error}}',
     dropOverlay: '松开即可添加附件',
     sendFailed: '发送失败：{{error}}',
     attachmentUploading: '附件仍在上传中，请稍后再发送',

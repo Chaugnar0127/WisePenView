@@ -115,6 +115,8 @@ export interface ListChatInputSkillsRequest {
 /** ChatService 接口 */
 export interface IChatService {
   getModels(): Promise<ChatModel[]>;
+  getActiveTurnId(sessionId: string): Promise<string | null>;
+  cancelTurn(sessionId: string): Promise<void>;
   listChatInputGroups(params: ListChatInputGroupsRequest): Promise<PageResult<Group>>;
   listChatInputAgents(params: ListChatInputAgentsRequest): Promise<PageResult<ChatAgentOption>>;
   listChatInputSkills(

@@ -1,7 +1,5 @@
 import AppIconButton from '@/components/Button/AppIconButton';
-import { useChatService } from '@/domains';
-import { buildSkillMenuSections } from '@/domains/Chat';
-import { useApi } from '@/hooks/useApi';
+import { buildSkillMenuSections, type ChatInputCapabilityOptions } from '@/domains/Chat';
 import { Description, Dropdown, Header, Label, Separator, Skeleton } from '@heroui/react';
 
 import { Settings, Sparkles, Wrench } from 'lucide-react';
@@ -42,9 +40,13 @@ function SkillMenuSkeleton({ ariaLabel }: { ariaLabel: string }) {
   );
 }
 
-function SkillMenu() {
+interface SkillMenuProps {
+  options?: ChatInputCapabilityOptions;
+  loading: boolean;
+}
+
+function SkillMenu({ options, loading }: SkillMenuProps) {
   const { t } = useTranslation('chat');
-  const chatService = useChatService();
   const store = useChatInputStoreApi();
   const { selectedAgent, selectedSkills, selectedTools, skillMenuOpen } = useChatInputStore(
     useShallow((state) => ({
@@ -56,19 +58,12 @@ function SkillMenu() {
   );
   const { removeSkill, setOtherSkillModalOpen, setSkillMenuOpen, toggleSkill, toggleTool } =
     store.getState();
-  const { data: skillMenuOptions, loading } = useApi(
-    () => chatService.getChatInputCapabilityOptions({ agent: selectedAgent }),
-    {
-      ready: skillMenuOpen,
-      refreshDeps: [selectedAgent.agentId],
-    }
-  );
-  const showSkeleton = !skillMenuOptions && loading;
+  const showSkeleton = !options && loading;
   const sections = buildSkillMenuSections({
-    primarySkills: skillMenuOptions?.primarySkills ?? [],
+    primarySkills: options?.primarySkills ?? [],
     selectedSkills,
     selectedTools,
-    toolOptions: skillMenuOptions?.tools ?? [],
+    toolOptions: options?.tools ?? [],
     advancedMode: true,
     otherSkillGroups: [],
   });
@@ -87,13 +82,13 @@ function SkillMenu() {
   const skeleton = <SkillMenuSkeleton ariaLabel={t('input.skillMenu.loadingAria')} />;
 
   function handleToggleSkill(skillId: string): void {
-    const skill = skillMenuOptions?.primarySkills.find((item) => item.skillId === skillId);
+    const skill = options?.primarySkills.find((item) => item.skillId === skillId);
     if (!skill) return;
     toggleSkill(skill, selectedAgent);
   }
 
   function handleToggleTool(toolId: string): void {
-    const tool = skillMenuOptions?.tools.find((item) => item.toolId === toolId);
+    const tool = options?.tools.find((item) => item.toolId === toolId);
     if (!tool) return;
     toggleTool(tool);
   }

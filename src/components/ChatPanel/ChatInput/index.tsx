@@ -89,7 +89,7 @@ function ChatInputContent({
               type="button"
               className={styles.contextAttachmentClear}
               aria-label={t('input.removeContext')}
-              onClick={onClearContext}
+              onClick={() => onClearContext?.()}
             >
               <X size={14} aria-hidden="true" />
             </button>

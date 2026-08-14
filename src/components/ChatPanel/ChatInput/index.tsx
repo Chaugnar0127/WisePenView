@@ -17,7 +17,7 @@ import { useChatInputController } from './useChatInputController';
 
 function ChatInputContent({
   onSend,
-  onStop,
+  onCancel,
   sending,
   contextPreview,
   onClearContext,
@@ -32,7 +32,7 @@ function ChatInputContent({
   const [measuredCompactModelTrigger, setMeasuredCompactModelTrigger] = useState(false);
   const { containerProps, isDragOver, textAreaProps, toolbarProps } = useChatInputController({
     onSend,
-    onStop,
+    onCancel,
     onRequireLogin,
     isAuthenticated,
     sending,

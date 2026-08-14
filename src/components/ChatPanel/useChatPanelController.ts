@@ -68,6 +68,7 @@ export function useChatPanelController({
   const [sessionBarOpen, setSessionBarOpen] = useState(false);
   const [pendingDebugSend, setPendingDebugSend] = useState<PendingDebugSend | null>(null);
   const [savingDebugDraft, setSavingDebugDraft] = useState(false);
+  const [cancellingSessionId, setCancellingSessionId] = useState<string | null>(null);
 
   const { messages, status, setMessages, sendSessionMessage, stop, resumeSessionStream } =
     useChatSession({
@@ -285,6 +286,21 @@ export function useChatPanelController({
     return sendImmediately(text, opts);
   };
 
+  const handleCancel = async (): Promise<void> => {
+    const targetSessionId = currentSessionId;
+    if (!targetSessionId || cancellingSessionId === targetSessionId) return;
+
+    setCancellingSessionId(targetSessionId);
+    void stop();
+    try {
+      await chatService.cancelTurn(targetSessionId);
+    } catch (error) {
+      toast.danger(t('input.cancelFailed', { error: parseErrorMessage(error) }));
+    } finally {
+      setCancellingSessionId((sessionId) => (sessionId === targetSessionId ? null : sessionId));
+    }
+  };
+
   const resolvePendingDebugSend = (sent: boolean) => {
     pendingDebugSend?.resolve(sent);
     setPendingDebugSend(null);
@@ -401,9 +417,11 @@ export function useChatPanelController({
 
   return {
     canLoadMoreHistory,
+    cancelling: cancellingSessionId === currentSessionId,
     currentModel,
     currentSessionId,
     handleCancelDebugSend,
+    handleCancel,
     handleCollapsePanel,
     handleCloseSessionBar,
     handleConfirmDebugSend,

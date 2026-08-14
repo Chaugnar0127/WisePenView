@@ -139,6 +139,7 @@ const getModels: IChatService['getModels'] = async () => {
 };
 
 const getActiveTurnId: IChatService['getActiveTurnId'] = async () => null;
+const cancelTurn: IChatService['cancelTurn'] = async () => undefined;
 
 const nowIso = (): string => new Date().toISOString();
 const MOCK_HISTORY_SIZE = 260;
@@ -593,6 +594,7 @@ const uploadAttachment = async ({
 export const createChatServicesMock = (): IChatService => ({
   getModels,
   getActiveTurnId,
+  cancelTurn,
   listChatInputGroups,
   listChatInputAgents,
   listChatInputSkills,

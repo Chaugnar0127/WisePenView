@@ -2,6 +2,8 @@ import { apiGet, apiPost } from '@/apis/request';
 import type {
   ActiveChatTurnApiRequest,
   ActiveChatTurnApiResponse,
+  CancelChatTurnApiRequest,
+  CancelChatTurnApiResponse,
   CreateSessionApiRequest,
   CreateSessionApiResponse,
   DeleteSessionApiRequest,
@@ -48,7 +50,12 @@ function getActiveTurn(req: ActiveChatTurnApiRequest): Promise<ActiveChatTurnApi
   return apiGet('/chat/completions/active', { params: req });
 }
 
+function cancelTurn(req: CancelChatTurnApiRequest): Promise<CancelChatTurnApiResponse> {
+  return apiPost('/chat/completions/cancel', req);
+}
+
 export const ChatCompletionApi = {
+  cancelTurn,
   getActiveTurn,
 };
 

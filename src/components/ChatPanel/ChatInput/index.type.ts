@@ -9,7 +9,7 @@ export interface ChatInputProps {
   onSend: (text: string, opts?: SendOptions) => boolean | void | Promise<boolean | void>;
   getUploadSessionId: () => Promise<string>;
   sending: boolean;
-  onStop?: () => void;
+  onCancel?: () => void | Promise<void>;
   contextPreview?: string;
   onClearContext?: () => void;
   injectedAgents?: ChatAgentOption[];

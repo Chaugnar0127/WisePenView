@@ -15,8 +15,10 @@ interface ChatPanelBodyProps {
 function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps) {
   const {
     canLoadMoreHistory,
+    cancelling,
     currentModel,
     currentSessionId,
+    handleCancel,
     handleCloseSessionBar,
     handleSelectSession,
     handleSend,
@@ -28,10 +30,9 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
     clearResourceChatContext,
     sessionBarOpen,
     status,
-    stop,
     ensureChatSession,
   } = controller;
-  const sending = status === 'submitted' || status === 'streaming';
+  const sending = cancelling || status === 'submitted' || status === 'streaming';
   const isWelcome = messages.length === 0 && !loadingInitialHistory;
 
   return (
@@ -72,7 +73,7 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
                 onSend={handleSend}
                 getUploadSessionId={ensureChatSession}
                 sending={sending}
-                onStop={stop}
+                onCancel={cancelling ? undefined : handleCancel}
                 isAuthenticated={controller.isAuthenticated}
                 onRequireLogin={controller.requireLogin}
                 contextPreview={resourceChatContext?.preview}

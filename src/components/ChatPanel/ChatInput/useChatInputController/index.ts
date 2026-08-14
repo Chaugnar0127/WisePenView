@@ -21,7 +21,7 @@ import { useVoiceInput } from '../VoiceInput/useVoiceInput';
 
 interface UseChatInputControllerOptions {
   onSend: ChatInputProps['onSend'];
-  onStop?: ChatInputProps['onStop'];
+  onCancel?: ChatInputProps['onCancel'];
   onRequireLogin?: ChatInputProps['onRequireLogin'];
   isAuthenticated: boolean;
   sending: boolean;
@@ -29,7 +29,7 @@ interface UseChatInputControllerOptions {
 
 export function useChatInputController({
   onSend,
-  onStop,
+  onCancel,
   onRequireLogin,
   isAuthenticated,
   sending,
@@ -175,7 +175,7 @@ export function useChatInputController({
       isAuthenticated,
       onRequireLogin,
       onSend: () => void handleSend(),
-      onStop,
+      onCancel,
     },
   };
 }

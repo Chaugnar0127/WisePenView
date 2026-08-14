@@ -45,6 +45,10 @@ const getActiveTurnId = async (sessionId: string): Promise<string | null> => {
   return ChatServicesMap.mapActiveTurnIdFromApi(data);
 };
 
+const cancelTurn = async (sessionId: string): Promise<void> => {
+  await ChatCompletionApi.cancelTurn({ session_id: sessionId });
+};
+
 const buildPageResult = <T>(
   list: T[],
   page: number,
@@ -269,6 +273,7 @@ const uploadAttachment = async ({
 export const createChatServices = (deps: ChatServiceDeps): IChatService => ({
   getModels,
   getActiveTurnId,
+  cancelTurn,
   listChatInputGroups: (params) => listChatInputGroups(deps, params),
   listChatInputAgents: (params) => listChatInputAgents(deps, params),
   listChatInputSkills: (params) => listChatInputSkills(deps, params),

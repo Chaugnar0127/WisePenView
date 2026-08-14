@@ -12,5 +12,5 @@ export interface InputToolbarProps {
   isAuthenticated: boolean;
   onRequireLogin?: () => void;
   onSend: () => void;
-  onStop?: () => void;
+  onCancel?: () => void | Promise<void>;
 }

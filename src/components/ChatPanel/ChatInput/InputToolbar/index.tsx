@@ -20,7 +20,7 @@ function InputToolbar({
   isAuthenticated,
   onRequireLogin,
   onSend,
-  onStop,
+  onCancel,
 }: InputToolbarProps) {
   const { t } = useTranslation('chat');
   function handlePrimaryAction(): void {
@@ -29,7 +29,7 @@ function InputToolbar({
       return;
     }
     if (sending) {
-      onStop?.();
+      void onCancel?.();
       return;
     }
     onSend();
@@ -99,7 +99,7 @@ function InputToolbar({
           label={sending ? t('input.stop') : t('input.send')}
           variant={sending ? 'ghost' : 'primary'}
           onPress={handlePrimaryAction}
-          isDisabled={sending ? !onStop : sendDisabled}
+          isDisabled={sending ? !onCancel : sendDisabled}
           className={sending ? styles.stopButtonActive : undefined}
         />
       </div>

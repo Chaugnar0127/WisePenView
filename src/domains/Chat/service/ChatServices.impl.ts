@@ -220,14 +220,7 @@ const listHistoryMessages = async (
 
 const getTools = async (): Promise<ToolOption[]> => {
   const response = await ChatApi.listTools();
-  return response.tools.map((tool) => ({
-    toolId: tool.name,
-    label: tool.name,
-    description: tool.description,
-    enabled: tool.enabled,
-    configured: tool.configured,
-    requiresConfig: tool.requires_config,
-  }));
+  return ChatServicesMap.mapGetToolsFromApi(response);
 };
 
 const uploadAttachment = async ({

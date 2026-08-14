@@ -520,18 +520,38 @@ const getTools = async (): Promise<ToolOption[]> => {
     {
       toolId: 'search_historical_messages',
       label: 'Search History',
+      displayName: 'Search History',
       description: '检索历史会话',
+      selectionMode: 'user_selectable',
       enabled: true,
       configured: true,
       requiresConfig: false,
+      source: {
+        type: 'system',
+        serverId: null,
+        serverDisplayName: null,
+        remoteName: null,
+      },
+      configSchema: {},
+      secretFingerprints: {},
     },
     {
       toolId: 'mock-tool-2',
       label: 'Mock Tool 2',
+      displayName: 'Mock Tool 2',
       description: 'Mock Tool',
+      selectionMode: 'user_selectable',
       enabled: true,
       configured: true,
       requiresConfig: false,
+      source: {
+        type: 'system',
+        serverId: null,
+        serverDisplayName: null,
+        remoteName: null,
+      },
+      configSchema: {},
+      secretFingerprints: {},
     },
   ];
 };

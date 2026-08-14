@@ -7,10 +7,20 @@ import type { CapabilityToolOption } from '../mapper/capabilityPicker.mapper';
 export interface ToolOption {
   toolId: string;
   label: string;
+  displayName: string;
   description: string;
+  selectionMode: 'user_selectable' | 'contextual';
   enabled: boolean;
   configured: boolean;
   requiresConfig: boolean;
+  source: {
+    type: string;
+    serverId: string | null;
+    serverDisplayName: string | null;
+    remoteName: string | null;
+  } | null;
+  configSchema: Record<string, unknown>;
+  secretFingerprints: Record<string, string>;
 }
 
 export interface ChatModelTag {

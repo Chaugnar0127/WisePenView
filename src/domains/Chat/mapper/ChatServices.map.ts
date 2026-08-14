@@ -7,6 +7,7 @@ import type {
   ListModelsApiResponse,
   ListSessionsApiRequest,
   ListSessionsApiResponse,
+  ListToolsApiResponse,
   ModelProviderMappingResponse,
   RenameSessionApiRequest,
   RenameSessionApiResponse,
@@ -29,6 +30,7 @@ import type {
   PageResult,
   RenameSessionRequest,
   SetSessionAgentRequest,
+  ToolOption,
 } from '../service/index.type';
 
 const PROVIDER_KEY_HINTS: Array<{ key: string; patterns: string[] }> = [
@@ -183,6 +185,28 @@ const mapGetModelsFromApi = (data: ListModelsApiResponse): ChatModel[] => {
 
   return modelOptions;
 };
+
+const mapGetToolsFromApi = (data: ListToolsApiResponse): ToolOption[] =>
+  data.tools.map((tool) => ({
+    toolId: tool.name,
+    label: tool.display_name,
+    displayName: tool.display_name,
+    description: tool.description,
+    selectionMode: tool.selection_mode,
+    enabled: tool.enabled,
+    configured: tool.configured,
+    requiresConfig: tool.requires_config,
+    source: tool.source
+      ? {
+          type: tool.source.type,
+          serverId: tool.source.server_id,
+          serverDisplayName: tool.source.server_display_name,
+          remoteName: tool.source.remote_name,
+        }
+      : null,
+    configSchema: tool.config_schema,
+    secretFingerprints: tool.secret_fingerprints,
+  }));
 
 const mapCreateSessionRequest = (params?: CreateSessionRequest): CreateSessionApiRequest => {
   const title = params?.title;
@@ -507,6 +531,7 @@ const mapListHistoryMessagesFromApi = (
 
 export const ChatServicesMap = {
   mapGetModelsFromApi,
+  mapGetToolsFromApi,
   mapCreateSessionRequest,
   mapCreateSessionFromApi,
   mapSetSessionAgentRequest,

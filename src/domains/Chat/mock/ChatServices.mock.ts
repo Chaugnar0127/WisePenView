@@ -1,7 +1,12 @@
 import type {
+  BindChatModelProviderRequest,
   ChatAgentOption,
   ChatMessageMetadata,
+  ChatProvider,
   ChatSession,
+  ChatUserModel,
+  CreateChatProviderRequest,
+  CreateChatUserModelRequest,
   IChatService,
   ListChatInputAgentsRequest,
   ListChatInputGroupsRequest,
@@ -10,6 +15,9 @@ import type {
   ListSessionsRequest,
   PageResult,
   ToolOption,
+  UpdateChatProviderRequest,
+  UpdateChatUserModelRequest,
+  UpdateUserToolConfigRequest,
   UploadAttachmentParams,
   UploadAttachmentResult,
   WisePenUIMessage,
@@ -17,6 +25,7 @@ import type {
 import { MODEL_TYPE } from '@/domains/Chat';
 import { selectChatInputWebSearchTools } from '@/domains/Chat/mapper/capabilityPicker.mapper';
 import type { Group } from '@/domains/Group';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 
 type MockModelSeed = {
   name: string;
@@ -519,8 +528,10 @@ const listChatInputSkills: IChatService['listChatInputSkills'] = async ({
   return buildPageResult(list, page, size, source.length);
 };
 
+const mockToolOverrides = new Map<string, Partial<ToolOption>>();
+
 const getTools = async (): Promise<ToolOption[]> => {
-  return [
+  const tools: ToolOption[] = [
     {
       toolId: 'default_web_search',
       label: '默认 Web 搜索',
@@ -529,15 +540,15 @@ const getTools = async (): Promise<ToolOption[]> => {
       selectionMode: 'user_selectable',
       enabled: true,
       configured: true,
-      requiresConfig: false,
+      requiresConfig: true,
       source: {
         type: 'system',
         serverId: null,
         serverDisplayName: null,
         remoteName: null,
       },
-      configSchema: {},
-      secretFingerprints: {},
+      configSchema: { type: 'object' },
+      secretFingerprints: { api_key: 'mock***key' },
     },
     {
       toolId: 'mock_provider_search',
@@ -554,7 +565,7 @@ const getTools = async (): Promise<ToolOption[]> => {
         serverDisplayName: null,
         remoteName: null,
       },
-      configSchema: {},
+      configSchema: { type: 'object' },
       secretFingerprints: {},
     },
     {
@@ -594,6 +605,122 @@ const getTools = async (): Promise<ToolOption[]> => {
       secretFingerprints: {},
     },
   ];
+  return tools.map((tool) => ({ ...tool, ...mockToolOverrides.get(tool.toolId) }));
+};
+
+const mockProviders: ChatProvider[] = [];
+const mockUserModels: ChatUserModel[] = [];
+
+const getUserProviders = async (): Promise<ChatProvider[]> => [...mockProviders];
+const createUserProvider = async (params: CreateChatProviderRequest): Promise<void> => {
+  mockProviders.push({
+    id: `mock-provider-${Date.now()}`,
+    name: params.name,
+    baseUrl: params.baseUrl ?? null,
+    apiKeyFingerprint:
+      params.apiKey.length > 8
+        ? `${params.apiKey.slice(0, 4)}***${params.apiKey.slice(-4)}`
+        : '********',
+    scope: 'USER',
+    type: params.type,
+    isActive: true,
+    tokenUsage: 0,
+    billableTokenUsage: 0,
+  });
+};
+const updateUserProvider = async (params: UpdateChatProviderRequest): Promise<void> => {
+  const provider = mockProviders.find((item) => item.id === params.providerId);
+  if (!provider) return;
+  Object.assign(provider, {
+    name: params.name ?? provider.name,
+    type: params.type ?? provider.type,
+    baseUrl: params.baseUrl === undefined ? provider.baseUrl : params.baseUrl,
+    isActive: params.isActive ?? provider.isActive,
+    apiKeyFingerprint: params.apiKey
+      ? params.apiKey.length > 8
+        ? `${params.apiKey.slice(0, 4)}***${params.apiKey.slice(-4)}`
+        : '********'
+      : provider.apiKeyFingerprint,
+  });
+};
+const deleteUserProvider = async (providerId: string): Promise<void> => {
+  const index = mockProviders.findIndex((item) => item.id === providerId);
+  if (index >= 0) mockProviders.splice(index, 1);
+};
+const getUserModels = async (): Promise<ChatUserModel[]> =>
+  mockUserModels.map((model) => ({ ...model, mappings: [...model.mappings] }));
+const createUserModel = async (params: CreateChatUserModelRequest): Promise<void> => {
+  mockUserModels.push({
+    id: `mock-model-${Date.now()}`,
+    displayName: params.displayName,
+    type: params.type ?? MODEL_TYPE.CUSTOM_MODEL,
+    modelFamily: params.modelFamily ?? 'GENERIC',
+    billingRatio: params.billingRatio ?? 1,
+    supportThinking: params.supportThinking ?? false,
+    supportVision: params.supportVision ?? false,
+    supportTools: params.supportTools ?? true,
+    contextWindowTokens: params.contextWindowTokens ?? null,
+    maxOutputTokens: params.maxOutputTokens ?? null,
+    isActive: true,
+    mappings: [],
+  });
+};
+const updateUserModel = async (params: UpdateChatUserModelRequest): Promise<void> => {
+  const model = mockUserModels.find((item) => item.id === params.modelId);
+  if (!model) return;
+  Object.assign(model, {
+    displayName: params.displayName ?? model.displayName,
+    modelFamily: params.modelFamily ?? model.modelFamily,
+    supportThinking: params.supportThinking ?? model.supportThinking,
+    supportVision: params.supportVision ?? model.supportVision,
+    supportTools: params.supportTools ?? model.supportTools,
+    contextWindowTokens:
+      params.contextWindowTokens !== undefined
+        ? params.contextWindowTokens
+        : model.contextWindowTokens,
+    maxOutputTokens:
+      params.maxOutputTokens !== undefined ? params.maxOutputTokens : model.maxOutputTokens,
+    isActive: params.isActive ?? model.isActive,
+  });
+};
+const deleteUserModel = async (modelId: string): Promise<void> => {
+  const index = mockUserModels.findIndex((item) => item.id === modelId);
+  if (index >= 0) mockUserModels.splice(index, 1);
+};
+const bindModelProvider = async (params: BindChatModelProviderRequest): Promise<void> => {
+  const model = mockUserModels.find((item) => item.id === params.modelId);
+  const provider = mockProviders.find((item) => item.id === params.providerId);
+  if (!model || !provider) return;
+  model.mappings = [
+    ...model.mappings.filter((mapping) => mapping.providerId !== provider.id),
+    {
+      providerId: provider.id,
+      providerName: provider.name,
+      providerModelName: params.providerModelName,
+      isPreferred: params.isPreferred ?? true,
+      isActive: params.isActive ?? true,
+      priority: model.mappings.length,
+    },
+  ];
+};
+const unbindModelProvider = async (modelId: string, providerId: string): Promise<void> => {
+  const model = mockUserModels.find((item) => item.id === modelId);
+  if (model) model.mappings = model.mappings.filter((mapping) => mapping.providerId !== providerId);
+};
+const updateUserToolConfig = async (params: UpdateUserToolConfigRequest): Promise<ToolOption> => {
+  const tool = (await getTools()).find((item) => item.toolId === params.toolName);
+  if (!tool) throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION);
+  const updated = {
+    ...tool,
+    enabled: params.enabled ?? tool.enabled,
+    configured: params.secretConfig ? true : tool.configured,
+    secretFingerprints: params.secretConfig ? { api_key: 'mock***key' } : tool.secretFingerprints,
+  };
+  mockToolOverrides.set(tool.toolId, updated);
+  return updated;
+};
+const deleteUserToolConfig = async (toolName: string): Promise<void> => {
+  mockToolOverrides.set(toolName, { configured: false, secretFingerprints: {} });
 };
 
 const getChatInputCapabilityOptions: IChatService['getChatInputCapabilityOptions'] = async ({
@@ -643,6 +770,18 @@ export const createChatServicesMock = (): IChatService => ({
   listSessions,
   listHistoryMessages,
   getTools,
+  getUserProviders,
+  createUserProvider,
+  updateUserProvider,
+  deleteUserProvider,
+  getUserModels,
+  createUserModel,
+  updateUserModel,
+  deleteUserModel,
+  bindModelProvider,
+  unbindModelProvider,
+  updateUserToolConfig,
+  deleteUserToolConfig,
   uploadAttachment,
 });
 

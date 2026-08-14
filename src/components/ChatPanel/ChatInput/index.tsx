@@ -124,7 +124,10 @@ function ChatInputContent({
 
 function ChatInput(props: ChatInputProps) {
   return (
-    <ChatInputStoreProvider>
+    <ChatInputStoreProvider
+      sessionId={props.sessionId}
+      promoteDraftToolSelection={props.promoteDraftToolSelection}
+    >
       <ChatInputFileProvider getUploadSessionId={props.getUploadSessionId}>
         <ChatInputContent {...props} />
       </ChatInputFileProvider>

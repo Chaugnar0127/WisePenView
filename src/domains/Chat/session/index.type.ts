@@ -31,6 +31,17 @@ export interface ChatCompletionRequest {
   client_tool_capabilities?: ClientToolCapabilityRequest[];
 }
 
+export interface ToolApprovalStatusRequest {
+  tool_call_id: string;
+  approved: boolean;
+}
+
+export type ChatRecoverRequest = {
+  session_id: string;
+  client_tool_results: [];
+  tool_approval_status: ToolApprovalStatusRequest[];
+};
+
 export interface ClientToolCapability {
   name: string;
   description: string;

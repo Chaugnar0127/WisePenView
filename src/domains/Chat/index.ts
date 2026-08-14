@@ -1,7 +1,9 @@
 export type { ChatAgentOption, ChatAgentType } from './entity/agent';
 export type {
+  ChatMessageDataParts,
   ChatMessageMetadata,
   MessageAttachmentSnapshot,
+  ToolApprovalRequestData,
   WisePenUIMessage,
 } from './entity/message';
 export { MODEL_PROVIDER_ID, MODEL_TYPE } from './enum/model';
@@ -18,13 +20,21 @@ export type {
 } from './mapper/capabilityPicker.mapper';
 export { getPrimarySkillsForAgent } from './mapper/skillScope.mapper';
 export type {
+  BindChatModelProviderRequest,
   ChatInputCapabilityOptions,
   ChatInputResourceScope,
   ChatModel,
+  ChatModelFamily,
   ChatModelProviderOption,
   ChatModelTag,
+  ChatProvider,
+  ChatProviderType,
   ChatServiceDeps,
   ChatSession,
+  ChatUserModel,
+  ChatUserModelProviderMapping,
+  CreateChatProviderRequest,
+  CreateChatUserModelRequest,
   CreateSessionRequest,
   DeleteSessionRequest,
   GetChatInputCapabilityOptionsParams,
@@ -37,15 +47,20 @@ export type {
   PageResult,
   RenameSessionRequest,
   ToolOption,
+  UpdateChatProviderRequest,
+  UpdateChatUserModelRequest,
+  UpdateUserToolConfigRequest,
   UploadAttachmentParams,
   UploadAttachmentResult,
 } from './service/index.type';
 export type {
   ChatCompletionRequest,
   ChatFrontendState,
+  ChatRecoverRequest,
   ClientToolCapability,
   ClientToolCapabilityRequest,
   SendSessionMessageOptions,
+  ToolApprovalStatusRequest,
   UseChatSessionOptions,
 } from './session/index.type';
 export { useChatHistory } from './session/useChatHistory';

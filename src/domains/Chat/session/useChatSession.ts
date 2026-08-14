@@ -1,13 +1,20 @@
 import { awaitAddrReady, notifyAddrFailure } from '@/apis/apiServerAddr';
 import { buildApiUrl } from '@/apis/clientUrls';
 import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { useChat } from '@ai-sdk/react';
 import { useLatest } from 'ahooks';
 import { DefaultChatTransport } from 'ai';
 import { useRef } from 'react';
 import type { ChatMessageMetadata, WisePenUIMessage } from '../entity/message';
 import { mapChatCompletionRequest } from '../mapper/chatCompletion.mapper';
-import type { SendSessionMessageOptions, UseChatSessionOptions } from './index.type';
+import { normalizeChatSseResponse } from './chatSseNormalizer';
+import type {
+  ChatRecoverRequest,
+  SendSessionMessageOptions,
+  ToolApprovalStatusRequest,
+  UseChatSessionOptions,
+} from './index.type';
 
 const CHAT_STREAM_THROTTLE_MS = 50;
 
@@ -31,18 +38,41 @@ async function fetchChatCompletion(
 ): Promise<Response> {
   await awaitAddrReady();
   try {
-    return await fetch(resolveChatApiUrl(input), buildChatFetchInit(init));
+    const response = await fetch(resolveChatApiUrl(input), buildChatFetchInit(init));
+    return normalizeChatSseResponse(response);
   } catch (error) {
     notifyAddrFailure();
     throw error;
   }
 }
 
+function isChatRecoverRequest(
+  body: Record<string, unknown> | undefined
+): body is ChatRecoverRequest {
+  return (
+    typeof body?.session_id === 'string' &&
+    Array.isArray(body.client_tool_results) &&
+    Array.isArray(body.tool_approval_status)
+  );
+}
+
 const chatTransport = new DefaultChatTransport<WisePenUIMessage>({
   api: '/chat/completions',
   fetch: fetchChatCompletion,
-  prepareReconnectToStreamRequest: ({ id }) => {
-    const params = new URLSearchParams({ session_id: id });
+  prepareSendMessagesRequest: ({ body }) => {
+    if (isChatRecoverRequest(body)) {
+      return { api: '/chat/completions/recover', body };
+    }
+    return { body: body ?? {} };
+  },
+  prepareReconnectToStreamRequest: ({ body }) => {
+    const sessionId = body?.session_id;
+    if (typeof sessionId !== 'string' || sessionId === '') {
+      throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
+        reason: '重连聊天流时缺少 session_id',
+      });
+    }
+    const params = new URLSearchParams({ session_id: sessionId });
     return { api: `/chat/completions/stream?${params.toString()}` };
   },
 });
@@ -60,7 +90,6 @@ export const useChatSession = ({
   onError,
 }: UseChatSessionOptions) => {
   const chat = useChat<WisePenUIMessage>({
-    id: sessionId,
     experimental_throttle: CHAT_STREAM_THROTTLE_MS,
     onError,
     transport: chatTransport,
@@ -118,7 +147,7 @@ export const useChatSession = ({
           turnId,
           resumeStream: targetResumeStream,
         };
-        await targetResumeStream();
+        await targetResumeStream({ body: { session_id: targetSessionId } });
       } catch (error) {
         if (
           latestSessionId.current !== targetSessionId ||
@@ -132,7 +161,7 @@ export const useChatSession = ({
       }
     })();
 
-    // 保留已完成请求，当前会话生命周期内不再次查询 active；会话切换后 Chat 实例身份会变化。
+    // 保留已完成请求，当前会话生命周期内不再次查询 active；会话切换后由 sessionId 区分请求。
     resumeRequestRef.current = {
       sessionId: targetSessionId,
       resumeStream: targetResumeStream,
@@ -173,9 +202,24 @@ export const useChatSession = ({
     await chat.sendMessage({ text: query, metadata }, { body: requestBody });
   };
 
+  const recoverSession = async (toolApprovalStatus: ToolApprovalStatusRequest[]) => {
+    if (!sessionId) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
+        reason: '恢复聊天时缺少 session_id',
+      });
+    }
+    const requestBody: ChatRecoverRequest = {
+      session_id: sessionId,
+      client_tool_results: [],
+      tool_approval_status: toolApprovalStatus,
+    };
+    await chat.sendMessage(undefined, { body: requestBody });
+  };
+
   return {
     ...chat,
     sendSessionMessage,
+    recoverSession,
     resumeSessionStream,
   };
 };

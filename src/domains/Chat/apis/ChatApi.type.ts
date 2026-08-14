@@ -58,6 +58,63 @@ export interface ListToolsApiResponse {
   tools: ToolApiResponse[];
 }
 
+export type ProviderTypeApi = 'ALIBABA' | 'OPENAI' | 'ANTHROPIC' | 'GOOGLE' | 'OPENAI_COMPATIBLE';
+
+export interface ProviderApiResponse {
+  id: string;
+  name: string;
+  base_url?: string | null;
+  api_key_fingerprint?: string | null;
+  scope: 'SYSTEM' | 'USER';
+  type: ProviderTypeApi;
+  is_active: boolean;
+  token_usage: number;
+  billable_token_usage: number;
+}
+
+export interface ListUserProvidersApiResponse {
+  providers: ProviderApiResponse[];
+}
+
+export interface CreateUserProviderApiRequest {
+  name: string;
+  type: ProviderTypeApi;
+  api_key: string;
+  base_url?: string | null;
+  is_active?: boolean;
+}
+
+export interface UpdateUserProviderApiRequest {
+  provider_id: string;
+  name?: string;
+  type?: ProviderTypeApi;
+  api_key?: string;
+  base_url?: string | null;
+  is_active?: boolean;
+}
+
+export interface DeleteUserProviderApiRequest {
+  provider_id: string;
+}
+
+export type UpdateUserProviderApiResponse = null;
+export type DeleteUserProviderApiResponse = null;
+
+export interface UpdateUserToolConfigApiRequest {
+  tool_name: string;
+  enabled?: boolean;
+  config?: Record<string, unknown>;
+  secret_config?: Record<string, string>;
+}
+
+export type UpdateUserToolConfigApiResponse = ToolApiResponse;
+
+export interface DeleteUserToolConfigApiRequest {
+  tool_name: string;
+}
+
+export type DeleteUserToolConfigApiResponse = null;
+
 export interface ActiveChatTurnApiRequest {
   session_id: string;
 }
@@ -83,7 +140,7 @@ export interface ModelProviderMappingResponse {
   priority: number;
 }
 
-interface ModelResponse {
+export interface ModelResponse {
   id: string;
   scope: string;
   display_name: string;
@@ -98,6 +155,55 @@ interface ModelResponse {
   is_active: boolean;
   mappings?: ModelProviderMappingResponse[] | null;
 }
+
+export interface CreateUserModelApiRequest {
+  display_name: string;
+  type?: number;
+  model_family?: 'QWEN' | 'GPT' | 'CLAUDE' | 'GEMINI' | 'GENERIC';
+  billing_ratio?: number;
+  support_thinking?: boolean;
+  support_vision?: boolean;
+  support_tools?: boolean;
+  context_window_tokens?: number | null;
+  max_output_tokens?: number | null;
+}
+
+export interface UpdateUserModelApiRequest {
+  model_id: string;
+  display_name?: string;
+  type?: number;
+  model_family?: 'QWEN' | 'GPT' | 'CLAUDE' | 'GEMINI' | 'GENERIC';
+  billing_ratio?: number;
+  support_thinking?: boolean;
+  support_vision?: boolean;
+  support_tools?: boolean;
+  context_window_tokens?: number | null;
+  max_output_tokens?: number | null;
+  is_active?: boolean;
+}
+
+export interface DeleteUserModelApiRequest {
+  model_id: string;
+}
+
+export interface BindModelProviderApiRequest {
+  model_id: string;
+  provider_id: string;
+  provider_model_name: string;
+  is_preferred?: boolean;
+  is_active?: boolean;
+}
+
+export interface UnbindModelProviderApiRequest {
+  model_id: string;
+  provider_id: string;
+}
+
+export type CreateUserModelApiResponse = null;
+export type UpdateUserModelApiResponse = null;
+export type DeleteUserModelApiResponse = null;
+export type BindModelProviderApiResponse = null;
+export type UnbindModelProviderApiResponse = null;
 export type CreateSessionApiRequest = {
   title?: string | null;
   agent_id?: string | null;

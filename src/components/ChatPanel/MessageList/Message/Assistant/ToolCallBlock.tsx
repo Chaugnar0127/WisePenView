@@ -9,6 +9,7 @@ import {
   Circle,
   CircleX,
   Clock,
+  ShieldAlert,
   Wrench,
   type LucideIcon,
 } from 'lucide-react';
@@ -37,6 +38,10 @@ interface ToolDetailSection {
 
 interface ToolCallBlockProps {
   part: RenderableToolPart;
+  approvalDescription?: string;
+  approvalDecision?: boolean;
+  approvalSubmitting?: boolean;
+  onApprovalDecision?: (approved: boolean) => void;
   /** 结束后是否自动收起，默认 true；运行中始终自动展开 */
   autoCollapseOnFinish?: boolean;
 }
@@ -130,7 +135,14 @@ function ToolStatusChip({ badge }: { badge: ToolStatusBadge }) {
   );
 }
 
-function ToolCallBlock({ part, autoCollapseOnFinish = true }: ToolCallBlockProps) {
+function ToolCallBlock({
+  part,
+  approvalDescription,
+  approvalDecision,
+  approvalSubmitting = false,
+  onApprovalDecision,
+  autoCollapseOnFinish = true,
+}: ToolCallBlockProps) {
   const { t } = useTranslation('chat');
   const badge = getToolStatusBadge(part);
   const isRunning = RUNNING_STATES.has(part.state);
@@ -208,6 +220,46 @@ function ToolCallBlock({ part, autoCollapseOnFinish = true }: ToolCallBlockProps
               </section>
             ))
           )}
+
+          {part.state === 'approval-requested' ? (
+            <section className={styles.approvalSection}>
+              <div className={styles.approvalNotice}>
+                <ShieldAlert size={16} aria-hidden="true" />
+                <div>
+                  <h4 className={styles.sectionLabel}>{t('message.tool.approval.title')}</h4>
+                  <p className={styles.approvalDescription}>
+                    {approvalDescription || t('message.tool.approval.description')}
+                  </p>
+                </div>
+              </div>
+              <div
+                className={styles.approvalActions}
+                role="group"
+                aria-label={t('message.tool.approval.actions')}
+              >
+                <AppButton
+                  size="sm"
+                  variant={approvalDecision === false ? 'danger' : 'secondary'}
+                  aria-pressed={approvalDecision === false}
+                  isDisabled={approvalSubmitting}
+                  onPress={() => onApprovalDecision?.(false)}
+                >
+                  <CircleX size={14} aria-hidden="true" />
+                  {t('message.tool.approval.reject')}
+                </AppButton>
+                <AppButton
+                  size="sm"
+                  variant={approvalDecision === true ? 'primary' : 'secondary'}
+                  aria-pressed={approvalDecision === true}
+                  isDisabled={approvalSubmitting}
+                  onPress={() => onApprovalDecision?.(true)}
+                >
+                  <CheckCircle2 size={14} aria-hidden="true" />
+                  {t('message.tool.approval.allow')}
+                </AppButton>
+              </div>
+            </section>
+          ) : null}
         </div>
       ) : null}
     </div>

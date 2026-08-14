@@ -102,6 +102,9 @@ importers:
       emojibase-data:
         specifier: 17.0.0
         version: 17.0.0(emojibase@17.0.0)
+      eventsource-parser:
+        specifier: ^3.1.0
+        version: 3.1.0
       i18next:
         specifier: ^26.0.10
         version: 26.3.4(typescript@5.9.3)

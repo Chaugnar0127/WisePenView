@@ -158,6 +158,13 @@ const zhCNChat = {
         failed: '调用失败',
         empty: '暂无详情',
       },
+      approval: {
+        title: '高危工具需要确认',
+        description: '该工具可能修改数据或执行外部操作，请确认是否继续。',
+        actions: '工具审批操作',
+        reject: '拒绝',
+        allow: '允许',
+      },
     },
     attachments: {
       groupAria: '消息附件',

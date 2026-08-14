@@ -23,6 +23,7 @@ import {
   FolderHeart,
   Gauge,
   HardDrive,
+  KeyRound,
   MessageSquarePlus,
   Palette,
   PenLine,
@@ -247,6 +248,13 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
       keywords: ['appearance', 'theme', '外观', '主题'],
       icon: Palette,
       onSelect: () => handleNavigate(APP_ROUTE_PATH.PROFILE_APPEARANCE),
+    },
+    {
+      id: 'ai',
+      label: t('ai.title', { ns: 'profile' }),
+      keywords: ['ai', 'byok', 'web search', '密钥', '搜索'],
+      icon: KeyRound,
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.PROFILE_AI),
     },
     {
       id: 'usage',

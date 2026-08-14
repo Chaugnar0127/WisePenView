@@ -16,9 +16,28 @@ interface AssistantMessageProps {
   message: WisePenUIMessage;
   model: ChatModel | null;
   streaming: boolean;
+  approvalDecisions: Readonly<Record<string, boolean>>;
+  approvalSubmitting: boolean;
+  onApprovalDecision: (toolCallId: string, approved: boolean) => void;
 }
 
-function AssistantMessage({ message, model, streaming }: AssistantMessageProps) {
+function getApprovalDescription(message: WisePenUIMessage, toolCallId: string): string | undefined {
+  const approvalPart = message.parts.find(
+    (part) => part.type === 'data-tool-approval-request' && part.data.toolCallId === toolCallId
+  );
+  return approvalPart?.type === 'data-tool-approval-request'
+    ? approvalPart.data.toolDesc
+    : undefined;
+}
+
+function AssistantMessage({
+  message,
+  model,
+  streaming,
+  approvalDecisions,
+  approvalSubmitting,
+  onApprovalDecision,
+}: AssistantMessageProps) {
   const { t } = useTranslation('chat');
   const textContent = message.parts
     .filter(isTextUIPart)
@@ -77,7 +96,18 @@ function AssistantMessage({ message, model, streaming }: AssistantMessageProps) 
               />
             );
           }
-          if (isToolUIPart(part)) return <ToolCallBlock key={key} part={part} />;
+          if (isToolUIPart(part)) {
+            return (
+              <ToolCallBlock
+                key={key}
+                part={part}
+                approvalDescription={getApprovalDescription(message, part.toolCallId)}
+                approvalDecision={approvalDecisions[part.toolCallId]}
+                approvalSubmitting={approvalSubmitting}
+                onApprovalDecision={(approved) => onApprovalDecision(part.toolCallId, approved)}
+              />
+            );
+          }
           return null;
         })}
 

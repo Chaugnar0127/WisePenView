@@ -31,6 +31,9 @@ interface MessageListProps {
   status: ChatStatus;
   model: ChatModel | null;
   fullWidth: boolean;
+  approvalDecisions: Readonly<Record<string, boolean>>;
+  approvalSubmitting: boolean;
+  onApprovalDecision: (toolCallId: string, approved: boolean) => void;
 }
 
 function MessageList({
@@ -43,6 +46,9 @@ function MessageList({
   status,
   model,
   fullWidth,
+  approvalDecisions,
+  approvalSubmitting,
+  onApprovalDecision,
 }: MessageListProps) {
   const { t } = useTranslation('chat');
   const isGenerating = status === 'submitted' || status === 'streaming';
@@ -86,6 +92,9 @@ function MessageList({
                         model={model}
                         fullWidth={fullWidth}
                         streaming={message.id === messages[messages.length - 1]?.id && isGenerating}
+                        approvalDecisions={approvalDecisions}
+                        approvalSubmitting={approvalSubmitting}
+                        onApprovalDecision={onApprovalDecision}
                       />
                     </MessageScrollerItem>
                   ))}

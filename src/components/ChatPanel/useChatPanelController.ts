@@ -13,6 +13,7 @@ import {
   type ChatModel,
   type ChatSession,
   type CreateSessionRequest,
+  type WisePenUIMessage,
 } from '@/domains/Chat';
 import { useApi } from '@/hooks/useApi';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
@@ -35,6 +36,18 @@ interface PendingDebugSend {
   text: string;
   opts?: SendOptions;
   resolve: (sent: boolean) => void;
+}
+
+function listPendingToolApprovalIds(messages: readonly WisePenUIMessage[]): string[] {
+  return Array.from(
+    new Set(
+      messages.flatMap((message) =>
+        message.parts.flatMap((part) =>
+          isToolUIPart(part) && part.state === 'approval-requested' ? [part.toolCallId] : []
+        )
+      )
+    )
+  );
 }
 
 export function useChatPanelController({
@@ -70,16 +83,24 @@ export function useChatPanelController({
   const [pendingDebugSend, setPendingDebugSend] = useState<PendingDebugSend | null>(null);
   const [savingDebugDraft, setSavingDebugDraft] = useState(false);
   const [cancellingSessionId, setCancellingSessionId] = useState<string | null>(null);
+  const [toolApprovalDecisions, setToolApprovalDecisions] = useState<Record<string, boolean>>({});
 
-  const { messages, status, setMessages, sendSessionMessage, stop, resumeSessionStream } =
-    useChatSession({
-      sessionId: currentSessionId ?? '',
-      model: currentModel?.modelId,
-      getActiveTurnId: chatService.getActiveTurnId,
-      onError: (error) => {
-        toast.danger(parseErrorMessage(error));
-      },
-    });
+  const {
+    messages,
+    status,
+    setMessages,
+    sendSessionMessage,
+    recoverSession,
+    stop,
+    resumeSessionStream,
+  } = useChatSession({
+    sessionId: currentSessionId ?? '',
+    model: currentModel?.modelId,
+    getActiveTurnId: chatService.getActiveTurnId,
+    onError: (error) => {
+      toast.danger(parseErrorMessage(error));
+    },
+  });
 
   const { runAsync: runLoadSessionHistory } = useApi(
     async (sessionId: string, page: number, size: number) =>
@@ -291,6 +312,29 @@ export function useChatPanelController({
     }
   };
 
+  const handleToolApprovalDecision = (toolCallId: string, approved: boolean) => {
+    if (!currentSessionId || status === 'submitted' || status === 'streaming') return;
+
+    const pendingToolCallIds = listPendingToolApprovalIds(messages);
+    if (!pendingToolCallIds.includes(toolCallId)) return;
+
+    const nextDecisions = { ...toolApprovalDecisions, [toolCallId]: approved };
+    setToolApprovalDecisions(nextDecisions);
+    if (pendingToolCallIds.some((pendingId) => nextDecisions[pendingId] === undefined)) return;
+
+    const toolApprovalStatus = pendingToolCallIds.map((pendingId) => ({
+      tool_call_id: pendingId,
+      approved: nextDecisions[pendingId] ?? false,
+    }));
+    void recoverSession(toolApprovalStatus).finally(() => {
+      setToolApprovalDecisions((current) =>
+        Object.fromEntries(
+          Object.entries(current).filter(([id]) => !pendingToolCallIds.includes(id))
+        )
+      );
+    });
+  };
+
   const resolvePendingDebugSend = (sent: boolean) => {
     pendingDebugSend?.resolve(sent);
     setPendingDebugSend(null);
@@ -419,6 +463,7 @@ export function useChatPanelController({
     handleSelectSession,
     handleSend,
     handleToggleSessionBar,
+    handleToolApprovalDecision,
     isAuthenticated: appAuth.isAuthenticated,
     isDebugSaveDialogOpen: pendingDebugSend != null,
     loadMoreHistoryMessages,
@@ -433,6 +478,7 @@ export function useChatPanelController({
     savingDebugDraft,
     sessionBarOpen,
     status,
+    toolApprovalDecisions,
     stop,
     requireLogin: appAuth.requireLogin,
     ensureChatSession,

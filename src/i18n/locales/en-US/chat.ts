@@ -160,6 +160,13 @@ const enUSChat = {
         failed: 'Tool call failed',
         empty: 'No details available',
       },
+      approval: {
+        title: 'High-risk tool requires approval',
+        description: 'This tool may modify data or perform an external action. Continue?',
+        actions: 'Tool approval actions',
+        reject: 'Reject',
+        allow: 'Allow',
+      },
     },
     attachments: {
       groupAria: 'Message attachments',

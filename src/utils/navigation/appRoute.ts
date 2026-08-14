@@ -22,6 +22,7 @@ export const APP_ROUTE_PATH = {
   PROFILE_ACCOUNT: '/profile/account',
   PROFILE_USAGE: '/profile/usage',
   PROFILE_APPEARANCE: '/profile/appearance',
+  PROFILE_AI: '/profile/ai',
   ADMIN: '/admin',
   ADMIN_USERS: '/admin/users',
   ADMIN_RESOURCES: '/admin/resources',

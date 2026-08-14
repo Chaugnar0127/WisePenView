@@ -14,6 +14,7 @@ import {
   ChartPie,
   Home,
   Info,
+  KeyRound,
   LogIn,
   LogOut,
   MessageSquare,
@@ -114,6 +115,9 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
       case 'appearance':
         navigate(APP_ROUTE_PATH.PROFILE_APPEARANCE);
         break;
+      case 'ai':
+        navigate(APP_ROUTE_PATH.PROFILE_AI);
+        break;
       case 'feedback':
         setFeedbackModalOpen(true);
         break;
@@ -170,6 +174,10 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
             <Dropdown.Item id="appearance" textValue={t('userMenu.appearance')}>
               <Palette size={16} />
               <Label>{t('userMenu.appearance')}</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="ai" textValue={t('userMenu.ai')}>
+              <KeyRound size={16} />
+              <Label>{t('userMenu.ai')}</Label>
             </Dropdown.Item>
             <Dropdown.Item id="feedback" textValue={t('userMenu.feedback')}>
               <MessageSquare size={16} />

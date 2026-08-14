@@ -2,12 +2,23 @@ import { apiGet, apiPost } from '@/apis/request';
 import type {
   ActiveChatTurnApiRequest,
   ActiveChatTurnApiResponse,
+  BindModelProviderApiRequest,
+  BindModelProviderApiResponse,
   CancelChatTurnApiRequest,
   CancelChatTurnApiResponse,
   CreateSessionApiRequest,
   CreateSessionApiResponse,
+  CreateUserModelApiRequest,
+  CreateUserModelApiResponse,
+  CreateUserProviderApiRequest,
   DeleteSessionApiRequest,
   DeleteSessionApiResponse,
+  DeleteUserModelApiRequest,
+  DeleteUserModelApiResponse,
+  DeleteUserProviderApiRequest,
+  DeleteUserProviderApiResponse,
+  DeleteUserToolConfigApiRequest,
+  DeleteUserToolConfigApiResponse,
   InitTemporaryAttachmentUploadApiRequest,
   InitTemporaryAttachmentUploadApiResponse,
   ListHistoryMessagesApiRequest,
@@ -16,10 +27,19 @@ import type {
   ListSessionsApiRequest,
   ListSessionsApiResponse,
   ListToolsApiResponse,
+  ListUserProvidersApiResponse,
   RenameSessionApiRequest,
   RenameSessionApiResponse,
   SetSessionAgentApiRequest,
   SetSessionAgentApiResponse,
+  UnbindModelProviderApiRequest,
+  UnbindModelProviderApiResponse,
+  UpdateUserModelApiRequest,
+  UpdateUserModelApiResponse,
+  UpdateUserProviderApiRequest,
+  UpdateUserProviderApiResponse,
+  UpdateUserToolConfigApiRequest,
+  UpdateUserToolConfigApiResponse,
 } from './ChatApi.type';
 
 /** Chat API: /chat/* */
@@ -38,10 +58,77 @@ function initTemporaryAttachmentUpload(
   return apiPost('/chat/attachment/initUploadTemporaryAttachment', req);
 }
 
+function listUserProviders(): Promise<ListUserProvidersApiResponse> {
+  return apiGet('/chat/model/listUserProviders');
+}
+
+function createUserProvider(req: CreateUserProviderApiRequest): Promise<null> {
+  return apiPost('/chat/model/createUserProvider', req);
+}
+
+function updateUserProvider(
+  req: UpdateUserProviderApiRequest
+): Promise<UpdateUserProviderApiResponse> {
+  return apiPost('/chat/model/updateUserProvider', req);
+}
+
+function deleteUserProvider(
+  req: DeleteUserProviderApiRequest
+): Promise<DeleteUserProviderApiResponse> {
+  return apiPost('/chat/model/deleteUserProvider', req);
+}
+
+function createUserModel(req: CreateUserModelApiRequest): Promise<CreateUserModelApiResponse> {
+  return apiPost('/chat/model/createUserModel', req);
+}
+
+function updateUserModel(req: UpdateUserModelApiRequest): Promise<UpdateUserModelApiResponse> {
+  return apiPost('/chat/model/updateUserModel', req);
+}
+
+function deleteUserModel(req: DeleteUserModelApiRequest): Promise<DeleteUserModelApiResponse> {
+  return apiPost('/chat/model/deleteUserModel', req);
+}
+
+function bindModelProvider(
+  req: BindModelProviderApiRequest
+): Promise<BindModelProviderApiResponse> {
+  return apiPost('/chat/model/bindModelProvider', req);
+}
+
+function unbindModelProvider(
+  req: UnbindModelProviderApiRequest
+): Promise<UnbindModelProviderApiResponse> {
+  return apiPost('/chat/model/unbindModelProvider', req);
+}
+
+function updateUserToolConfig(
+  req: UpdateUserToolConfigApiRequest
+): Promise<UpdateUserToolConfigApiResponse> {
+  return apiPost('/chat/tool/updateUserToolConfig', req);
+}
+
+function deleteUserToolConfig(
+  req: DeleteUserToolConfigApiRequest
+): Promise<DeleteUserToolConfigApiResponse> {
+  return apiPost('/chat/tool/deleteUserToolConfig', req);
+}
+
 export const ChatApi = {
   listModels,
   listTools,
   initTemporaryAttachmentUpload,
+  listUserProviders,
+  createUserProvider,
+  updateUserProvider,
+  deleteUserProvider,
+  createUserModel,
+  updateUserModel,
+  deleteUserModel,
+  bindModelProvider,
+  unbindModelProvider,
+  updateUserToolConfig,
+  deleteUserToolConfig,
 };
 
 /** Chat Completion API: /chat/completions/* */

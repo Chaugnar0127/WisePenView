@@ -22,6 +22,7 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
     handleCloseSessionBar,
     handleSelectSession,
     handleSend,
+    handleToolApprovalDecision,
     loadMoreHistoryMessages,
     loadingInitialHistory,
     loadingMoreHistory,
@@ -31,6 +32,7 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
     clearResourceChatContext,
     sessionBarOpen,
     status,
+    toolApprovalDecisions,
     ensureChatSession,
   } = controller;
   const sending = cancelling || status === 'submitted' || status === 'streaming';
@@ -54,6 +56,9 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
             status={status}
             model={currentModel}
             fullWidth={fullWidth}
+            approvalDecisions={toolApprovalDecisions}
+            approvalSubmitting={status === 'submitted' || status === 'streaming'}
+            onApprovalDecision={handleToolApprovalDecision}
           />
         </div>
 

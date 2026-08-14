@@ -66,6 +66,7 @@ const enUSShell = {
     usage: 'Credits & Usage',
     account: 'Account',
     appearance: 'Appearance and language',
+    ai: 'AI Services',
     feedback: 'Feedback',
     enterAdmin: 'Open admin',
     about: 'About',

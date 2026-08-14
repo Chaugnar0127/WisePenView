@@ -9,11 +9,15 @@ import type {
   ListSessionsApiRequest,
   ListSessionsApiResponse,
   ListToolsApiResponse,
+  ListUserProvidersApiResponse,
   ModelProviderMappingResponse,
+  ModelResponse,
+  ProviderApiResponse,
   RenameSessionApiRequest,
   RenameSessionApiResponse,
   SetSessionAgentApiRequest,
   SetSessionAgentApiResponse,
+  ToolApiResponse,
 } from '../apis/ChatApi.type';
 import type {
   ChatMessageMetadata,
@@ -24,7 +28,9 @@ import { MODEL_TYPE } from '../enum/model';
 import type {
   ChatModel,
   ChatModelProviderOption,
+  ChatProvider,
   ChatSession,
+  ChatUserModel,
   CreateSessionRequest,
   ListHistoryMessagesRequest,
   ListSessionsRequest,
@@ -209,6 +215,49 @@ const mapGetToolsFromApi = (data: ListToolsApiResponse): ToolOption[] =>
     secretFingerprints: tool.secret_fingerprints,
   }));
 
+const mapToolFromApi = (tool: ToolApiResponse): ToolOption =>
+  mapGetToolsFromApi({ tools: [tool] })[0];
+
+const mapProviderFromApi = (provider: ProviderApiResponse): ChatProvider => ({
+  id: provider.id,
+  name: provider.name,
+  baseUrl: provider.base_url ?? null,
+  apiKeyFingerprint: provider.api_key_fingerprint ?? null,
+  scope: provider.scope,
+  type: provider.type,
+  isActive: provider.is_active,
+  tokenUsage: provider.token_usage,
+  billableTokenUsage: provider.billable_token_usage,
+});
+
+const mapUserProvidersFromApi = (data: ListUserProvidersApiResponse): ChatProvider[] =>
+  data.providers.map(mapProviderFromApi);
+
+const mapUserModelFromApi = (model: ModelResponse): ChatUserModel => ({
+  id: model.id,
+  displayName: model.display_name,
+  type: model.type,
+  modelFamily: model.model_family as ChatUserModel['modelFamily'],
+  billingRatio: model.billing_ratio,
+  supportThinking: model.support_thinking,
+  supportVision: model.support_vision,
+  supportTools: model.support_tools,
+  contextWindowTokens: model.context_window_tokens ?? null,
+  maxOutputTokens: model.max_output_tokens ?? null,
+  isActive: model.is_active,
+  mappings: (model.mappings ?? []).map((mapping) => ({
+    providerId: mapping.provider_id,
+    providerName: mapping.provider_name ?? null,
+    providerModelName: mapping.provider_model_name,
+    isPreferred: mapping.is_preferred,
+    isActive: mapping.is_active,
+    priority: mapping.priority,
+  })),
+});
+
+const mapUserModelsFromApi = (data: ListModelsApiResponse): ChatUserModel[] =>
+  data.user_models.map(mapUserModelFromApi);
+
 const mapActiveTurnIdFromApi = (data: ActiveChatTurnApiResponse): string | null => data.turn_id;
 
 const mapCreateSessionRequest = (params?: CreateSessionRequest): CreateSessionApiRequest => {
@@ -322,14 +371,21 @@ function mapToolInvocation(data: Record<string, unknown>): ToolInvocationState |
       return { ...details, state: 'input-available', input: data.input };
     case 'approval-requested': {
       const approval = getRecord(data.approval);
-      if (!approval || typeof approval.id !== 'string') return null;
+      const approvalId =
+        typeof approval?.id === 'string'
+          ? approval.id
+          : typeof data.toolCallId === 'string'
+            ? data.toolCallId
+            : null;
+      if (!approvalId) return null;
       return {
         ...details,
         state: 'approval-requested',
         input: data.input,
         approval: {
-          id: approval.id,
-          ...(typeof approval.signature === 'string' ? { signature: approval.signature } : {}),
+          // 挂起会话历史只返回状态，审批 ID 与工具调用 ID 按后端契约相同。
+          id: approvalId,
+          ...(typeof approval?.signature === 'string' ? { signature: approval.signature } : {}),
         },
       };
     }
@@ -536,6 +592,9 @@ export const ChatServicesMap = {
   mapActiveTurnIdFromApi,
   mapGetModelsFromApi,
   mapGetToolsFromApi,
+  mapToolFromApi,
+  mapUserProvidersFromApi,
+  mapUserModelsFromApi,
   mapCreateSessionRequest,
   mapCreateSessionFromApi,
   mapSetSessionAgentRequest,

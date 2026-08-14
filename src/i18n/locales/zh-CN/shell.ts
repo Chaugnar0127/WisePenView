@@ -66,6 +66,7 @@ const zhCNShell = {
     usage: '余额与用量',
     account: '账号管理',
     appearance: '外观与语言',
+    ai: 'AI 服务',
     feedback: '用户反馈',
     enterAdmin: '进入管理',
     about: '关于',

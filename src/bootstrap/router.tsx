@@ -54,6 +54,7 @@ const GroupWalletRouteGuard = lazy(
 const Account = lazy(() => import('@/views/app/profile/Account'));
 const Usage = lazy(() => import('@/views/app/profile/Usage'));
 const Appearance = lazy(() => import('@/views/app/profile/Appearance'));
+const AISettings = lazy(() => import('@/views/app/profile/AI'));
 const Login = lazy(() => import('@/views/app/auth/Login'));
 const Register = lazy(() => import('@/views/app/auth/Register'));
 const AuthBindingOnboarding = lazy(() => import('@/views/app/auth/AuthBindingOnboarding'));
@@ -369,6 +370,7 @@ const router = createBrowserRouter([
               { path: 'profile/usage', element: <Usage />, handle: profileHandle },
               { path: 'profile/account', element: <Account />, handle: profileHandle },
               { path: 'profile/appearance', element: <Appearance />, handle: profileHandle },
+              { path: 'profile/ai', element: <AISettings />, handle: profileHandle },
             ],
           },
         ],

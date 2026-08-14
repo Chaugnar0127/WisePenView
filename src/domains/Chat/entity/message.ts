@@ -22,4 +22,16 @@ export interface ChatMessageMetadata {
   reasoningDurationSeconds?: number;
 }
 
-export type WisePenUIMessage = UIMessage<ChatMessageMetadata>;
+export interface ToolApprovalRequestData {
+  approvalId: string;
+  toolCallId: string;
+  toolName: string;
+  toolDesc: string;
+  input: unknown;
+}
+
+export type ChatMessageDataParts = {
+  'tool-approval-request': ToolApprovalRequestData;
+};
+
+export type WisePenUIMessage = UIMessage<ChatMessageMetadata, ChatMessageDataParts>;

@@ -8,7 +8,13 @@ import { DefaultChatTransport } from 'ai';
 import { useRef } from 'react';
 import type { ChatMessageMetadata, WisePenUIMessage } from '../entity/message';
 import { mapChatCompletionRequest } from '../mapper/chatCompletion.mapper';
-import type { SendSessionMessageOptions, UseChatSessionOptions } from './index.type';
+import { normalizeChatSseResponse } from './chatSseNormalizer';
+import type {
+  ChatRecoverRequest,
+  SendSessionMessageOptions,
+  ToolApprovalStatusRequest,
+  UseChatSessionOptions,
+} from './index.type';
 
 const CHAT_STREAM_THROTTLE_MS = 50;
 
@@ -32,16 +38,33 @@ async function fetchChatCompletion(
 ): Promise<Response> {
   await awaitAddrReady();
   try {
-    return await fetch(resolveChatApiUrl(input), buildChatFetchInit(init));
+    const response = await fetch(resolveChatApiUrl(input), buildChatFetchInit(init));
+    return normalizeChatSseResponse(response);
   } catch (error) {
     notifyAddrFailure();
     throw error;
   }
 }
 
+function isChatRecoverRequest(
+  body: Record<string, unknown> | undefined
+): body is ChatRecoverRequest {
+  return (
+    typeof body?.session_id === 'string' &&
+    Array.isArray(body.client_tool_results) &&
+    Array.isArray(body.tool_approval_status)
+  );
+}
+
 const chatTransport = new DefaultChatTransport<WisePenUIMessage>({
   api: '/chat/completions',
   fetch: fetchChatCompletion,
+  prepareSendMessagesRequest: ({ body }) => {
+    if (isChatRecoverRequest(body)) {
+      return { api: '/chat/completions/recover', body };
+    }
+    return { body: body ?? {} };
+  },
   prepareReconnectToStreamRequest: ({ body }) => {
     const sessionId = body?.session_id;
     if (typeof sessionId !== 'string' || sessionId === '') {
@@ -179,9 +202,24 @@ export const useChatSession = ({
     await chat.sendMessage({ text: query, metadata }, { body: requestBody });
   };
 
+  const recoverSession = async (toolApprovalStatus: ToolApprovalStatusRequest[]) => {
+    if (!sessionId) {
+      throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
+        reason: '恢复聊天时缺少 session_id',
+      });
+    }
+    const requestBody: ChatRecoverRequest = {
+      session_id: sessionId,
+      client_tool_results: [],
+      tool_approval_status: toolApprovalStatus,
+    };
+    await chat.sendMessage(undefined, { body: requestBody });
+  };
+
   return {
     ...chat,
     sendSessionMessage,
+    recoverSession,
     resumeSessionStream,
   };
 };

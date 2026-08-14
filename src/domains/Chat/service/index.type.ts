@@ -23,6 +23,97 @@ export interface ToolOption {
   secretFingerprints: Record<string, string>;
 }
 
+export type ChatProviderType = 'ALIBABA' | 'OPENAI' | 'ANTHROPIC' | 'GOOGLE' | 'OPENAI_COMPATIBLE';
+
+export interface ChatProvider {
+  id: string;
+  name: string;
+  baseUrl: string | null;
+  apiKeyFingerprint: string | null;
+  scope: 'SYSTEM' | 'USER';
+  type: ChatProviderType;
+  isActive: boolean;
+  tokenUsage: number;
+  billableTokenUsage: number;
+}
+
+export interface CreateChatProviderRequest {
+  name: string;
+  type: ChatProviderType;
+  apiKey: string;
+  baseUrl?: string | null;
+  isActive?: boolean;
+}
+
+export interface UpdateChatProviderRequest {
+  providerId: string;
+  name?: string;
+  type?: ChatProviderType;
+  apiKey?: string;
+  baseUrl?: string | null;
+  isActive?: boolean;
+}
+
+export type ChatModelFamily = 'QWEN' | 'GPT' | 'CLAUDE' | 'GEMINI' | 'GENERIC';
+
+export interface ChatUserModelProviderMapping {
+  providerId: string;
+  providerName: string | null;
+  providerModelName: string;
+  isPreferred: boolean;
+  isActive: boolean;
+  priority: number;
+}
+
+export interface ChatUserModel {
+  id: string;
+  displayName: string;
+  type: number;
+  modelFamily: ChatModelFamily;
+  billingRatio: number;
+  supportThinking: boolean;
+  supportVision: boolean;
+  supportTools: boolean;
+  contextWindowTokens: number | null;
+  maxOutputTokens: number | null;
+  isActive: boolean;
+  mappings: ChatUserModelProviderMapping[];
+}
+
+export interface CreateChatUserModelRequest {
+  displayName: string;
+  modelFamily?: ChatModelFamily;
+  type?: number;
+  billingRatio?: number;
+  supportThinking?: boolean;
+  supportVision?: boolean;
+  supportTools?: boolean;
+  contextWindowTokens?: number | null;
+  maxOutputTokens?: number | null;
+}
+
+export interface UpdateChatUserModelRequest {
+  modelId: string;
+  displayName?: string;
+  modelFamily?: ChatModelFamily;
+  type?: number;
+  billingRatio?: number;
+  supportThinking?: boolean;
+  supportVision?: boolean;
+  supportTools?: boolean;
+  contextWindowTokens?: number | null;
+  maxOutputTokens?: number | null;
+  isActive?: boolean;
+}
+
+export interface BindChatModelProviderRequest {
+  modelId: string;
+  providerId: string;
+  providerModelName: string;
+  isPreferred?: boolean;
+  isActive?: boolean;
+}
+
 export interface ChatModelTag {
   text: string;
   type: string;
@@ -132,7 +223,26 @@ export interface IChatService {
   listSessions(params?: ListSessionsRequest): Promise<PageResult<ChatSession>>;
   listHistoryMessages(params: ListHistoryMessagesRequest): Promise<PageResult<WisePenUIMessage>>;
   getTools(): Promise<ToolOption[]>;
+  getUserProviders(): Promise<ChatProvider[]>;
+  createUserProvider(params: CreateChatProviderRequest): Promise<void>;
+  updateUserProvider(params: UpdateChatProviderRequest): Promise<void>;
+  deleteUserProvider(providerId: string): Promise<void>;
+  getUserModels(): Promise<ChatUserModel[]>;
+  createUserModel(params: CreateChatUserModelRequest): Promise<void>;
+  updateUserModel(params: UpdateChatUserModelRequest): Promise<void>;
+  deleteUserModel(modelId: string): Promise<void>;
+  bindModelProvider(params: BindChatModelProviderRequest): Promise<void>;
+  unbindModelProvider(modelId: string, providerId: string): Promise<void>;
+  updateUserToolConfig(params: UpdateUserToolConfigRequest): Promise<ToolOption>;
+  deleteUserToolConfig(toolName: string): Promise<void>;
   uploadAttachment(params: UploadAttachmentParams): Promise<UploadAttachmentResult>;
+}
+
+export interface UpdateUserToolConfigRequest {
+  toolName: string;
+  enabled?: boolean;
+  config?: Record<string, unknown>;
+  secretConfig?: Record<string, string>;
 }
 
 /** `GET /chat/model/listAvailableModels` 的 data 字段结构 */

@@ -13,10 +13,15 @@ import { ChatServicesMap } from '../mapper/ChatServices.map';
 import { getPrimarySkillsForAgent } from '../mapper/skillScope.mapper';
 import { mapResourceItemToResourceSkillSummary } from '../mapper/workspace.mapper';
 import type {
+  BindChatModelProviderRequest,
   ChatInputCapabilityOptions,
   ChatModel,
+  ChatProvider,
   ChatServiceDeps,
   ChatSession,
+  ChatUserModel,
+  CreateChatProviderRequest,
+  CreateChatUserModelRequest,
   CreateSessionRequest,
   DeleteSessionRequest,
   GetChatInputCapabilityOptionsParams,
@@ -30,6 +35,9 @@ import type {
   RenameSessionRequest,
   SetSessionAgentRequest,
   ToolOption,
+  UpdateChatProviderRequest,
+  UpdateChatUserModelRequest,
+  UpdateUserToolConfigRequest,
   UploadAttachmentParams,
   UploadAttachmentResult,
 } from './index.type';
@@ -233,6 +241,103 @@ const getTools = async (): Promise<ToolOption[]> => {
   return ChatServicesMap.mapGetToolsFromApi(response);
 };
 
+const getUserProviders = async (): Promise<ChatProvider[]> => {
+  const response = await ChatApi.listUserProviders();
+  return ChatServicesMap.mapUserProvidersFromApi(response);
+};
+
+const createUserProvider = async (params: CreateChatProviderRequest): Promise<void> => {
+  await ChatApi.createUserProvider({
+    name: params.name,
+    type: params.type,
+    api_key: params.apiKey,
+    base_url: params.baseUrl,
+    is_active: params.isActive,
+  });
+};
+
+const updateUserProvider = async (params: UpdateChatProviderRequest): Promise<void> => {
+  await ChatApi.updateUserProvider({
+    provider_id: params.providerId,
+    name: params.name,
+    type: params.type,
+    api_key: params.apiKey,
+    base_url: params.baseUrl,
+    is_active: params.isActive,
+  });
+};
+
+const deleteUserProvider = async (providerId: string): Promise<void> => {
+  await ChatApi.deleteUserProvider({ provider_id: providerId });
+};
+
+const getUserModels = async (): Promise<ChatUserModel[]> => {
+  const response = await ChatApi.listModels();
+  return ChatServicesMap.mapUserModelsFromApi(response);
+};
+
+const createUserModel = async (params: CreateChatUserModelRequest): Promise<void> => {
+  await ChatApi.createUserModel({
+    display_name: params.displayName,
+    type: params.type,
+    model_family: params.modelFamily,
+    billing_ratio: params.billingRatio,
+    support_thinking: params.supportThinking,
+    support_vision: params.supportVision,
+    support_tools: params.supportTools,
+    context_window_tokens: params.contextWindowTokens,
+    max_output_tokens: params.maxOutputTokens,
+  });
+};
+
+const updateUserModel = async (params: UpdateChatUserModelRequest): Promise<void> => {
+  await ChatApi.updateUserModel({
+    model_id: params.modelId,
+    display_name: params.displayName,
+    type: params.type,
+    model_family: params.modelFamily,
+    billing_ratio: params.billingRatio,
+    support_thinking: params.supportThinking,
+    support_vision: params.supportVision,
+    support_tools: params.supportTools,
+    context_window_tokens: params.contextWindowTokens,
+    max_output_tokens: params.maxOutputTokens,
+    is_active: params.isActive,
+  });
+};
+
+const deleteUserModel = async (modelId: string): Promise<void> => {
+  await ChatApi.deleteUserModel({ model_id: modelId });
+};
+
+const bindModelProvider = async (params: BindChatModelProviderRequest): Promise<void> => {
+  await ChatApi.bindModelProvider({
+    model_id: params.modelId,
+    provider_id: params.providerId,
+    provider_model_name: params.providerModelName,
+    is_preferred: params.isPreferred,
+    is_active: params.isActive,
+  });
+};
+
+const unbindModelProvider = async (modelId: string, providerId: string): Promise<void> => {
+  await ChatApi.unbindModelProvider({ model_id: modelId, provider_id: providerId });
+};
+
+const updateUserToolConfig = async (params: UpdateUserToolConfigRequest): Promise<ToolOption> => {
+  const response = await ChatApi.updateUserToolConfig({
+    tool_name: params.toolName,
+    enabled: params.enabled,
+    config: params.config,
+    secret_config: params.secretConfig,
+  });
+  return ChatServicesMap.mapToolFromApi(response);
+};
+
+const deleteUserToolConfig = async (toolName: string): Promise<void> => {
+  await ChatApi.deleteUserToolConfig({ tool_name: toolName });
+};
+
 const uploadAttachment = async ({
   sessionId,
   file,
@@ -286,5 +391,17 @@ export const createChatServices = (deps: ChatServiceDeps): IChatService => ({
   listSessions,
   listHistoryMessages,
   getTools,
+  getUserProviders,
+  createUserProvider,
+  updateUserProvider,
+  deleteUserProvider,
+  getUserModels,
+  createUserModel,
+  updateUserModel,
+  deleteUserModel,
+  bindModelProvider,
+  unbindModelProvider,
+  updateUserToolConfig,
+  deleteUserToolConfig,
   uploadAttachment,
 });

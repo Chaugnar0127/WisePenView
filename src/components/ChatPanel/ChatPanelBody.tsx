@@ -26,6 +26,7 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
     loadingInitialHistory,
     loadingMoreHistory,
     messages,
+    promoteDraftToolSelection,
     resourceChatContext,
     clearResourceChatContext,
     sessionBarOpen,
@@ -73,6 +74,8 @@ function ChatPanelBody({ agentDebug, controller, fullWidth }: ChatPanelBodyProps
                 onSend={handleSend}
                 getUploadSessionId={ensureChatSession}
                 sending={sending}
+                sessionId={currentSessionId}
+                promoteDraftToolSelection={promoteDraftToolSelection}
                 onCancel={cancelling ? undefined : handleCancel}
                 isAuthenticated={controller.isAuthenticated}
                 onRequireLogin={controller.requireLogin}

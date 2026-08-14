@@ -4,6 +4,8 @@ export interface ChatInputProps {
   onSend: (text: string, opts?: SendOptions) => boolean | void | Promise<boolean | void>;
   getUploadSessionId: () => Promise<string>;
   sending: boolean;
+  sessionId?: string;
+  promoteDraftToolSelection: boolean;
   onCancel?: () => void | Promise<void>;
   contextPreview?: string;
   onClearContext?: () => void;

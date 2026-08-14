@@ -52,6 +52,7 @@ export function useChatPanelController({
   const requestChatSessionHistoryRefresh = useChatSessionHistoryRefreshStore(
     (state) => state.requestRefresh
   );
+  const newChatSessionId = useNewChatSessionStore((state) => state.newChatSessionId);
   const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const currentSessionTitle = useCurrentChatSessionStore((state) => state.currentSessionTitle);
   const currentSessionAgentId = useCurrentChatSessionStore((state) => state.currentSessionAgentId);
@@ -425,6 +426,8 @@ export function useChatPanelController({
     loadingMoreHistory,
     messages,
     panelTitle,
+    promoteDraftToolSelection:
+      currentSessionId !== undefined && currentSessionId === newChatSessionId,
     resourceChatContext,
     clearResourceChatContext,
     savingDebugDraft,

@@ -17,6 +17,7 @@ import type {
 } from '../index.type';
 
 const DEFAULT_PERSONAL_AGENT = buildDefaultPersonalAgent();
+const NEW_CHAT_TOOL_SELECTION_SCOPE = '__new_chat__';
 
 function buildSkillSelection(
   skill: ResourceSkillSummary,
@@ -69,6 +70,8 @@ interface ChatInputState {
   selectedSkills: CapabilitySkillSelection[];
   selectedTools: CapabilityToolOption[];
   skillMenuOpen: boolean;
+  toolSelectionScope: string;
+  toolSelectionsByScope: Record<string, CapabilityToolOption[]>;
   value: string;
 }
 
@@ -98,6 +101,7 @@ interface ChatInputActions {
   setSelectedAgent: (agent: ChatAgentOption) => void;
   setSelectedModelId: (modelId: string | null) => void;
   setSkillMenuOpen: (open: boolean) => void;
+  setToolSelectionSession: (sessionId: string | undefined, promoteDraft: boolean) => void;
   setValue: (value: string) => void;
   toggleSkill: (skill: ResourceSkillSummary, sourceAgent: ChatAgentOption) => void;
   toggleTool: (tool: CapabilityToolOption) => void;
@@ -124,6 +128,8 @@ const INITIAL_STATE: ChatInputState = {
   selectedSkills: [],
   selectedTools: [],
   skillMenuOpen: false,
+  toolSelectionScope: NEW_CHAT_TOOL_SELECTION_SCOPE,
+  toolSelectionsByScope: {},
   value: '',
 };
 
@@ -158,15 +164,18 @@ export function createChatInputStore(): ChatInputStoreApi {
         activeAttachments: [],
         pendingAttachmentUploads: [],
         selectedSkills: [],
-        selectedTools: [],
         value: '',
       }),
 
     clearCapabilities: () =>
-      set({
+      set((state) => ({
         selectedSkills: [],
         selectedTools: [],
-      }),
+        toolSelectionsByScope: {
+          ...state.toolSelectionsByScope,
+          [state.toolSelectionScope]: [],
+        },
+      })),
 
     removeActiveAttachment: (attachmentId) =>
       set((state) => ({
@@ -193,15 +202,22 @@ export function createChatInputStore(): ChatInputStoreApi {
       })),
 
     removeTool: (toolId) =>
-      set((state) => ({
-        selectedTools: state.selectedTools.filter((item) => item.toolId !== toolId),
-      })),
+      set((state) => {
+        const selectedTools = state.selectedTools.filter((item) => item.toolId !== toolId);
+        return {
+          selectedTools,
+          toolSelectionsByScope: {
+            ...state.toolSelectionsByScope,
+            [state.toolSelectionScope]: selectedTools,
+          },
+        };
+      }),
 
     replaceAgentIfMissing: (fallbackAgent) =>
       set((state) =>
         fallbackAgent.agentId === state.selectedAgent.agentId
           ? {}
-          : { selectedAgent: fallbackAgent, selectedSkills: [], selectedTools: [] }
+          : { selectedAgent: fallbackAgent, selectedSkills: [] }
       ),
 
     replaceExternalSkills: (selected) =>
@@ -238,10 +254,36 @@ export function createChatInputStore(): ChatInputStoreApi {
       set((state) =>
         state.selectedAgent.agentId === selectedAgent.agentId
           ? { selectedAgent }
-          : { selectedAgent, selectedSkills: [], selectedTools: [] }
+          : { selectedAgent, selectedSkills: [] }
       ),
     setSelectedModelId: (selectedModelId) => set({ selectedModelId }),
     setSkillMenuOpen: (skillMenuOpen) => set({ skillMenuOpen }),
+    setToolSelectionSession: (sessionId, promoteDraft) =>
+      set((state) => {
+        const nextScope = sessionId ?? NEW_CHAT_TOOL_SELECTION_SCOPE;
+        if (nextScope === state.toolSelectionScope) return {};
+
+        const shouldPromoteDraft =
+          promoteDraft &&
+          sessionId !== undefined &&
+          state.toolSelectionScope === NEW_CHAT_TOOL_SELECTION_SCOPE;
+        const selectedTools = shouldPromoteDraft
+          ? state.selectedTools
+          : (state.toolSelectionsByScope[nextScope] ?? []);
+        const toolSelectionsByScope = {
+          ...state.toolSelectionsByScope,
+          [nextScope]: selectedTools,
+        };
+        if (state.toolSelectionScope === NEW_CHAT_TOOL_SELECTION_SCOPE) {
+          delete toolSelectionsByScope[NEW_CHAT_TOOL_SELECTION_SCOPE];
+        }
+
+        return {
+          selectedTools,
+          toolSelectionScope: nextScope,
+          toolSelectionsByScope,
+        };
+      }),
     setValue: (value) => set({ value }),
 
     toggleSkill: (skill, sourceAgent) =>
@@ -257,10 +299,15 @@ export function createChatInputStore(): ChatInputStoreApi {
     toggleTool: (tool) =>
       set((state) => {
         const exists = state.selectedTools.some((item) => item.toolId === tool.toolId);
+        const selectedTools = exists
+          ? state.selectedTools.filter((item) => item.toolId !== tool.toolId)
+          : [...state.selectedTools, tool];
         return {
-          selectedTools: exists
-            ? state.selectedTools.filter((item) => item.toolId !== tool.toolId)
-            : [...state.selectedTools, tool],
+          selectedTools,
+          toolSelectionsByScope: {
+            ...state.toolSelectionsByScope,
+            [state.toolSelectionScope]: selectedTools,
+          },
         };
       }),
   }));

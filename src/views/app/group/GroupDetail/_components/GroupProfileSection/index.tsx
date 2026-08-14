@@ -166,7 +166,7 @@ function GroupProfileSection({ group, groupId, canEdit, onSuccess }: GroupProfil
     }
   };
 
-  const coverUrl = draft.coverPreview ?? group.groupCoverUrl ?? PLACEHOLDER_IMAGE;
+  const coverUrl = draft.coverPreview || group.groupCoverUrl || PLACEHOLDER_IMAGE;
   const ownerName = group.ownerInfo?.realName?.trim() || group.ownerInfo?.nickname?.trim() || '-';
   const createDate = formatTimestampToDate(group.createTime) || t('detail.noDate');
   const isCourseGroup = group.groupType === GROUP_TYPE.ADVANCED;

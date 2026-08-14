@@ -17,12 +17,9 @@ const AGENT_SPEC_FALLBACK: AgentSpec = {
   autoGenerateTitle: true,
   modelPolicy: { defaultModelId: '', defaultProviderId: '', allowRequestOverride: true },
   toolAndSkillPolicy: {
-    enableUseTool: true,
-    allowToolNames: [],
-    denyToolNames: [],
-    enableUseSkill: true,
+    toolSelectionDefaultEnabled: true,
+    toolSelectionOverrides: {},
     onDemandSkillIds: [],
-    forceEnabledSkillIds: [],
   },
   memoryPolicy: {
     enableChatMemory: true,
@@ -48,16 +45,11 @@ const mapSpec = (spec?: AgentSpecApi | null): AgentSpec => ({
       AGENT_SPEC_FALLBACK.modelPolicy.allowRequestOverride,
   },
   toolAndSkillPolicy: {
-    enableUseTool:
-      spec?.toolAndSkillPolicy?.enableUseTool ??
-      AGENT_SPEC_FALLBACK.toolAndSkillPolicy.enableUseTool,
-    allowToolNames: [...(spec?.toolAndSkillPolicy?.allowToolNames ?? [])],
-    denyToolNames: [...(spec?.toolAndSkillPolicy?.denyToolNames ?? [])],
-    enableUseSkill:
-      spec?.toolAndSkillPolicy?.enableUseSkill ??
-      AGENT_SPEC_FALLBACK.toolAndSkillPolicy.enableUseSkill,
+    toolSelectionDefaultEnabled:
+      spec?.toolAndSkillPolicy?.toolSelectionDefaultEnabled ??
+      AGENT_SPEC_FALLBACK.toolAndSkillPolicy.toolSelectionDefaultEnabled,
+    toolSelectionOverrides: { ...(spec?.toolAndSkillPolicy?.toolSelectionOverrides ?? {}) },
     onDemandSkillIds: [...(spec?.toolAndSkillPolicy?.onDemandSkillIds ?? [])],
-    forceEnabledSkillIds: [...(spec?.toolAndSkillPolicy?.forceEnabledSkillIds ?? [])],
   },
   memoryPolicy: {
     enableChatMemory:
@@ -91,10 +83,8 @@ const mapAgentSpecToApi = (spec: AgentSpec): AgentSpecApi => ({
   modelPolicy: { ...spec.modelPolicy },
   toolAndSkillPolicy: {
     ...spec.toolAndSkillPolicy,
-    allowToolNames: [...spec.toolAndSkillPolicy.allowToolNames],
-    denyToolNames: [...spec.toolAndSkillPolicy.denyToolNames],
+    toolSelectionOverrides: { ...spec.toolAndSkillPolicy.toolSelectionOverrides },
     onDemandSkillIds: [...spec.toolAndSkillPolicy.onDemandSkillIds],
-    forceEnabledSkillIds: [...spec.toolAndSkillPolicy.forceEnabledSkillIds],
   },
   memoryPolicy: { ...spec.memoryPolicy },
 });

@@ -222,6 +222,22 @@ export function useChatPanelController({
       return false;
     }
 
+    const selectedTools = opts?.selectedTools ?? [];
+    const resourceToolOverrides = resourceStateProvider?.toolSelectionOverrides;
+    const toolSelectionOverrides =
+      selectedTools.length > 0 || resourceToolOverrides !== undefined
+        ? {
+            ...Object.fromEntries(selectedTools.map((tool) => [tool.toolId, true])),
+            ...resourceToolOverrides,
+          }
+        : undefined;
+    const selectedSkillIds = opts?.selectedSkills?.map((skill) => skill.skillId);
+    const resourceSkillIds = resourceStateProvider?.onDemandSkillIds;
+    const onDemandSkillIds =
+      selectedSkillIds !== undefined || resourceSkillIds !== undefined
+        ? Array.from(new Set([...(selectedSkillIds ?? []), ...(resourceSkillIds ?? [])]))
+        : undefined;
+
     void sendSessionMessage(text, {
       model: targetModel.modelId,
       providerId: targetModel.providerId,
@@ -232,15 +248,10 @@ export function useChatPanelController({
       ],
       selectedResources: opts?.activeDocRefs,
       uploadedAttachments: opts?.activeAttachments,
-      onDemandSkillIds: opts?.selectedSkills?.map((skill) => skill.skillId),
-      ...(opts?.selectedTools && opts.selectedTools.length > 0
-        ? {
-            toolSelectionDefaultEnabled: false,
-            toolSelectionOverrides: Object.fromEntries(
-              opts.selectedTools.map((tool) => [tool.toolId, true])
-            ),
-          }
-        : {}),
+      toolSelectionDefaultEnabled:
+        selectedTools.length > 0 ? false : resourceStateProvider?.toolSelectionDefaultEnabled,
+      toolSelectionOverrides,
+      onDemandSkillIds,
     }).catch((error) => {
       toast.danger(parseErrorMessage(error));
     });

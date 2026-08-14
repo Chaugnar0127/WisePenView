@@ -39,6 +39,8 @@ export type {
 export type {
   ChatCompletionRequest,
   ChatFrontendState,
+  ClientToolCapability,
+  ClientToolCapabilityRequest,
   SendSessionMessageOptions,
   UseChatSessionOptions,
 } from './session/index.type';

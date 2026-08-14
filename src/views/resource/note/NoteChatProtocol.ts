@@ -10,8 +10,11 @@ import type { NoteSelectionSnapshot, NoteSessionStatus, SelectedNoteScope } from
 import i18n from '@/i18n';
 import { RESOURCE_KIND, RESOURCE_VIEWER } from '@/utils/navigation/resourceTarget';
 
-const NOTE_AI_DIFF_SKILL_ID = 'builtin:wisepen-note-ai-diff';
-const NOTE_AI_DIFF_TOOL_NAMES = ['read_note_aixml', 'apply_current_note_ai_diff_plan'];
+const NOTE_EDITOR_SKILL_ID = 'builtin:current-note-editor';
+const NOTE_EDITOR_TOOL_SELECTION_OVERRIDES = {
+  read_current_note_for_edit: true,
+  apply_current_note_edits: true,
+} as const;
 
 type NoteSelectedScopeStateValue =
   | {
@@ -105,8 +108,9 @@ export function createNoteChatStateProvider(params: {
       ];
       return states;
     },
-    allowToolNames: NOTE_AI_DIFF_TOOL_NAMES,
-    forceEnabledSkillIds: [NOTE_AI_DIFF_SKILL_ID],
+    toolSelectionDefaultEnabled: false,
+    toolSelectionOverrides: NOTE_EDITOR_TOOL_SELECTION_OVERRIDES,
+    onDemandSkillIds: [NOTE_EDITOR_SKILL_ID],
   };
 }
 

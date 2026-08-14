@@ -33,13 +33,25 @@ export interface ListModelsApiResponse {
   user_models: ModelResponse[];
 }
 
+interface ToolSourceApiResponse {
+  type: string;
+  server_id: string | null;
+  server_display_name: string | null;
+  remote_name: string | null;
+}
+
 export interface ToolApiResponse {
   name: string;
+  display_name: string;
   description: string;
+  selection_mode: 'user_selectable' | 'contextual';
   requires_config: boolean;
   configured: boolean;
   enabled: boolean;
+  source: ToolSourceApiResponse | null;
   missing_config_keys?: string[];
+  config_schema: Record<string, unknown>;
+  secret_fingerprints: Record<string, string>;
 }
 
 export interface ListToolsApiResponse {

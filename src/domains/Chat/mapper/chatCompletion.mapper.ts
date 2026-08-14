@@ -1,6 +1,8 @@
 import type {
   ChatCompletionRequest,
   ChatFrontendState,
+  ClientToolCapability,
+  ClientToolCapabilityRequest,
   SendSessionMessageOptions,
 } from '../session/index.type';
 
@@ -25,6 +27,14 @@ function unique(values?: readonly string[]): string[] {
   return Array.from(new Set(values ?? []));
 }
 
+function mapClientToolCapability(capability: ClientToolCapability): ClientToolCapabilityRequest {
+  return {
+    name: capability.name,
+    description: capability.description,
+    input_schema: capability.inputSchema,
+  };
+}
+
 export function mapChatCompletionRequest(params: {
   defaultSessionId: string;
   defaultModel?: string;
@@ -37,8 +47,10 @@ export function mapChatCompletionRequest(params: {
   const attachmentIds = (options.uploadedAttachments ?? [])
     .filter((attachment) => attachment.enabled)
     .map((attachment) => attachment.attachmentId);
-  const allowToolNames = unique(options.allowToolNames);
-  const forceEnabledSkillIds = unique(options.forceEnabledSkillIds);
+  const onDemandSkillIds = unique(options.onDemandSkillIds);
+  const clientToolCapabilities = (options.clientToolCapabilities ?? []).map(
+    mapClientToolCapability
+  );
 
   return {
     session_id: options.sessionId ?? defaultSessionId,
@@ -48,15 +60,17 @@ export function mapChatCompletionRequest(params: {
     ...(options.runtimeOptions ? { runtime_options: options.runtimeOptions } : {}),
     ...(frontendStates.length > 0 ? { frontend_states: frontendStates } : {}),
     ...(attachmentIds.length > 0 ? { user_defined_attachment_ids: attachmentIds } : {}),
-    ...(allowToolNames.length > 0 ? { user_defined_allow_tool_names: allowToolNames } : {}),
-    ...(options.denyToolNames?.length
-      ? { user_defined_deny_tool_names: options.denyToolNames }
+    ...(options.toolSelectionDefaultEnabled !== undefined
+      ? { tool_selection_default_enabled: options.toolSelectionDefaultEnabled }
       : {}),
-    ...(options.onDemandSkillIds?.length
-      ? { user_defined_on_demand_skill_ids: options.onDemandSkillIds }
+    ...(options.toolSelectionOverrides !== undefined
+      ? { tool_selection_overrides: { ...options.toolSelectionOverrides } }
       : {}),
-    ...(forceEnabledSkillIds.length > 0
-      ? { user_defined_force_enabled_skill_ids: forceEnabledSkillIds }
+    ...(options.onDemandSkillIds !== undefined
+      ? { user_defined_on_demand_skill_ids: onDemandSkillIds }
+      : {}),
+    ...(clientToolCapabilities.length > 0
+      ? { client_tool_capabilities: clientToolCapabilities }
       : {}),
   };
 }

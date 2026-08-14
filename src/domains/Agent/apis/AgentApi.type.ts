@@ -24,12 +24,9 @@ export interface AgentModelPolicyApi {
 }
 
 export interface AgentToolAndSkillPolicyApi {
-  enableUseTool?: boolean | null;
-  allowToolNames?: string[] | null;
-  denyToolNames?: string[] | null;
-  enableUseSkill?: boolean | null;
+  toolSelectionDefaultEnabled?: boolean | null;
+  toolSelectionOverrides?: Record<string, boolean> | null;
   onDemandSkillIds?: string[] | null;
-  forceEnabledSkillIds?: string[] | null;
 }
 
 export interface AgentMemoryPolicyApi {

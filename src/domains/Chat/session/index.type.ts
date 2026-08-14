@@ -25,10 +25,22 @@ export interface ChatCompletionRequest {
   runtime_options?: Record<string, unknown>;
   frontend_states?: ChatFrontendState[];
   user_defined_attachment_ids?: string[];
-  user_defined_allow_tool_names?: string[];
-  user_defined_deny_tool_names?: string[];
+  tool_selection_default_enabled?: boolean;
+  tool_selection_overrides?: Record<string, boolean>;
   user_defined_on_demand_skill_ids?: string[];
-  user_defined_force_enabled_skill_ids?: string[];
+  client_tool_capabilities?: ClientToolCapabilityRequest[];
+}
+
+export interface ClientToolCapability {
+  name: string;
+  description: string;
+  inputSchema: Record<string, unknown>;
+}
+
+export interface ClientToolCapabilityRequest {
+  name: string;
+  description: string;
+  input_schema: Record<string, unknown>;
 }
 
 export interface SendSessionMessageOptions {
@@ -39,10 +51,10 @@ export interface SendSessionMessageOptions {
   frontendStates?: ChatFrontendState[];
   selectedResources?: ChatSelectedResourceContext[];
   uploadedAttachments?: ChatUploadedAttachmentContext[];
-  allowToolNames?: string[];
-  denyToolNames?: string[];
+  toolSelectionDefaultEnabled?: boolean;
+  toolSelectionOverrides?: Record<string, boolean>;
   onDemandSkillIds?: string[];
-  forceEnabledSkillIds?: string[];
+  clientToolCapabilities?: ClientToolCapability[];
 }
 
 export interface UseChatSessionOptions {

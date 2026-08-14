@@ -11,12 +11,9 @@ export interface AgentModelPolicy {
 }
 
 export interface AgentToolAndSkillPolicy {
-  enableUseTool: boolean;
-  allowToolNames: string[];
-  denyToolNames: string[];
-  enableUseSkill: boolean;
+  toolSelectionDefaultEnabled: boolean;
+  toolSelectionOverrides: Record<string, boolean>;
   onDemandSkillIds: string[];
-  forceEnabledSkillIds: string[];
 }
 
 export interface AgentMemoryPolicy {

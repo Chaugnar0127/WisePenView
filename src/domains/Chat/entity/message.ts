@@ -26,7 +26,6 @@ export interface ToolApprovalRequestData {
   approvalId: string;
   toolCallId: string;
   toolName: string;
-  toolDesc: string;
   input: unknown;
 }
 

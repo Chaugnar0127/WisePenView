@@ -21,15 +21,6 @@ interface AssistantMessageProps {
   onApprovalDecision: (toolCallId: string, approved: boolean) => void;
 }
 
-function getApprovalDescription(message: WisePenUIMessage, toolCallId: string): string | undefined {
-  const approvalPart = message.parts.find(
-    (part) => part.type === 'data-tool-approval-request' && part.data.toolCallId === toolCallId
-  );
-  return approvalPart?.type === 'data-tool-approval-request'
-    ? approvalPart.data.toolDesc
-    : undefined;
-}
-
 function AssistantMessage({
   message,
   model,
@@ -101,7 +92,6 @@ function AssistantMessage({
               <ToolCallBlock
                 key={key}
                 part={part}
-                approvalDescription={getApprovalDescription(message, part.toolCallId)}
                 approvalDecision={approvalDecisions[part.toolCallId]}
                 approvalSubmitting={approvalSubmitting}
                 onApprovalDecision={(approved) => onApprovalDecision(part.toolCallId, approved)}

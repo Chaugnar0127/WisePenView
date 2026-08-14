@@ -38,7 +38,6 @@ interface ToolDetailSection {
 
 interface ToolCallBlockProps {
   part: RenderableToolPart;
-  approvalDescription?: string;
   approvalDecision?: boolean;
   approvalSubmitting?: boolean;
   onApprovalDecision?: (approved: boolean) => void;
@@ -137,7 +136,6 @@ function ToolStatusChip({ badge }: { badge: ToolStatusBadge }) {
 
 function ToolCallBlock({
   part,
-  approvalDescription,
   approvalDecision,
   approvalSubmitting = false,
   onApprovalDecision,
@@ -224,11 +222,11 @@ function ToolCallBlock({
           {part.state === 'approval-requested' ? (
             <section className={styles.approvalSection}>
               <div className={styles.approvalNotice}>
-                <ShieldAlert size={16} aria-hidden="true" />
+                <ShieldAlert className={styles.approvalIcon} size={16} aria-hidden="true" />
                 <div>
                   <h4 className={styles.sectionLabel}>{t('message.tool.approval.title')}</h4>
                   <p className={styles.approvalDescription}>
-                    {approvalDescription || t('message.tool.approval.description')}
+                    {t('message.tool.approval.description')}
                   </p>
                 </div>
               </div>

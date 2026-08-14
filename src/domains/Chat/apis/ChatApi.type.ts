@@ -58,6 +58,14 @@ export interface ListToolsApiResponse {
   tools: ToolApiResponse[];
 }
 
+export interface ActiveChatTurnApiRequest {
+  session_id: string;
+}
+
+export interface ActiveChatTurnApiResponse {
+  turn_id: string | null;
+}
+
 export interface ModelProviderMappingResponse {
   model_id: string;
   provider_id: string;

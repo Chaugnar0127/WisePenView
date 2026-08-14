@@ -1,5 +1,6 @@
 import type { DynamicToolUIPart, ToolUIPart, UITool, UIToolInvocation } from 'ai';
 import type {
+  ActiveChatTurnApiResponse,
   CreateSessionApiRequest,
   CreateSessionApiResponse,
   ListHistoryMessagesApiRequest,
@@ -207,6 +208,8 @@ const mapGetToolsFromApi = (data: ListToolsApiResponse): ToolOption[] =>
     configSchema: tool.config_schema,
     secretFingerprints: tool.secret_fingerprints,
   }));
+
+const mapActiveTurnIdFromApi = (data: ActiveChatTurnApiResponse): string | null => data.turn_id;
 
 const mapCreateSessionRequest = (params?: CreateSessionRequest): CreateSessionApiRequest => {
   const title = params?.title;
@@ -530,6 +533,7 @@ const mapListHistoryMessagesFromApi = (
 };
 
 export const ChatServicesMap = {
+  mapActiveTurnIdFromApi,
   mapGetModelsFromApi,
   mapGetToolsFromApi,
   mapCreateSessionRequest,

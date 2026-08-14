@@ -2,7 +2,9 @@ import { awaitAddrReady, notifyAddrFailure } from '@/apis/apiServerAddr';
 import { buildApiUrl } from '@/apis/clientUrls';
 import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
 import { useChat } from '@ai-sdk/react';
+import { useLatest } from 'ahooks';
 import { DefaultChatTransport } from 'ai';
+import { useRef } from 'react';
 import type { ChatMessageMetadata, WisePenUIMessage } from '../entity/message';
 import { mapChatCompletionRequest } from '../mapper/chatCompletion.mapper';
 import type { SendSessionMessageOptions, UseChatSessionOptions } from './index.type';
@@ -36,20 +38,108 @@ async function fetchChatCompletion(
   }
 }
 
+const chatTransport = new DefaultChatTransport<WisePenUIMessage>({
+  api: '/chat/completions',
+  fetch: fetchChatCompletion,
+  prepareReconnectToStreamRequest: ({ id }) => {
+    const params = new URLSearchParams({ session_id: id });
+    return { api: `/chat/completions/stream?${params.toString()}` };
+  },
+});
+
 /**
  * 对 useChat 的薄封装：
  * 1) 统一请求地址到 /chat/completions
  * 2) 统一补齐后端 ChatRequest 字段
  * 3) 保留 useChat 原始能力（messages、status、stop 等）
  */
-export const useChatSession = ({ sessionId, model }: UseChatSessionOptions) => {
+export const useChatSession = ({
+  sessionId,
+  model,
+  getActiveTurnId,
+  onError,
+}: UseChatSessionOptions) => {
   const chat = useChat<WisePenUIMessage>({
+    id: sessionId,
     experimental_throttle: CHAT_STREAM_THROTTLE_MS,
-    transport: new DefaultChatTransport<WisePenUIMessage>({
-      api: '/chat/completions',
-      fetch: fetchChatCompletion,
-    }),
+    onError,
+    transport: chatTransport,
   });
+  const resumeRequestRef = useRef<{
+    sessionId: string;
+    resumeStream: typeof chat.resumeStream;
+    promise: Promise<void>;
+  } | null>(null);
+  const resumedTurnRef = useRef<{
+    sessionId: string;
+    turnId: string;
+    resumeStream: typeof chat.resumeStream;
+  } | null>(null);
+  const latestSessionId = useLatest(sessionId);
+  const latestResumeStream = useLatest(chat.resumeStream);
+  const latestActiveTurnId = useLatest(getActiveTurnId);
+  const latestOnError = useLatest(onError);
+
+  const resumeSessionStream = (): Promise<void> => {
+    if (!sessionId) return Promise.resolve();
+
+    const targetSessionId = sessionId;
+    const targetResumeStream = chat.resumeStream;
+    const existingRequest = resumeRequestRef.current;
+    if (
+      existingRequest?.sessionId === targetSessionId &&
+      existingRequest.resumeStream === targetResumeStream
+    ) {
+      return existingRequest.promise;
+    }
+
+    const promise = (async () => {
+      try {
+        const turnId = await latestActiveTurnId.current(targetSessionId);
+        if (
+          latestSessionId.current !== targetSessionId ||
+          latestResumeStream.current !== targetResumeStream
+        ) {
+          return;
+        }
+        if (!turnId) return;
+
+        const resumedTurn = resumedTurnRef.current;
+        if (
+          resumedTurn?.sessionId === targetSessionId &&
+          resumedTurn.turnId === turnId &&
+          resumedTurn.resumeStream === targetResumeStream
+        ) {
+          return;
+        }
+        // 先记录目标 turn，再建立连接，避免重复生命周期同时发起两条 SSE。
+        resumedTurnRef.current = {
+          sessionId: targetSessionId,
+          turnId,
+          resumeStream: targetResumeStream,
+        };
+        await targetResumeStream();
+      } catch (error) {
+        if (
+          latestSessionId.current !== targetSessionId ||
+          latestResumeStream.current !== targetResumeStream
+        ) {
+          return;
+        }
+        if (error instanceof Error) {
+          latestOnError.current?.(error);
+        }
+      }
+    })();
+
+    // 保留已完成请求，当前会话生命周期内不再次查询 active；会话切换后 Chat 实例身份会变化。
+    resumeRequestRef.current = {
+      sessionId: targetSessionId,
+      resumeStream: targetResumeStream,
+      promise,
+    };
+    return promise;
+  };
 
   const sendSessionMessage = async (query: string, options?: SendSessionMessageOptions) => {
     const requestBody = mapChatCompletionRequest({
@@ -86,5 +176,6 @@ export const useChatSession = ({ sessionId, model }: UseChatSessionOptions) => {
   return {
     ...chat,
     sendSessionMessage,
+    resumeSessionStream,
   };
 };

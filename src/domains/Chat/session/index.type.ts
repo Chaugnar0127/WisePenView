@@ -60,4 +60,6 @@ export interface SendSessionMessageOptions {
 export interface UseChatSessionOptions {
   sessionId: string;
   model?: string;
+  getActiveTurnId: (sessionId: string) => Promise<string | null>;
+  onError?: (error: Error) => void;
 }

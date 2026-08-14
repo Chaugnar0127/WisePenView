@@ -52,7 +52,7 @@ export function useChatHistory({
     setMessages([]);
   };
 
-  const replaceHistory = async (targetSessionId: string): Promise<void> => {
+  const replaceHistory = async (targetSessionId: string): Promise<boolean> => {
     const requestVersion = requestVersionRef.current + 1;
     requestVersionRef.current = requestVersion;
     loadingMoreRef.current = false;
@@ -68,17 +68,18 @@ export function useChatHistory({
         requestVersion !== requestVersionRef.current ||
         targetSessionId !== sessionIdRef.current
       ) {
-        return;
+        return false;
       }
       setMessages((currentMessages) => mergeMessages(payload.list, currentMessages));
       setPage(payload.page ?? 1);
       setTotalPage(payload.totalPage ?? 1);
+      return true;
     } catch (error) {
       if (
         requestVersion !== requestVersionRef.current ||
         targetSessionId !== sessionIdRef.current
       ) {
-        return;
+        return false;
       }
       throw error;
     } finally {

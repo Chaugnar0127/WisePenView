@@ -1,5 +1,7 @@
 import { apiGet, apiPost } from '@/apis/request';
 import type {
+  ActiveChatTurnApiRequest,
+  ActiveChatTurnApiResponse,
   CreateSessionApiRequest,
   CreateSessionApiResponse,
   DeleteSessionApiRequest,
@@ -38,6 +40,16 @@ export const ChatApi = {
   listModels,
   listTools,
   initTemporaryAttachmentUpload,
+};
+
+/** Chat Completion API: /chat/completions/* */
+
+function getActiveTurn(req: ActiveChatTurnApiRequest): Promise<ActiveChatTurnApiResponse> {
+  return apiGet('/chat/completions/active', { params: req });
+}
+
+export const ChatCompletionApi = {
+  getActiveTurn,
 };
 
 /** Chat Session API: /chat/session/* */

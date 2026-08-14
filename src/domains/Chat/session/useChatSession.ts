@@ -1,6 +1,7 @@
 import { awaitAddrReady, notifyAddrFailure } from '@/apis/apiServerAddr';
 import { buildApiUrl } from '@/apis/clientUrls';
 import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { useChat } from '@ai-sdk/react';
 import { useLatest } from 'ahooks';
 import { DefaultChatTransport } from 'ai';
@@ -41,8 +42,14 @@ async function fetchChatCompletion(
 const chatTransport = new DefaultChatTransport<WisePenUIMessage>({
   api: '/chat/completions',
   fetch: fetchChatCompletion,
-  prepareReconnectToStreamRequest: ({ id }) => {
-    const params = new URLSearchParams({ session_id: id });
+  prepareReconnectToStreamRequest: ({ body }) => {
+    const sessionId = body?.session_id;
+    if (typeof sessionId !== 'string' || sessionId === '') {
+      throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
+        reason: '重连聊天流时缺少 session_id',
+      });
+    }
+    const params = new URLSearchParams({ session_id: sessionId });
     return { api: `/chat/completions/stream?${params.toString()}` };
   },
 });
@@ -60,7 +67,6 @@ export const useChatSession = ({
   onError,
 }: UseChatSessionOptions) => {
   const chat = useChat<WisePenUIMessage>({
-    id: sessionId,
     experimental_throttle: CHAT_STREAM_THROTTLE_MS,
     onError,
     transport: chatTransport,
@@ -118,7 +124,7 @@ export const useChatSession = ({
           turnId,
           resumeStream: targetResumeStream,
         };
-        await targetResumeStream();
+        await targetResumeStream({ body: { session_id: targetSessionId } });
       } catch (error) {
         if (
           latestSessionId.current !== targetSessionId ||
@@ -132,7 +138,7 @@ export const useChatSession = ({
       }
     })();
 
-    // 保留已完成请求，当前会话生命周期内不再次查询 active；会话切换后 Chat 实例身份会变化。
+    // 保留已完成请求，当前会话生命周期内不再次查询 active；会话切换后由 sessionId 区分请求。
     resumeRequestRef.current = {
       sessionId: targetSessionId,
       resumeStream: targetResumeStream,

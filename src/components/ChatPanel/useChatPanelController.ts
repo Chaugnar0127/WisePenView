@@ -233,11 +233,14 @@ export function useChatPanelController({
       selectedResources: opts?.activeDocRefs,
       uploadedAttachments: opts?.activeAttachments,
       onDemandSkillIds: opts?.selectedSkills?.map((skill) => skill.skillId),
-      allowToolNames: [
-        ...(resourceStateProvider?.allowToolNames ?? []),
-        ...(opts?.selectedTools?.map((tool) => tool.toolId) ?? []),
-      ],
-      forceEnabledSkillIds: [...(resourceStateProvider?.forceEnabledSkillIds ?? [])],
+      ...(opts?.selectedTools && opts.selectedTools.length > 0
+        ? {
+            toolSelectionDefaultEnabled: false,
+            toolSelectionOverrides: Object.fromEntries(
+              opts.selectedTools.map((tool) => [tool.toolId, true])
+            ),
+          }
+        : {}),
     }).catch((error) => {
       toast.danger(parseErrorMessage(error));
     });

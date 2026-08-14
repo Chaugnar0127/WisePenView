@@ -233,15 +233,6 @@ export function useChatPanelController({
       return false;
     }
 
-    const selectedTools = opts?.selectedTools ?? [];
-    const resourceToolOverrides = resourceStateProvider?.toolSelectionOverrides;
-    const toolSelectionOverrides =
-      selectedTools.length > 0 || resourceToolOverrides !== undefined
-        ? {
-            ...Object.fromEntries(selectedTools.map((tool) => [tool.toolId, true])),
-            ...resourceToolOverrides,
-          }
-        : undefined;
     const selectedSkillIds = opts?.selectedSkills?.map((skill) => skill.skillId);
     const resourceSkillIds = resourceStateProvider?.onDemandSkillIds;
     const onDemandSkillIds =
@@ -259,9 +250,7 @@ export function useChatPanelController({
       ],
       selectedResources: opts?.activeDocRefs,
       uploadedAttachments: opts?.activeAttachments,
-      toolSelectionDefaultEnabled:
-        selectedTools.length > 0 ? false : resourceStateProvider?.toolSelectionDefaultEnabled,
-      toolSelectionOverrides,
+      toolSelectionOverrides: opts?.toolSelectionOverrides,
       onDemandSkillIds,
     }).catch((error) => {
       toast.danger(parseErrorMessage(error));

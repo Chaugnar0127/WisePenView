@@ -6,6 +6,31 @@ export interface CapabilityToolOption {
   label: string;
 }
 
+interface ChatInputToolCandidate extends CapabilityToolOption {
+  configured: boolean;
+}
+
+export function selectChatInputWebSearchTools(
+  tools: readonly ChatInputToolCandidate[]
+): CapabilityToolOption[] {
+  // 后端暂未提供工具分类字段，聊天入口按约定的 `_search` 后缀识别 Web Search。
+  return tools
+    .filter((tool) => tool.configured && tool.toolId.endsWith('_search'))
+    .map(({ toolId, label }) => ({ toolId, label }));
+}
+
+export function mapChatInputToolSelectionOverrides(
+  toolOptions: readonly CapabilityToolOption[],
+  selectedTools: readonly CapabilityToolOption[]
+): Record<string, boolean> | undefined {
+  if (toolOptions.length === 0) return undefined;
+
+  const selectedToolIds = new Set(selectedTools.map((tool) => tool.toolId));
+  return Object.fromEntries(
+    toolOptions.map((tool) => [tool.toolId, selectedToolIds.has(tool.toolId)])
+  );
+}
+
 type CapabilityPickerItemKind = 'primary-skill' | 'external-skill' | 'tool';
 
 interface CapabilityPickerItem {

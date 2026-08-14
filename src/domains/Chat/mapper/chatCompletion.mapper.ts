@@ -60,9 +60,7 @@ export function mapChatCompletionRequest(params: {
     ...(options.runtimeOptions ? { runtime_options: options.runtimeOptions } : {}),
     ...(frontendStates.length > 0 ? { frontend_states: frontendStates } : {}),
     ...(attachmentIds.length > 0 ? { user_defined_attachment_ids: attachmentIds } : {}),
-    ...(options.toolSelectionDefaultEnabled !== undefined
-      ? { tool_selection_default_enabled: options.toolSelectionDefaultEnabled }
-      : {}),
+    tool_selection_default_enabled: true,
     ...(options.toolSelectionOverrides !== undefined
       ? { tool_selection_overrides: { ...options.toolSelectionOverrides } }
       : {}),

@@ -15,6 +15,7 @@ import type {
   WisePenUIMessage,
 } from '@/domains/Chat';
 import { MODEL_TYPE } from '@/domains/Chat';
+import { selectChatInputWebSearchTools } from '@/domains/Chat/mapper/capabilityPicker.mapper';
 import type { Group } from '@/domains/Group';
 
 type MockModelSeed = {
@@ -521,10 +522,10 @@ const listChatInputSkills: IChatService['listChatInputSkills'] = async ({
 const getTools = async (): Promise<ToolOption[]> => {
   return [
     {
-      toolId: 'search_historical_messages',
-      label: 'Search History',
-      displayName: 'Search History',
-      description: '检索历史会话',
+      toolId: 'default_web_search',
+      label: '默认 Web 搜索',
+      displayName: '默认 Web 搜索',
+      description: '搜索公开网络信息',
       selectionMode: 'user_selectable',
       enabled: true,
       configured: true,
@@ -539,10 +540,46 @@ const getTools = async (): Promise<ToolOption[]> => {
       secretFingerprints: {},
     },
     {
-      toolId: 'mock-tool-2',
-      label: 'Mock Tool 2',
-      displayName: 'Mock Tool 2',
-      description: 'Mock Tool',
+      toolId: 'mock_provider_search',
+      label: 'Mock 搜索',
+      displayName: 'Mock 搜索',
+      description: '使用已配置的 Mock 供应商搜索',
+      selectionMode: 'user_selectable',
+      enabled: true,
+      configured: true,
+      requiresConfig: false,
+      source: {
+        type: 'system',
+        serverId: null,
+        serverDisplayName: null,
+        remoteName: null,
+      },
+      configSchema: {},
+      secretFingerprints: {},
+    },
+    {
+      toolId: 'unconfigured_search',
+      label: '未配置搜索',
+      displayName: '未配置搜索',
+      description: '缺少供应商配置的搜索工具',
+      selectionMode: 'user_selectable',
+      enabled: true,
+      configured: false,
+      requiresConfig: true,
+      source: {
+        type: 'system',
+        serverId: null,
+        serverDisplayName: null,
+        remoteName: null,
+      },
+      configSchema: {},
+      secretFingerprints: {},
+    },
+    {
+      toolId: 'search_user_resources',
+      label: '搜索用户资源',
+      displayName: '搜索用户资源',
+      description: '搜索用户资源，不属于 Web Search',
       selectionMode: 'user_selectable',
       enabled: true,
       configured: true,
@@ -575,7 +612,7 @@ const getChatInputCapabilityOptions: IChatService['getChatInputCapabilityOptions
 
   return {
     primarySkills: skillsPage.list,
-    tools,
+    tools: selectChatInputWebSearchTools(tools),
   };
 };
 

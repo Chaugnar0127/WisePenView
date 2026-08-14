@@ -11,6 +11,8 @@ import VoiceInput from '../VoiceInput';
 import type { InputToolbarProps } from './index.type';
 
 function InputToolbar({
+  capabilityOptions,
+  capabilityOptionsLoading,
   sendDisabled,
   sending,
   voiceInputProps,
@@ -42,7 +44,7 @@ function InputToolbar({
           <>
             <UploadMenu />
             <AgentPicker injectedAgents={injectedAgents} preferredAgent={preferredAgent} />
-            <SkillMenu />
+            <SkillMenu options={capabilityOptions} loading={capabilityOptionsLoading} />
           </>
         ) : (
           <>

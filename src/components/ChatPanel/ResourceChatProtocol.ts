@@ -29,8 +29,6 @@ export interface ResourceChatStateProvider<State extends ChatFrontendState = Cha
   key: string;
   getBlockedReason?: () => string | undefined;
   getStates: () => State[];
-  toolSelectionDefaultEnabled?: boolean;
-  toolSelectionOverrides?: Readonly<Record<string, boolean>>;
   onDemandSkillIds?: readonly string[];
 }
 

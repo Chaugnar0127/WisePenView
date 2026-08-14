@@ -8,6 +8,7 @@ import { ChatApi, ChatCompletionApi, ChatSessionApi } from '../apis/ChatApi';
 import type { ChatAgentOption } from '../entity/agent';
 import type { WisePenUIMessage } from '../entity/message';
 import { buildAgentFromResourceItem } from '../mapper/agent.mapper';
+import { selectChatInputWebSearchTools } from '../mapper/capabilityPicker.mapper';
 import { ChatServicesMap } from '../mapper/ChatServices.map';
 import { getPrimarySkillsForAgent } from '../mapper/skillScope.mapper';
 import { mapResourceItemToResourceSkillSummary } from '../mapper/workspace.mapper';
@@ -178,7 +179,7 @@ const getChatInputCapabilityOptions = async (
 
   return {
     primarySkills,
-    tools,
+    tools: selectChatInputWebSearchTools(tools),
   };
 };
 

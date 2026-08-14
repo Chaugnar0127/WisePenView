@@ -7,7 +7,11 @@ export type {
 export { MODEL_PROVIDER_ID, MODEL_TYPE } from './enum/model';
 export type { ModelProviderId, ModelType } from './enum/model';
 export { buildAgentFromResourceItem, buildDefaultPersonalAgent } from './mapper/agent.mapper';
-export { buildCapabilityPickerSections as buildSkillMenuSections } from './mapper/capabilityPicker.mapper';
+export {
+  buildCapabilityPickerSections as buildSkillMenuSections,
+  mapChatInputToolSelectionOverrides,
+  selectChatInputWebSearchTools,
+} from './mapper/capabilityPicker.mapper';
 export type {
   CapabilitySkillSelection,
   CapabilityToolOption,

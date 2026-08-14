@@ -103,7 +103,7 @@ function WebSearchSettingsSection() {
                   <div className={styles.rowActions}>
                     <Switch
                       size="md"
-                      isSelected={tool.enabled}
+                      isSelected={tool.enabled && tool.configured}
                       isDisabled={toggling || !tool.configured}
                       aria-label={tool.displayName}
                       onChange={(enabled) => void toggle(tool, enabled)}

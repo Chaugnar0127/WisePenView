@@ -2,9 +2,9 @@ import type {
   BindChatModelProviderRequest,
   ChatAgentOption,
   ChatMessageMetadata,
+  ChatModelConfig,
   ChatProvider,
   ChatSession,
-  ChatUserModel,
   CreateChatProviderRequest,
   CreateChatUserModelRequest,
   IChatService,
@@ -22,7 +22,6 @@ import type {
   UploadAttachmentResult,
   WisePenUIMessage,
 } from '@/domains/Chat';
-import { MODEL_TYPE } from '@/domains/Chat';
 import { selectChatInputWebSearchTools } from '@/domains/Chat/mapper/capabilityPicker.mapper';
 import type { Group } from '@/domains/Group';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
@@ -75,7 +74,6 @@ const getModels: IChatService['getModels'] = async () => {
           display_name: item.name,
           provider_name: providerToName(item.provider),
           provider_key: item.provider,
-          type: MODEL_TYPE.STANDARD_MODEL,
           billing_ratio: 1,
           support_thinking: item.category === 'reasoning',
           support_vision: item.vision,
@@ -89,7 +87,6 @@ const getModels: IChatService['getModels'] = async () => {
           display_name: item.name,
           provider_name: providerToName(item.provider),
           provider_key: item.provider,
-          type: MODEL_TYPE.ADVANCED_MODEL,
           billing_ratio: 10,
           support_thinking: true,
           support_vision: item.vision,
@@ -136,12 +133,6 @@ const getModels: IChatService['getModels'] = async () => {
           usageRank: index + 1,
           contextWindowTokens: null,
           maxOutputTokens: null,
-          category:
-            item.type === MODEL_TYPE.ADVANCED_MODEL
-              ? 'reasoning'
-              : item.type === MODEL_TYPE.STANDARD_MODEL
-                ? 'all-round'
-                : 'chat',
         }))
       );
     }, 200);
@@ -609,7 +600,26 @@ const getTools = async (): Promise<ToolOption[]> => {
 };
 
 const mockProviders: ChatProvider[] = [];
-const mockUserModels: ChatUserModel[] = [];
+const mockSystemModels: ChatModelConfig[] = [
+  {
+    id: 'mock-system-model-gpt',
+    scope: 'SYSTEM',
+    displayName: 'GPT-4o',
+    modelFamily: 'GPT',
+    billingRatio: 1,
+    supportThinking: false,
+    supportVision: true,
+    supportTools: true,
+    contextWindowTokens: 128000,
+    maxOutputTokens: 16384,
+    isActive: true,
+    mappings: [],
+  },
+];
+const mockUserModels: ChatModelConfig[] = [];
+
+const cloneModelConfigs = (models: ChatModelConfig[]): ChatModelConfig[] =>
+  models.map((model) => ({ ...model, mappings: [...model.mappings] }));
 
 const getUserProviders = async (): Promise<ChatProvider[]> => [...mockProviders];
 const createUserProvider = async (params: CreateChatProviderRequest): Promise<void> => {
@@ -647,13 +657,14 @@ const deleteUserProvider = async (providerId: string): Promise<void> => {
   const index = mockProviders.findIndex((item) => item.id === providerId);
   if (index >= 0) mockProviders.splice(index, 1);
 };
-const getUserModels = async (): Promise<ChatUserModel[]> =>
-  mockUserModels.map((model) => ({ ...model, mappings: [...model.mappings] }));
+const getUserModels = async (): Promise<ChatModelConfig[]> => cloneModelConfigs(mockUserModels);
+const getBindableModels = async (): Promise<ChatModelConfig[]> =>
+  cloneModelConfigs([...mockSystemModels, ...mockUserModels]);
 const createUserModel = async (params: CreateChatUserModelRequest): Promise<void> => {
   mockUserModels.push({
     id: `mock-model-${Date.now()}`,
+    scope: 'USER',
     displayName: params.displayName,
-    type: params.type ?? MODEL_TYPE.CUSTOM_MODEL,
     modelFamily: params.modelFamily ?? 'GENERIC',
     billingRatio: params.billingRatio ?? 1,
     supportThinking: params.supportThinking ?? false,
@@ -688,7 +699,7 @@ const deleteUserModel = async (modelId: string): Promise<void> => {
   if (index >= 0) mockUserModels.splice(index, 1);
 };
 const bindModelProvider = async (params: BindChatModelProviderRequest): Promise<void> => {
-  const model = mockUserModels.find((item) => item.id === params.modelId);
+  const model = [...mockSystemModels, ...mockUserModels].find((item) => item.id === params.modelId);
   const provider = mockProviders.find((item) => item.id === params.providerId);
   if (!model || !provider) return;
   model.mappings = [
@@ -704,7 +715,7 @@ const bindModelProvider = async (params: BindChatModelProviderRequest): Promise<
   ];
 };
 const unbindModelProvider = async (modelId: string, providerId: string): Promise<void> => {
-  const model = mockUserModels.find((item) => item.id === modelId);
+  const model = [...mockSystemModels, ...mockUserModels].find((item) => item.id === modelId);
   if (model) model.mappings = model.mappings.filter((mapping) => mapping.providerId !== providerId);
 };
 const updateUserToolConfig = async (params: UpdateUserToolConfigRequest): Promise<ToolOption> => {
@@ -775,6 +786,7 @@ export const createChatServicesMock = (): IChatService => ({
   updateUserProvider,
   deleteUserProvider,
   getUserModels,
+  getBindableModels,
   createUserModel,
   updateUserModel,
   deleteUserModel,

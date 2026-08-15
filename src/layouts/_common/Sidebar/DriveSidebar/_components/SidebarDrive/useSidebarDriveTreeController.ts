@@ -8,6 +8,7 @@ import { useDrivePagedTreeChildren } from '@/components/Drive/common/useDrivePag
 import type { DataNode } from '@/components/Tree';
 import { useDriveService } from '@/domains';
 import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
+import { useDriveRefreshStore } from '@/domains/Drive/store/useDriveRefreshStore';
 import { useApi } from '@/hooks/useApi';
 import { useSidebarDriveExpansionStore } from '@/layouts/_common/Sidebar/DriveSidebar/_store/useSidebarDriveExpansionStore';
 import { parseErrorMessage } from '@/utils/error';
@@ -48,6 +49,7 @@ export function useSidebarDriveTreeController({
   const driveService = useDriveService();
   const expansionScopeKey = scope.rootId;
   const groupId = getDriveScopeGroupId(scope);
+  const refreshVersion = useDriveRefreshStore((state) => state.refreshVersion);
   const [nodeMap, setNodeMap] = useState<Map<string, DriveViewNode>>(new Map());
   const [treeData, setTreeData] = useState<DataNode[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
@@ -96,7 +98,7 @@ export function useSidebarDriveTreeController({
         useSidebarDriveExpansionStore.getState().expandedNodeIdsByScope[expansionScopeKey] ?? []
       );
       const rootNode = await driveService.getRoot({ rootId: scope.rootId, groupId });
-      const rootChildren = await loadChildren(rootNode);
+      const rootChildren = await loadChildren(rootNode, { refresh: true });
       const baseRoot = buildTreeData([rootNode], nextNodeMap, treeControls)[0];
       if (!baseRoot) {
         return {
@@ -112,7 +114,7 @@ export function useSidebarDriveTreeController({
           nodes.map(async (node) => {
             if (node.type !== 'folder' || !expandedNodeIds.has(node.id)) return;
             try {
-              const children = await loadChildren(node);
+              const children = await loadChildren(node, { refresh: true });
               childrenByParent.set(node.id, children);
               await loadExpandedChildren(children.filter((child) => child.type === 'folder'));
             } catch {
@@ -139,7 +141,7 @@ export function useSidebarDriveTreeController({
       };
     },
     {
-      refreshDeps: [expansionScopeKey, scope.rootId, groupId, rootDisplayName],
+      refreshDeps: [expansionScopeKey, scope.rootId, groupId, rootDisplayName, refreshVersion],
       onSuccess: (result) => {
         setNodeMap(result.nodeMap);
         setTreeData(result.treeData);

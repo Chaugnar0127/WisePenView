@@ -6,8 +6,8 @@ export type {
   ToolApprovalRequestData,
   WisePenUIMessage,
 } from './entity/message';
-export { MODEL_PROVIDER_ID, MODEL_TYPE } from './enum/model';
-export type { ModelProviderId, ModelType } from './enum/model';
+export { MODEL_PROVIDER_ID } from './enum/model';
+export type { ModelProviderId } from './enum/model';
 export { buildAgentFromResourceItem, buildDefaultPersonalAgent } from './mapper/agent.mapper';
 export {
   buildCapabilityPickerSections as buildSkillMenuSections,
@@ -24,15 +24,16 @@ export type {
   ChatInputCapabilityOptions,
   ChatInputResourceScope,
   ChatModel,
+  ChatModelConfig,
+  ChatModelConfigProviderMapping,
   ChatModelFamily,
   ChatModelProviderOption,
+  ChatModelScope,
   ChatModelTag,
   ChatProvider,
   ChatProviderType,
   ChatServiceDeps,
   ChatSession,
-  ChatUserModel,
-  ChatUserModelProviderMapping,
   CreateChatProviderRequest,
   CreateChatUserModelRequest,
   CreateSessionRequest,

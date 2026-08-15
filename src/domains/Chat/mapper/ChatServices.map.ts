@@ -3,6 +3,7 @@ import type {
   ActiveChatTurnApiResponse,
   CreateSessionApiRequest,
   CreateSessionApiResponse,
+  ListAvailableModelsApiResponse,
   ListHistoryMessagesApiRequest,
   ListHistoryMessagesApiResponse,
   ListModelsApiResponse,
@@ -24,13 +25,12 @@ import type {
   MessageAttachmentSnapshot,
   WisePenUIMessage,
 } from '../entity/message';
-import { MODEL_TYPE } from '../enum/model';
 import type {
   ChatModel,
+  ChatModelConfig,
   ChatModelProviderOption,
   ChatProvider,
   ChatSession,
-  ChatUserModel,
   CreateSessionRequest,
   ListHistoryMessagesRequest,
   ListSessionsRequest,
@@ -59,13 +59,6 @@ const MODEL_FAMILY_PROVIDER_MAP: Record<string, string> = {
   QWEN: 'qwen',
 };
 
-const MODEL_TYPE_LABEL_MAP: Record<number, ChatModel['category']> = {
-  [MODEL_TYPE.ADVANCED_MODEL]: 'reasoning',
-  [MODEL_TYPE.STANDARD_MODEL]: 'all-round',
-  [MODEL_TYPE.CUSTOM_MODEL]: 'chat',
-  [MODEL_TYPE.UNKNOWN_MODEL]: 'chat',
-};
-
 const inferProviderKey = (...values: Array<string | null | undefined>): string => {
   const haystack = values
     .filter((value): value is string => Boolean(value))
@@ -80,7 +73,7 @@ const inferProviderKey = (...values: Array<string | null | undefined>): string =
 
 const normalizeProviderOption = (
   mapping: ModelProviderMappingResponse,
-  model: ListModelsApiResponse['system_models'][number]
+  model: ModelResponse
 ): ChatModelProviderOption => ({
   providerId: mapping.provider_id,
   providerName: mapping.provider_name,
@@ -97,9 +90,7 @@ const normalizeProviderOption = (
   priority: mapping.priority,
 });
 
-const getOrderedProviderOptions = (
-  model: ListModelsApiResponse['system_models'][number]
-): ChatModelProviderOption[] =>
+const getOrderedProviderOptions = (model: ModelResponse): ChatModelProviderOption[] =>
   (model.mappings ?? [])
     .filter((mapping) => mapping.is_active)
     .map((mapping) => normalizeProviderOption(mapping, model))
@@ -112,7 +103,7 @@ const buildSelectionId = (modelId: string, providerId?: string): string =>
   providerId ? `${modelId}:${providerId}` : modelId;
 
 const buildModelTags = (
-  model: ListModelsApiResponse['system_models'][number],
+  model: ModelResponse,
   providerOption: ChatModelProviderOption | undefined,
   index: number
 ): ChatModel['tags'] => [
@@ -122,9 +113,7 @@ const buildModelTags = (
   ...(providerOption?.isPreferred ? [{ text: 'Preferred', type: 'blue' }] : []),
 ];
 
-const createFallbackProviderOption = (
-  model: ListModelsApiResponse['system_models'][number]
-): ChatModelProviderOption => {
+const createFallbackProviderOption = (model: ModelResponse): ChatModelProviderOption => {
   const provider = inferProviderKey(
     MODEL_FAMILY_PROVIDER_MAP[model.model_family],
     model.display_name
@@ -142,7 +131,7 @@ const createFallbackProviderOption = (
 };
 
 const mapModelOption = (
-  model: ListModelsApiResponse['system_models'][number],
+  model: ModelResponse,
   providerOptions: ChatModelProviderOption[],
   providerOption: ChatModelProviderOption | undefined,
   index: number
@@ -168,10 +157,9 @@ const mapModelOption = (
   usageRank: index + 1,
   contextWindowTokens: model.context_window_tokens,
   maxOutputTokens: model.max_output_tokens,
-  category: MODEL_TYPE_LABEL_MAP[model.type] ?? 'chat',
 });
 
-const mapGetModelsFromApi = (data: ListModelsApiResponse): ChatModel[] => {
+const mapGetModelsFromApi = (data: ListAvailableModelsApiResponse): ChatModel[] => {
   const groupedModels = [...data.system_models, ...data.user_models].filter(
     (item) => item.is_active
   );
@@ -233,11 +221,11 @@ const mapProviderFromApi = (provider: ProviderApiResponse): ChatProvider => ({
 const mapUserProvidersFromApi = (data: ListUserProvidersApiResponse): ChatProvider[] =>
   data.providers.map(mapProviderFromApi);
 
-const mapUserModelFromApi = (model: ModelResponse): ChatUserModel => ({
+const mapModelConfigFromApi = (model: ModelResponse): ChatModelConfig => ({
   id: model.id,
+  scope: model.scope,
   displayName: model.display_name,
-  type: model.type,
-  modelFamily: model.model_family as ChatUserModel['modelFamily'],
+  modelFamily: model.model_family as ChatModelConfig['modelFamily'],
   billingRatio: model.billing_ratio,
   supportThinking: model.support_thinking,
   supportVision: model.support_vision,
@@ -255,8 +243,11 @@ const mapUserModelFromApi = (model: ModelResponse): ChatUserModel => ({
   })),
 });
 
-const mapUserModelsFromApi = (data: ListModelsApiResponse): ChatUserModel[] =>
-  data.user_models.map(mapUserModelFromApi);
+const mapModelConfigsFromApi = (data: ListModelsApiResponse): ChatModelConfig[] =>
+  data.models.map(mapModelConfigFromApi);
+
+const mapAvailableModelConfigsFromApi = (data: ListAvailableModelsApiResponse): ChatModelConfig[] =>
+  [...data.system_models, ...data.user_models].map(mapModelConfigFromApi);
 
 const mapActiveTurnIdFromApi = (data: ActiveChatTurnApiResponse): string | null => data.turn_id;
 
@@ -594,7 +585,8 @@ export const ChatServicesMap = {
   mapGetToolsFromApi,
   mapToolFromApi,
   mapUserProvidersFromApi,
-  mapUserModelsFromApi,
+  mapModelConfigsFromApi,
+  mapAvailableModelConfigsFromApi,
   mapCreateSessionRequest,
   mapCreateSessionFromApi,
   mapSetSessionAgentRequest,

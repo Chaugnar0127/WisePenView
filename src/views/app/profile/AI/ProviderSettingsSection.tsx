@@ -2,7 +2,7 @@ import { AppButton, AppIconButton } from '@/components/Button';
 import { FormField, Input, PasswordInput, Select } from '@/components/Input';
 import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
 import { useChatService } from '@/domains';
-import type { ChatProvider, ChatProviderType, ChatUserModel } from '@/domains/Chat';
+import type { ChatModelConfig, ChatProvider, ChatProviderType } from '@/domains/Chat';
 import { useApi } from '@/hooks/useApi';
 import { Chip, ListBox, Switch } from '@heroui/react';
 import { Link, Link2, Plus, Settings2, Trash2, Unlink } from 'lucide-react';
@@ -22,13 +22,13 @@ function ProviderSettingsSection() {
   const { t } = useTranslation('profile');
   const chatService = useChatService();
   const [providers, setProviders] = useState<ChatProvider[]>([]);
-  const [models, setModels] = useState<ChatUserModel[]>([]);
+  const [models, setModels] = useState<ChatModelConfig[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bindingDialogOpen, setBindingDialogOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState<ChatProvider | null>(null);
   const [deleteProvider, setDeleteProvider] = useState<ChatProvider | null>(null);
   const [unbindTarget, setUnbindTarget] = useState<{
-    model: ChatUserModel;
+    model: ChatModelConfig;
     provider: ChatProvider;
   } | null>(null);
   const [bindingForm, setBindingForm] = useState({
@@ -46,7 +46,7 @@ function ProviderSettingsSection() {
     async () => {
       const [nextProviders, nextModels] = await Promise.all([
         chatService.getUserProviders(),
-        chatService.getUserModels(),
+        chatService.getBindableModels(),
       ]);
       return { providers: nextProviders, models: nextModels };
     },
@@ -114,7 +114,7 @@ function ProviderSettingsSection() {
     }
   );
   const { loading: unbinding, runAsync: unbind } = useApi(
-    (target: { model: ChatUserModel; provider: ChatProvider }) =>
+    (target: { model: ChatModelConfig; provider: ChatProvider }) =>
       chatService.unbindModelProvider(target.model.id, target.provider.id),
     {
       manual: true,
@@ -369,12 +369,19 @@ function ProviderSettingsSection() {
             </Select.Trigger>
             <Select.Popover>
               <ListBox>
-                {models.map((model) => (
-                  <ListBox.Item key={model.id} id={model.id} textValue={model.displayName}>
-                    {model.displayName}
-                    <ListBox.ItemIndicator />
-                  </ListBox.Item>
-                ))}
+                {models.map((model) => {
+                  const scopeLabel = t(`ai.models.scope.${model.scope}`);
+                  return (
+                    <ListBox.Item
+                      key={model.id}
+                      id={model.id}
+                      textValue={`${model.displayName} ${scopeLabel}`}
+                    >
+                      {model.displayName} · {scopeLabel}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  );
+                })}
               </ListBox>
             </Select.Popover>
           </Select>

@@ -2,7 +2,7 @@ import { AppButton } from '@/components/Button';
 import { FormField, Input, Select } from '@/components/Input';
 import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
 import { useChatService } from '@/domains';
-import type { ChatModelFamily, ChatUserModel } from '@/domains/Chat';
+import type { ChatModelConfig, ChatModelFamily } from '@/domains/Chat';
 import { useApi } from '@/hooks/useApi';
 import { ListBox, Switch } from '@heroui/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
@@ -47,10 +47,10 @@ function isValidOptionalPositiveInteger(value: string): boolean {
 function ModelSettingsSection() {
   const { t } = useTranslation('profile');
   const chatService = useChatService();
-  const [models, setModels] = useState<ChatUserModel[]>([]);
+  const [models, setModels] = useState<ChatModelConfig[]>([]);
   const [modelDialogOpen, setModelDialogOpen] = useState(false);
-  const [editingModel, setEditingModel] = useState<ChatUserModel | null>(null);
-  const [deleteModel, setDeleteModel] = useState<ChatUserModel | null>(null);
+  const [editingModel, setEditingModel] = useState<ChatModelConfig | null>(null);
+  const [deleteModel, setDeleteModel] = useState<ChatModelConfig | null>(null);
   const [modelForm, setModelForm] = useState<ModelFormState>(createDefaultModelForm);
 
   const { loading, runAsync: reload } = useApi(() => chatService.getUserModels(), {
@@ -100,7 +100,7 @@ function ModelSettingsSection() {
     setModelDialogOpen(true);
   };
 
-  const openEdit = (model: ChatUserModel) => {
+  const openEdit = (model: ChatModelConfig) => {
     setEditingModel(model);
     setModelForm({
       displayName: model.displayName,

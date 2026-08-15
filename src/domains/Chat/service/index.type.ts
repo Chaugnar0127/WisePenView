@@ -55,8 +55,9 @@ export interface UpdateChatProviderRequest {
 }
 
 export type ChatModelFamily = 'QWEN' | 'GPT' | 'CLAUDE' | 'GEMINI' | 'GENERIC';
+export type ChatModelScope = 'SYSTEM' | 'USER';
 
-export interface ChatUserModelProviderMapping {
+export interface ChatModelConfigProviderMapping {
   providerId: string;
   providerName: string | null;
   providerModelName: string;
@@ -65,10 +66,10 @@ export interface ChatUserModelProviderMapping {
   priority: number;
 }
 
-export interface ChatUserModel {
+export interface ChatModelConfig {
   id: string;
+  scope: ChatModelScope;
   displayName: string;
-  type: number;
   modelFamily: ChatModelFamily;
   billingRatio: number;
   supportThinking: boolean;
@@ -77,13 +78,12 @@ export interface ChatUserModel {
   contextWindowTokens: number | null;
   maxOutputTokens: number | null;
   isActive: boolean;
-  mappings: ChatUserModelProviderMapping[];
+  mappings: ChatModelConfigProviderMapping[];
 }
 
 export interface CreateChatUserModelRequest {
   displayName: string;
   modelFamily?: ChatModelFamily;
-  type?: number;
   billingRatio?: number;
   supportThinking?: boolean;
   supportVision?: boolean;
@@ -96,7 +96,6 @@ export interface UpdateChatUserModelRequest {
   modelId: string;
   displayName?: string;
   modelFamily?: ChatModelFamily;
-  type?: number;
   billingRatio?: number;
   supportThinking?: boolean;
   supportVision?: boolean;
@@ -152,7 +151,6 @@ export interface ChatModel {
   usageRank: number;
   contextWindowTokens?: number | null;
   maxOutputTokens?: number | null;
-  category: 'reasoning' | 'chat' | 'coding' | 'all-round';
 }
 
 export interface UploadAttachmentParams {
@@ -227,7 +225,8 @@ export interface IChatService {
   createUserProvider(params: CreateChatProviderRequest): Promise<void>;
   updateUserProvider(params: UpdateChatProviderRequest): Promise<void>;
   deleteUserProvider(providerId: string): Promise<void>;
-  getUserModels(): Promise<ChatUserModel[]>;
+  getUserModels(): Promise<ChatModelConfig[]>;
+  getBindableModels(): Promise<ChatModelConfig[]>;
   createUserModel(params: CreateChatUserModelRequest): Promise<void>;
   updateUserModel(params: UpdateChatUserModelRequest): Promise<void>;
   deleteUserModel(modelId: string): Promise<void>;

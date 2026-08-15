@@ -70,6 +70,10 @@ const enUSProfile = {
       bindTitle: 'Bind model Provider',
       bindDescription:
         'The current provider can bind multiple models. Enter the actual model name used by this provider.',
+      scope: {
+        SYSTEM: 'System model',
+        USER: 'Custom model',
+      },
       unbound: 'No Provider bound',
       unbind: 'Unbind',
       unbindAria: 'Unbind {{name}}',

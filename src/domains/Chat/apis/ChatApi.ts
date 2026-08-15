@@ -21,8 +21,10 @@ import type {
   DeleteUserToolConfigApiResponse,
   InitTemporaryAttachmentUploadApiRequest,
   InitTemporaryAttachmentUploadApiResponse,
+  ListAvailableModelsApiResponse,
   ListHistoryMessagesApiRequest,
   ListHistoryMessagesApiResponse,
+  ListModelsApiRequest,
   ListModelsApiResponse,
   ListSessionsApiRequest,
   ListSessionsApiResponse,
@@ -44,8 +46,12 @@ import type {
 
 /** Chat API: /chat/* */
 
-function listModels(): Promise<ListModelsApiResponse> {
+function listAvailableModels(): Promise<ListAvailableModelsApiResponse> {
   return apiGet('/chat/model/listAvailableModels');
+}
+
+function listModels(req: ListModelsApiRequest): Promise<ListModelsApiResponse> {
+  return apiGet('/chat/model/listModels', { params: req });
 }
 
 function listTools(): Promise<ListToolsApiResponse> {
@@ -115,6 +121,7 @@ function deleteUserToolConfig(
 }
 
 export const ChatApi = {
+  listAvailableModels,
   listModels,
   listTools,
   initTemporaryAttachmentUpload,

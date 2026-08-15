@@ -28,9 +28,20 @@ export interface PageResult<T> {
   total_page: number;
 }
 
-export interface ListModelsApiResponse {
+export interface ListAvailableModelsApiResponse {
   system_models: ModelResponse[];
   user_models: ModelResponse[];
+}
+
+export type ModelScopeApi = 'SYSTEM' | 'USER';
+export type ModelFamilyApi = 'QWEN' | 'GPT' | 'CLAUDE' | 'GEMINI' | 'GENERIC';
+
+export interface ListModelsApiRequest {
+  model_scope: ModelScopeApi;
+}
+
+export interface ListModelsApiResponse {
+  models: ModelResponse[];
 }
 
 interface ToolSourceApiResponse {
@@ -142,10 +153,9 @@ export interface ModelProviderMappingResponse {
 
 export interface ModelResponse {
   id: string;
-  scope: string;
+  scope: ModelScopeApi;
   display_name: string;
-  type: number;
-  model_family: string;
+  model_family: ModelFamilyApi;
   billing_ratio: number;
   support_thinking: boolean;
   support_vision: boolean;
@@ -158,8 +168,7 @@ export interface ModelResponse {
 
 export interface CreateUserModelApiRequest {
   display_name: string;
-  type?: number;
-  model_family?: 'QWEN' | 'GPT' | 'CLAUDE' | 'GEMINI' | 'GENERIC';
+  model_family?: ModelFamilyApi;
   billing_ratio?: number;
   support_thinking?: boolean;
   support_vision?: boolean;
@@ -171,8 +180,7 @@ export interface CreateUserModelApiRequest {
 export interface UpdateUserModelApiRequest {
   model_id: string;
   display_name?: string;
-  type?: number;
-  model_family?: 'QWEN' | 'GPT' | 'CLAUDE' | 'GEMINI' | 'GENERIC';
+  model_family?: ModelFamilyApi;
   billing_ratio?: number;
   support_thinking?: boolean;
   support_vision?: boolean;

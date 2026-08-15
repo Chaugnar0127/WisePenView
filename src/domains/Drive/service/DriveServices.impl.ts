@@ -21,6 +21,7 @@ import {
   mapTagToFolderNode,
   orderDriveFolderNodes,
 } from '../mapper/DriveServices.map';
+import { useDriveRefreshStore } from '../store/useDriveRefreshStore';
 import type {
   AddResourcesToGroupParams,
   CreateDriveServiceOptions,
@@ -106,6 +107,9 @@ export const createDriveService = (
 ): IDriveService => {
   const { tagService, resourceService } = deps;
   const defaultPageSize = normalizePageSize(opts?.pageSize, DEFAULT_PAGE_SIZE);
+  const notifyDriveRefresh = (): void => {
+    useDriveRefreshStore.getState().requestRefresh();
+  };
 
   const getPersonalRootTag = async (refresh = false): Promise<TagTreeNode> => {
     const roots = await tagService.getRawTagTree(undefined, { refresh });
@@ -493,6 +497,7 @@ export const createDriveService = (
       await tagService.moveTags({ groupId, targetTagIds: ids, newParentId: targetTagId });
       affectedCount += ids.length;
     }
+    notifyDriveRefresh();
     return {
       requestedCount: normalizedNodes.length,
       affectedCount,
@@ -521,6 +526,7 @@ export const createDriveService = (
       await tagService.moveTags({ targetTagIds: ids, newParentId: trash.tagId });
       affectedCount += ids.length;
     }
+    notifyDriveRefresh();
     return { requestedCount: normalizedNodes.length, affectedCount };
   };
 
@@ -549,6 +555,7 @@ export const createDriveService = (
       await tagService.removeTags({ groupId, targetTagIds: ids });
       affectedCount += ids.length;
     }
+    notifyDriveRefresh();
     return { requestedCount: normalizedNodes.length, affectedCount };
   };
 
@@ -580,6 +587,7 @@ export const createDriveService = (
       await tagService.removeTags({ targetTagIds: tagIds });
       affectedCount += tagIds.length;
     }
+    notifyDriveRefresh();
     return { requestedCount: normalizedNodes.length, affectedCount };
   };
 
@@ -599,6 +607,7 @@ export const createDriveService = (
         targetPathTagId: targetTagId,
       });
     }
+    notifyDriveRefresh();
     return { requestedCount: ids.length, affectedCount };
   };
 
@@ -618,6 +627,7 @@ export const createDriveService = (
         targetTagId: target.tagId,
       });
     }
+    notifyDriveRefresh();
     return { requestedCount: ids.length, affectedCount };
   };
 
@@ -643,6 +653,7 @@ export const createDriveService = (
     if (!tag) {
       throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_NOT_FOUND, { nodeId: tagId });
     }
+    notifyDriveRefresh();
     return mapFolder(tag, parent.id, parent.scope);
   };
 
@@ -661,6 +672,7 @@ export const createDriveService = (
         targetTagId: node.tagId,
         tagName: node.scope.type === 'personal' ? `/${name}` : name,
       });
+      notifyDriveRefresh();
       return;
     }
     if (node.type === 'link') {
@@ -668,6 +680,7 @@ export const createDriveService = (
     }
     if (node.type === 'resource') {
       await resourceService.renameResource({ resourceId: node.resourceId, newName: name });
+      notifyDriveRefresh();
       return;
     }
     throw createClientError(FRONTEND_CLIENT_ERROR.DRIVE_NODE_UNSUPPORTED_RENAME);

@@ -10,24 +10,8 @@
   --scrollbar-width: thin;
   --scrollbar-size: 8px;
   --scrollbar-radius: 999px;
-  --radius: 0.5rem;
-}
-
-/* HeroUI 主题页 Radius */
-html[data-theme-radius='extra-small'] {
-  --radius: 0.125rem;
-}
-
-html[data-theme-radius='small'] {
-  --radius: 0.25rem;
-}
-
-html[data-theme-radius='medium'] {
-  --radius: 0.5rem;
-}
-
-html[data-theme-radius='large'] {
-  --radius: 0.75rem;
+  /* 系统基础圆角固定为 8px，不再提供主题级覆盖。 */
+  --radius: 8px;
 }
 
 /* WisePen 桌面端排版：正文 14px、辅助文本 12px，重点层级使用 16px 以上字号。 */

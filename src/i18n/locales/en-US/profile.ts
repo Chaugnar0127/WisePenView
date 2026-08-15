@@ -126,7 +126,6 @@ const enUSProfile = {
     languageAria: 'Select interface language',
     mode: 'Color mode',
     colorScheme: 'Theme colors (Base / Accent)',
-    radius: 'Corner radius',
     readingMode: {
       title: 'Reading mode',
       description: 'Tune the interface colors for long reading sessions and focused work',

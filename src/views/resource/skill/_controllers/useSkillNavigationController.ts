@@ -75,10 +75,10 @@ export function useSkillNavigationController({
    */
   useEffect(() => {
     if (unsavedChangesGuard.isBlocked) {
-      if (pendingIntent?.type !== 'leave') setPendingIntent({ type: 'leave' });
-      return;
+      setPendingIntent({ type: 'leave' });
+    } else if (pendingIntent?.type === 'leave') {
+      setPendingIntent(null);
     }
-    if (pendingIntent?.type === 'leave') setPendingIntent(null);
   }, [unsavedChangesGuard.isBlocked, pendingIntent?.type, setPendingIntent]);
 
   const { loading: publishLoading, run: publish } = useApi(

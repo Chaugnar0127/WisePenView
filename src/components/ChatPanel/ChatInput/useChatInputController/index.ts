@@ -57,20 +57,26 @@ export function useChatInputController({
   const completionState = useChatInputStore(useShallow(selectChatInputCompletionState));
   const { clearAfterSend, setIsComposing, setIsDragOver, setValue } = store.getState();
   const selectedAgentId = completionState.selectedAgent.agentId;
+  const selectedAgentVersion = completionState.selectedAgent.agentVersion ?? null;
   const capabilityRequest = useApi(
     async () => ({
-      agentId: selectedAgentId,
+      agent: completionState.selectedAgent,
       options: await chatService.getChatInputCapabilityOptions({
         agent: completionState.selectedAgent,
       }),
     }),
     {
       ready: isAuthenticated,
-      refreshDeps: [selectedAgentId],
+      refreshDeps: [selectedAgentId, selectedAgentVersion],
+      onSuccess: (result) => {
+        store.getState().ensureAgentPreferredSkills(result.agent, result.options.primarySkills);
+      },
     }
   );
   const capabilityOptions =
-    capabilityRequest.data?.agentId === selectedAgentId
+    capabilityRequest.data != null &&
+    capabilityRequest.data.agent.agentId === selectedAgentId &&
+    (capabilityRequest.data.agent.agentVersion ?? null) === selectedAgentVersion
       ? capabilityRequest.data.options
       : undefined;
 
@@ -103,7 +109,12 @@ export function useChatInputController({
     if (!resolvedCapabilityOptions) {
       try {
         const result = await capabilityRequest.runAsync();
-        if (result.agentId !== selectedAgentId) return;
+        if (
+          result.agent.agentId !== selectedAgentId ||
+          (result.agent.agentVersion ?? null) !== selectedAgentVersion
+        ) {
+          return;
+        }
         resolvedCapabilityOptions = result.options;
       } catch {
         return;
@@ -111,15 +122,16 @@ export function useChatInputController({
     }
 
     try {
+      const latestCompletionState = selectChatInputCompletionState(store.getState());
       const sendAccepted = await onSend(text, {
         model: selectedModel,
-        selectedAgent: completionState.selectedAgent,
-        activeDocRefs: completionState.activeDocRefs,
-        activeAttachments: completionState.activeAttachments,
-        selectedSkills: completionState.selectedSkills,
+        selectedAgent: latestCompletionState.selectedAgent,
+        activeDocRefs: latestCompletionState.activeDocRefs,
+        activeAttachments: latestCompletionState.activeAttachments,
+        selectedSkills: latestCompletionState.selectedSkills,
         toolSelectionOverrides: mapChatInputToolSelectionOverrides(
           resolvedCapabilityOptions.tools,
-          completionState.selectedTools
+          latestCompletionState.selectedTools
         ),
       });
       if (sendAccepted === false) return;

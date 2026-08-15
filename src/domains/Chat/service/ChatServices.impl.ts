@@ -16,10 +16,10 @@ import type {
   BindChatModelProviderRequest,
   ChatInputCapabilityOptions,
   ChatModel,
+  ChatModelConfig,
   ChatProvider,
   ChatServiceDeps,
   ChatSession,
-  ChatUserModel,
   CreateChatProviderRequest,
   CreateChatUserModelRequest,
   CreateSessionRequest,
@@ -45,7 +45,7 @@ import type {
 const CHAT_RESOURCE_PAGE_SIZE = 100;
 
 const getModels = async (): Promise<ChatModel[]> => {
-  const data = await ChatApi.listModels();
+  const data = await ChatApi.listAvailableModels();
   return ChatServicesMap.mapGetModelsFromApi(data);
 };
 
@@ -271,15 +271,19 @@ const deleteUserProvider = async (providerId: string): Promise<void> => {
   await ChatApi.deleteUserProvider({ provider_id: providerId });
 };
 
-const getUserModels = async (): Promise<ChatUserModel[]> => {
-  const response = await ChatApi.listModels();
-  return ChatServicesMap.mapUserModelsFromApi(response);
+const getUserModels = async (): Promise<ChatModelConfig[]> => {
+  const response = await ChatApi.listModels({ model_scope: 'USER' });
+  return ChatServicesMap.mapModelConfigsFromApi(response);
+};
+
+const getBindableModels = async (): Promise<ChatModelConfig[]> => {
+  const response = await ChatApi.listAvailableModels();
+  return ChatServicesMap.mapAvailableModelConfigsFromApi(response);
 };
 
 const createUserModel = async (params: CreateChatUserModelRequest): Promise<void> => {
   await ChatApi.createUserModel({
     display_name: params.displayName,
-    type: params.type,
     model_family: params.modelFamily,
     billing_ratio: params.billingRatio,
     support_thinking: params.supportThinking,
@@ -294,7 +298,6 @@ const updateUserModel = async (params: UpdateChatUserModelRequest): Promise<void
   await ChatApi.updateUserModel({
     model_id: params.modelId,
     display_name: params.displayName,
-    type: params.type,
     model_family: params.modelFamily,
     billing_ratio: params.billingRatio,
     support_thinking: params.supportThinking,
@@ -396,6 +399,7 @@ export const createChatServices = (deps: ChatServiceDeps): IChatService => ({
   updateUserProvider,
   deleteUserProvider,
   getUserModels,
+  getBindableModels,
   createUserModel,
   updateUserModel,
   deleteUserModel,

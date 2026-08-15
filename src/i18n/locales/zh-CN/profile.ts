@@ -63,6 +63,10 @@ const zhCNProfile = {
       bind: '绑定',
       bindTitle: '绑定模型 Provider',
       bindDescription: '当前供应商可以绑定多个模型；这里填写该供应商侧实际模型名。',
+      scope: {
+        SYSTEM: '系统模型',
+        USER: '自定义模型',
+      },
       unbound: '尚未绑定 Provider',
       unbind: '解绑',
       unbindAria: '解绑 {{name}}',

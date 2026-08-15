@@ -1,5 +1,10 @@
-import type { SkillScopeTreeGroup } from '@/domains/Chat/mapper/skillScope.mapper';
 import type { ResourceSkillSummary } from '@/domains/Resource';
+
+interface SkillScopeTreeGroup {
+  key: string;
+  label: string;
+  skills: ResourceSkillSummary[];
+}
 
 export interface CapabilityToolOption {
   toolId: string;

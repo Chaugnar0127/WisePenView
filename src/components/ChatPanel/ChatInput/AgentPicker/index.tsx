@@ -7,7 +7,7 @@ import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from
 import { Description, Dropdown, Header, Label, Separator, Skeleton } from '@heroui/react';
 
 import { useInfiniteScroll, useLatest } from 'ahooks';
-import { Bot, ChevronDown, Folder } from 'lucide-react';
+import { Bot, BotOff, ChevronDown, Folder } from 'lucide-react';
 import type { Key } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -147,6 +147,13 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   const getAgentLabel = (agent: ChatAgentOption): string =>
     agent.isDefault ? t('input.agentPicker.defaultAgent') : agent.label;
 
+  const renderAgentIcon = (agent: ChatAgentOption, size: number) =>
+    agent.isDefault ? (
+      <BotOff size={size} aria-hidden="true" />
+    ) : (
+      <Bot size={size} aria-hidden="true" />
+    );
+
   const handleMenuAction = (key: Key) => {
     if (key === LOAD_MORE_PERSONAL_ACTION) {
       loadMorePersonal();
@@ -166,7 +173,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
     <>
       <Dropdown isOpen={open} onOpenChange={setOpen}>
         <AppIconButton
-          icon={<Bot size={17} aria-hidden="true" />}
+          icon={renderAgentIcon(selectedAgent, 17)}
           label={t('input.agentPicker.trigger')}
           tooltip={{ content: getAgentLabel(selectedAgent) }}
           overlayTrigger={<Dropdown.Trigger />}
@@ -191,7 +198,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
                       id={agent.agentId}
                       textValue={getAgentLabel(agent)}
                     >
-                      <Bot size={14} aria-hidden="true" />
+                      {renderAgentIcon(agent, 14)}
                       <span className={styles.listItemText}>
                         <Label>{getAgentLabel(agent)}</Label>
                         {description ? <Description>{description}</Description> : null}

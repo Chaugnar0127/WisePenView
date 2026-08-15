@@ -65,7 +65,7 @@ const enUSChat = {
       title: 'Agent',
       trigger: 'Select an Agent',
       currentDraft: 'Current draft',
-      defaultAgent: 'Default Agent',
+      defaultAgent: 'No Agent',
       loadingAria: 'Loading agents',
       selectFromGroup: 'Select from group',
       groupModalTitle: 'Select Agent from group',

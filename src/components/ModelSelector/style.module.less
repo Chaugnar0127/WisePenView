@@ -62,13 +62,14 @@
 }
 
 .popover {
-  width: 320px;
+  width: min(320px, calc(100vw - var(--space-xl, 32px)));
+  max-height: min(360px, 70vh);
+  overflow-y: auto;
+  .appSubtleScrollbar();
 }
 
 .list {
-  max-height: 320px;
-  overflow-y: auto;
-  .appSubtleScrollbar();
+  min-width: 0;
 }
 
 .info {

@@ -68,9 +68,6 @@ export function useChatInputController({
     {
       ready: isAuthenticated,
       refreshDeps: [selectedAgentId, selectedAgentVersion],
-      onSuccess: (result) => {
-        store.getState().ensureAgentPreferredSkills(result.agent, result.options.primarySkills);
-      },
     }
   );
   const capabilityOptions =

@@ -15,7 +15,6 @@ export const buildAgentFromResourceItem = (
   item: ResourceItem,
   group?: { groupId: string; groupName: string }
 ): ChatAgentOption => {
-  const raw = item as ResourceItem & { defaultSkillIds?: string[] };
   return {
     agentId: `agent-${item.resourceId}`,
     agentType: group ? 'GROUP' : 'PERSONAL',
@@ -23,6 +22,5 @@ export const buildAgentFromResourceItem = (
     source: 'RESOURCE',
     resourceId: item.resourceId,
     ...(group ? { groupId: group.groupId, groupName: group.groupName } : {}),
-    defaultSkillIds: raw.defaultSkillIds,
   };
 };

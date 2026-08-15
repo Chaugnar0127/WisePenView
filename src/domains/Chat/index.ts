@@ -18,7 +18,6 @@ export type {
   CapabilitySkillSelection,
   CapabilityToolOption,
 } from './mapper/capabilityPicker.mapper';
-export { getPrimarySkillsForAgent } from './mapper/skillScope.mapper';
 export type {
   BindChatModelProviderRequest,
   ChatInputCapabilityOptions,

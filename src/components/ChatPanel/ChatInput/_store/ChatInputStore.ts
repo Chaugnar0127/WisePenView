@@ -92,7 +92,6 @@ interface ChatInputActions {
   replaceExternalSkills: (
     selected: Array<{ skill: ResourceSkillSummary; sourceAgent: ChatAgentOption | null }>
   ) => void;
-  ensureAgentPreferredSkills: (agent: ChatAgentOption, skills: ResourceSkillSummary[]) => void;
   setAttachmentOpen: (open: boolean) => void;
   setAvailableModels: (models: ChatModel[]) => void;
   setDocumentPickerOpen: (open: boolean) => void;
@@ -265,22 +264,6 @@ export function createChatInputStore(): ChatInputStoreApi {
                 buildSkillSelection(skill, { sourceAgent, external: true })
               );
             return { selectedSkills: [...kept, ...additions] };
-          }),
-
-        ensureAgentPreferredSkills: (agent, skills) =>
-          set((state) => {
-            if (!isSameAgentSelection(state.selectedAgent, agent)) return {};
-            const preferredSkillIds = agent.defaultSkillIds;
-            if (!preferredSkillIds || preferredSkillIds.length === 0) return {};
-
-            const selectedSkillIds = new Set(state.selectedSkills.map((item) => item.skillId));
-            const preferredSkillIdSet = new Set(preferredSkillIds);
-            const additions = skills
-              .filter((skill) => preferredSkillIdSet.has(skill.skillId))
-              .filter((skill) => !selectedSkillIds.has(skill.skillId))
-              .map((skill) => buildSkillSelection(skill, { sourceAgent: agent }));
-            if (additions.length === 0) return {};
-            return { selectedSkills: [...state.selectedSkills, ...additions] };
           }),
 
         setAttachmentOpen: (attachmentOpen) => set({ attachmentOpen }),

@@ -5,7 +5,6 @@ import { DEFAULT_COLOR_SCHEME, DEFAULT_HEROUI_THEME } from './constants';
 import { ThemeContextProvider } from './ThemeContext';
 import { applyReadingModeToDOM, useAccentNeutralized } from './useAccentNeutralized';
 import { applyColorSchemeFavicon, applyColorSchemeToDOM, useColorScheme } from './useColorScheme';
-import { useThemeShape } from './useThemeShape';
 
 type ThemeApplierProps = {
   children: ReactNode;
@@ -16,15 +15,14 @@ type ThemeApplierProps = {
 export function ThemeApplier({ children, defaultTheme = DEFAULT_HEROUI_THEME }: ThemeApplierProps) {
   return (
     <ThemeContextProvider defaultTheme={defaultTheme}>
-      <ThemeShapeApplier>{children}</ThemeShapeApplier>
+      <ThemeGlobalApplier>{children}</ThemeGlobalApplier>
     </ThemeContextProvider>
   );
 }
 
-function ThemeShapeApplier({ children }: { children: ReactNode }) {
+function ThemeGlobalApplier({ children }: { children: ReactNode }) {
   const { colorScheme } = useColorScheme(DEFAULT_COLOR_SCHEME);
   const { isAccentNeutralized } = useAccentNeutralized();
-  useThemeShape();
 
   /**
    * @wisepen-manual-effect

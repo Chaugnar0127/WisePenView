@@ -4,8 +4,6 @@ export const STORAGE_KEYS = {
   authContinuationActive: 'wisepen:auth-continuation:active',
   readingMode: 'wisepen-reading-mode',
   colorScheme: 'heroui-color-scheme',
-  themeRadius: 'heroui-theme-radius',
-  themeFormRadius: 'heroui-theme-form-radius',
 } as const;
 
 export const STORAGE_PREFIXES = {

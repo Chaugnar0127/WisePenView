@@ -15,16 +15,12 @@ import PageHeader from '@/layouts/_common/PageHeader';
 import {
   COLOR_SCHEME_OPTIONS,
   THEME_MODE_OPTIONS,
-  THEME_RADIUS_OPTIONS,
   useAccentNeutralized,
   useAppTheme,
   useColorScheme,
-  useThemeShape,
   type ColorScheme,
   type ColorSchemeOption,
   type ThemeMode,
-  type ThemeRadius,
-  type ThemeRadiusOption,
 } from '@/theme';
 
 import layout from '../style.module.less';
@@ -98,31 +94,6 @@ function ColorSchemeSection({ value, onChange }: ColorSchemeSectionProps) {
   );
 }
 
-type ThemeShapeSectionProps = {
-  radius: ThemeRadius;
-  onRadiusChange: (radius: ThemeRadius) => void;
-};
-
-function ThemeShapeSection({ radius, onRadiusChange }: ThemeShapeSectionProps) {
-  const { t } = useTranslation('profile');
-
-  return (
-    <section className={styles.section}>
-      <Heading level={3} className={layout.sectionTitle}>
-        {t('appearance.radius')}
-      </Heading>
-      <div className={styles.shapeControls}>
-        <ShapeOptionGroup
-          label="Radius"
-          value={radius}
-          options={THEME_RADIUS_OPTIONS}
-          onChange={onRadiusChange}
-        />
-      </div>
-    </section>
-  );
-}
-
 function ReadingModeSection() {
   const { t } = useTranslation('profile');
   const { isAccentNeutralized, setAccentNeutralized } = useAccentNeutralized();
@@ -152,51 +123,6 @@ function ReadingModeSection() {
         </Switch>
       </div>
     </section>
-  );
-}
-
-type ShapeOptionGroupProps = {
-  label: string;
-  value: ThemeRadius;
-  options: ThemeRadiusOption[];
-  onChange: (radius: ThemeRadius) => void;
-};
-
-function ShapeOptionGroup({ label, value, options, onChange }: ShapeOptionGroupProps) {
-  return (
-    <div className={styles.shapeGroupBlock}>
-      <ToggleButtonGroup
-        aria-label={label}
-        selectionMode="single"
-        selectedKeys={new Set([value])}
-        onSelectionChange={(keys) => {
-          const [key] = [...keys];
-          if (key != null) onChange(String(key) as ThemeRadius);
-        }}
-        className={styles.shapeGroup}
-        orientation="horizontal"
-        isDetached
-      >
-        {options.map((option) => {
-          const pxLabel = option.description;
-          return (
-            <ToggleButton
-              key={option.id}
-              id={option.id}
-              data-radius={option.id}
-              className={styles.shapeOption}
-              aria-label={`${label} ${option.label} ${pxLabel}`}
-            >
-              <span className={styles.shapeCorner} aria-hidden />
-              <span className={styles.shapeMeta}>
-                <span className={styles.shapeLabel}>{option.label}</span>
-                <span className={styles.shapeValue}>{pxLabel}</span>
-              </span>
-            </ToggleButton>
-          );
-        })}
-      </ToggleButtonGroup>
-    </div>
   );
 }
 
@@ -260,7 +186,6 @@ function LanguageSection() {
 function Appearance() {
   const { theme, setTheme } = useAppTheme();
   const { colorScheme, setColorScheme } = useColorScheme();
-  const { radius, setRadius } = useThemeShape();
 
   return (
     <>
@@ -273,8 +198,6 @@ function Appearance() {
         <ColorSchemeSection value={colorScheme} onChange={setColorScheme} />
         <Separator className={styles.divider} />
         <ReadingModeSection />
-        <Separator className={styles.divider} />
-        <ThemeShapeSection radius={radius} onRadiusChange={setRadius} />
       </div>
     </>
   );

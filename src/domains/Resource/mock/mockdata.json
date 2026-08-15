@@ -124,8 +124,7 @@
         "resourceType": "AGENT",
         "ownerId": "1",
         "path": "/",
-        "currentTags": {},
-        "defaultSkillIds": ["skill-personal-translation", "skill-personal-codereview"]
+        "currentTags": {}
       },
       {
         "resourceId": "agent-custom-writing",
@@ -133,8 +132,7 @@
         "resourceType": "AGENT",
         "ownerId": "1",
         "path": "/",
-        "currentTags": {},
-        "defaultSkillIds": ["skill-personal-summary"]
+        "currentTags": {}
       }
     ],
     "groups": {
@@ -145,8 +143,7 @@
           "resourceType": "AGENT",
           "ownerId": "1",
           "path": "/",
-          "currentTags": {},
-          "defaultSkillIds": ["skill-group-1-weekly"]
+          "currentTags": {}
         }
       ]
     }

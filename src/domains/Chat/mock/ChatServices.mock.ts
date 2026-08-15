@@ -417,7 +417,6 @@ const getMockWorkspace = async () => {
         resourceId: 'custom-translation',
         agentVersion: 1,
         isDefault: false,
-        defaultSkillIds: ['skill-personal-translation', 'skill-personal-codereview'],
       },
       {
         agentId: 'agent-custom-writing',
@@ -427,7 +426,6 @@ const getMockWorkspace = async () => {
         resourceId: 'custom-writing',
         agentVersion: 1,
         isDefault: false,
-        defaultSkillIds: ['skill-personal-summary'],
       },
     ],
     groupAgents: [
@@ -441,7 +439,6 @@ const getMockWorkspace = async () => {
         groupId: '1',
         groupName: '示例小组',
         isDefault: false,
-        defaultSkillIds: ['skill-group-1-weekly'],
       },
     ],
   };

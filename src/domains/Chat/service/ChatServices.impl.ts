@@ -10,7 +10,6 @@ import type { WisePenUIMessage } from '../entity/message';
 import { buildAgentFromResourceItem } from '../mapper/agent.mapper';
 import { selectChatInputWebSearchTools } from '../mapper/capabilityPicker.mapper';
 import { ChatServicesMap } from '../mapper/ChatServices.map';
-import { getPrimarySkillsForAgent } from '../mapper/skillScope.mapper';
 import { mapResourceItemToResourceSkillSummary } from '../mapper/workspace.mapper';
 import type {
   BindChatModelProviderRequest,
@@ -183,10 +182,9 @@ const getChatInputCapabilityOptions = async (
     ),
     getTools(),
   ]);
-  const primarySkills = getPrimarySkillsForAgent(skillsPage.list, params.agent);
 
   return {
-    primarySkills,
+    primarySkills: skillsPage.list,
     tools: selectChatInputWebSearchTools(tools),
   };
 };

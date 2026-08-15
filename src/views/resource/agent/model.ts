@@ -64,7 +64,6 @@ export function buildCurrentDraftAgent(
   draft: AgentDraft,
   fallbackLabel: string
 ): ChatAgentOption {
-  const skillPolicy = draft.spec.toolAndSkillPolicy;
   return {
     agentId: `current-agent-draft-${agent.resourceId}`,
     agentType: 'PERSONAL',
@@ -72,6 +71,5 @@ export function buildCurrentDraftAgent(
     resourceId: agent.resourceId,
     agentVersion: agent.draftVersion,
     label: agent.title || draft.name || fallbackLabel,
-    defaultSkillIds: [...skillPolicy.onDemandSkillIds],
   };
 }

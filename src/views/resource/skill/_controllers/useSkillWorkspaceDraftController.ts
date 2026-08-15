@@ -11,6 +11,7 @@ import {
   collectSkillFileKeys,
   createEmptySkillWorkspaceState,
   createInitialSkillWorkspaceState,
+  createSkillFileTreeSignature,
   createSkillWorkspaceResourceKey,
   finishFailedSkillFileSave,
   getFileDraftByFileId,
@@ -40,17 +41,53 @@ import {
 
 type WorkspaceAction =
   | { type: 'replace'; state: SkillWorkspaceDraftState }
+  | { type: 'sync'; skill: SkillDetail }
   | { type: 'update'; update: (state: SkillWorkspaceDraftState) => SkillWorkspaceDraftState };
 
 function workspaceReducer(
   state: SkillWorkspaceDraftState,
   action: WorkspaceAction
 ): SkillWorkspaceDraftState {
-  return action.type === 'replace' ? action.state : action.update(state);
+  if (action.type === 'replace') return action.state;
+  if (action.type === 'sync') return syncSkillWorkspaceState(action.skill, state);
+  return action.update(state);
 }
 
 function isMatchingCache(snapshot: SkillDraftCacheSnapshot, draftVersion: number): boolean {
   return snapshot.schemaVersion === 2 && snapshot.draftVersion === draftVersion;
+}
+
+function createSyncedWorkspaceState(
+  skill: SkillDetail,
+  current: SkillWorkspaceDraftState
+): SkillWorkspaceDraftState {
+  const next = createInitialSkillWorkspaceState(skill);
+  const selectedTreeNode = current.selectedTreeNodeId
+    ? findFile(next.files, current.selectedTreeNodeId)
+    : null;
+  const selectedFile = current.selectedFileId ? findFile(next.files, current.selectedFileId) : null;
+  const selectedFileId =
+    selectedFile?.kind === 'file' ? current.selectedFileId : next.selectedFileId;
+  return {
+    ...next,
+    selectedFileId,
+    selectedTreeNodeId: selectedTreeNode ? current.selectedTreeNodeId : selectedFileId,
+    editing: current.editing && Boolean(selectedFileId),
+    pendingIntent: current.pendingIntent,
+  };
+}
+
+function syncSkillWorkspaceState(
+  skill: SkillDetail,
+  current: SkillWorkspaceDraftState
+): SkillWorkspaceDraftState {
+  const filesChanged =
+    createSkillFileTreeSignature(skill.files) !==
+    createSkillFileTreeSignature(current.persistedFiles);
+  const configChanged =
+    skill.skillName !== current.savedConfigName ||
+    skill.description !== current.savedConfigDescription;
+  return filesChanged || configChanged ? createSyncedWorkspaceState(skill, current) : current;
 }
 
 export function useSkillWorkspaceDraftController(skill?: SkillDetail) {
@@ -178,6 +215,17 @@ export function useSkillWorkspaceDraftController(skill?: SkillDetail) {
     cacheWriteVersionRef.current += 1;
     void clearSkillDraftCache(skillResourceId).catch(() => undefined);
   }, [cacheReadyKey, hasUnsavedChanges, resourceKey, skillResourceId]);
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：Skill 详情重新拉取完成后同步后端文件树变化。
+   * 不可替代原因：目录删除、重命名不会稳定改变草稿版本号，工作区需要显式比对文件树快照。
+   * cleanup：状态替换为同步操作，没有订阅或异步任务需要清理。
+   */
+  useEffect(() => {
+    if (!skill || cacheReadyKey !== resourceKey || hasUnsavedChanges) return;
+    dispatch({ type: 'sync', skill });
+  }, [cacheReadyKey, hasUnsavedChanges, resourceKey, skill]);
 
   const selectedFile = state.selectedFileId ? findFile(state.files, state.selectedFileId) : null;
   const activeContent = getSkillFileContent(selectedFile, state.fileDrafts);

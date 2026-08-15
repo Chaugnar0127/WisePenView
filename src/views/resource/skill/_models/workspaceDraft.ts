@@ -81,6 +81,22 @@ function collectFileNodes(nodes: SkillFileNode[]): SkillFileNode[] {
   );
 }
 
+function createSkillFileTreeSignaturePayload(nodes: SkillFileNode[]): unknown[] {
+  return nodes.map((node) => ({
+    id: node.id,
+    name: node.name,
+    path: node.path,
+    kind: node.kind,
+    objectKey: node.objectKey ?? '',
+    size: node.size ?? null,
+    children: createSkillFileTreeSignaturePayload(node.children ?? []),
+  }));
+}
+
+export function createSkillFileTreeSignature(nodes: SkillFileNode[]): string {
+  return JSON.stringify(createSkillFileTreeSignaturePayload(nodes));
+}
+
 export function createSkillWorkspaceResourceKey(skill: SkillDetail): string {
   return `${skill.resourceId}:${skill.draftVersion}`;
 }

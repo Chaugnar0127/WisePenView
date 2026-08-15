@@ -1,3 +1,5 @@
+@import '@/styles/scrollbar.module.less';
+
 .page {
   display: flex;
   flex: 1;
@@ -184,6 +186,12 @@
   color: var(--muted);
   font-size: var(--font-size-xs);
   line-height: 1.5;
+}
+
+.bindModelSelectPopover:global(.select__popover) {
+  max-height: min(360px, 70vh);
+  overflow: hidden auto;
+  .appSubtleScrollbar();
 }
 
 @media (max-width: 640px) {

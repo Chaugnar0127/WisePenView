@@ -367,7 +367,7 @@ function ProviderSettingsSection() {
               <Select.Value />
               <Select.Indicator />
             </Select.Trigger>
-            <Select.Popover>
+            <Select.Popover className={styles.bindModelSelectPopover}>
               <ListBox>
                 {models.map((model) => {
                   const scopeLabel = t(`ai.models.scope.${model.scope}`);

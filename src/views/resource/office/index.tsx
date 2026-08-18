@@ -5,8 +5,6 @@ import { FileText } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-
-import { ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL } from '@/apis/clientUrls';
 import { AppButton } from '@/components/base/Button';
 import { ResultState, Spin } from '@/components/base/Feedback';
 import { useDocumentService, useInteractService } from '@/domains';
@@ -29,6 +27,9 @@ import {
 
 import { useDocumentViewerSwitcher } from '../_hooks/useDocumentViewerSwitcher';
 import styles from './style.module.less';
+
+const ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL = import.meta.env
+  .VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL;
 
 interface OfficeLayoutConfigProps {
   children: ReactNode;

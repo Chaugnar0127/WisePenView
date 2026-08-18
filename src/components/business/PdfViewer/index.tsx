@@ -1,3 +1,6 @@
+import { buildApiUrl } from '@/apis/apiServerAddr';
+import { cn } from '@/utils/cn';
+import { createClientError, FRONTEND_CLIENT_ERROR, isWisePenError } from '@/utils/error';
 import {
   type DocumentManagerPlugin,
   type I18nPlugin,
@@ -7,10 +10,6 @@ import {
 import { useMount, useUnmount } from 'ahooks';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { buildApiUrl } from '@/apis/clientUrls';
-import { cn } from '@/utils/cn';
-import { createClientError, FRONTEND_CLIENT_ERROR, isWisePenError } from '@/utils/error';
 
 import type { PdfViewerProps } from './index.type';
 import { DEFAULT_PDF_VIEWER_CONFIG } from './pdf.config';

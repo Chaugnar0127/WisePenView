@@ -320,7 +320,7 @@ const nativeErrorRestrictedSyntaxRules = [
 ];
 
 export default defineConfig([
-  globalIgnores(['dist', 'src/components/_shadcn/**']),
+  globalIgnores(['dist', 'storybook-static', 'src/components/_shadcn/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

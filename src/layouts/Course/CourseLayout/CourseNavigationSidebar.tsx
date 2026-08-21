@@ -93,7 +93,6 @@ function CourseNavigationSidebar() {
             >
               <Icon size={17} aria-hidden />
               <span>{item.label}</span>
-              {item.badge ? <span className={styles.navBadge}>{item.badge}</span> : null}
             </NavLink>
           );
         })}

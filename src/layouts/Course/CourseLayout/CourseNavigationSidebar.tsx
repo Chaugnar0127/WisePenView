@@ -2,21 +2,11 @@ import { AppButton } from '@/components/Button';
 import { COURSE_ROLE } from '@/domains/Course';
 import {
   APP_ROUTE_PATH,
-  buildCourseAssignmentPath,
   buildCourseLearningPath,
   buildCoursePath,
 } from '@/utils/navigation/appRoute';
 
-import {
-  ArrowLeft,
-  Bell,
-  BookOpen,
-  ClipboardCheck,
-  FolderOpen,
-  Home,
-  Settings,
-  UsersRound,
-} from 'lucide-react';
+import { ArrowLeft, BookOpen, FolderOpen, Home, Settings, UsersRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useCourseContext } from '../CourseContext';
@@ -34,25 +24,27 @@ function CourseNavigationSidebar() {
       icon: BookOpen,
       to: buildCourseLearningPath(course.courseId),
     },
-    {
-      key: 'assignments',
-      label: t('nav.assignments'),
-      icon: ClipboardCheck,
-      to: buildCourseAssignmentPath(course.courseId),
-      badge: course.pendingAssignmentCount,
-    },
+    // 暂时隐藏作业入口，避免从左侧栏直接访问。
+    // {
+    //   key: 'assignments',
+    //   label: t('nav.assignments'),
+    //   icon: ClipboardCheck,
+    //   to: buildCourseAssignmentPath(course.courseId),
+    //   badge: course.pendingAssignmentCount,
+    // },
     {
       key: 'materials',
       label: t('nav.materials'),
       icon: FolderOpen,
       to: buildCoursePath(course.courseId, 'materials'),
     },
-    {
-      key: 'announcements',
-      label: t('nav.announcements'),
-      icon: Bell,
-      to: buildCoursePath(course.courseId, 'announcements'),
-    },
+    // 暂时隐藏公告入口，避免从左侧栏直接访问。
+    // {
+    //   key: 'announcements',
+    //   label: t('nav.announcements'),
+    //   icon: Bell,
+    //   to: buildCoursePath(course.courseId, 'announcements'),
+    // },
     {
       key: 'members',
       label: t('nav.members'),
@@ -101,7 +93,6 @@ function CourseNavigationSidebar() {
             >
               <Icon size={17} aria-hidden />
               <span>{item.label}</span>
-              {item.badge ? <span className={styles.navBadge}>{item.badge}</span> : null}
             </NavLink>
           );
         })}

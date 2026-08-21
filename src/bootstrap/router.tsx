@@ -72,13 +72,8 @@ const CourseHomePage = lazy(
 const CourseInfoPage = lazy(
   () => import('@/views/app/course/CourseContextPage/_components/CourseInfoTab')
 );
-const CourseAssignmentsPage = lazy(() => import('@/views/app/course/CourseAssignmentsPage'));
-const CourseAssignmentDetailPage = lazy(
-  () => import('@/views/app/course/CourseAssignmentDetailPage')
-);
 const CourseMaterialsPage = lazy(() => import('@/views/app/course/CourseMaterialsPage'));
 const CourseMembersPage = lazy(() => import('@/views/app/course/CourseMembersPage'));
-const CourseAnnouncementsPage = lazy(() => import('@/views/app/course/CourseAnnouncementsPage'));
 const CourseEditorPage = lazy(() => import('@/views/app/course/CourseEditorPage'));
 const CourseSettingsRouteGuard = lazy(
   () => import('@/views/app/course/_guards/CourseSettingsRouteGuard')
@@ -320,24 +315,9 @@ const router = createBrowserRouter([
                         ],
                       },
                       {
-                        path: 'assignments',
-                        element: <CourseAssignmentsPage />,
-                        handle: courseHandle('course.assignments'),
-                      },
-                      {
-                        path: 'assignments/:assignmentId',
-                        element: <CourseAssignmentDetailPage />,
-                        handle: courseHandle('course.assignment'),
-                      },
-                      {
                         path: 'materials',
                         element: <CourseMaterialsPage />,
                         handle: courseHandle('course.materials'),
-                      },
-                      {
-                        path: 'announcements',
-                        element: <CourseAnnouncementsPage />,
-                        handle: courseHandle('course.announcements'),
                       },
                       {
                         path: 'members',

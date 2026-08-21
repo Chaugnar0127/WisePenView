@@ -5,15 +5,10 @@ import { COURSE_ROLE } from '@/domains/Course';
 import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
-import { formatTimestampToDateTime } from '@/utils/format/formatTime';
-import {
-  buildCourseAssignmentPath,
-  buildCourseLearningPath,
-  buildCoursePath,
-} from '@/utils/navigation/appRoute';
+import { buildCourseLearningPath } from '@/utils/navigation/appRoute';
 import { Meter, ProgressBar } from '@heroui/react';
 
-import { ArrowRight, Bell, BookOpen, CalendarClock, ClipboardCheck } from 'lucide-react';
+import { ArrowRight, BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styles from './style.module.less';
@@ -27,8 +22,6 @@ function CourseHomeTab() {
   const { data, loading, error, refresh } = useApi(() =>
     courseService.getCourseHome(course.courseId)
   );
-  const visibleAssignments = data?.pendingAssignments.slice(0, 2) ?? [];
-  const visibleAnnouncements = data?.announcements.slice(0, 2) ?? [];
 
   if (loading) {
     return (
@@ -74,82 +67,6 @@ function CourseHomeTab() {
             {canEditOutline ? t('home.enterEditing') : t('home.enterLearning')}
             <ArrowRight size={16} aria-hidden />
           </AppButton>
-        </section>
-
-        <section className={styles.homeSection}>
-          <div className={styles.sectionTitleRow}>
-            <div className={styles.sectionHeading}>
-              <span className={styles.sectionIcon}>
-                <ClipboardCheck size={18} aria-hidden />
-              </span>
-              <h2>{t('home.pendingAssignments')}</h2>
-            </div>
-            <AppButton
-              variant="secondary"
-              size="sm"
-              onPress={() => navigate(buildCourseAssignmentPath(course.courseId))}
-            >
-              {t('home.viewAll')}
-            </AppButton>
-          </div>
-          {visibleAssignments.length > 0 ? (
-            <div className={styles.assignmentList}>
-              {visibleAssignments.map((assignment) => (
-                <button
-                  key={assignment.assignmentId}
-                  type="button"
-                  className={styles.assignmentRow}
-                  onClick={() =>
-                    navigate(buildCourseAssignmentPath(course.courseId, assignment.assignmentId))
-                  }
-                >
-                  <span>
-                    <strong>{assignment.title}</strong>
-                    {assignment.scopeLabel ? <small>{assignment.scopeLabel}</small> : null}
-                  </span>
-                  <span className={styles.deadline}>
-                    <CalendarClock size={15} aria-hidden />
-                    {formatTimestampToDateTime(assignment.deadline)}
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className={styles.emptyCopy}>{t('home.noAssignments')}</p>
-          )}
-        </section>
-
-        <section className={styles.homeSection}>
-          <div className={styles.sectionTitleRow}>
-            <div className={styles.sectionHeading}>
-              <span className={styles.sectionIcon}>
-                <Bell size={18} aria-hidden />
-              </span>
-              <h2>{t('home.announcements')}</h2>
-            </div>
-            <AppButton
-              variant="secondary"
-              size="sm"
-              onPress={() => navigate(buildCoursePath(course.courseId, 'announcements'))}
-            >
-              {t('home.viewAll')}
-            </AppButton>
-          </div>
-          {visibleAnnouncements.length > 0 ? (
-            <div className={styles.announcementList}>
-              {visibleAnnouncements.map((announcement) => (
-                <article key={announcement.announcementId} className={styles.announcement}>
-                  <div>
-                    <h3>{announcement.title}</h3>
-                    <time>{formatTimestampToDateTime(announcement.publishTime)}</time>
-                  </div>
-                  <p>{announcement.content}</p>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p className={styles.emptyCopy}>{t('home.noAnnouncements')}</p>
-          )}
         </section>
       </div>
 

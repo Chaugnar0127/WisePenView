@@ -2,14 +2,14 @@
 
 WisePenView 前端项目，基于 React、Vite、TypeScript、HeroUI 与 Shadcn。
 
-开发规约入口见 `AGENT.md`，专题规约位于 `docs/agent/`。
+开发规约入口见 `AGENTS.md`，专题规约位于 `docs/agent/`。
 
 ## 快速开始
 
 ### 1 安装前置环境
 
-- Node.js：建议使用当前 LTS 版本。
-- pnpm：`npm install -g pnpm`
+- Node.js：`22.23.2`（项目已通过 `.nvmrc` 固定版本）。
+- pnpm：执行 `corepack enable` 后使用，版本由 `package.json` 的 `packageManager` 固定。
 
 ### 2 项目初始化
 
@@ -43,3 +43,4 @@ pnpm mock
 - `pnpm mock`：以 mock 模式启动
 - `pnpm build`：构建产物
 - `pnpm lint`：执行 ESLint
+- `pnpm typecheck`：执行 TypeScript 类型检查

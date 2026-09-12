@@ -1,3 +1,4 @@
+import type { ResourcePermissionOverview } from '@/domains/Resource';
 import type { AgentDetail, AgentSpec } from '../entity/agent';
 
 export interface SaveAgentDraftRequest {
@@ -21,6 +22,8 @@ export interface IAgentService {
     pathTagId?: string
   ): Promise<string>;
   getAgentDetail(resourceId: string, version?: number): Promise<AgentDetail>;
+  /** Agent 自身的权限概览，小组与标签信息由权限服务补全。 */
+  getAgentPermissionOverview(resourceId: string): Promise<ResourcePermissionOverview>;
   saveAgentDraft(request: SaveAgentDraftRequest): Promise<void>;
   publishVersion(resourceId: string): Promise<void>;
   uploadAsset(

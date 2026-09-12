@@ -1,4 +1,4 @@
-import type { ResourceItem } from '@/domains/Resource';
+import type { ResourceItem, ResourcePermissionOverview } from '@/domains/Resource';
 import type { UserDisplayBase } from '@/domains/User';
 import type { Config } from '@onlyoffice/doceditor-types';
 
@@ -69,6 +69,8 @@ export interface IDocumentService {
   cancelPendingDoc(documentId: string): Promise<void>;
   /** 获取文档详情信息（用于预览页展示） */
   getDocInfo(resourceId: string): Promise<DocDisplayInfoResponse>;
+  /** 读取资源权限，不依赖文件版本与预览元数据。 */
+  getDocPermissionOverview(resourceId: string): Promise<ResourcePermissionOverview>;
   /** 复制已有文档，后端统一校验 FORK 权限。 */
   forkDocument(params: ForkDocumentRequest): Promise<string>;
   /** 获取 ONLYOFFICE 编辑器初始化配置 */

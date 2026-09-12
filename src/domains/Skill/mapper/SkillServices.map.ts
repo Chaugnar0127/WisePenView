@@ -1,4 +1,4 @@
-import { coerceResourceActions } from '@/domains/Resource';
+import { coerceResourceActions, type ResourcePermissionOverview } from '@/domains/Resource';
 import { ResourceServicesMap } from '@/domains/Resource/mapper/ResourceServices.map';
 import { normalizeNonNegativeNumber } from '@/utils/normalize/normalizeNumber';
 import {
@@ -179,9 +179,19 @@ function resolveAssetResourceType(name: string): AssetResourceTypeEnum {
   return typeMap[ext ?? ''] ?? AssetResourceTypeEnum.TEXT;
 }
 
+const mapSkillPermissionOverviewFromApi = (
+  info: SkillInfoApiResponse | null | undefined,
+  resourceId: string
+): ResourcePermissionOverview =>
+  ResourceServicesMap.mapResourcePermissionOverviewFromApi(
+    info?.resourceInfo ?? { resourceId, resourceName: '', ownerInfo: {} },
+    resourceId
+  );
+
 export const SkillServicesMap = {
   formatVersion,
   mapSkillDetail,
+  mapSkillPermissionOverviewFromApi,
   mapSkillSummary,
   mapSkillFilesFromApi,
   resolveAssetResourceType,

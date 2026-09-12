@@ -1,3 +1,4 @@
+import { createMockResourcePermissionOverview } from '@/domains/Resource/mock/resourcePermissionOverview.mockdata';
 import type { AgentDetail } from '../entity/agent';
 import { AgentServicesMap } from '../mapper/AgentServices.map';
 import type { IAgentService } from '../service/index.type';
@@ -23,6 +24,8 @@ const mockAgent: AgentDetail = {
 };
 
 export const AgentServicesMock: IAgentService = {
+  getAgentPermissionOverview: async (resourceId) =>
+    createMockResourcePermissionOverview({ resourceId, resourceType: 'agent' }),
   async createAgent() {
     return mockAgent.resourceId;
   },

@@ -26,6 +26,10 @@ export const createAgentServices = (): IAgentService => ({
         : undefined;
     return AgentServicesMap.mapAgentDetail({ resourceId, info, bundle });
   },
+  async getAgentPermissionOverview(resourceId) {
+    const data = await AgentApi.getAgentInfo(resourceId);
+    return AgentServicesMap.mapAgentPermissionOverviewFromApi(data, resourceId);
+  },
   async saveAgentDraft(request) {
     const requests = AgentServicesMap.mapSaveAgentDraftRequests(request);
     await Promise.all([

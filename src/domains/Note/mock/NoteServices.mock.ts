@@ -8,6 +8,7 @@ import type {
   SaveDrawIoSnapshotRequest,
   SyncTitleRequest,
 } from '@/domains/Note';
+import { createMockResourcePermissionOverview } from '@/domains/Resource/mock/resourcePermissionOverview.mockdata';
 import { useResourceDisplayNameStore } from '@/domains/Resource/store/useResourceDisplayNameStore';
 import { NOTE_AI_DIFF_PREVIEW_MOCK } from './aiDiffPreview.mockdata';
 
@@ -133,6 +134,8 @@ const listNoteVersions = async () => ({
 });
 
 export const NoteServicesMock: INoteService = {
+  getNotePermissionOverview: async (resourceId) =>
+    createMockResourcePermissionOverview({ resourceId, resourceType: 'note' }),
   syncTitle,
   createNote,
   getNoteInfoDisplay,

@@ -37,12 +37,16 @@ export interface IResourceService {
   moveResourcesInGroup(params: MoveResourcesInGroupRequest): Promise<number>;
   updateResourceActionPermission(params: UpdateResourceActionPermissionRequest): Promise<void>;
   updateResourcePermissionSubjects(params: UpdateResourcePermissionSubjectsRequest): Promise<void>;
+  /** 全局全文搜索（ACL 过滤 + 高亮，分页） */
+  globalSearch(params: SearchQueryRequest): Promise<SearchResultPage>;
+}
+
+/** 权限概览组合查询；独立于资源列表与写操作，避免反向依赖。 */
+export interface IResourcePermissionService {
   /** 获取 View 直接消费的资源权限概览 */
   getResourcePermissionOverview(
     params: GetResourcePermissionOverviewRequest
   ): Promise<ResourcePermissionOverview>;
-  /** 全局全文搜索（ACL 过滤 + 高亮，分页） */
-  globalSearch(params: SearchQueryRequest): Promise<SearchResultPage>;
 }
 
 /** 全文搜索请求（对齐 GET /resource/search/globalSearchResources） */

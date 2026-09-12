@@ -15,6 +15,7 @@ import { InteractServicesMock } from '@/domains/Interact/mock/InteractServices.m
 import { MessageServicesMock } from '@/domains/Message/mock/MessageServices.mock';
 import { NoteServicesMock } from '@/domains/Note/mock/NoteServices.mock';
 import { QuotaServicesMock } from '@/domains/Quota/mock/QuotaServices.mock';
+import { ResourcePermissionServicesMock } from '@/domains/Resource/mock/ResourcePermissionServices.mock';
 import { ResourceServicesMock } from '@/domains/Resource/mock/ResourceServices.mock';
 import { SkillServicesMock } from '@/domains/Skill/mock/SkillServices.mock';
 import { SpeechServicesMock } from '@/domains/Speech/mock/SpeechServices.mock';
@@ -46,6 +47,7 @@ const mockServicesValue: ServicesContextValue = {
   messageService: MessageServicesMock,
   noteService: NoteServicesMock,
   quotaService: QuotaServicesMock,
+  resourcePermissionService: ResourcePermissionServicesMock,
   resourceService: ResourceServicesMock,
   skillService: SkillServicesMock,
   speechService: SpeechServicesMock,

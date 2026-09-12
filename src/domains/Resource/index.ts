@@ -41,6 +41,7 @@ export type {
   GetGroupResourceRequest,
   GetResourcePermissionOverviewRequest,
   GetUserResourcesRequest,
+  IResourcePermissionService,
   IResourceService,
   MountResourcesToGroupRequest,
   MovePersonalResourcesToTrashRequest,

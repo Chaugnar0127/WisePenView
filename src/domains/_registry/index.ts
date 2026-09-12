@@ -44,6 +44,7 @@ export {
   useMessageService,
   useNoteService,
   useQuotaService,
+  useResourcePermissionService,
   useResourceService,
   useSkillService,
   useSpeechService,

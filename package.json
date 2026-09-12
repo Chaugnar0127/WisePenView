@@ -150,9 +150,6 @@
       "eslint --max-warnings 0 --no-warn-ignored",
       "prettier --write"
     ],
-    "*.js": "prettier --write",
-    "*.jsx": "prettier --write",
-    "*.json": "prettier --write",
-    "*.md": "prettier --write"
+    "*.{js,jsx,json,md}": "prettier --write"
   }
 }

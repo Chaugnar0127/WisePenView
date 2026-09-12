@@ -135,6 +135,18 @@ const mapTagTreeNodeFromApi = (node: GetTagTreeApiResponse[number]): TagTreeNode
 const mapTagTreeFromApi = (data: GetTagTreeApiResponse): TagTreeNode[] =>
   sortTagTreeNodes(data.map(mapTagTreeNodeFromApi));
 
+const mapTagGrantedActions = (
+  roots: TagTreeNode[]
+): ReadonlyMap<string, TagResourceAction[] | undefined> => {
+  const actionsByTagId = new Map<string, TagResourceAction[] | undefined>();
+  const walk = (node: TagTreeNode) => {
+    actionsByTagId.set(node.tagId, node.grantedActions);
+    node.children?.forEach(walk);
+  };
+  roots.forEach(walk);
+  return actionsByTagId;
+};
+
 const mapAddTagRequest = (params: TagCreateRequest): AddTagApiRequest => ({
   ...params,
   tagMetaInfo: serializeTagMetaInfo(params.tagMetaInfo),
@@ -155,6 +167,7 @@ const mapAddTagFromApi = (data: string): string => {
 export const TagServicesMap = {
   mapGetTagTreeRequest,
   mapTagTreeFromApi,
+  mapTagGrantedActions,
   mapAddTagRequest,
   mapUpdateTagRequest,
   mapAddTagFromApi,

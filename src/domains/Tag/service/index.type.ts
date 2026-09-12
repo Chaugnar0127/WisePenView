@@ -13,6 +13,10 @@ import type {
 
 /** TagService 接口：供依赖注入使用 */
 export interface ITagService {
+  /** 读取小组内所有标签的最新授权，包含路径与隐藏标签，不读写标签树缓存。 */
+  getTagGrantedActions(
+    groupId: string
+  ): Promise<ReadonlyMap<string, TagResourceAction[] | undefined>>;
   /** 获取未过滤的原始标签树（包含路径标签与系统隐藏标签） */
   getRawTagTree(groupId?: string, options?: GetTagTreeOptions): Promise<TagTreeNode[]>;
   /** 从原始标签索引中按 tagId 查找节点（需先调用 getRawTagTree） */

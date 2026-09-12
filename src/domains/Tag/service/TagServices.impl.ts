@@ -44,6 +44,17 @@ const filterHiddenTags = (nodes: TagTreeNode[]): TagTreeNode[] => {
   return filtered;
 };
 
+const fetchTagTree = async (groupId?: string): Promise<TagTreeNode[]> => {
+  const params = TagServicesMap.mapGetTagTreeRequest(groupId);
+  const data = await TagApi.getTagTree(params);
+  return TagServicesMap.mapTagTreeFromApi(data);
+};
+
+const getTagGrantedActions: ITagService['getTagGrantedActions'] = async (groupId) => {
+  const roots = await fetchTagTree(groupId);
+  return TagServicesMap.mapTagGrantedActions(roots);
+};
+
 export const createTagServices = (): ITagService => {
   /** 按 groupId 存储已拉取的原始标签树；写操作后清除，读缓存自动过期。 */
   const rawTagTreeCache = createTtlCache<string, TagTreeNode[]>(TAG_TREE_CACHE_TTL_MS);
@@ -82,9 +93,7 @@ export const createTagServices = (): ITagService => {
     }
     tagTreeCache.delete(cacheKey);
     tagFlatCache.delete(cacheKey);
-    const params = TagServicesMap.mapGetTagTreeRequest(normalizedGroupId);
-    const data = await TagApi.getTagTree(params);
-    const roots = TagServicesMap.mapTagTreeFromApi(data);
+    const roots = await fetchTagTree(normalizedGroupId);
     rawTagTreeCache.set(cacheKey, roots);
     rawTagFlatCache.set(cacheKey, buildFlatMap(roots));
     return roots;
@@ -187,6 +196,7 @@ export const createTagServices = (): ITagService => {
   };
 
   return {
+    getTagGrantedActions,
     getRawTagTree,
     getRawTagById,
     getTagTree,

@@ -11,7 +11,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const login = async (_params: LoginRequest): Promise<void> => {
   await delay(300);
-  authSessionCoordinator.login();
+  authSessionCoordinator.publish('login');
 };
 
 const register = async (_params: RegisterRequest): Promise<void> => {
@@ -28,7 +28,7 @@ const newPassword = async (_params: NewPasswordRequest): Promise<void> => {
 
 const logout = async (): Promise<void> => {
   await delay(100);
-  authSessionCoordinator.logout();
+  authSessionCoordinator.publish('logout');
 };
 
 export const AuthServicesMock: IAuthService = {

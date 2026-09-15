@@ -111,6 +111,13 @@ const forkDocument: IDocumentService['forkDocument'] = async (params) => {
   return DocumentApi.forkDocument(params);
 };
 
+const getDocPermissionOverview: IDocumentService['getDocPermissionOverview'] = async (
+  resourceId
+) => {
+  const data = await DocumentApi.getDocInfo({ resourceId });
+  return DocumentServicesMap.mapDocPermissionOverviewFromApi(data, resourceId);
+};
+
 const getOnlyOfficeEditorConfig = async (resourceId: string) => {
   return await DocumentApi.getOnlyOfficeEditorConfig({ resourceId });
 };
@@ -122,6 +129,7 @@ export const createDocumentServices = (): IDocumentService => ({
   retryPendingDoc,
   cancelPendingDoc,
   getDocInfo,
+  getDocPermissionOverview,
   forkDocument,
   getOnlyOfficeEditorConfig,
 });

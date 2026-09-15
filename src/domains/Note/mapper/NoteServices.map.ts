@@ -3,7 +3,12 @@ import type {
   GetNoteInfoApiResponse,
   SaveDrawIoSnapshotApiRequest,
 } from '@/domains/Note/apis/NoteApi.type';
-import { coerceResourceActions, RESOURCE_ACTION, resourceActionsInclude } from '@/domains/Resource';
+import {
+  coerceResourceActions,
+  RESOURCE_ACTION,
+  resourceActionsInclude,
+  type ResourcePermissionOverview,
+} from '@/domains/Resource';
 import { ResourceServicesMap } from '@/domains/Resource/mapper/ResourceServices.map';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { normalizeId } from '@/utils/normalize/normalizeId';
@@ -84,6 +89,12 @@ const mapNoteInfoDisplayFromApi = (data: GetNoteInfoApiResponse): NoteInfoDispla
   };
 };
 
+const mapNotePermissionOverviewFromApi = (
+  data: GetNoteInfoApiResponse,
+  resourceId: string
+): ResourcePermissionOverview =>
+  ResourceServicesMap.mapResourcePermissionOverviewFromApi(data.resourceInfo, resourceId);
+
 const encodeBase64Utf8 = (value: string): string => {
   const bytes = new TextEncoder().encode(value);
   let binary = '';
@@ -140,6 +151,7 @@ export const NoteServicesMap = {
   mapCreateNoteFromApi,
   mapForkNoteFromApi,
   mapNoteInfoDisplayFromApi,
+  mapNotePermissionOverviewFromApi,
   mapDrawIoLatestSnapshotFromApi,
   mapSaveDrawIoSnapshotRequest,
   mapNoteVersionListPageFromApi,

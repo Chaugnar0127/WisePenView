@@ -24,6 +24,7 @@ import { createInteractServices } from '@/domains/Interact/service/InteractServi
 import { createMessageServices } from '@/domains/Message/service/MessageServices.impl';
 import { createNoteServices } from '@/domains/Note/service/NoteServices.impl';
 import { createQuotaServices } from '@/domains/Quota/service/QuotaServices.impl';
+import { createResourcePermissionServices } from '@/domains/Resource/service/ResourcePermissionServices.impl';
 import { createResourceServices } from '@/domains/Resource/service/ResourceServices.impl';
 import { createSkillServices } from '@/domains/Skill/service/SkillServices.impl';
 import { createSpeechServices } from '@/domains/Speech/service/SpeechServices.impl';
@@ -44,17 +45,13 @@ const inlineCommentService = createInlineCommentServices();
 const interactService = createInteractServices();
 const messageService = createMessageServices();
 const quotaService = createQuotaServices();
+const resourceService = createResourceServices();
 const speechService = createSpeechServices();
+const tagService = createTagServices();
 const userService = createUserServices();
 const walletService = createWalletServices();
 
 // Level 1：依赖 Level 0
-const resourceService = createResourceServices({
-  groupService: groupService,
-});
-const tagService = createTagServices();
-
-// Level 2：依赖已装配的领域服务
 const noteService = createNoteServices({ resourceService: resourceService });
 const skillService = createSkillServices({
   resourceService: resourceService,
@@ -64,7 +61,6 @@ const chatService = createChatServices({
   resourceService: resourceService,
 });
 
-// Level 3：依赖 Level 2 标签服务
 const driveService = createDriveServices({
   tagService: tagService,
   resourceService: resourceService,
@@ -74,6 +70,16 @@ const courseService = createCourseServices({
   interactService: interactService,
   resourceService: resourceService,
   tagService: tagService,
+});
+
+// Level 2：在 Note、Skill 装配后组合权限概览，避免 Resource 与它们相互依赖。
+const resourcePermissionService = createResourcePermissionServices({
+  agentService,
+  documentService,
+  groupService,
+  noteService,
+  skillService,
+  tagService,
 });
 
 const servicesValue: ServicesContextValue = {
@@ -91,6 +97,7 @@ const servicesValue: ServicesContextValue = {
   messageService: messageService,
   noteService: noteService,
   quotaService: quotaService,
+  resourcePermissionService,
   resourceService: resourceService,
   skillService: skillService,
   speechService: speechService,

@@ -14,7 +14,7 @@ import type { IInteractService } from '@/domains/Interact';
 import type { IMessageService } from '@/domains/Message';
 import type { INoteService } from '@/domains/Note';
 import type { IQuotaService } from '@/domains/Quota';
-import type { IResourceService } from '@/domains/Resource';
+import type { IResourcePermissionService, IResourceService } from '@/domains/Resource';
 import type { ISkillService } from '@/domains/Skill';
 import type { ISpeechService } from '@/domains/Speech';
 import type { ITagService } from '@/domains/Tag';
@@ -51,6 +51,8 @@ export const useInteractService = (): IInteractService => useServicesContext().i
 export const useMessageService = (): IMessageService => useServicesContext().messageService;
 export const useNoteService = (): INoteService => useServicesContext().noteService;
 export const useQuotaService = (): IQuotaService => useServicesContext().quotaService;
+export const useResourcePermissionService = (): IResourcePermissionService =>
+  useServicesContext().resourcePermissionService;
 export const useResourceService = (): IResourceService => useServicesContext().resourceService;
 export const useSkillService = (): ISkillService => useServicesContext().skillService;
 export const useSpeechService = (): ISpeechService => useServicesContext().speechService;

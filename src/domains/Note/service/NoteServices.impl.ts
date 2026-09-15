@@ -42,6 +42,11 @@ const getDrawIoLatestSnapshot = async (
   return NoteServicesMap.mapDrawIoLatestSnapshotFromApi(data, params.resourceId);
 };
 
+const getNotePermissionOverview: INoteService['getNotePermissionOverview'] = async (resourceId) => {
+  const data = await NoteApi.getNoteInfo({ resourceId });
+  return NoteServicesMap.mapNotePermissionOverviewFromApi(data, resourceId);
+};
+
 const saveDrawIoSnapshot = async (params: SaveDrawIoSnapshotRequest): Promise<void> => {
   await NoteApi.saveDrawIoSnapshot(NoteServicesMap.mapSaveDrawIoSnapshotRequest(params));
 };
@@ -69,6 +74,7 @@ export const createNoteServices = (deps: NoteServicesDeps): INoteService => {
     syncTitle,
     createNote,
     getNoteInfoDisplay,
+    getNotePermissionOverview,
     getDrawIoLatestSnapshot,
     saveDrawIoSnapshot,
     forkNote,

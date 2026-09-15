@@ -15,7 +15,7 @@ import {
   RESOURCE_PERMISSION_PRESETS,
   type ResourcePermissionPresetKey,
 } from '@/components/business/Drive/common/resourcePermissionPolicy';
-import { useResourceService, useTagService } from '@/domains';
+import { useResourcePermissionService, useResourceService, useTagService } from '@/domains';
 import {
   areResourcePermissionActionsEqual,
   updateResourceActionSelection,
@@ -81,6 +81,7 @@ function ResourcePermissionModal({
 }: ResourcePermissionModalProps) {
   const { t } = useTranslation(['resource', 'common']);
   const resourceService = useResourceService();
+  const resourcePermissionService = useResourcePermissionService();
   const tagService = useTagService();
   const [selectedActions, setSelectedActions] = useState<ResourceAction[]>([]);
 
@@ -95,7 +96,7 @@ function ResourcePermissionModal({
         throw createClientError(FRONTEND_CLIENT_ERROR.RESOURCE_PERMISSION_CONTEXT_MISSING);
       }
 
-      const overview = await resourceService.getResourcePermissionOverview({
+      const overview = await resourcePermissionService.getResourcePermissionOverview({
         resourceId: target.resourceId,
         resourceType: target.resourceType,
       });

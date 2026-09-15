@@ -21,13 +21,6 @@ import type {
   UpdateResourceActionPermissionRequest,
   UpdateResourcePermissionSubjectsRequest,
 } from './index.type';
-import {
-  getResourcePermissionOverview,
-  type ResourcePermissionOverviewDeps,
-} from './resourcePermissionOverview';
-
-type ResourceServicesDeps = ResourcePermissionOverviewDeps;
-
 const requestResourceItemList = async (
   params: GetUserResourcesRequest,
   queryOverrides: Partial<ListResourceItemsApiRequest> = {}
@@ -115,7 +108,7 @@ const globalSearch = async (params: SearchQueryRequest): Promise<SearchResultPag
   return ResourceServicesMap.mapSearchResultPageFromApi(data);
 };
 
-export const createResourceServices = (deps: ResourceServicesDeps): IResourceService => ({
+export const createResourceServices = (): IResourceService => ({
   getUserResources,
   getGroupResources,
   renameResource,
@@ -128,6 +121,5 @@ export const createResourceServices = (deps: ResourceServicesDeps): IResourceSer
   moveResourcesInGroup,
   updateResourceActionPermission,
   updateResourcePermissionSubjects,
-  getResourcePermissionOverview: (params) => getResourcePermissionOverview(params, deps),
   globalSearch,
 });

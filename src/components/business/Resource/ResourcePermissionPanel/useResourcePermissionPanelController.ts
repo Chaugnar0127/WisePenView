@@ -1,4 +1,4 @@
-import { useResourceService, useUserService } from '@/domains';
+import { useResourcePermissionService, useResourceService, useUserService } from '@/domains';
 import {
   type ResourcePermissionActionOption,
   type ResourcePermissionOverview,
@@ -43,6 +43,7 @@ export const useResourcePermissionPanelController = ({
 }: ResourcePermissionPanelProps) => {
   const { t } = useTranslation('resource');
   const resourceService = useResourceService();
+  const resourcePermissionService = useResourcePermissionService();
   const userService = useUserService();
   const updateQueueRef = useRef<Promise<void>>(Promise.resolve());
   const latestSubjectsRef = useRef<ResourcePermissionSubject[]>([]);
@@ -66,7 +67,7 @@ export const useResourcePermissionPanelController = ({
     refresh: refreshPermissionOverview,
   } = useApi(
     () =>
-      resourceService.getResourcePermissionOverview({
+      resourcePermissionService.getResourcePermissionOverview({
         resourceId,
         resourceType,
         groupHydrationLimit,

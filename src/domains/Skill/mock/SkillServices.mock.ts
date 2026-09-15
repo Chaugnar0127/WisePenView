@@ -1,3 +1,4 @@
+import { createMockResourcePermissionOverview } from '@/domains/Resource/mock/resourcePermissionOverview.mockdata';
 import type { ISkillService } from '../service/index.type';
 
 const mockDetail = {
@@ -26,6 +27,8 @@ const mockDetail = {
 };
 
 export const SkillServicesMock: ISkillService = {
+  getSkillPermissionOverview: async (resourceId) =>
+    createMockResourcePermissionOverview({ resourceId, resourceType: 'skill' }),
   getSkillSummaries: async () => [mockDetail],
   createSkill: async () => mockDetail.resourceId,
   forkSkill: async () => `mock-skill-copy-${Date.now()}`,

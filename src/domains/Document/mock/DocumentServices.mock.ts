@@ -5,6 +5,7 @@ import type {
   PendingDocItem,
 } from '@/domains/Document';
 import { DOCUMENT_PROCESS } from '@/domains/Document';
+import { createMockResourcePermissionOverview } from '@/domains/Resource/mock/resourcePermissionOverview.mockdata';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -128,6 +129,8 @@ const getOnlyOfficeEditorConfig = async (
 };
 
 export const DocumentServicesMock: IDocumentService = {
+  getDocPermissionOverview: async (resourceId) =>
+    createMockResourcePermissionOverview({ resourceId, resourceType: 'file' }),
   uploadDocument,
   listPendingDocs,
   syncPendingDocStatus,

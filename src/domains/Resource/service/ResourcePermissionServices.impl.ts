@@ -1,22 +1,26 @@
-import { AgentApi } from '@/domains/Agent/apis/AgentApi';
-import { DocumentApi } from '@/domains/Document/apis/DocumentApi';
+import type { IAgentService } from '@/domains/Agent';
+import type { IDocumentService } from '@/domains/Document';
 import type { GroupBaseInfo, IGroupService } from '@/domains/Group';
-import { NoteApi } from '@/domains/Note/apis/NoteApi';
-import { SkillApi } from '@/domains/Skill/apis/SkillApi';
-import type { TagTreeNode } from '@/domains/Tag';
-import { TagApi } from '@/domains/Tag/apis/TagApi';
-import { TagServicesMap } from '@/domains/Tag/mapper/TagServices.map';
+import type { INoteService } from '@/domains/Note';
+import type { ISkillService } from '@/domains/Skill';
+import type { ITagService } from '@/domains/Tag';
 import { type ResourceAction } from '../enum';
 import { ResourceServicesMap } from '../mapper/ResourceServices.map';
 import type {
   GetResourcePermissionOverviewRequest,
+  IResourcePermissionService,
   ResourcePermissionGroupInfo,
   ResourcePermissionHydration,
   ResourcePermissionOverview,
 } from './index.type';
 
-export interface ResourcePermissionOverviewDeps {
-  groupService: IGroupService;
+interface ResourcePermissionServicesDeps {
+  agentService: Pick<IAgentService, 'getAgentPermissionOverview'>;
+  documentService: Pick<IDocumentService, 'getDocPermissionOverview'>;
+  groupService: Pick<IGroupService, 'fetchGroupBaseInfo'>;
+  noteService: Pick<INoteService, 'getNotePermissionOverview'>;
+  skillService: Pick<ISkillService, 'getSkillPermissionOverview'>;
+  tagService: Pick<ITagService, 'getTagGrantedActions'>;
 }
 
 const PERMISSION_OVERVIEW_HYDRATION_CONCURRENCY = 10;
@@ -66,35 +70,26 @@ const collectPermissionGroupIds = (
   return groupIds;
 };
 
-const getPermissionResourceInfo = async (params: GetResourcePermissionOverviewRequest) => {
+const loadResourcePermissionOverview = (
+  params: GetResourcePermissionOverviewRequest,
+  deps: ResourcePermissionServicesDeps
+): Promise<ResourcePermissionOverview> => {
   switch (params.resourceType) {
     case 'note':
-    case 'drawio': {
-      const data = await NoteApi.getNoteInfo({ resourceId: params.resourceId });
-      return data.resourceInfo;
-    }
-    case 'file': {
-      const data = await DocumentApi.getDocInfo({ resourceId: params.resourceId });
-      return data.resourceInfo;
-    }
-    case 'skill': {
-      const data = await SkillApi.getSkillInfo({ resourceId: params.resourceId });
-      return (
-        data?.resourceInfo ?? { resourceId: params.resourceId, resourceName: '', ownerInfo: {} }
-      );
-    }
-    case 'agent': {
-      const data = await AgentApi.getAgentInfo(params.resourceId);
-      return (
-        data?.resourceInfo ?? { resourceId: params.resourceId, resourceName: '', ownerInfo: {} }
-      );
-    }
+    case 'drawio':
+      return deps.noteService.getNotePermissionOverview(params.resourceId);
+    case 'file':
+      return deps.documentService.getDocPermissionOverview(params.resourceId);
+    case 'skill':
+      return deps.skillService.getSkillPermissionOverview(params.resourceId);
+    case 'agent':
+      return deps.agentService.getAgentPermissionOverview(params.resourceId);
   }
 };
 
 const loadPermissionGroupInfo = async (
   groupIds: string[],
-  groupService: IGroupService
+  groupService: ResourcePermissionServicesDeps['groupService']
 ): Promise<ReadonlyMap<string, ResourcePermissionGroupInfo>> => {
   if (groupIds.length === 0) return new Map();
 
@@ -118,20 +113,10 @@ const loadPermissionGroupInfo = async (
   );
 };
 
-const buildTagFlatMap = (roots: TagTreeNode[]): Map<string, TagTreeNode> => {
-  const tagById = new Map<string, TagTreeNode>();
-  const walk = (node: TagTreeNode) => {
-    tagById.set(node.tagId, node);
-    node.children?.forEach(walk);
-  };
-  roots.forEach(walk);
-  return tagById;
-};
-
-/** TagService 反向依赖 ResourceService，此处复用 Tag API 与 mapper 避免 registry 循环。 */
 const loadPermissionInheritedActions = async (
   overview: ResourcePermissionOverview,
-  groupIds: string[]
+  groupIds: string[],
+  tagService: ResourcePermissionServicesDeps['tagService']
 ): Promise<ReadonlyMap<string, ResourceAction[]>> => {
   const groupIdSet = new Set(groupIds);
   const subjectsByGroupId = new Map<string, ResourcePermissionOverview['subjects']>();
@@ -148,14 +133,13 @@ const loadPermissionInheritedActions = async (
     Array.from(subjectsByGroupId.entries()),
     PERMISSION_OVERVIEW_HYDRATION_CONCURRENCY,
     async ([groupId, subjects]) => {
-      const data = await TagApi.getTagTree(TagServicesMap.mapGetTagTreeRequest(groupId)).catch(
-        () => undefined
-      );
-      if (!data) return;
-      const tagById = buildTagFlatMap(TagServicesMap.mapTagTreeFromApi(data));
+      const grantedActionsByTagId = await tagService
+        .getTagGrantedActions(groupId)
+        .catch(() => undefined);
+      if (!grantedActionsByTagId) return;
       subjects.forEach((subject) => {
         const inheritedActions = subject.primaryTagId
-          ? tagById.get(subject.primaryTagId)?.grantedActions
+          ? grantedActionsByTagId.get(subject.primaryTagId)
           : undefined;
         if (inheritedActions) {
           inheritedActionsBySubjectId.set(subject.id, inheritedActions);
@@ -169,12 +153,12 @@ const loadPermissionInheritedActions = async (
 const enrichResourcePermissionOverview = async (
   overview: ResourcePermissionOverview,
   params: GetResourcePermissionOverviewRequest,
-  deps: ResourcePermissionOverviewDeps
+  deps: ResourcePermissionServicesDeps
 ): Promise<ResourcePermissionOverview> => {
   const groupIds = collectPermissionGroupIds(overview, params.groupHydrationLimit);
   const [groupInfoById, inheritedActionsBySubjectId] = await Promise.all([
     loadPermissionGroupInfo(groupIds, deps.groupService),
-    loadPermissionInheritedActions(overview, groupIds),
+    loadPermissionInheritedActions(overview, groupIds, deps.tagService),
   ]);
   const userInfoById: ResourcePermissionHydration['userInfoById'] = new Map();
   const hydration: ResourcePermissionHydration = {
@@ -185,14 +169,12 @@ const enrichResourcePermissionOverview = async (
   return ResourceServicesMap.mergeResourcePermissionHydration(overview, hydration);
 };
 
-export const getResourcePermissionOverview = async (
-  params: GetResourcePermissionOverviewRequest,
-  deps: ResourcePermissionOverviewDeps
-): Promise<ResourcePermissionOverview> => {
-  const resourceInfo = await getPermissionResourceInfo(params);
-  const overview = ResourceServicesMap.mapResourcePermissionOverviewFromApi(
-    resourceInfo,
-    params.resourceId
-  );
-  return enrichResourcePermissionOverview(overview, params, deps);
-};
+/** 组合已装配的领域服务；资源列表与写操作不依赖此查询流程。 */
+export const createResourcePermissionServices = (
+  deps: ResourcePermissionServicesDeps
+): IResourcePermissionService => ({
+  async getResourcePermissionOverview(params) {
+    const overview = await loadResourcePermissionOverview(params, deps);
+    return enrichResourcePermissionOverview(overview, params, deps);
+  },
+});

@@ -41,6 +41,11 @@ const getTagById = (tagId: string): TagTreeNode | undefined => {
   return flatMap.get(tagId);
 };
 
+const getTagGrantedActions: ITagService['getTagGrantedActions'] = async () => {
+  await delay(200);
+  return TagServicesMap.mapTagGrantedActions(TagServicesMap.sortTagTreeNodes(tagTree));
+};
+
 const getRawTagById = (tagId: string): TagTreeNode | undefined => {
   if (!flatMap) flatMap = buildFlatMap(tagTree);
   return flatMap.get(tagId);
@@ -80,6 +85,7 @@ const reorderSiblingTags: ITagService['reorderSiblingTags'] = async ({ orderedTa
 };
 
 export const TagServicesMock: ITagService = {
+  getTagGrantedActions,
   getRawTagTree,
   getRawTagById,
   getTagTree,

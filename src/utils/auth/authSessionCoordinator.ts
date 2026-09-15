@@ -1,24 +1,23 @@
-import { buildLoginPathForCurrentLocation } from '@/bootstrap/authContinuation';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
-import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
-import { resetSessionStores } from '@/store/lifecycle';
-import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { isRecord } from '@/utils/typeGuards';
 
-type AuthSessionEventType = 'login' | 'logout' | 'unauthorized';
+export type AuthSessionEventType = 'login' | 'logout' | 'unauthorized';
 
-interface AuthSessionEventPayload {
+export interface AuthSessionEvent {
   type: AuthSessionEventType;
   sourceTabId: string;
   eventId: string;
 }
 
+type AuthSessionEventListener = (event: AuthSessionEvent) => void;
+
 const TAB_ID = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 let eventSequence = 0;
-let sessionEnded = false;
+let sessionVersion = 0;
+const listeners = new Set<AuthSessionEventListener>();
 
-const parseAuthSessionEvent = (value: string): AuthSessionEventPayload | undefined => {
+const parseAuthSessionEvent = (value: string): AuthSessionEvent | undefined => {
   const payload: unknown = JSON.parse(value);
   if (!isRecord(payload)) return undefined;
 
@@ -34,90 +33,55 @@ const parseAuthSessionEvent = (value: string): AuthSessionEventPayload | undefin
   return { type, sourceTabId, eventId };
 };
 
-const resetSessionState = (): void => {
-  clearAllServiceCaches();
-  resetSessionStores();
+const notifyListeners = (event: AuthSessionEvent): void => {
+  listeners.forEach((listener) => listener(event));
 };
 
-const redirectToLogin = (): void => {
-  if (window.location.pathname !== APP_ROUTE_PATH.AUTH_LOGIN) {
-    window.location.replace(buildLoginPathForCurrentLocation());
-  }
-};
-
-const applySessionEvent = (type: AuthSessionEventType): void => {
-  if (type === 'login') {
-    sessionEnded = false;
-    resetSessionState();
-    return;
-  }
-
-  if (!sessionEnded) {
-    sessionEnded = true;
-    resetSessionState();
-  }
-  if (type === 'logout') {
-    redirectToLogin();
-    return;
-  }
-  redirectToLogin();
-};
-
-const broadcastSessionEvent = (type: AuthSessionEventType): void => {
+const broadcastSessionEvent = (event: AuthSessionEvent): void => {
   try {
-    eventSequence += 1;
-    const payload: AuthSessionEventPayload = {
-      type,
-      sourceTabId: TAB_ID,
-      eventId: `${TAB_ID}-${Date.now()}-${eventSequence}`,
-    };
-    localStorage.setItem(STORAGE_KEYS.authSessionEvent, JSON.stringify(payload));
+    localStorage.setItem(STORAGE_KEYS.authSessionEvent, JSON.stringify(event));
   } catch {
     // 忽略浏览器存储异常，避免影响认证主流程
   }
 };
 
-const coordinateSessionEvent = (type: AuthSessionEventType): void => {
-  if ((type === 'logout' || type === 'unauthorized') && sessionEnded) {
-    if (type === 'logout') {
-      redirectToLogin();
-      return;
-    }
-    redirectToLogin();
-    return;
-  }
-
-  applySessionEvent(type);
-  broadcastSessionEvent(type);
-};
-
 export const authSessionCoordinator = {
-  login(): void {
-    coordinateSessionEvent('login');
+  getSessionVersion(): number {
+    return sessionVersion;
   },
 
-  logout(): void {
-    coordinateSessionEvent('logout');
+  publish(type: AuthSessionEventType): void {
+    sessionVersion += 1;
+    eventSequence += 1;
+    const event: AuthSessionEvent = {
+      type,
+      sourceTabId: TAB_ID,
+      eventId: `${TAB_ID}-${Date.now()}-${eventSequence}`,
+    };
+    notifyListeners(event);
+    broadcastSessionEvent(event);
   },
 
-  unauthorized(): void {
-    coordinateSessionEvent('unauthorized');
-  },
+  subscribe(listener: AuthSessionEventListener): () => void {
+    listeners.add(listener);
 
-  subscribe(): () => void {
     const onStorage = (event: StorageEvent): void => {
       if (event.key !== STORAGE_KEYS.authSessionEvent || !event.newValue) return;
 
       try {
         const payload = parseAuthSessionEvent(event.newValue);
         if (!payload || payload.sourceTabId === TAB_ID) return;
-        applySessionEvent(payload.type);
+        sessionVersion += 1;
+        listener(payload);
       } catch {
         // 非法 payload 直接忽略
       }
     };
 
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    return () => {
+      listeners.delete(listener);
+      window.removeEventListener('storage', onStorage);
+    };
   },
 };

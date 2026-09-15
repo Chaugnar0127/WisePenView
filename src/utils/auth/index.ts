@@ -1,1 +1,5 @@
-export { authSessionCoordinator } from './authSessionCoordinator';
+export {
+  authSessionCoordinator,
+  type AuthSessionEvent,
+  type AuthSessionEventType,
+} from './authSessionCoordinator';

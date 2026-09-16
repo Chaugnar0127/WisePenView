@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from './apiServerAddr';
+import { getApiBaseUrl } from '../../apis/apiServerAddr';
 
 export function buildApiUrl(path: `/${string}`): string {
   return new URL(path, getApiBaseUrl()).toString();

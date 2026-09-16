@@ -4,8 +4,8 @@ import { DefaultChatTransport } from 'ai';
 import { useRef } from 'react';
 
 import { awaitAddrReady, notifyAddrFailure } from '@/apis/apiServerAddr';
-import { buildApiUrl } from '@/apis/buildApiUrl';
 import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
+import { buildApiUrl } from '@/utils/api/buildApiUrl';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 
 import type { ChatMessageMetadata, WisePenUIMessage } from '../entity/message';

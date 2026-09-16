@@ -86,7 +86,7 @@ function HeaderNav({
           collapsed && styles.menuItemCollapsed,
           isActive && styles.menuItemActive
         )}
-        onPress={item.onPress}
+        onAction={item.onPress}
       >
         <span className={styles.menuIcon}>
           <Icon size={18} />

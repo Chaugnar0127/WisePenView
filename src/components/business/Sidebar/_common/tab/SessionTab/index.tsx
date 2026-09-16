@@ -146,7 +146,7 @@ function SessionTab() {
                 id={`session-${session.id}`}
                 textValue={session.title || t('session.untitled')}
                 className={cn(styles.sessionItem, styles.sessionItemWithActions)}
-                onPress={() => selectSession(session)}
+                onAction={() => selectSession(session)}
               >
                 <SessionMenuItem session={session} onUpdated={refresh} onDeleted={handleDeleted} />
               </ListBoxItem>

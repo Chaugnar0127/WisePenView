@@ -1,5 +1,6 @@
 import { mockResponse } from '@/domains/_shared/mock/response';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+
 import type {
   ChatApi as ChatApiContract,
   ChatCompletionApi as ChatCompletionApiContract,

@@ -1,9 +1,11 @@
+import { ChatApi, ChatCompletionApi, ChatSessionApi, putOssPresignedUrl } from '@domain-apis';
+
 import type { Group } from '@/domains/Group';
 import type { ResourceSkillSummary } from '@/domains/Resource';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { computeFileMd5 } from '@/utils/oss/computeFileMd5';
 import { parseExtension } from '@/utils/parser/extensionParser';
-import { ChatApi, ChatCompletionApi, ChatSessionApi, putOssPresignedUrl } from '@domain-apis';
+
 import type { ChatAgentOption } from '../entity/agent';
 import type { WisePenUIMessage } from '../entity/message';
 import { buildAgentFromResourceItem } from '../mapper/agent.mapper';

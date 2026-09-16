@@ -1,7 +1,9 @@
-import type { User, UserAccountProfile } from '@/domains/User';
+import { UserApi } from '@domain-apis';
+
 import { registerServiceCacheCleaner } from '@/domains/_shared/cacheRegistry';
 import { createTtlCache } from '@/domains/_shared/ttlCache';
-import { UserApi } from '@domain-apis';
+import type { User, UserAccountProfile } from '@/domains/User';
+
 import { UserServicesMap } from '../mapper/UserServices.map';
 import type {
   ConfirmEmailVerifyRequest,

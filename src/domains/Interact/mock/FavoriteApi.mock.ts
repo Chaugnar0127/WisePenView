@@ -1,5 +1,6 @@
-import { mockResources } from '@/domains/Resource/mock/resourceStore';
 import { mockPage, mockResponse } from '@/domains/_shared/mock/response';
+import { mockResources } from '@/domains/Resource/mock/resourceStore';
+
 import type { FavoriteApi as FavoriteApiContract } from '../apis/FavoriteApi';
 import type {
   ChangeFavoriteStatusApiRequest,

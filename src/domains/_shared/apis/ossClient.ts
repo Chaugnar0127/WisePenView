@@ -1,6 +1,7 @@
+import OSS from 'ali-oss';
+
 import type { OssStsTokenApiResponse } from '@/apis/api.type';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
-import OSS from 'ali-oss';
 
 export interface OssReadClient {
   get(objectKey: string): Promise<{ content?: unknown }>;

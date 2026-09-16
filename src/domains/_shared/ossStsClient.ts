@@ -1,8 +1,10 @@
+import { createOssClient } from '@domain-apis';
+
 import type { OssStsTokenApiResponse } from '@/apis/api.type';
 import { registerServiceCacheCleaner } from '@/domains/_shared/cacheRegistry';
 import { createClientError, FRONTEND_CLIENT_ERROR, isWisePenError } from '@/utils/error';
 import { isRecord } from '@/utils/typeGuards';
-import { createOssClient } from '@domain-apis';
+
 import type { OssReadClient } from './apis/ossClient';
 
 export interface OssStsClientManagerOptions<Key> {

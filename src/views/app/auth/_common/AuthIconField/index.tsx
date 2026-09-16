@@ -1,5 +1,7 @@
-import { Input } from '@/components/base/Input';
 import { User } from 'lucide-react';
+
+import { Input } from '@/components/base/Input';
+
 import type { AuthIconFieldProps } from './index.type';
 import styles from './style.module.less';
 

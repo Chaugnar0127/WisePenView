@@ -1,5 +1,7 @@
-import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
 import { AuthApi } from '@domain-apis';
+
+import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
+
 import { AuthServicesMap } from '../mapper/AuthServices.map';
 import type {
   LoginRequest,

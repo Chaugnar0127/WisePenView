@@ -1,4 +1,5 @@
 import { mockResponse } from '@/domains/_shared/mock/response';
+
 import type { ImageApi as ImageApiContract } from '../apis/ImageApi';
 
 export const ImageApi: typeof ImageApiContract = {

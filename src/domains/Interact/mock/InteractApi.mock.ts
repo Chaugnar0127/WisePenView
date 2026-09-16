@@ -1,5 +1,6 @@
 import { mockResponse } from '@/domains/_shared/mock/response';
 import { getMockResource } from '@/domains/Resource/mock/resourceStore';
+
 import type { InteractApi as InteractApiContract } from '../apis/InteractApi';
 import { getMockCommentLikeIds } from './CommentApi.mock';
 

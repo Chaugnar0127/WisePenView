@@ -1,7 +1,8 @@
-import { addMockResource, getMockResource } from '@/domains/Resource/mock/resourceStore';
 import type { VersionResourceInfoApiResponse } from '@/domains/_shared/apis/versionAssetApi.type';
 import { mockObjects } from '@/domains/_shared/mock/ossClient.mock';
 import { mockResponse } from '@/domains/_shared/mock/response';
+import { addMockResource, getMockResource } from '@/domains/Resource/mock/resourceStore';
+
 import type { SkillApi as SkillApiContract } from '../apis/SkillApi';
 import type { SkillVersionBundleApiResponse } from '../apis/SkillApi.type';
 

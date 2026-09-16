@@ -1,5 +1,6 @@
-import { addMockResource, getMockResource } from '@/domains/Resource/mock/resourceStore';
 import { mockResponse } from '@/domains/_shared/mock/response';
+import { addMockResource, getMockResource } from '@/domains/Resource/mock/resourceStore';
+
 import type { DocumentApi as DocumentApiContract } from '../apis/DocumentApi';
 
 export const DocumentApi: typeof DocumentApiContract = {

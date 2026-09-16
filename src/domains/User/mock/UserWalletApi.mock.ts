@@ -2,6 +2,7 @@ import { mockResponse } from '@/domains/_shared/mock/response';
 import { getMockGroup } from '@/domains/Group/mock/GroupApi.mock';
 import mockdata from '@/domains/Wallet/mock/mockdata.json';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+
 import type { UserWalletApi as UserWalletApiContract } from '../apis/UserApi';
 
 let balance = mockdata.tokenBalance;

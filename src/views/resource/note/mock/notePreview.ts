@@ -1,4 +1,5 @@
 import type { NoteInfoDisplayData } from '@/domains/Note';
+
 import { NOTE_AI_DIFF_PREVIEW_MOCK } from './aiDiffPreview.mockdata';
 
 const text = (value: string) => ({

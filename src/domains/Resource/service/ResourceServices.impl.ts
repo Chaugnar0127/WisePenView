@@ -1,4 +1,5 @@
 import { ResourceItemApi, ResourcePlacementApi } from '@domain-apis';
+
 import type { ListResourceItemsApiRequest } from '../apis/ResourceApi.type';
 import { ResourceServicesMap } from '../mapper/ResourceServices.map';
 import { useResourceDisplayNameStore } from '../store/useResourceDisplayNameStore';

@@ -1,6 +1,7 @@
-import { addMockResource, getMockResource } from '@/domains/Resource/mock/resourceStore';
 import type { VersionResourceInfoApiResponse } from '@/domains/_shared/apis/versionAssetApi.type';
 import { mockResponse } from '@/domains/_shared/mock/response';
+import { addMockResource, getMockResource } from '@/domains/Resource/mock/resourceStore';
+
 import type { AgentApi as AgentApiContract } from '../apis/AgentApi';
 import type { AgentVersionBundleApiResponse } from '../apis/AgentApi.type';
 

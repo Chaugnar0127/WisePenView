@@ -1,12 +1,22 @@
+import { type ReactNode, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type {
+  Layout,
+  LayoutChangedMeta,
+  PanelImperativeHandle,
+  PanelSize,
+} from 'react-resizable-panels';
+import { useLocation, useParams } from 'react-router-dom';
+
 import ChatPanel from '@/components/business/ChatPanel';
 import { useChatPanelStore } from '@/components/business/ChatPanel/_store/useChatPanelStore';
 import { createResourceChatStateProvider } from '@/components/business/ChatPanel/ResourceChatProtocol';
 import {
   CHAT_PANEL_MAX_WIDTH,
   CHAT_PANEL_MIN_WIDTH,
+  clampChatPanelWidth,
   LAYOUT_DENSITY,
   RESOURCE_MAIN_MIN_WIDTH,
-  clampChatPanelWidth,
 } from '@/constants/layoutScale';
 import { useOpenResource } from '@/hooks/useOpenResource';
 import {
@@ -32,15 +42,7 @@ import {
   type ResourceHostContextValue,
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
-import { useRef, useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import type {
-  Layout,
-  LayoutChangedMeta,
-  PanelImperativeHandle,
-  PanelSize,
-} from 'react-resizable-panels';
-import { useLocation, useParams } from 'react-router-dom';
+
 import styles from './AppResourceShell.module.less';
 
 interface AppResourceShellProps {

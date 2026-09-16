@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import { build } from 'esbuild';
 
 // 離線走正式 registry，確認 mock 只替換 I/O，跨 service 讀寫仍保持一致。

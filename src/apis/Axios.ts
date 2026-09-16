@@ -6,7 +6,6 @@ import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
 import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
 import { WisePenError } from '@/utils/error';
 import { FRONTEND_NETWORK_ERROR } from '@/utils/error/codes';
-import { toast } from '@heroui/react';
 import axios, { AxiosHeaders, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 declare module 'axios' {
@@ -14,6 +13,8 @@ declare module 'axios' {
     retry?: number | false;
     retryDelayMs?: number;
     skipUnauthorizedHandling?: boolean;
+    /** 请求发出时的会话版本；旧会话返回的 401 不得影响新会话。 */
+    __wisePenAuthSessionVersion?: number;
   }
 }
 
@@ -24,10 +25,6 @@ const Axios = axios.create({
 
 const DEFAULT_RETRY_COUNT = 2;
 const DEFAULT_RETRY_DELAY_MS = 300;
-const UNAUTHORIZED_TOAST_DEBOUNCE_MS = 3000;
-
-let lastUnauthorizedToastAt = 0;
-
 type RetryableAxiosConfig = InternalAxiosRequestConfig & {
   __wisePenRetryCount?: number;
 };
@@ -107,15 +104,10 @@ const retryAxiosRequest = (error: AxiosError): Promise<unknown> | undefined => {
   return delay(delayBase * 2 ** retryCount).then(() => Axios.request(config));
 };
 
-const notifyUnauthorized = (): void => {
-  const now = Date.now();
-  if (now - lastUnauthorizedToastAt < UNAUTHORIZED_TOAST_DEBOUNCE_MS) return;
-
-  lastUnauthorizedToastAt = now;
-  toast.danger('无权访问');
-};
-
-const mapAxiosErrorToWisePenError = (error: AxiosError): WisePenError => {
+const mapAxiosErrorToWisePenError = (
+  error: AxiosError,
+  authSessionState: 'handled' | 'stale' | 'unrelated'
+): WisePenError => {
   if (!error.response) {
     const code = mapNetworkCode(error);
     return new WisePenError({
@@ -137,6 +129,10 @@ const mapAxiosErrorToWisePenError = (error: AxiosError): WisePenError => {
       source: status === 400 || status === 500 ? 'api' : 'http',
       serverMsg,
       message: serverMsg ?? error.message,
+      meta: {
+        httpStatus: status,
+        authSessionState,
+      },
       cause: error,
     });
   }
@@ -149,11 +145,16 @@ const mapAxiosErrorToWisePenError = (error: AxiosError): WisePenError => {
     source: 'http',
     serverMsg: fallbackMsg,
     message: fallbackMsg,
+    meta: {
+      httpStatus: status,
+      authSessionState,
+    },
     cause: error,
   });
 };
 
 Axios.interceptors.request.use(async (config) => {
+  config.__wisePenAuthSessionVersion ??= authSessionCoordinator.getSessionVersion();
   await awaitAddrReady();
   config.baseURL = getApiBaseUrl();
   config.headers = AxiosHeaders.from(config.headers);
@@ -174,11 +175,22 @@ Axios.interceptors.response.use(
       return retryRequest;
     }
 
-    if (error.response?.status === 401 && !error.config?.skipUnauthorizedHandling) {
-      notifyUnauthorized();
-      authSessionCoordinator.unauthorized();
+    const requestConfig = error.config;
+    const authSessionState =
+      error.response?.status !== 401 || requestConfig?.skipUnauthorizedHandling
+        ? 'unrelated'
+        : requestConfig?.__wisePenAuthSessionVersion === authSessionCoordinator.getSessionVersion()
+          ? 'handled'
+          : 'stale';
+    if (
+      error.response?.status === 401 &&
+      requestConfig &&
+      !requestConfig.skipUnauthorizedHandling &&
+      requestConfig.__wisePenAuthSessionVersion === authSessionCoordinator.getSessionVersion()
+    ) {
+      authSessionCoordinator.publish('unauthorized');
     }
-    return Promise.reject(mapAxiosErrorToWisePenError(error));
+    return Promise.reject(mapAxiosErrorToWisePenError(error, authSessionState));
   }
 );
 

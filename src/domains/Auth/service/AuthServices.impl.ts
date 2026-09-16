@@ -12,12 +12,12 @@ import type { IAuthService } from './index.type';
 const login = async (params: LoginRequest) => {
   const apiParams = AuthServicesMap.mapLoginRequest(params);
   await AuthApi.login(apiParams);
-  authSessionCoordinator.login();
+  authSessionCoordinator.publish('login');
 };
 
 const logout = async () => {
   await AuthApi.logout();
-  authSessionCoordinator.logout();
+  authSessionCoordinator.publish('logout');
 };
 
 const register = async (params: RegisterRequest) => {

@@ -14,11 +14,49 @@ import type {
 } from '../apis/GroupApi.type';
 import mockdata from './mockdata.json';
 
+const normalizeLong = (value: string | number | null | undefined): string | undefined => {
+  if (value == null) return undefined;
+  return value.toString();
+};
+
+const normalizeGroup = (group: (typeof mockdata.groups)[number]): GroupApiResponse => ({
+  ...group,
+  groupType: Number(group.groupType) as GroupApiResponse['groupType'],
+  ownerInfo: group.ownerInfo
+    ? {
+        ...group.ownerInfo,
+        identityType: group.ownerInfo.identityType as NonNullable<
+          GroupApiResponse['ownerInfo']
+        >['identityType'],
+      }
+    : group.ownerInfo,
+  memberCount: normalizeLong(group.memberCount),
+  tokenUsed: normalizeLong(group.tokenUsed),
+  tokenBalance: normalizeLong(group.tokenBalance),
+});
+
+const normalizeMember = (
+  member: (typeof mockdata.members)[keyof typeof mockdata.members][number]
+): GroupMemberApiResponse => ({
+  ...member,
+  role: member.role as GroupMemberApiResponse['role'],
+  memberInfo: {
+    ...member.memberInfo,
+    identityType: member.memberInfo
+      .identityType as GroupMemberApiResponse['memberInfo']['identityType'],
+  },
+  tokenLimit: normalizeLong(member.tokenLimit) ?? '0',
+  tokenUsed: normalizeLong(member.tokenUsed) ?? '0',
+});
+
 const groups = new Map<string, GroupApiResponse>(
-  mockdata.groups.map((g) => [g.groupId, g as GroupApiResponse])
+  mockdata.groups.map((g) => [g.groupId, normalizeGroup(g)])
 );
 const members = new Map<string, GroupMemberApiResponse[]>(
-  Object.entries(mockdata.members) as [string, GroupMemberApiResponse[]][]
+  Object.entries(mockdata.members).map(([groupId, groupMembers]) => [
+    groupId,
+    groupMembers.map(normalizeMember),
+  ])
 );
 const roles = new Map<string, GroupRoleApiResponse>(
   Object.entries(mockdata.myRoles) as [string, GroupRoleApiResponse][]
@@ -55,8 +93,8 @@ export const GroupApi: typeof GroupApiContract = {
       groupType: Number(params.groupType) as 1 | 2 | 3,
       ownerId: '1',
       ownerInfo: { nickname: '示例用户', identityType: 2 },
-      memberCount: 1,
-      tokenBalance: 1000,
+      memberCount: '1',
+      tokenBalance: '1000',
     });
     roles.set(groupId, '0');
     members.set(groupId, []);
@@ -109,13 +147,14 @@ export const GroupMemberApi: typeof GroupMemberApiContract = {
   getMyGroupMemberInfo: ({ groupId }) =>
     mockResponse({
       groupId,
-      tokenUsed: 100,
-      tokenLimit: 1000,
+      tokenUsed: '100',
+      tokenLimit: '1000',
       role: roles.get(String(groupId)) ?? '-1',
     }),
   changeTokenLimit: async ({ groupId, targetUserIds, newTokenLimit }) => {
     for (const member of members.get(groupId) ?? []) {
-      if (targetUserIds.includes(String(member.memberId))) member.tokenLimit = newTokenLimit;
+      if (targetUserIds.includes(String(member.memberId)))
+        member.tokenLimit = newTokenLimit.toString();
     }
   },
   getAllMyGroupTokenInfo: (params) =>
@@ -127,8 +166,8 @@ export const GroupMemberApi: typeof GroupMemberApiContract = {
             groupName: g.groupName ?? '',
             groupType: g.groupType,
           },
-          tokenLimit: 1000,
-          tokenUsed: 100,
+          tokenLimit: '1000',
+          tokenUsed: '100',
         })),
         params
       )

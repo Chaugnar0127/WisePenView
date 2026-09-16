@@ -1,7 +1,8 @@
+import type { AxiosError } from 'axios';
+
 import { parseApiErrorBody } from '@/apis/apiError';
 import { FRONTEND_NETWORK_ERROR } from '@/utils/error/codes';
 import { WisePenError } from '@/utils/error/WisePenError';
-import type { AxiosError } from 'axios';
 
 export type AuthSessionErrorState = 'handled' | 'stale' | 'unrelated';
 

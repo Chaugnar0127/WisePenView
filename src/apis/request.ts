@@ -1,7 +1,8 @@
-import Axios from '@/apis/Axios';
-import type { ApiResponse } from '@/apis/api.type';
-import { WisePenError } from '@/utils/error';
 import type { AxiosRequestConfig } from 'axios';
+
+import type { ApiResponse } from '@/apis/api.type';
+import Axios from '@/apis/Axios';
+import { WisePenError } from '@/utils/error';
 
 /**
  * 业务码非 200 时抛出统一错误。

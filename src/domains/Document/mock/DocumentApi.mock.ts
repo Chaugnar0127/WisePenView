@@ -6,7 +6,7 @@ import type { DocumentApi as DocumentApiContract } from '../apis/DocumentApi';
 export const DocumentApi: typeof DocumentApiContract = {
   uploadDoc: async ({ filename, extension, mountTargetTagId, expectedSize }) => {
     const documentId = addMockResource(filename, extension, mountTargetTagId);
-    getMockResource(documentId).size = expectedSize;
+    getMockResource(documentId).size = expectedSize.toString();
     return {
       documentId,
       objectKey: `mock/${documentId}`,
@@ -29,7 +29,7 @@ export const DocumentApi: typeof DocumentApiContract = {
           documentName: resourceInfo.resourceName,
           uploaderId: resourceInfo.ownerId,
           fileType: resourceInfo.resourceType ?? 'pdf',
-          size: resourceInfo.size ?? 1024,
+          size: (resourceInfo.size ?? 1024).toString(),
         },
         documentStatus: { status: 'SUCCESS' },
         maxPreviewPages: 20,

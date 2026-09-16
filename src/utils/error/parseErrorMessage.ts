@@ -1,8 +1,9 @@
+import type { AxiosError } from 'axios';
+
 import { parseApiErrorBody, type ParsedApiErrorBody } from '@/apis/apiError';
 import i18n from '@/i18n';
 import { I18N_NAMESPACES } from '@/i18n/resources';
 import { isWisePenError } from '@/utils/error/WisePenError';
-import type { AxiosError } from 'axios';
 
 const readAxiosErrorBody = (err: unknown): ParsedApiErrorBody | undefined => {
   const axiosErr = err as AxiosError<unknown>;

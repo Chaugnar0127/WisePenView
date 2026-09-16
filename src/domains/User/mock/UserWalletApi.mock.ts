@@ -5,10 +5,14 @@ import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 
 import type { UserWalletApi as UserWalletApiContract } from '../apis/UserApi';
 
-let balance = mockdata.tokenBalance;
+let balance = Number(mockdata.tokenBalance);
 const records = structuredClone(mockdata.transactions.records);
 export const UserWalletApi: typeof UserWalletApiContract = {
-  getUserWalletInfo: () => mockResponse({ tokenBalance: balance, tokenUsed: mockdata.tokenUsed }),
+  getUserWalletInfo: () =>
+    mockResponse({
+      tokenBalance: balance.toString(),
+      tokenUsed: mockdata.tokenUsed.toString(),
+    }),
   redeemVoucher: async ({ voucherCode }) => {
     const code = voucherCode.replace(/[\s-]/g, '').toUpperCase();
     if (code.length !== 16)
@@ -46,6 +50,6 @@ export const UserWalletApi: typeof UserWalletApiContract = {
     }
     const amount = tokenTransferType === 1 ? -tokenCount : tokenCount;
     balance += amount;
-    group.tokenBalance = groupBalance - amount;
+    group.tokenBalance = (groupBalance - amount).toString();
   },
 };

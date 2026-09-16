@@ -1,8 +1,10 @@
 /**
  * 钱包 Service：/user/wallet/*，成功码与全局一致 `code === 200`。
  */
-import { WALLET_TX_TAB_MERGE_FETCH_CAP, type WalletTransactionRecord } from '@/domains/Wallet';
 import { UserWalletApi } from '@domain-apis';
+
+import { WALLET_TX_TAB_MERGE_FETCH_CAP, type WalletTransactionRecord } from '@/domains/Wallet';
+
 import { WalletServicesMap } from '../mapper/WalletServices.map';
 import type {
   GetWalletInfoResponse,

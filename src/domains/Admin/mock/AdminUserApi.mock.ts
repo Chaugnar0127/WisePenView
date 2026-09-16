@@ -1,4 +1,5 @@
 import { mockPage, mockResponse } from '@/domains/_shared/mock/response';
+
 import type { AdminUserApi as AdminUserApiContract } from '../apis/AdminUserApi';
 import type { AdminUserApiModel } from '../apis/AdminUserApi.type';
 import mockdata from './mockdata.json';

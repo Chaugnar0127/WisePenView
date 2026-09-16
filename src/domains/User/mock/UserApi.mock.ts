@@ -1,4 +1,5 @@
 import { mockPage, mockResponse } from '@/domains/_shared/mock/response';
+
 import type { UserApi as UserApiContract } from '../apis/UserApi';
 import type { GetUserInfoApiResponse, UserSearchUserApiResponse } from '../apis/UserApi.type';
 import mockdata from './mockdata.json';

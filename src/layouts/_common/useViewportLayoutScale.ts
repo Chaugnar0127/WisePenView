@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react';
+
 import {
   LAYOUT_DENSITY,
   LAYOUT_HEIGHT_DENSITY,
@@ -5,7 +7,6 @@ import {
   type LayoutHeightDensity,
 } from '@/constants/layoutScale';
 import { syncViewportLayoutScale } from '@/layouts/_common/applyLayoutScaleCssVars';
-import { useSyncExternalStore } from 'react';
 
 interface ViewportLayoutScale {
   widthDensity: LayoutDensity;

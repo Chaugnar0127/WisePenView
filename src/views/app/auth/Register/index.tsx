@@ -1,3 +1,8 @@
+import { Form, toast } from '@heroui/react';
+import { type FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
 import {
   appendRedirectParam,
   buildRegisterOnboardingPath,
@@ -8,14 +13,10 @@ import { Checkbox, FormField, PasswordInput } from '@/components/base/Input';
 import { useAuthService } from '@/domains';
 import type { RegisterRequest } from '@/domains/Auth';
 import { useApi } from '@/hooks/useApi';
+import { type FieldErrors, hasFieldErrors, runFieldValidation } from '@/utils/formValidation';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
-import { Form, toast } from '@heroui/react';
 
-import { hasFieldErrors, runFieldValidation, type FieldErrors } from '@/utils/formValidation';
-import { useState, type FormEvent } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthIconField from '../_common/AuthIconField';
 import auth from '../_common/style.module.less';
 

@@ -1,9 +1,11 @@
+import { GroupApi, GroupMemberApi, GroupResConfigApi } from '@domain-apis';
+
 import type { Group, GroupBaseInfo, GroupMemberList, GroupResConfig, ROLE } from '@/domains/Group';
 import { DEFAULT_MEMBER_ACTIONS } from '@/domains/Group';
 import { normalizeResourceActions } from '@/domains/Tag';
 import type { EnumKey } from '@/utils/enum';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
-import { GroupApi, GroupMemberApi, GroupResConfigApi } from '@domain-apis';
+
 import { GroupServicesMap } from '../mapper/GroupServices.map';
 import type {
   CreateGroupRequest,

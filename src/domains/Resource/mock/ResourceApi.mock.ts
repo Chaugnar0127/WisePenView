@@ -1,4 +1,5 @@
 import { mockPage, mockResponse } from '@/domains/_shared/mock/response';
+
 import type { ResourceItemApi as ResourceItemApiContract } from '../apis/ResourceApi';
 import { getMockResource, mockResources } from './resourceStore';
 import { simulateGlobalSearch } from './searchMockData';

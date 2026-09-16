@@ -1,4 +1,5 @@
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+
 import type { ResourceItemApiResponse } from '../apis/ResourceApi.type';
 import mockdata from './mockdata.json';
 import { SEARCH_CORPUS } from './searchMockData';

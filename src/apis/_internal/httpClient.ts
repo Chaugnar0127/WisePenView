@@ -2,9 +2,9 @@
 import { toast } from '@heroui/react';
 import axios, { type AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 
-import { awaitAddrReady, getApiBaseUrl, notifyAddrFailure } from '@/apis/apiServerAddr';
-import { mapAxiosErrorToWisePenError } from '@/apis/axiosErrorMapper';
-import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
+import { awaitAddrReady, getApiBaseUrl, notifyAddrFailure } from '@/apis/_internal/apiServerAddr';
+import { mapAxiosErrorToWisePenError } from '@/apis/_internal/axiosErrorMapper';
+import { applyXDeveloperHeader } from '@/apis/_internal/developmentTraffic';
 import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
 
 declare module 'axios' {
@@ -17,7 +17,7 @@ declare module 'axios' {
   }
 }
 
-const Axios = axios.create({
+const httpClient = axios.create({
   timeout: 5000,
   withCredentials: true,
 });
@@ -76,10 +76,10 @@ const retryAxiosRequest = (error: AxiosError): Promise<unknown> | undefined => {
 
   config.__wisePenRetryCount = retryCount + 1;
   const delayBase = config.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
-  return delay(delayBase * 2 ** retryCount).then(() => Axios.request(config));
+  return delay(delayBase * 2 ** retryCount).then(() => httpClient.request(config));
 };
 
-Axios.interceptors.request.use(async (config) => {
+httpClient.interceptors.request.use(async (config) => {
   config.__wisePenAuthSessionVersion ??= authSessionCoordinator.getSessionVersion();
   await awaitAddrReady();
   config.baseURL = getApiBaseUrl();
@@ -90,7 +90,7 @@ Axios.interceptors.request.use(async (config) => {
   return config;
 });
 
-Axios.interceptors.response.use(
+httpClient.interceptors.response.use(
   (response) => response.data,
   async (error: AxiosError) => {
     if (!error.response) {
@@ -121,4 +121,4 @@ Axios.interceptors.response.use(
   }
 );
 
-export default Axios;
+export default httpClient;

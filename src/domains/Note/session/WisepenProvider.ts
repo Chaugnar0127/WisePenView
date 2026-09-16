@@ -1,8 +1,7 @@
 import { WebsocketProvider } from 'y-websocket';
 import type * as Y from 'yjs';
 
-import { getApiBaseUrl, notifyAddrFailure } from '@/apis/apiServerAddr';
-import { getXDeveloper } from '@/apis/developmentTraffic';
+import { getApiBaseUrl, getXDeveloper, notifyAddrFailure } from '@/apis/runtime';
 
 export interface WisepenProviderOptions {
   connect?: boolean;

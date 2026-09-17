@@ -1,18 +1,11 @@
-import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/utils/cn';
 
-import styles from './style.module.less';
+import styles from './ErrorPageShell.module.less';
+import type { ErrorPageShellProps } from './index.type';
 
-export interface ErrorPageShellProps {
-  children: ReactNode;
-  className?: string;
-  contentClassName?: string;
-  size?: 'sm' | 'md' | 'lg';
-  showFooter?: boolean;
-}
-
+/** 整页错误页外壳：背景、垂直居中与底部版权，页面级错误视图共用。 */
 function ErrorPageShell({
   children,
   className,

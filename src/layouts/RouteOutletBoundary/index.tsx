@@ -1,13 +1,9 @@
 import type { ReactNode } from 'react';
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
-import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
-import { AppButton } from '@/components/base/Button';
-import { ResultState } from '@/components/base/Feedback';
-import { getErrorReportId, reportError } from '@/utils/error';
-import shellStyles from '@/views/app/error/_components/ErrorPageShell/style.module.less';
-import { buildAppErrorInfo } from '@/views/app/error/errorInfo';
+import { ErrorPage } from '@/components/business/ErrorPage';
+import { reportError } from '@/utils/error';
 
 import styles from './style.module.less';
 
@@ -15,32 +11,11 @@ interface RouteOutletBoundaryProps {
   children: ReactNode;
 }
 
+/** 壳内兜底：主操作交还 resetErrorBoundary，只重试内容区而不整页刷新。 */
 function RouteOutletFallback({ error, resetErrorBoundary }: FallbackProps) {
-  const { t } = useTranslation('errors');
-  const navigate = useNavigate();
-  const location = useLocation();
-  const errorInfo = buildAppErrorInfo(error);
-  const errorId = getErrorReportId(error);
-
   return (
     <div className={styles.root}>
-      <ResultState
-        status={errorInfo.status}
-        title={errorInfo.title}
-        subTitle={errorInfo.subTitle}
-        extra={
-          <div className={shellStyles.actions}>
-            <AppButton variant="primary" onPress={resetErrorBoundary}>
-              {t('page.refresh')}
-            </AppButton>
-            <AppButton onPress={() => navigate(-1)}>{t('page.backPrevious')}</AppButton>
-          </div>
-        }
-      >
-        <p className={styles.errorId}>
-          {t('page.errorIdWithPage', { errorId, pathname: location.pathname })}
-        </p>
-      </ResultState>
+      <ErrorPage error={error} onRetry={resetErrorBoundary} showPathname />
     </div>
   );
 }

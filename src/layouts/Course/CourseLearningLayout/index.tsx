@@ -3,18 +3,18 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import {
+  RESIZE_TARGET_MINIMUM_SIZE,
+  SystemResizableHandle,
+  SystemResizablePanel,
+  SystemResizablePanelGroup,
+} from '@/components/base/SystemResizable';
 import ChatPanel from '@/components/business/ChatPanel';
 import {
   createResourceChatStateProvider,
   type ResourceChatContext,
 } from '@/components/business/ChatPanel/ResourceChatProtocol';
 import { COURSE_ROLE } from '@/domains/Course';
-import {
-  RESIZE_TARGET_MINIMUM_SIZE,
-  SystemResizableHandle,
-  SystemResizablePanel,
-  SystemResizablePanelGroup,
-} from '@/layouts/_common/SystemResizable';
 import ResourceWorkspaceHeader from '@/layouts/Resource/ResourceWorkspaceHeader';
 import { cn } from '@/utils/cn';
 import type { ResourceHostLayoutConfig } from '@/views/resource/ResourceHostContext';

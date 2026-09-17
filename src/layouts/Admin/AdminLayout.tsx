@@ -1,16 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 
-import AdminSidebar from '@/components/business/Sidebar/AdminSidebar';
-import { ADMIN_SIDEBAR_COLLAPSED_WIDTH, MAIN_MIN_WIDTH } from '@/constants/layoutScale';
-import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
-import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
 import {
   RESIZE_TARGET_MINIMUM_SIZE,
   SystemResizableHandle,
   SystemResizablePanel,
   SystemResizablePanelGroup,
-} from '@/layouts/_common/SystemResizable';
+} from '@/components/base/SystemResizable';
+import AdminSidebar from '@/components/business/Sidebar/AdminSidebar';
+import { ADMIN_SIDEBAR_COLLAPSED_WIDTH, MAIN_MIN_WIDTH } from '@/constants/layoutScale';
+import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
+import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
 import { useSystemSidebarPanel } from '@/layouts/MainLayout/useSystemSidebarPanel';
 
 import styles from './AdminLayout.module.less';

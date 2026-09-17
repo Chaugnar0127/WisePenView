@@ -1,5 +1,6 @@
 @import '@/layouts/_common/a11y/focusRing.less';
 @import '@/layouts/_common/desktopTitleBar.less';
+@import '@/styles/scrollbar.module.less';
 
 .root {
   position: relative;
@@ -55,61 +56,16 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--background);
   position: relative;
 }
 
-.mainContentResource {
-  overflow: hidden;
-  background: var(--surface);
-}
-
-.rail {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
-  background: var(--sidebar-surface);
-  border-inline-end: 1px solid var(--border-light);
-}
-
-.railTop {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-  flex: 0 0 auto;
-  padding: var(--space-sm) var(--space-xs);
-  padding-top: calc(var(--space-sm) + var(--desktop-title-bar-drag-strip, 0px));
-}
-
-.railLogo {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-
-.rail :global(.navContainer) {
-  padding-bottom: var(--space-sm);
-}
-
-.rail :global(.navContainer)::after {
-  left: var(--space-sm);
-  right: var(--space-sm);
-}
-
-.rail :global(.headerMenu) {
-  padding-inline: var(--space-xs);
-}
-
-.railMiddle {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-sm) var(--space-xs);
+/* 页面未自声明框架时，由主内容区承担滚动 */
+.mainContentScroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  .appSubtleScrollbar();
 }
 
 .mobileHeader {
@@ -123,12 +79,6 @@
   background: var(--header-surface, var(--paper));
   border-bottom: 1px solid var(--border-light);
   .desktopTitleBarChrome();
-}
-
-.mobileLogo {
-  width: 124px;
-  height: auto;
-  display: block;
 }
 
 .titleBarInsetEnd {
@@ -172,4 +122,45 @@
   .panelGroup {
     transition-duration: var(--motion-duration-reduced);
   }
+}
+
+/* 折叠态 rail：两端布局共用，避免各自实现折叠外观 */
+.rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--sidebar-surface);
+  border-inline-end: 1px solid var(--border-light);
+}
+
+.railTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 0 0 auto;
+  padding: var(--space-sm) var(--space-xs);
+  padding-top: calc(var(--space-sm) + var(--desktop-title-bar-drag-strip, 0px));
+}
+
+.railLogo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.rail :global(.navContainer) {
+  padding-bottom: var(--space-sm);
+}
+
+.rail :global(.navContainer)::after {
+  left: var(--space-sm);
+  right: var(--space-sm);
+}
+
+.rail :global(.headerMenu) {
+  padding-inline: var(--space-xs);
 }

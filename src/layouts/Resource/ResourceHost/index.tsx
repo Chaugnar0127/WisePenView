@@ -1,4 +1,4 @@
-import { type ReactNode, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   Layout,
@@ -6,8 +6,14 @@ import type {
   PanelImperativeHandle,
   PanelSize,
 } from 'react-resizable-panels';
-import { useLocation, useParams } from 'react-router-dom';
+import { Outlet, useLocation, useParams } from 'react-router-dom';
 
+import {
+  RESIZE_TARGET_MINIMUM_SIZE,
+  SystemResizableHandle,
+  SystemResizablePanel,
+  SystemResizablePanelGroup,
+} from '@/components/base/SystemResizable';
 import ChatPanel from '@/components/business/ChatPanel';
 import { useChatPanelStore } from '@/components/business/ChatPanel/_store/useChatPanelStore';
 import { createResourceChatStateProvider } from '@/components/business/ChatPanel/ResourceChatProtocol';
@@ -18,14 +24,10 @@ import {
   RESOURCE_MAIN_MIN_WIDTH,
 } from '@/constants/layoutScale';
 import { useOpenResource } from '@/hooks/useOpenResource';
-import {
-  RESIZE_TARGET_MINIMUM_SIZE,
-  SystemResizableHandle,
-  SystemResizablePanel,
-  SystemResizablePanelGroup,
-} from '@/layouts/_common/SystemResizable';
+import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
-import { useMainLayoutMobile } from '@/layouts/MainLayout/useMainLayoutMobile';
+import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
+import { useMainShell } from '@/layouts/MainShell/MainShellContext';
 import { useResourceChatProtocolStore } from '@/layouts/Resource/_store/useResourceChatProtocolStore';
 import ResourceWorkspaceHeader from '@/layouts/Resource/ResourceWorkspaceHeader';
 import { useResourceBreadcrumb } from '@/layouts/Resource/useResourceBreadcrumb';
@@ -43,26 +45,10 @@ import {
 
 import styles from './style.module.less';
 
-interface MainResourceHostProps {
-  children: ReactNode;
-  leftSidebarCollapsed: boolean;
-  canGoBack: boolean;
-  canGoForward: boolean;
-  onGoBack: () => void;
-  onGoForward: () => void;
-  onToggleLeftSidebar: () => void;
-}
-
-function MainResourceHost({
-  children,
-  leftSidebarCollapsed,
-  canGoBack,
-  canGoForward,
-  onGoBack,
-  onGoForward,
-  onToggleLeftSidebar,
-}: MainResourceHostProps) {
+function ResourceHost() {
   const { t } = useTranslation('workspace');
+  const { sidebarCollapsed, isMobileLayout, onToggleSidebar } = useMainShell();
+  const appNavigation = useAppNavigation();
   const [layoutConfig, setLayoutConfigState] = useState<ResourceHostLayoutConfig>({});
   const chatPanelRef = useRef<PanelImperativeHandle | null>(null);
   const pendingChatWidthRef = useRef<number | null>(null);
@@ -75,7 +61,6 @@ function MainResourceHost({
   const openResource = useOpenResource();
   const location = useLocation();
   const resourceRouteParams = useParams<{ resourceType?: string; resourceId?: string }>();
-  const isMobileLayout = useMainLayoutMobile();
   const { headerRef } = useResourceHeaderEndReserve({
     idleDockWidthPx: 0,
     isAnimating: false,
@@ -125,14 +110,14 @@ function MainResourceHost({
 
   const renderHeader = () => {
     if (layoutConfig.header === false) {
-      return leftSidebarCollapsed ? (
+      return sidebarCollapsed ? (
         <ResourceWorkspaceHeader
           leftSidebarCollapsed
-          canGoBack={canGoBack}
-          canGoForward={canGoForward}
-          onGoBack={onGoBack}
-          onGoForward={onGoForward}
-          onToggleLeftSidebar={onToggleLeftSidebar}
+          canGoBack={appNavigation.canGoBack}
+          canGoForward={appNavigation.canGoForward}
+          onGoBack={appNavigation.goBack}
+          onGoForward={appNavigation.goForward}
+          onToggleLeftSidebar={onToggleSidebar}
           headerRef={headerRef}
         />
       ) : null;
@@ -165,12 +150,12 @@ function MainResourceHost({
             />
           ) : undefined
         }
-        leftSidebarCollapsed={leftSidebarCollapsed}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        onGoBack={onGoBack}
-        onGoForward={onGoForward}
-        onToggleLeftSidebar={onToggleLeftSidebar}
+        leftSidebarCollapsed={sidebarCollapsed}
+        canGoBack={appNavigation.canGoBack}
+        canGoForward={appNavigation.canGoForward}
+        onGoBack={appNavigation.goBack}
+        onGoForward={appNavigation.goForward}
+        onToggleLeftSidebar={onToggleSidebar}
         headerRef={headerRef}
       />
     );
@@ -229,7 +214,9 @@ function MainResourceHost({
             <div className={cn(styles.resourceFrame, layoutConfig.className)}>
               {renderHeader()}
               <div className={cn(styles.resourceFrameBody, layoutConfig.bodyClassName)}>
-                {children}
+                <RouteOutletBoundary>
+                  <Outlet />
+                </RouteOutletBoundary>
               </div>
             </div>
           </SystemResizablePanel>
@@ -274,4 +261,4 @@ function MainResourceHost({
   );
 }
 
-export default MainResourceHost;
+export default ResourceHost;

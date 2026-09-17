@@ -93,7 +93,7 @@ export const Admin: Story = {
   render: () => (
     <div className={styles.sidebarFrame}>
       <SidebarStoryFrame>
-        <AdminSidebar collapsed={false} onToggle={fn()} />
+        <AdminSidebar onToggle={fn()} />
       </SidebarStoryFrame>
     </div>
   ),

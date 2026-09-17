@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import ChatPanel from '@/components/business/ChatPanel';
 import { useCurrentChatSessionStore } from '@/components/business/ChatPanel/_store/useCurrentChatSessionStore';
 import { clearNewChatSessionStore } from '@/components/business/ChatPanel/_store/useNewChatSessionStore';
-import { useMainLayoutMobile } from '@/layouts/MainLayout/useMainLayoutMobile';
+import { useMainShellMobile } from '@/layouts/MainShell/useMainShellMobile';
 import { cn } from '@/utils/cn';
 
 import styles from './style.module.less';
@@ -13,8 +13,8 @@ function ChatPage() {
   const { sessionId: routeSessionId } = useParams<{ sessionId: string }>();
   const setCurrentSession = useCurrentChatSessionStore((s) => s.setCurrentSession);
   const clearCurrentSession = useCurrentChatSessionStore((s) => s.clearCurrentSession);
-  // 与 MainLayout 同源：窄屏对齐侧栏 Drawer（Header + 非 fullWidth）。
-  const isCompactChat = useMainLayoutMobile();
+  // 与应用壳同源：窄屏对齐侧栏 Drawer（Header + 非 fullWidth）。
+  const isCompactChat = useMainShellMobile();
 
   /**
    * @wisepen-manual-effect

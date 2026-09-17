@@ -4,7 +4,6 @@ import { type DependencyList, type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import { DRAWIO_EMBED_URL } from '@/apis/clientUrls';
 import { AppButton } from '@/components/base/Button';
 import { ResultState, Spin } from '@/components/base/Feedback';
 import AppDisplayDialog from '@/components/business/AppDisplayDialog';
@@ -44,6 +43,7 @@ const WISEPEN_COLOR_SCHEMES = new Set([
   'forest',
   'minimal',
 ]);
+const DRAWIO_EMBED_URL = import.meta.env.VITE_DRAWIO_EMBED_URL || 'https://embed.diagrams.net/';
 
 interface DrawioViewProps {
   resourceId?: string;

@@ -70,7 +70,7 @@ export const AgentApi: typeof AgentApiContract = {
           ...asset,
           id: assetId,
           objectKey,
-          size: asset.expectedSize,
+          size: asset.expectedSize?.toString(),
           uploadStatus: 'AVAILABLE',
         });
         return { assetId, objectKey, putUrl: objectKey, callbackHeader: 'mock' };

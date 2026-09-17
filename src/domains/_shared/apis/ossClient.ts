@@ -1,6 +1,6 @@
 import OSS from 'ali-oss';
 
-import type { OssStsTokenApiResponse } from '@/apis/api.type';
+import type { OssStsTokenApiResponse } from '@/domains/_shared/apis/ossStsApi.type';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 
 export interface OssReadClient {

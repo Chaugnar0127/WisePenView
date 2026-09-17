@@ -8,7 +8,7 @@ import { useMount, useUnmount } from 'ahooks';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { buildApiUrl } from '@/apis/clientUrls';
+import { buildApiUrl } from '@/utils/api/buildApiUrl';
 import { cn } from '@/utils/cn';
 import { createClientError, FRONTEND_CLIENT_ERROR, isWisePenError } from '@/utils/error';
 

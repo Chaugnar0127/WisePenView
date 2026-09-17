@@ -4,4 +4,5 @@ export interface AppSidebarProps {
   onGoBack: () => void;
   onGoForward: () => void;
   onToggle: () => void;
+  onNavigate?: () => void;
 }

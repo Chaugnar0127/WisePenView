@@ -5,14 +5,14 @@ import { registerStore } from '@/store/lifecycle';
 import { createStoreJSONStorage } from '@/store/persistence';
 
 interface SystemLayoutState {
-  appSidebarWidth: number;
+  mainSidebarCollapsed: boolean;
   adminSidebarWidth: number;
-  setAppSidebarWidth: (width: number) => void;
+  setMainSidebarCollapsed: (collapsed: boolean) => void;
   setAdminSidebarWidth: (width: number) => void;
 }
 
 const DEFAULT_SYSTEM_LAYOUT_STATE = {
-  appSidebarWidth: 308,
+  mainSidebarCollapsed: false,
   adminSidebarWidth: 308,
 };
 
@@ -29,13 +29,16 @@ export const useSystemLayoutStore = create<SystemLayoutState>()(
   persist(
     (set) => ({
       ...DEFAULT_SYSTEM_LAYOUT_STATE,
-      setAppSidebarWidth: (width) => set((state) => setWidth('appSidebarWidth', width)(state)),
+      setMainSidebarCollapsed: (collapsed) =>
+        set((state) =>
+          state.mainSidebarCollapsed === collapsed ? state : { mainSidebarCollapsed: collapsed }
+        ),
       setAdminSidebarWidth: (width) => set((state) => setWidth('adminSidebarWidth', width)(state)),
     }),
     {
       name: 'system-layout',
       storage: createStoreJSONStorage('tab'),
-      version: 1,
+      version: 2,
       migrate: () => DEFAULT_SYSTEM_LAYOUT_STATE,
     }
   )

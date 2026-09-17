@@ -15,7 +15,6 @@ import {
   CHAT_PANEL_MAX_WIDTH,
   CHAT_PANEL_MIN_WIDTH,
   clampChatPanelWidth,
-  LAYOUT_DENSITY,
   RESOURCE_MAIN_MIN_WIDTH,
 } from '@/constants/layoutScale';
 import { useOpenResource } from '@/hooks/useOpenResource';
@@ -25,8 +24,8 @@ import {
   SystemResizablePanel,
   SystemResizablePanelGroup,
 } from '@/layouts/_common/SystemResizable';
+import { useMainLayoutMobile } from '@/layouts/_common/useMainLayoutMobile';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
-import { useViewportLayoutScale } from '@/layouts/_common/useViewportLayoutScale';
 import { useResourceChatProtocolStore } from '@/layouts/Resource/_store/useResourceChatProtocolStore';
 import ResourceFrame from '@/layouts/Resource/ResourceFrame';
 import ResourceShellHeader from '@/layouts/Resource/ResourceShellHeader';
@@ -77,9 +76,7 @@ function AppResourceShell({
   const openResource = useOpenResource();
   const location = useLocation();
   const resourceRouteParams = useParams<{ resourceType?: string; resourceId?: string }>();
-  // 与侧栏 compact 同源：窄屏改为全屏 overlay，避免并排抢 Chat min-width。
-  const { widthDensity } = useViewportLayoutScale();
-  const isCompactChat = widthDensity === LAYOUT_DENSITY.COMPACT;
+  const isMobileLayout = useMainLayoutMobile();
   const { headerRef } = useResourceHeaderEndReserve({
     idleDockWidthPx: 0,
     isAnimating: false,
@@ -105,8 +102,8 @@ function AppResourceShell({
     routeContext.driveLocation
   );
   const chatPanelOpen = !chatPanelCollapsed;
-  const dockChatOpen = chatPanelOpen && !isCompactChat;
-  const overlayChatOpen = chatPanelOpen && isCompactChat;
+  const dockChatOpen = chatPanelOpen && !isMobileLayout;
+  const overlayChatOpen = chatPanelOpen && isMobileLayout;
   const chatPanelSize = dockChatOpen ? clampChatPanelWidth(chatPanelWidth) : 0;
 
   useResizablePanelSize({ panelRef: chatPanelRef, size: chatPanelSize });
@@ -193,7 +190,7 @@ function AppResourceShell({
   const chatPanel = (
     <ChatPanel
       // overlay 需要收起按钮关闭；桌面 dock 仍由资源顶栏开关
-      showCollapseButton={isCompactChat}
+      showCollapseButton={isMobileLayout}
       resourceChat={{
         provider: chatStateProvider,
         context: resourceChatContext,
@@ -227,7 +224,7 @@ function AppResourceShell({
           onLayoutChanged={handleLayoutChanged}
         >
           <SystemResizablePanel
-            minSize={isCompactChat ? 0 : RESOURCE_MAIN_MIN_WIDTH}
+            minSize={isMobileLayout ? 0 : RESOURCE_MAIN_MIN_WIDTH}
             className={styles.resourcePanel}
           >
             <ResourceFrame
@@ -239,7 +236,7 @@ function AppResourceShell({
             </ResourceFrame>
           </SystemResizablePanel>
 
-          {!isCompactChat ? (
+          {!isMobileLayout ? (
             <>
               <SystemResizableHandle
                 collapsed={!dockChatOpen}

@@ -5,12 +5,12 @@ import type { AppRouteHandle } from '@/bootstrap/router/routeHandle';
 import { APP_SIDEBAR_HEADER_NAV_KEY } from '@/config/appSidebar';
 import AdminLayout from '@/layouts/Admin/AdminLayout';
 import { AppAuthProvider } from '@/layouts/App/AppAuthProvider';
-import AppLayout from '@/layouts/App/AppLayout';
 import { AppFixedPageLayout, AppScrollablePageLayout } from '@/layouts/App/AppPageLayout';
 import AppNavigationLayout from '@/layouts/AppNavigation/AppNavigationLayout';
 import AuthLayout from '@/layouts/Auth/AuthLayout';
 import CourseLayout from '@/layouts/Course/CourseLayout';
 import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
+import MainLayout from '@/layouts/MainLayout';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
 import AppError from '@/views/app/error/AppError';
@@ -122,7 +122,7 @@ const router = createBrowserRouter([
     errorElement: <AppError />,
     children: [
       {
-        element: <AppLayout />,
+        element: <MainLayout />,
         errorElement: <RouteError />,
         children: [
           {
@@ -146,7 +146,7 @@ const router = createBrowserRouter([
         ),
         children: [
           {
-            element: <AppLayout />,
+            element: <MainLayout />,
             errorElement: <RouteError />,
             children: [
               { path: 'chat', element: <ChatPage />, handle: chatRouteHandle },

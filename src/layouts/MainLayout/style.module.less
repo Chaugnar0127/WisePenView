@@ -1,0 +1,155 @@
+@import '@/layouts/_common/a11y/focusRing.less';
+@import '@/layouts/_common/desktopTitleBar.less';
+
+.root {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--main-sidebar-current-width) minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--background);
+  transition: grid-template-columns var(--motion-duration-mid) var(--motion-ease-emphasized);
+}
+
+.rootMobile {
+  display: block;
+}
+
+.rootCollapsed {
+  --sidebar-content-inset: var(--space-sm);
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  background: var(--background);
+  position: relative;
+}
+
+.mainContentResource {
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--sidebar-surface);
+  border-inline-end: 1px solid var(--border-light);
+}
+
+.railTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 0 0 auto;
+  padding: var(--space-sm) var(--space-xs);
+  padding-top: calc(var(--space-sm) + var(--desktop-title-bar-drag-strip, 0px));
+}
+
+.railLogo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.rail :global(.navContainer) {
+  padding-bottom: var(--space-sm);
+}
+
+.rail :global(.navContainer)::after {
+  left: var(--space-sm);
+  right: var(--space-sm);
+}
+
+.rail :global(.headerMenu) {
+  padding-inline: var(--space-xs);
+}
+
+.railMiddle {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-xs);
+}
+
+.mobileHeader {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 0 0 auto;
+  min-height: 56px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--header-surface, var(--paper));
+  border-bottom: 1px solid var(--border-light);
+  .desktopTitleBarChrome();
+}
+
+.mobileLogo {
+  width: 124px;
+  height: auto;
+  display: block;
+}
+
+.titleBarInsetEnd {
+  .mobileHeader {
+    padding-right: var(--desktop-window-controls-width, 116px);
+    .desktopTitleBarEndNoDragHole();
+  }
+}
+
+.drawerBackdrop {
+  z-index: var(--app-z-index-modal);
+}
+
+.drawerContent {
+  width: min(336px, 86vw);
+  max-width: min(336px, 86vw);
+  background: var(--sidebar-surface);
+}
+
+.drawerDialog {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  background: var(--sidebar-surface);
+}
+
+.drawerBody {
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.drawerBody :global(.sider) {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition-duration: var(--motion-duration-reduced);
+  }
+}

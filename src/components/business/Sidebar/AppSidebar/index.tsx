@@ -21,7 +21,7 @@ function AppSidebar({
 }: AppSidebarProps) {
   const { t } = useTranslation('shell');
   const { items: headerNavItems, selectedKey } = useAppSidebarHeaderNav({ onNavigate });
-  const labelsHidden = motionPhase === 'collapsing' || motionPhase === 'collapsed';
+  const labelsHidden = motionPhase !== 'expanded';
   const railLayout = motionPhase === 'collapsed';
 
   return (

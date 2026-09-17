@@ -68,6 +68,7 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
       <div
         className={cn(
           styles.profile,
+          collapsed && styles.collapsed,
           !collapsed && styles.expanded,
           labelsHidden && styles.labelsHidden
         )}
@@ -216,6 +217,7 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
       <div
         className={cn(
           styles.profile,
+          collapsed && styles.collapsed,
           !collapsed && styles.expanded,
           labelsHidden && styles.labelsHidden
         )}

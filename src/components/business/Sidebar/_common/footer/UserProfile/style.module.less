@@ -23,12 +23,18 @@
     padding var(--main-sidebar-motion-duration, var(--motion-duration-mid))
       var(--main-sidebar-motion-ease, var(--motion-ease-standard)),
     color var(--main-sidebar-motion-fade-duration, var(--motion-duration-mid))
+      var(--main-sidebar-motion-ease, var(--motion-ease-standard)),
+    border-top-color var(--main-sidebar-motion-fade-duration, var(--motion-duration-fast))
       var(--main-sidebar-motion-ease, var(--motion-ease-standard));
 
   border-top: 1px solid var(--border-light);
 
   &.expanded {
     padding: 0 15px;
+  }
+
+  &.collapsed {
+    border-top-color: transparent;
   }
 }
 

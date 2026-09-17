@@ -111,7 +111,7 @@ function MainShell({
     '--main-sidebar-motion-duration': `${SIDEBAR_COLLAPSE_DURATION_MS}ms`,
     '--main-sidebar-motion-ease': SIDEBAR_COLLAPSE_EASING,
     '--main-sidebar-motion-fade-duration': '160ms',
-    '--main-sidebar-motion-reveal-delay': `${SIDEBAR_COLLAPSE_DURATION_MS / 2}ms`,
+    '--main-sidebar-motion-reveal-delay': `${Math.round(SIDEBAR_COLLAPSE_DURATION_MS * 0.65)}ms`,
     '--main-sidebar-motion-collapse-delay': `${SIDEBAR_COLLAPSE_DURATION_MS / 4}ms`,
   } as CSSProperties;
 

@@ -17,7 +17,7 @@ function AdminSidebar({
   collapsed = false,
   motionPhase = collapsed ? 'collapsed' : 'expanded',
 }: AdminSidebarProps) {
-  const labelsHidden = motionPhase === 'collapsing' || motionPhase === 'collapsed';
+  const labelsHidden = motionPhase !== 'expanded';
   const railLayout = motionPhase === 'collapsed';
 
   return (

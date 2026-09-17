@@ -4,3 +4,56 @@
   gap: var(--space-3xs);
   flex-shrink: 0;
 }
+
+.collapsedToggleButton {
+  overflow: hidden;
+
+  &:hover,
+  &:focus-visible,
+  &:focus-visible:not(:focus),
+  &[data-focus-visible] {
+    .collapsedLogo {
+      opacity: 0;
+      transform: scale(0.84);
+    }
+
+    .collapsedExpandIcon {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+.collapsedToggleIcon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collapsedLogo,
+.collapsedExpandIcon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transition:
+    opacity var(--main-sidebar-motion-fade-duration, var(--motion-duration-fast))
+      var(--main-sidebar-motion-ease, var(--motion-ease-standard)),
+    transform var(--main-sidebar-motion-fade-duration, var(--motion-duration-fast))
+      var(--main-sidebar-motion-ease, var(--motion-ease-standard));
+}
+
+.collapsedLogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.collapsedExpandIcon {
+  opacity: 0;
+  transform: scale(0.84);
+}

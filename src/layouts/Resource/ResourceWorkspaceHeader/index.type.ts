@@ -2,8 +2,8 @@ import type { ReactNode, Ref } from 'react';
 
 import type { ResourceHeaderProps } from '../ResourceHeader/index.type';
 
-export interface ResourceShellHeaderProps {
-  /** 资源页面统一 Header；存在时由 ResourceShellHeader 创建并替代 inlineTitle 与 extra */
+export interface ResourceWorkspaceHeaderProps {
+  /** 资源工作区顶栏；存在时替代 inlineTitle 与 extra。 */
   resource?: ResourceHeaderProps;
   /** 工具条中间区：如 PDF 图标 + 文件名 */
   inlineTitle?: ReactNode;

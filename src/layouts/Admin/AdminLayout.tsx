@@ -1,23 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type {
-  Layout,
-  LayoutChangedMeta,
-  PanelImperativeHandle,
-  PanelSize,
-} from 'react-resizable-panels';
 import { Outlet } from 'react-router-dom';
 
 import AdminSidebar from '@/components/business/Sidebar/AdminSidebar';
-import {
-  ADMIN_SIDEBAR_COLLAPSED_WIDTH,
-  clampSidebarWidth,
-  MAIN_MIN_WIDTH,
-  SIDEBAR_MAX_WIDTH,
-  SIDEBAR_MIN_WIDTH,
-} from '@/constants/layoutScale';
-import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
-import { focusVisibleSidebarToggle } from '@/layouts/_common/a11y/sidebarToggle';
+import { ADMIN_SIDEBAR_COLLAPSED_WIDTH, MAIN_MIN_WIDTH } from '@/constants/layoutScale';
 import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
 import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
 import {
@@ -26,92 +11,46 @@ import {
   SystemResizablePanel,
   SystemResizablePanelGroup,
 } from '@/layouts/_common/SystemResizable';
-import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
+import { useSystemSidebarPanel } from '@/layouts/MainLayout/useSystemSidebarPanel';
 
 import styles from './AdminLayout.module.less';
 
+const ADMIN_LAYOUT_PANEL_GROUP_ID = 'admin-layout-panels';
+
 function AdminLayout() {
   const { t } = useTranslation('shell');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const storedSidebarWidth = useSystemLayoutStore((state) => state.adminSidebarWidth);
-  const setSidebarWidth = useSystemLayoutStore((state) => state.setAdminSidebarWidth);
-  const sidebarPanelRef = useRef<PanelImperativeHandle | null>(null);
-  const pendingSidebarWidthRef = useRef<number | null>(null);
-  const pendingFocusSidebarToggleRef = useRef(false);
-  const sidebarWidth = clampSidebarWidth(storedSidebarWidth);
-  const sidebarPanelSize = sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : sidebarWidth;
-
-  useResizablePanelSize({
-    panelRef: sidebarPanelRef,
-    size: sidebarPanelSize,
+  const sidebar = useSystemSidebarPanel({
+    collapsedWidth: ADMIN_SIDEBAR_COLLAPSED_WIDTH,
+    panelGroupId: ADMIN_LAYOUT_PANEL_GROUP_ID,
   });
-
-  /**
-   * @wisepen-manual-effect
-   * 执行时机：管理端侧栏折叠态变化后，归还焦点到切换按钮。
-   * 不可替代原因：折叠后 DOM 结构可能变化，须等提交后再 focus。
-   * cleanup：无。
-   */
-  useEffect(() => {
-    if (!pendingFocusSidebarToggleRef.current) return;
-    pendingFocusSidebarToggleRef.current = false;
-    focusVisibleSidebarToggle();
-  }, [sidebarCollapsed]);
-
-  const handleSidebarToggle = () => {
-    pendingFocusSidebarToggleRef.current = true;
-    setSidebarCollapsed((collapsed) => {
-      if (!collapsed) {
-        const currentWidth = sidebarPanelRef.current?.getSize().inPixels;
-        if (currentWidth != null) {
-          const nextSidebarWidth = clampSidebarWidth(currentWidth);
-          if (nextSidebarWidth > SIDEBAR_MIN_WIDTH || sidebarWidth === SIDEBAR_MIN_WIDTH) {
-            setSidebarWidth(nextSidebarWidth);
-          }
-        }
-      }
-      return !collapsed;
-    });
-  };
-
-  const handleSidebarResize = (panelSize: PanelSize) => {
-    if (sidebarCollapsed) return;
-    pendingSidebarWidthRef.current = clampSidebarWidth(panelSize.inPixels);
-  };
-
-  const handleLayoutChanged = (_layout: Layout, meta: LayoutChangedMeta) => {
-    const pendingSidebarWidth = pendingSidebarWidthRef.current;
-    pendingSidebarWidthRef.current = null;
-    if (sidebarCollapsed || !meta.isUserInteraction || pendingSidebarWidth == null) return;
-    setSidebarWidth(pendingSidebarWidth);
-  };
 
   return (
     <>
       <SkipToMainLink />
       <SystemResizablePanelGroup
+        id={ADMIN_LAYOUT_PANEL_GROUP_ID}
         orientation="horizontal"
         className={styles.root}
         resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
-        onLayoutChanged={handleLayoutChanged}
+        onLayoutChanged={sidebar.handleLayoutChanged}
       >
         <SystemResizablePanel
           id="admin-sidebar"
-          panelRef={sidebarPanelRef}
-          defaultSize={sidebarPanelSize}
-          minSize={sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MIN_WIDTH}
-          maxSize={sidebarCollapsed ? ADMIN_SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_MAX_WIDTH}
+          panelRef={sidebar.panelRef}
+          defaultSize={sidebar.panelSize}
+          minSize={sidebar.minSize}
+          maxSize={sidebar.maxSize}
           groupResizeBehavior="preserve-pixel-size"
           className={styles.leftSider}
           aria-label={t('navigation.adminSidebar')}
-          onResize={handleSidebarResize}
+          onResize={sidebar.handleResize}
         >
-          <AdminSidebar collapsed={sidebarCollapsed} onToggle={handleSidebarToggle} />
+          <AdminSidebar collapsed={sidebar.collapsed} onToggle={sidebar.toggle} />
         </SystemResizablePanel>
 
         <SystemResizableHandle
-          collapsed={sidebarCollapsed}
-          disabled={sidebarCollapsed}
+          collapsed={sidebar.collapsed}
+          disabled={sidebar.collapsed}
           aria-label={t('navigation.resizeSidebar')}
         />
 

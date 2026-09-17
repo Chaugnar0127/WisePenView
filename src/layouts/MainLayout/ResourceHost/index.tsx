@@ -24,11 +24,10 @@ import {
   SystemResizablePanel,
   SystemResizablePanelGroup,
 } from '@/layouts/_common/SystemResizable';
-import { useMainLayoutMobile } from '@/layouts/_common/useMainLayoutMobile';
 import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
+import { useMainLayoutMobile } from '@/layouts/MainLayout/useMainLayoutMobile';
 import { useResourceChatProtocolStore } from '@/layouts/Resource/_store/useResourceChatProtocolStore';
-import ResourceFrame from '@/layouts/Resource/ResourceFrame';
-import ResourceShellHeader from '@/layouts/Resource/ResourceShellHeader';
+import ResourceWorkspaceHeader from '@/layouts/Resource/ResourceWorkspaceHeader';
 import { useResourceBreadcrumb } from '@/layouts/Resource/useResourceBreadcrumb';
 import { useResourceHeaderEndReserve } from '@/layouts/Resource/useResourceHeaderEndReserve';
 import { cn } from '@/utils/cn';
@@ -42,9 +41,9 @@ import {
   type ResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
 
-import styles from './AppResourceShell.module.less';
+import styles from './style.module.less';
 
-interface AppResourceShellProps {
+interface MainResourceHostProps {
   children: ReactNode;
   leftSidebarCollapsed: boolean;
   canGoBack: boolean;
@@ -54,7 +53,7 @@ interface AppResourceShellProps {
   onToggleLeftSidebar: () => void;
 }
 
-function AppResourceShell({
+function MainResourceHost({
   children,
   leftSidebarCollapsed,
   canGoBack,
@@ -62,7 +61,7 @@ function AppResourceShell({
   onGoBack,
   onGoForward,
   onToggleLeftSidebar,
-}: AppResourceShellProps) {
+}: MainResourceHostProps) {
   const { t } = useTranslation('workspace');
   const [layoutConfig, setLayoutConfigState] = useState<ResourceHostLayoutConfig>({});
   const chatPanelRef = useRef<PanelImperativeHandle | null>(null);
@@ -127,7 +126,7 @@ function AppResourceShell({
   const renderHeader = () => {
     if (layoutConfig.header === false) {
       return leftSidebarCollapsed ? (
-        <ResourceShellHeader
+        <ResourceWorkspaceHeader
           leftSidebarCollapsed
           canGoBack={canGoBack}
           canGoForward={canGoForward}
@@ -154,7 +153,7 @@ function AppResourceShell({
       : undefined;
 
     return (
-      <ResourceShellHeader
+      <ResourceWorkspaceHeader
         {...headerConfig}
         resource={resource}
         resourceSidePanelActions={
@@ -227,13 +226,12 @@ function AppResourceShell({
             minSize={isMobileLayout ? 0 : RESOURCE_MAIN_MIN_WIDTH}
             className={styles.resourcePanel}
           >
-            <ResourceFrame
-              className={layoutConfig.className}
-              bodyClassName={layoutConfig.bodyClassName}
-              header={renderHeader()}
-            >
-              {children}
-            </ResourceFrame>
+            <div className={cn(styles.resourceFrame, layoutConfig.className)}>
+              {renderHeader()}
+              <div className={cn(styles.resourceFrameBody, layoutConfig.bodyClassName)}>
+                {children}
+              </div>
+            </div>
           </SystemResizablePanel>
 
           {!isMobileLayout ? (
@@ -276,4 +274,4 @@ function AppResourceShell({
   );
 }
 
-export default AppResourceShell;
+export default MainResourceHost;

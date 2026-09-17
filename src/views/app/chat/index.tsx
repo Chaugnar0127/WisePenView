@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import ChatPanel from '@/components/business/ChatPanel';
 import { useCurrentChatSessionStore } from '@/components/business/ChatPanel/_store/useCurrentChatSessionStore';
 import { clearNewChatSessionStore } from '@/components/business/ChatPanel/_store/useNewChatSessionStore';
-import { useMainLayoutMobile } from '@/layouts/_common/useMainLayoutMobile';
+import { useMainLayoutMobile } from '@/layouts/MainLayout/useMainLayoutMobile';
 import { cn } from '@/utils/cn';
 
 import styles from './style.module.less';

@@ -15,7 +15,7 @@ import {
   SystemResizablePanel,
   SystemResizablePanelGroup,
 } from '@/layouts/_common/SystemResizable';
-import ResourceShellHeader from '@/layouts/Resource/ResourceShellHeader';
+import ResourceWorkspaceHeader from '@/layouts/Resource/ResourceWorkspaceHeader';
 import { cn } from '@/utils/cn';
 import type { ResourceHostLayoutConfig } from '@/views/resource/ResourceHostContext';
 
@@ -63,7 +63,7 @@ function CourseLearningLayout() {
   };
 
   const workspaceHeader = registeredResourceHeader?.resource ? (
-    <ResourceShellHeader
+    <ResourceWorkspaceHeader
       {...registeredResourceHeader}
       resource={{
         ...registeredResourceHeader.resource,
@@ -73,7 +73,7 @@ function CourseLearningLayout() {
       }}
     />
   ) : (
-    <ResourceShellHeader
+    <ResourceWorkspaceHeader
       inlineTitle={
         <span className={styles.workspaceTitle}>
           {selectedNode ? <CourseResourceIcon node={selectedNode} size={18} /> : null}

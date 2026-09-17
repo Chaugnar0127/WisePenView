@@ -1,6 +1,6 @@
 import { Drawer } from '@heroui/react';
 import { Menu, PanelLeftOpen } from 'lucide-react';
-import { type CSSProperties, memo, useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useMatch } from 'react-router-dom';
 
@@ -11,23 +11,28 @@ import UserProfile from '@/components/business/Sidebar/_common/footer/UserProfil
 import HeaderNav from '@/components/business/Sidebar/_common/header/HeaderNav';
 import AppSidebar from '@/components/business/Sidebar/AppSidebar';
 import { useAppSidebarHeaderNav } from '@/components/business/Sidebar/AppSidebar/useAppSidebarHeaderNav';
-import { MAIN_SIDEBAR_EXPANDED_WIDTH, MAIN_SIDEBAR_RAIL_WIDTH } from '@/constants/layoutScale';
+import { APP_MAIN_MIN_WIDTH, MAIN_SIDEBAR_RAIL_WIDTH } from '@/constants/layoutScale';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
-import { useSystemLayoutStore } from '@/layouts/_common/_store/useSystemLayoutStore';
-import {
-  focusVisibleSidebarToggle,
-  SIDEBAR_TOGGLE_BUTTON_PROPS,
-} from '@/layouts/_common/a11y/sidebarToggle';
+import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/layouts/_common/a11y/sidebarToggle';
 import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
 import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
-import { useMainLayoutMobileSnapshot } from '@/layouts/_common/useMainLayoutMobile';
+import {
+  RESIZE_TARGET_MINIMUM_SIZE,
+  SystemResizableHandle,
+  SystemResizablePanel,
+  SystemResizablePanelGroup,
+} from '@/layouts/_common/SystemResizable';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
 import { cn } from '@/utils/cn';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
-import AppResourceShell from '../App/AppResourceShell';
+import MainResourceHost from './ResourceHost';
 import styles from './style.module.less';
+import { useMainLayoutMobileSnapshot } from './useMainLayoutMobile';
+import { useSystemSidebarPanel } from './useSystemSidebarPanel';
+
+const MAIN_LAYOUT_PANEL_GROUP_ID = 'main-layout-panels';
 
 interface DrawerOpenState {
   breakpointVersion: number;
@@ -139,7 +144,7 @@ const MainContent = memo(function MainContent({
   const appNavigation = useAppNavigation();
   const isResourceRoute = useMatch(`${APP_ROUTE_PATH.RESOURCES}/:resourceType/:resourceId`) != null;
   const content = isResourceRoute ? (
-    <AppResourceShell
+    <MainResourceHost
       leftSidebarCollapsed={sidebarCollapsed}
       canGoBack={appNavigation.canGoBack}
       canGoForward={appNavigation.canGoForward}
@@ -150,7 +155,7 @@ const MainContent = memo(function MainContent({
       <RouteOutletBoundary>
         <Outlet />
       </RouteOutletBoundary>
-    </AppResourceShell>
+    </MainResourceHost>
   ) : (
     <RouteOutletBoundary>
       <Outlet />
@@ -169,12 +174,16 @@ const MainContent = memo(function MainContent({
 });
 
 function MainLayout() {
+  const { t } = useTranslation('shell');
   const appNavigation = useAppNavigation();
   const desktopWindow = useDesktopWindowState();
   const location = useLocation();
   const { breakpointVersion, isMobileLayout } = useMainLayoutMobileSnapshot();
-  const sidebarCollapsed = useSystemLayoutStore((state) => state.mainSidebarCollapsed);
-  const setSidebarCollapsed = useSystemLayoutStore((state) => state.setMainSidebarCollapsed);
+  const sidebar = useSystemSidebarPanel({
+    collapsedWidth: MAIN_SIDEBAR_RAIL_WIDTH,
+    enabled: !isMobileLayout,
+    panelGroupId: MAIN_LAYOUT_PANEL_GROUP_ID,
+  });
   const [drawerOpenState, setDrawerOpenState] = useState<DrawerOpenState | null>(null);
   const drawerOpen =
     isMobileLayout &&
@@ -194,58 +203,87 @@ function MainLayout() {
       );
       return;
     }
-    setSidebarCollapsed(!sidebarCollapsed);
-    focusVisibleSidebarToggle();
+    sidebar.toggle();
   };
+
+  const mainColumn = (
+    <div
+      className={cn(
+        styles.mainColumn,
+        desktopWindow.hasTitleBarInset &&
+          desktopWindow.titleBarInsetSide === 'end' &&
+          styles.titleBarInsetEnd
+      )}
+    >
+      {isMobileLayout ? (
+        <MainHeader drawerOpen={drawerOpen} onOpenDrawer={() => setDrawerOpen(true)} />
+      ) : null}
+      <MainContent sidebarCollapsed={sidebar.collapsed} onToggleSidebar={handleToggleSidebar} />
+    </div>
+  );
 
   return (
     <div
       className={cn(
         styles.root,
-        sidebarCollapsed && styles.rootCollapsed,
+        sidebar.collapsed && styles.rootCollapsed,
         isMobileLayout && styles.rootMobile
       )}
-      style={
-        {
-          '--main-sidebar-current-width': `${
-            sidebarCollapsed ? MAIN_SIDEBAR_RAIL_WIDTH : MAIN_SIDEBAR_EXPANDED_WIDTH
-          }px`,
-        } as CSSProperties
-      }
-      data-main-sidebar-collapsed={sidebarCollapsed || undefined}
+      data-main-sidebar-collapsed={sidebar.collapsed || undefined}
     >
       <SkipToMainLink />
-      {!isMobileLayout ? (
-        sidebarCollapsed ? (
-          <MainSidebarRail onExpand={handleToggleSidebar} />
-        ) : (
-          <AppSidebar
-            canGoBack={appNavigation.canGoBack}
-            canGoForward={appNavigation.canGoForward}
-            onGoBack={appNavigation.goBack}
-            onGoForward={appNavigation.goForward}
-            onToggle={handleToggleSidebar}
-          />
-        )
-      ) : null}
-
-      <div
-        className={cn(
-          styles.mainColumn,
-          desktopWindow.hasTitleBarInset &&
-            desktopWindow.titleBarInsetSide === 'end' &&
-            styles.titleBarInsetEnd
-        )}
-      >
-        {isMobileLayout ? (
-          <MainHeader drawerOpen={drawerOpen} onOpenDrawer={() => setDrawerOpen(true)} />
-        ) : null}
-        <MainContent sidebarCollapsed={sidebarCollapsed} onToggleSidebar={handleToggleSidebar} />
-      </div>
-
       {isMobileLayout ? (
-        <MainSidebarDrawer isOpen={drawerOpen} onOpenChange={setDrawerOpen} />
-      ) : null}
+        <>
+          {mainColumn}
+          <MainSidebarDrawer isOpen={drawerOpen} onOpenChange={setDrawerOpen} />
+        </>
+      ) : (
+        <SystemResizablePanelGroup
+          id={MAIN_LAYOUT_PANEL_GROUP_ID}
+          orientation="horizontal"
+          className={styles.panelGroup}
+          resizeTargetMinimumSize={RESIZE_TARGET_MINIMUM_SIZE}
+          onLayoutChanged={sidebar.handleLayoutChanged}
+        >
+          <SystemResizablePanel
+            id="main-sidebar"
+            panelRef={sidebar.panelRef}
+            defaultSize={sidebar.panelSize}
+            minSize={sidebar.minSize}
+            maxSize={sidebar.maxSize}
+            groupResizeBehavior="preserve-pixel-size"
+            className={styles.sidebarPanel}
+            aria-label={t('navigation.appSidebar')}
+            onResize={sidebar.handleResize}
+          >
+            {sidebar.collapsed ? (
+              <MainSidebarRail onExpand={handleToggleSidebar} />
+            ) : (
+              <AppSidebar
+                canGoBack={appNavigation.canGoBack}
+                canGoForward={appNavigation.canGoForward}
+                onGoBack={appNavigation.goBack}
+                onGoForward={appNavigation.goForward}
+                onToggle={handleToggleSidebar}
+              />
+            )}
+          </SystemResizablePanel>
+
+          <SystemResizableHandle
+            collapsed={sidebar.collapsed}
+            disabled={sidebar.collapsed}
+            aria-label={t('navigation.resizeSidebar')}
+          />
+
+          <SystemResizablePanel
+            id="main-content"
+            minSize={APP_MAIN_MIN_WIDTH}
+            className={styles.mainColumnPanel}
+          >
+            {mainColumn}
+          </SystemResizablePanel>
+        </SystemResizablePanelGroup>
+      )}
     </div>
   );
 }

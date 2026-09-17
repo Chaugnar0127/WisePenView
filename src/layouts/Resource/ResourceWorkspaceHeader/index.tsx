@@ -3,10 +3,10 @@ import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 import { cn } from '@/utils/cn';
 
 import ResourceHeader from '../ResourceHeader';
-import type { ResourceShellHeaderProps } from './index.type';
+import type { ResourceWorkspaceHeaderProps } from './index.type';
 import styles from './style.module.less';
 
-function ResourceShellHeader({
+function ResourceWorkspaceHeader({
   resource,
   inlineTitle,
   extra,
@@ -20,7 +20,7 @@ function ResourceShellHeader({
   onGoForward,
   onToggleLeftSidebar,
   className,
-}: ResourceShellHeaderProps) {
+}: ResourceWorkspaceHeaderProps) {
   const desktopWindow = useDesktopWindowState();
 
   const titleBarInsetStart =
@@ -85,4 +85,4 @@ function ResourceShellHeader({
   );
 }
 
-export default ResourceShellHeader;
+export default ResourceWorkspaceHeader;

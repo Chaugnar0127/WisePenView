@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router-dom';
 
-import { useGroupContext } from '@/layouts/Group/GroupContext';
+import { useGroupContext } from '@/views/app/group/GroupRoute/GroupContext';
 
 import OwnerGroupTokenTransfer from '../../_components/OwnerGroupTokenTransfer';
 import layout from '../../style.module.less';

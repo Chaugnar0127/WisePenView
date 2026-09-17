@@ -13,7 +13,7 @@ import {
   CHAT_PANEL_MIN_WIDTH,
   clampChatPanelWidth,
 } from '@/constants/layoutScale';
-import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
+import { useResizablePanelSize } from '@/hooks/useResizablePanelSize';
 
 export const useCourseChatDockController = () => {
   const panelRef = useRef<PanelImperativeHandle | null>(null);

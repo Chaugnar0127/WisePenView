@@ -1,5 +1,7 @@
-import { cn } from '@/utils/cn';
 import type { CSSProperties } from 'react';
+
+import { cn } from '@/utils/cn';
+
 import type { LoadingTextProps } from './index.type';
 import styles from './style.module.less';
 

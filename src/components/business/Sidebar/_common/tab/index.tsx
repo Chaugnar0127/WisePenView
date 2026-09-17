@@ -2,8 +2,8 @@ import { Tabs, Tooltip } from '@heroui/react';
 import { BookOpen, FolderOpen, type LucideIcon, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/components/base/Tooltip';
 import CommandPaletteTrigger from '@/components/business/CommandPalette/Trigger';
-import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { cn } from '@/utils/cn';
 

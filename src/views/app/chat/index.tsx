@@ -4,8 +4,7 @@ import { useParams } from 'react-router-dom';
 import ChatPanel from '@/components/business/ChatPanel';
 import { useCurrentChatSessionStore } from '@/components/business/ChatPanel/_store/useCurrentChatSessionStore';
 import { clearNewChatSessionStore } from '@/components/business/ChatPanel/_store/useNewChatSessionStore';
-import { LAYOUT_DENSITY } from '@/constants/layoutScale';
-import { useViewportLayoutScale } from '@/layouts/_common/useViewportLayoutScale';
+import { useMainShell } from '@/layouts/MainShell/MainShellContext';
 import { cn } from '@/utils/cn';
 
 import styles from './style.module.less';
@@ -14,9 +13,8 @@ function ChatPage() {
   const { sessionId: routeSessionId } = useParams<{ sessionId: string }>();
   const setCurrentSession = useCurrentChatSessionStore((s) => s.setCurrentSession);
   const clearCurrentSession = useCurrentChatSessionStore((s) => s.clearCurrentSession);
-  const { widthDensity } = useViewportLayoutScale();
-  // 与侧栏 compact 同源：窄屏对齐侧栏 Chat 面板（Header + 非 fullWidth）。
-  const isCompactChat = widthDensity === LAYOUT_DENSITY.COMPACT;
+  // 与应用壳同源：窄屏对齐侧栏 Drawer（Header + 非 fullWidth）。
+  const { isMobileLayout: isCompactChat } = useMainShell();
 
   /**
    * @wisepen-manual-effect

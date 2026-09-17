@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FileText, Image as ImageIcon } from 'lucide-react';
 
 import { Chat } from '@/components/Chat';
+
 import styles from './AttachmentChip.stories.module.less';
 
 const thumbnailDataUrl =

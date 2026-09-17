@@ -1,8 +1,8 @@
 import { Outlet, useOutletContext } from 'react-router-dom';
 
 import { getGroupDisplayConfig } from '@/components/business/Group/GroupDisplayConfig';
-import { useGroupContext } from '@/layouts/Group/GroupContext';
 import ForbiddenRoute from '@/views/app/error/ForbiddenRoute';
+import { useGroupContext } from '@/views/app/group/GroupRoute/GroupContext';
 
 import type { GroupDetailOutletContextValue } from '..';
 

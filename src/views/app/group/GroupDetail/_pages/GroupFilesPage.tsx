@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import TableDrive from '@/components/business/Drive/TableDrive';
 import { getGroupDisplayConfig } from '@/components/business/Group/GroupDisplayConfig';
 import { buildDriveNodeScope } from '@/domains/Drive';
-import { useGroupContext } from '@/layouts/Group/GroupContext';
 import { buildGroupFilesPath } from '@/utils/navigation/appRoute';
+import { useGroupContext } from '@/views/app/group/GroupRoute/GroupContext';
 
 import layout from '../../style.module.less';
 import page from '../style.module.less';

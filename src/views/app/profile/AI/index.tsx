@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import PageHeader from '@/layouts/_common/PageHeader';
+import PageHeader from '@/components/business/PageHeader';
 
 import ModelSettingsSection from './ModelSettingsSection';
 import ProviderSettingsSection from './ProviderSettingsSection';

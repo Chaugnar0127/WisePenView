@@ -9,7 +9,7 @@ import {
 } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 
-import PageHeader from '@/layouts/_common/PageHeader';
+import PageHeader from '@/components/business/PageHeader';
 import {
   COLOR_SCHEME_OPTIONS,
   type ColorScheme,

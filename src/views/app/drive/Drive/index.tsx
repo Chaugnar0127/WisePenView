@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import TableDrive from '@/components/business/Drive/TableDrive';
+import PageHeader from '@/components/business/PageHeader';
 import { useDriveService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
 import { useApi } from '@/hooks/useApi';
-import PageHeader from '@/layouts/_common/PageHeader';
 import { parseErrorMessage } from '@/utils/error';
 import {
   buildDrivePath,

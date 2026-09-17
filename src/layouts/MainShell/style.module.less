@@ -1,0 +1,166 @@
+@import '@/styles/focusRing.less';
+@import '@/styles/desktopTitleBar.less';
+@import '@/styles/scrollbar.module.less';
+
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--background);
+}
+
+.rootMobile {
+  display: block;
+}
+
+.rootCollapsed {
+  --sidebar-content-inset: var(--space-sm);
+}
+
+.panelGroup {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.sidebarPanel {
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--sidebar-surface);
+}
+
+.mainColumnPanel {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--background);
+  position: relative;
+}
+
+/* 页面未自声明框架时，由主内容区承担滚动 */
+.mainContentScroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  .appSubtleScrollbar();
+}
+
+.mobileHeader {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 0 0 auto;
+  min-height: 56px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--header-surface, var(--paper));
+  border-bottom: 1px solid var(--border-light);
+  .desktopTitleBarChrome();
+}
+
+.titleBarInsetEnd {
+  .mobileHeader {
+    padding-right: var(--desktop-window-controls-width, 116px);
+    .desktopTitleBarEndNoDragHole();
+  }
+}
+
+.drawerBackdrop {
+  z-index: var(--app-z-index-modal);
+}
+
+.drawerContent {
+  width: min(336px, 86vw);
+  max-width: min(336px, 86vw);
+  background: var(--sidebar-surface);
+}
+
+.drawerDialog {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  background: var(--sidebar-surface);
+}
+
+.drawerBody {
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.drawerBody :global(.sider) {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panelGroup {
+    transition-duration: var(--motion-duration-reduced);
+  }
+}
+
+/* 折叠态 rail：两端布局共用，避免各自实现折叠外观 */
+.rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--sidebar-surface);
+  border-inline-end: 1px solid var(--border-light);
+}
+
+.railTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 0 0 auto;
+  padding: var(--space-sm) var(--space-xs);
+  padding-top: calc(var(--space-sm) + var(--desktop-title-bar-drag-strip, 0px));
+}
+
+.railLogo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.rail :global(.navContainer) {
+  padding-bottom: var(--space-sm);
+}
+
+.rail :global(.navContainer)::after {
+  left: var(--space-sm);
+  right: var(--space-sm);
+}
+
+.rail :global(.headerMenu) {
+  padding-inline: var(--space-xs);
+}

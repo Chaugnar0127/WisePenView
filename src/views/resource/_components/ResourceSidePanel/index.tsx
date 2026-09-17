@@ -8,17 +8,17 @@ import type {
 } from 'react-resizable-panels';
 
 import {
-  NOTE_EDITOR_MIN_WIDTH,
-  RESOURCE_SIDE_PANEL_MAX_WIDTH,
-  RESOURCE_SIDE_PANEL_MIN_WIDTH,
-} from '@/constants/layoutScale';
-import {
   RESIZE_TARGET_MINIMUM_SIZE,
   SystemResizableHandle,
   SystemResizablePanel,
   SystemResizablePanelGroup,
-} from '@/layouts/_common/SystemResizable';
-import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
+} from '@/components/base/SystemResizable';
+import {
+  NOTE_EDITOR_MIN_WIDTH,
+  RESOURCE_SIDE_PANEL_MAX_WIDTH,
+  RESOURCE_SIDE_PANEL_MIN_WIDTH,
+} from '@/constants/layoutScale';
+import { useResizablePanelSize } from '@/hooks/useResizablePanelSize';
 import { cn } from '@/utils/cn';
 
 import { useResourceSidePanelStore } from '../../_store/useResourceSidePanelStore';

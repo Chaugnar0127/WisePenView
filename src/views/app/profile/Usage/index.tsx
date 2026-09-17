@@ -5,8 +5,8 @@
 import { Card } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 
+import PageHeader from '@/components/business/PageHeader';
 import { WALLET_TARGET_TYPE } from '@/domains/Wallet';
-import PageHeader from '@/layouts/_common/PageHeader';
 import ComputeWallet from '@/views/app/_common/Wallet/ComputeWallet';
 
 import QuotaByGroup from '../_components/QuotaByGroup';

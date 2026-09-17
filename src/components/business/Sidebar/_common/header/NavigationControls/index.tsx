@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight, PanelLeftClose, PanelLeftOpen } from 'lucide-rea
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
-import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/layouts/_common/a11y/sidebarToggle';
+import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/constants/sidebarToggle';
 
 import type { NavigationControlsProps } from './index.type';
 import styles from './style.module.less';

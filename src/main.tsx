@@ -6,7 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import App from './bootstrap/App';
 import './bootstrap/index.css';
 import './bootstrap/scrollbar.less';
-import { syncViewportLayoutScale } from './layouts/_common/applyLayoutScaleCssVars';
+import { syncViewportLayoutScale } from '@/utils/browser/layoutScale';
 import { installGlobalErrorReporting, reportError } from './utils/error';
 import RootErrorFallback from './views/app/error/RootErrorFallback';
 

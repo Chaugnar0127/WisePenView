@@ -115,7 +115,7 @@
   }
 }
 
-@import '@/layouts/_common/desktopTitleBar.less';
+@import '@/styles/desktopTitleBar.less';
 
 .header {
   box-sizing: border-box;
@@ -329,7 +329,7 @@
   }
 }
 
-/* 与 LAYOUT_DENSITY.COMPACT / data-layout-density 同源，不用单独 960 断点 */
+/* 与应用壳 Drawer / data-layout-density 同源，避免 ChatPanel 早于侧栏切换。 */
 :global(html[data-layout-density='compact']) {
   .panel:not(.fullWidth) {
     --chat-message-inline-padding: var(--space-md);

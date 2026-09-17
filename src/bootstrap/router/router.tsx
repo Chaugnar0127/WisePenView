@@ -3,14 +3,15 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import type { AppRouteHandle } from '@/bootstrap/router/routeHandle';
 import { APP_SIDEBAR_HEADER_NAV_KEY } from '@/config/appSidebar';
-import AdminLayout from '@/layouts/Admin/AdminLayout';
+import AdminLayout from '@/layouts/AdminLayout';
 import { AppAuthProvider } from '@/layouts/App/AppAuthProvider';
-import AppLayout from '@/layouts/App/AppLayout';
 import { AppFixedPageLayout, AppScrollablePageLayout } from '@/layouts/App/AppPageLayout';
+import AppLayout from '@/layouts/AppLayout';
 import AppNavigationLayout from '@/layouts/AppNavigation/AppNavigationLayout';
 import AuthLayout from '@/layouts/Auth/AuthLayout';
 import CourseLayout from '@/layouts/Course/CourseLayout';
 import CourseLearningLayout from '@/layouts/Course/CourseLearningLayout';
+import ResourceHost from '@/layouts/Resource/ResourceHost';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
 import AppError from '@/views/app/error/AppError';
@@ -286,8 +287,14 @@ const router = createBrowserRouter([
               },
               {
                 path: 'resources/:resourceType/:resourceId',
-                element: <ResourceRouteView />,
-                handle: driveRouteHandle,
+                element: <ResourceHost />,
+                children: [
+                  {
+                    index: true,
+                    element: <ResourceRouteView />,
+                    handle: driveRouteHandle,
+                  },
+                ],
               },
               {
                 path: 'courses/:courseId',

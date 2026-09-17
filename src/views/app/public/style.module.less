@@ -50,6 +50,15 @@
 }
 
 @media (max-width: @breakpoint-sm) {
+  .actionsRow {
+    width: 100%;
+  }
+
+  .actionsRow > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
   .listControls {
     align-items: stretch;
     flex-direction: column;
@@ -61,5 +70,11 @@
 
   .grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 360px) {
+  .actionsRow {
+    flex-direction: column;
   }
 }

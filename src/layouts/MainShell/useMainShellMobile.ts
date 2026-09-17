@@ -55,8 +55,3 @@ export function useMainShellMobileSnapshot(): MainShellMobileSnapshot {
     getServerMainShellMobileSnapshot
   );
 }
-
-/** 与应用壳侧栏 Drawer 断点保持一致。 */
-export function useMainShellMobile(): boolean {
-  return useMainShellMobileSnapshot().isMobileLayout;
-}

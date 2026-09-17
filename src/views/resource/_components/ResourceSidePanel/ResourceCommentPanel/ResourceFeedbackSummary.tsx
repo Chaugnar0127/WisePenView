@@ -3,7 +3,7 @@ import { Eye, ThumbsUp } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/components/base/Tooltip';
 import { formatReadCount } from '@/utils/format/formatNumber';
 
 import styles from './style.module.less';

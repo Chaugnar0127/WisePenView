@@ -10,7 +10,6 @@ import { getGroupDisplayConfig } from '@/components/business/Group/GroupDisplayC
 import InviteUserModal from '@/components/business/Group/MemberList/Modals/InviteUserModal';
 import PageHeader from '@/components/business/PageHeader';
 import { GROUP_TYPE } from '@/domains/Group';
-import { useGroupContext } from '@/layouts/Group/GroupContext';
 import {
   APP_ROUTE_PATH,
   buildCoursePath,
@@ -18,6 +17,7 @@ import {
   type GroupRoutePage,
 } from '@/utils/navigation/appRoute';
 import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
+import { useGroupContext } from '@/views/app/group/GroupRoute/GroupContext';
 
 import page from './style.module.less';
 

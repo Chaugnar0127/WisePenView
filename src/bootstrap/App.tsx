@@ -7,7 +7,7 @@ import { Spin } from '@/components/base/Feedback';
 import DesktopWindowControls from '@/components/business/DesktopWindowControls';
 import { ServicesProvider } from '@/domains';
 import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
-import { useViewportLayoutScale } from '@/layouts/_common/useViewportLayoutScale';
+import { useViewportLayoutScale } from '@/hooks/useViewportLayoutScale';
 import { resetSessionStores } from '@/store/lifecycle';
 import { DEFAULT_HEROUI_THEME, ThemeApplier } from '@/theme';
 import { authSessionCoordinator, type AuthSessionEvent } from '@/utils/auth/authSessionCoordinator';

@@ -18,7 +18,7 @@ import {
   RESOURCE_SIDE_PANEL_MAX_WIDTH,
   RESOURCE_SIDE_PANEL_MIN_WIDTH,
 } from '@/constants/layoutScale';
-import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
+import { useResizablePanelSize } from '@/hooks/useResizablePanelSize';
 import { cn } from '@/utils/cn';
 
 import { useResourceSidePanelStore } from '../../_store/useResourceSidePanelStore';

@@ -7,9 +7,9 @@ import { ResultState, Spin } from '@/components/base/Feedback';
 import { useGroupService } from '@/domains';
 import type { Group, GroupResConfig } from '@/domains/Group';
 import { useApi } from '@/hooks/useApi';
-import { GroupContext, type GroupCurrentUserRole } from '@/layouts/Group/GroupContext';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+import { GroupContext, type GroupCurrentUserRole } from '@/views/app/group/GroupRoute/GroupContext';
 
 import styles from './style.module.less';
 

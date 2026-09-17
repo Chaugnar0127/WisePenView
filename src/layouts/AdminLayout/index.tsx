@@ -5,8 +5,8 @@ import UserProfile from '@/components/business/Sidebar/_common/footer/UserProfil
 import AdminSidebar from '@/components/business/Sidebar/AdminSidebar';
 import AdminHeaderNav from '@/components/business/Sidebar/AdminSidebar/AdminHeaderNav';
 import { MAIN_MIN_WIDTH } from '@/constants/layoutScale';
-import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
 import MainShell from '@/layouts/MainShell';
+import RouteOutletBoundary from '@/layouts/RouteOutletBoundary';
 
 import styles from './style.module.less';
 

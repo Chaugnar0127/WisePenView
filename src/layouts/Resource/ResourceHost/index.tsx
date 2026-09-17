@@ -24,14 +24,14 @@ import {
   RESOURCE_MAIN_MIN_WIDTH,
 } from '@/constants/layoutScale';
 import { useOpenResource } from '@/hooks/useOpenResource';
-import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
-import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
+import { useResizablePanelSize } from '@/hooks/useResizablePanelSize';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import { useMainShell } from '@/layouts/MainShell/MainShellContext';
 import { useResourceChatProtocolStore } from '@/layouts/Resource/_store/useResourceChatProtocolStore';
 import ResourceWorkspaceHeader from '@/layouts/Resource/ResourceWorkspaceHeader';
 import { useResourceBreadcrumb } from '@/layouts/Resource/useResourceBreadcrumb';
 import { useResourceHeaderEndReserve } from '@/layouts/Resource/useResourceHeaderEndReserve';
+import RouteOutletBoundary from '@/layouts/RouteOutletBoundary';
 import { cn } from '@/utils/cn';
 import { parseResourceDriveLocation } from '@/utils/navigation/resourceRoute';
 import { normalizeResourceKind, resolveResourceViewer } from '@/utils/navigation/resourceTarget';

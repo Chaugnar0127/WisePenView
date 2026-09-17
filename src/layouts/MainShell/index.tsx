@@ -12,13 +12,13 @@ import {
   SystemResizablePanelGroup,
 } from '@/components/base/SystemResizable';
 import { MAIN_SIDEBAR_RAIL_WIDTH } from '@/constants/layoutScale';
+import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/constants/sidebarToggle';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
-import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/layouts/_common/a11y/sidebarToggle';
-import SkipToMainLink, { MAIN_CONTENT_ID } from '@/layouts/_common/a11y/SkipToMainLink';
 import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
 import { cn } from '@/utils/cn';
 
 import { MainShellContext, type MainShellContextValue } from './MainShellContext';
+import SkipToMainLink, { MAIN_CONTENT_ID } from './SkipToMainLink';
 import styles from './style.module.less';
 import { useMainShellMobileSnapshot } from './useMainShellMobile';
 import { useSystemSidebarPanel } from './useSystemSidebarPanel';

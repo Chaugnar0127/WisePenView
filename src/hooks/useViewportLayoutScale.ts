@@ -6,7 +6,7 @@ import {
   type LayoutDensity,
   type LayoutHeightDensity,
 } from '@/constants/layoutScale';
-import { syncViewportLayoutScale } from '@/layouts/_common/applyLayoutScaleCssVars';
+import { syncViewportLayoutScale } from '@/utils/browser/layoutScale';
 
 interface ViewportLayoutScale {
   widthDensity: LayoutDensity;

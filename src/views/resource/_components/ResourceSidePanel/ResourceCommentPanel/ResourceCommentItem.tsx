@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import AppAvatar from '@/components/base/Avatar';
 import { AppButton } from '@/components/base/Button';
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/components/base/Tooltip';
 import type { ResourceComment } from '@/domains/Interact';
-import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { cn } from '@/utils/cn';
 import {
   formatRelativeTimestamp,

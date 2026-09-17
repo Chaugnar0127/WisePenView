@@ -8,9 +8,9 @@ import HeaderNav from '@/components/business/Sidebar/_common/header/HeaderNav';
 import AppSidebar from '@/components/business/Sidebar/AppSidebar';
 import { useAppSidebarHeaderNav } from '@/components/business/Sidebar/AppSidebar/useAppSidebarHeaderNav';
 import { APP_MAIN_MIN_WIDTH } from '@/constants/layoutScale';
-import RouteOutletBoundary from '@/layouts/_common/RouteOutletBoundary';
 import { useAppNavigation } from '@/layouts/AppNavigation/AppNavigationContext';
 import MainShell from '@/layouts/MainShell';
+import RouteOutletBoundary from '@/layouts/RouteOutletBoundary';
 
 import styles from './style.module.less';
 

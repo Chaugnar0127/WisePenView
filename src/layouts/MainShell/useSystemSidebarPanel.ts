@@ -7,14 +7,11 @@ import type {
 } from 'react-resizable-panels';
 
 import { clampSidebarWidth, SIDEBAR_MAX_WIDTH, SIDEBAR_MIN_WIDTH } from '@/constants/layoutScale';
-import { focusVisibleSidebarToggle } from '@/layouts/_common/a11y/sidebarToggle';
-import { useResizablePanelSize } from '@/layouts/_common/useResizablePanelSize';
-import {
-  SIDEBAR_COLLAPSE_DURATION_MS,
-  useSidebarCollapseMotion,
-} from '@/layouts/_common/useSidebarCollapseMotion';
+import { useResizablePanelSize } from '@/hooks/useResizablePanelSize';
 
 import { useSystemLayoutStore } from './_store/useSystemLayoutStore';
+import { focusVisibleSidebarToggle } from './focusSidebarToggle';
+import { SIDEBAR_COLLAPSE_DURATION_MS, useSidebarCollapseMotion } from './useSidebarCollapseMotion';
 
 interface UseSystemSidebarPanelOptions {
   collapsedWidth: number;

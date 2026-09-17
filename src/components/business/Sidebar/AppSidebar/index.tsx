@@ -16,21 +16,33 @@ function AppSidebar({
   onGoForward,
   onToggle,
   onNavigate,
+  collapsed = false,
+  motionPhase = collapsed ? 'collapsed' : 'expanded',
 }: AppSidebarProps) {
   const { t } = useTranslation('shell');
   const { items: headerNavItems, selectedKey } = useAppSidebarHeaderNav({ onNavigate });
+  const labelsHidden = motionPhase === 'collapsing' || motionPhase === 'collapsed';
+  const railLayout = motionPhase === 'collapsed';
 
   return (
-    <div className={styles.sider}>
+    <div
+      className={styles.sider}
+      data-sidebar-phase={motionPhase}
+      data-sidebar-compact={railLayout || undefined}
+      data-sidebar-labels-hidden={labelsHidden || undefined}
+    >
       <SidebarHeader
-        collapsed={false}
+        collapsed={railLayout}
+        labelsHidden={labelsHidden}
         canGoBack={canGoBack}
         canGoForward={canGoForward}
         nav={
           <HeaderNav
             ariaLabel={t('navigation.appAria')}
             activeKey={selectedKey}
+            collapsed={railLayout}
             items={headerNavItems}
+            labelsHidden={labelsHidden}
             showIndicator
           />
         }
@@ -38,8 +50,12 @@ function AppSidebar({
         onGoForward={onGoForward}
         onToggle={onToggle}
       />
-      <AppSidebarTabs />
-      <UserProfile collapsed={false} />
+      <div className={styles.expandedBody}>
+        <AppSidebarTabs />
+      </div>
+      <div className={styles.sidebarFooter}>
+        <UserProfile collapsed={railLayout} labelsHidden={labelsHidden} />
+      </div>
     </div>
   );
 }

@@ -33,10 +33,11 @@ import styles from './style.module.less';
 
 interface UserProfileProps {
   collapsed: boolean;
+  labelsHidden?: boolean;
   menuMode?: 'app' | 'admin';
 }
 
-function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
+function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: UserProfileProps) {
   const { t } = useTranslation(['shell', 'common']);
   const navigate = useNavigate();
   const appAuth = useAppAuth();
@@ -64,7 +65,13 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
     const handleLogin = () => navigate(appAuth.loginPath);
 
     return (
-      <div className={cn(styles.profile, !collapsed && styles.expanded)}>
+      <div
+        className={cn(
+          styles.profile,
+          !collapsed && styles.expanded,
+          labelsHidden && styles.labelsHidden
+        )}
+      >
         {collapsed ? (
           <button
             type="button"
@@ -76,9 +83,11 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
           </button>
         ) : (
           <>
-            <AppAvatar size="sm" className={styles.avatar}>
-              <AppAvatar.Fallback>{t('anonymous.avatar')}</AppAvatar.Fallback>
-            </AppAvatar>
+            <span className={styles.avatarSlot}>
+              <AppAvatar size="sm" className={styles.avatar}>
+                <AppAvatar.Fallback>{t('anonymous.avatar')}</AppAvatar.Fallback>
+              </AppAvatar>
+            </span>
             <div className={styles.info}>
               <span className={styles.username}>{t('anonymous.title')}</span>
               <span className={styles.tag}>{t('anonymous.subtitle')}</span>
@@ -204,7 +213,13 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
 
   return (
     <>
-      <div className={cn(styles.profile, !collapsed && styles.expanded)}>
+      <div
+        className={cn(
+          styles.profile,
+          !collapsed && styles.expanded,
+          labelsHidden && styles.labelsHidden
+        )}
+      >
         {collapsed ? (
           <Dropdown>
             <Dropdown.Trigger aria-label={t('userMenu.openAria')} className={styles.avatarTrigger}>
@@ -214,7 +229,7 @@ function UserProfile({ collapsed, menuMode = 'app' }: UserProfileProps) {
           </Dropdown>
         ) : (
           <>
-            {userAvatar}
+            <span className={styles.avatarSlot}>{userAvatar}</span>
             <div className={styles.info}>
               <span className={styles.username}>{displayName}</span>
               <span className={styles.tag}>{identityLabel}</span>

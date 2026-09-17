@@ -1,4 +1,4 @@
-import { ListBox, ListBoxItem, ListBoxSection } from '@heroui/react';
+import { ListBox, ListBoxItem, ListBoxSection, Separator } from '@heroui/react';
 import { useLayoutEffect, useRef } from 'react';
 
 import { cn } from '@/utils/cn';
@@ -15,6 +15,7 @@ function HeaderNav({
   items,
   sections,
   showIndicator = false,
+  labelsHidden = false,
 }: HeaderNavProps) {
   const navSections = sections ?? [{ key: DEFAULT_SECTION_KEY, items: items ?? [] }];
   const shouldRenderSections = Boolean(sections);
@@ -84,6 +85,7 @@ function HeaderNav({
         className={cn(
           styles.menuItem,
           collapsed && styles.menuItemCollapsed,
+          labelsHidden && styles.menuItemLabelsHidden,
           isActive && styles.menuItemActive
         )}
         onAction={item.onPress}
@@ -91,7 +93,11 @@ function HeaderNav({
         <span className={styles.menuIcon}>
           <Icon size={18} />
         </span>
-        {!collapsed ? <span className={styles.menuLabel}>{item.name}</span> : null}
+        {!collapsed ? (
+          <span className={styles.menuLabel} aria-hidden={labelsHidden || undefined}>
+            <span className={styles.menuLabelText}>{item.name}</span>
+          </span>
+        ) : null}
       </ListBoxItem>
     );
   };
@@ -112,6 +118,10 @@ function HeaderNav({
       >
         {shouldRenderSections ? navSections.map(renderSection) : navItems.map(renderItem)}
       </ListBox>
+      <Separator
+        aria-hidden="true"
+        className={cn(styles.divider, labelsHidden && styles.dividerHidden)}
+      />
     </div>
   );
 }

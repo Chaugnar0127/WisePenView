@@ -3,6 +3,7 @@ import { type RefObject, useEffect, useRef } from 'react';
 import { SIDEBAR_MAX_WIDTH, SIDEBAR_MIN_WIDTH } from '@/constants/layoutScale';
 
 export const SIDEBAR_COLLAPSE_DURATION_MS = 220;
+export const SIDEBAR_COLLAPSE_EASING = 'cubic-bezier(0.32, 0.72, 0, 1)';
 
 interface UseSidebarCollapseMotionOptions {
   collapsed: boolean;
@@ -10,8 +11,6 @@ interface UseSidebarCollapseMotionOptions {
   collapsedWidth: number;
   minSize?: number;
   maxSize?: number;
-  /** panel group 上挂 data-sidebar-motion，供 CSS 显隐窄轨 */
-  panelGroupId?: string;
 }
 
 interface SidebarCollapseMotion {
@@ -29,15 +28,14 @@ export function useSidebarCollapseMotion({
   collapsedWidth,
   minSize = SIDEBAR_MIN_WIDTH,
   maxSize = SIDEBAR_MAX_WIDTH,
-  panelGroupId,
 }: UseSidebarCollapseMotionOptions): SidebarCollapseMotion {
   const isMotionLockedRef = useRef(false);
   const isFirstCollapsedEffectRef = useRef(true);
 
   /**
    * @wisepen-manual-effect
-   * 执行时机：折叠态切换时锁定运动并标记 panel group。
-   * 不可替代原因：插值期间挡住布局回写；motion 标记驱动 CSS 显隐，不能用 setState。
+   * 执行时机：折叠态切换时锁定运动。
+   * 不可替代原因：插值期间挡住布局回写，避免动画帧尺寸被持久化为用户拖拽宽度。
    * cleanup：无。
    */
   useEffect(() => {
@@ -46,10 +44,7 @@ export function useSidebarCollapseMotion({
       return;
     }
     isMotionLockedRef.current = true;
-    if (panelGroupId) {
-      document.getElementById(panelGroupId)?.setAttribute('data-sidebar-motion', 'true');
-    }
-  }, [collapsed, panelGroupId]);
+  }, [collapsed]);
 
   return {
     panelSize: collapsed ? collapsedWidth : expandedWidth,
@@ -58,9 +53,6 @@ export function useSidebarCollapseMotion({
     isMotionLockedRef,
     notifyAnimationComplete: () => {
       isMotionLockedRef.current = false;
-      if (panelGroupId) {
-        document.getElementById(panelGroupId)?.removeAttribute('data-sidebar-motion');
-      }
     },
   };
 }

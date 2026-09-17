@@ -9,4 +9,5 @@ export interface SidebarHeaderProps {
   onToggle?: () => void;
   title?: string;
   nav?: ReactNode;
+  labelsHidden?: boolean;
 }

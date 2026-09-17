@@ -8,12 +8,12 @@
 }
 
 .tabs {
-  --sidebar-motion-ease: cubic-bezier(0.32, 0.72, 0, 1);
-  --sidebar-motion-duration: 0.36s;
-  --sidebar-motion-fade: 0.24s;
-  --sidebar-tab-label-fade-duration: 0.16s;
-  --sidebar-tab-label-reveal-delay: 0.16s;
-  --sidebar-tab-label-collapse-delay: 0.08s;
+  --sidebar-motion-ease: var(--main-sidebar-motion-ease, cubic-bezier(0.32, 0.72, 0, 1));
+  --sidebar-motion-duration: var(--main-sidebar-motion-duration, 220ms);
+  --sidebar-motion-fade: var(--main-sidebar-motion-fade-duration, 160ms);
+  --sidebar-tab-label-fade-duration: var(--sidebar-motion-fade);
+  --sidebar-tab-label-reveal-delay: var(--main-sidebar-motion-reveal-delay, 110ms);
+  --sidebar-tab-label-collapse-delay: var(--main-sidebar-motion-collapse-delay, 55ms);
   --sidebar-tab-size: 32px;
   --sidebar-tab-pad-x: 7px;
   --sidebar-tab-pad-x-selected: 10px;
@@ -25,6 +25,28 @@
   min-height: 0;
   flex-direction: column;
   gap: 0;
+
+  :global([data-sidebar-labels-hidden='true']) & {
+    .tabSearch,
+    .anonymousTitle,
+    .anonymousHint {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .tab[data-selected='true'] {
+      padding-inline: var(--sidebar-tab-pad-x);
+
+      .tabLabel {
+        grid-template-columns: 0fr;
+        opacity: 0;
+        margin-inline-start: 0;
+        transition-delay:
+          var(--sidebar-tab-label-collapse-delay), 0s,
+          var(--sidebar-tab-label-collapse-delay);
+      }
+    }
+  }
 }
 
 .tabListContainer {
@@ -59,6 +81,8 @@
   flex: 0 0 auto;
   align-items: center;
   margin-inline-start: auto;
+  opacity: 1;
+  transition: opacity var(--sidebar-motion-fade) var(--sidebar-motion-ease);
 }
 
 .tab {
@@ -200,12 +224,16 @@
   color: var(--foreground);
   font-size: var(--font-size-md, 14px);
   font-weight: var(--font-weight-semibold);
+  opacity: 1;
+  transition: opacity var(--sidebar-motion-fade) var(--sidebar-motion-ease);
 }
 
 .anonymousHint {
   max-width: 220px;
   font-size: var(--font-size-sm, 13px);
   line-height: 1.5;
+  opacity: 1;
+  transition: opacity var(--sidebar-motion-fade) var(--sidebar-motion-ease);
 }
 
 .panelTrack {

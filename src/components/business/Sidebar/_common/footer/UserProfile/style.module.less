@@ -10,20 +10,34 @@
   height: @height;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 
   border: none;
-  padding: 0 var(--space-sm);
+  padding: 0 15px;
   background: transparent;
   color: inherit;
 
-  transition: all var(--motion-duration-mid);
+  transition:
+    justify-content var(--main-sidebar-motion-duration, var(--motion-duration-mid))
+      var(--main-sidebar-motion-ease, var(--motion-ease-standard)),
+    padding var(--main-sidebar-motion-duration, var(--motion-duration-mid))
+      var(--main-sidebar-motion-ease, var(--motion-ease-standard)),
+    color var(--main-sidebar-motion-fade-duration, var(--motion-duration-mid))
+      var(--main-sidebar-motion-ease, var(--motion-ease-standard));
 
   border-top: 1px solid var(--border-light);
 
   &.expanded {
-    justify-content: flex-start;
-    padding: 0 var(--sidebar-content-inset, var(--space-lg));
+    padding: 0 15px;
+  }
+}
+
+.labelsHidden {
+  .info,
+  .menuTrigger,
+  .loginButton {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 
@@ -71,6 +85,15 @@
   }
 }
 
+.avatarSlot {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .avatarTrigger,
 .menuTrigger {
   display: inline-flex;
@@ -89,6 +112,14 @@
   &[data-focus-visible] {
     .appFocusRing();
   }
+}
+
+.info,
+.menuTrigger,
+.loginButton {
+  opacity: 1;
+  transition: opacity var(--main-sidebar-motion-fade-duration, var(--motion-duration-fast))
+    var(--main-sidebar-motion-ease, var(--motion-ease-standard));
 }
 
 .avatarTrigger {

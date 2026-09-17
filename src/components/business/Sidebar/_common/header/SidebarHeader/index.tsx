@@ -14,6 +14,7 @@ function SidebarHeader({
   onGoForward,
   onToggle,
   nav,
+  labelsHidden = false,
 }: SidebarHeaderProps) {
   const hasNav = Boolean(nav);
   const desktopWindow = useDesktopWindowState();
@@ -48,11 +49,15 @@ function SidebarHeader({
           <div className={cn(styles.headerTop, collapsed && styles.collapsedHeaderTop)}>
             {navigationControls}
           </div>
-          {!collapsed ? <div className={styles.logo}>{logoContent}</div> : null}
+          {!collapsed ? (
+            <div className={cn(styles.logo, labelsHidden && styles.logoHidden)}>{logoContent}</div>
+          ) : null}
         </>
       ) : (
         <div className={cn(styles.webHeader, collapsed && styles.collapsedWebHeader)}>
-          {!collapsed ? <div className={styles.logo}>{logoContent}</div> : null}
+          {!collapsed ? (
+            <div className={cn(styles.logo, labelsHidden && styles.logoHidden)}>{logoContent}</div>
+          ) : null}
           {navigationControls}
         </div>
       )}

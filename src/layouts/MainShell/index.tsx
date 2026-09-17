@@ -1,6 +1,6 @@
 import { Drawer } from '@heroui/react';
-import { Menu, PanelLeftOpen } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { Menu } from 'lucide-react';
+import { type CSSProperties, type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
@@ -14,18 +14,19 @@ import {
 import { MAIN_SIDEBAR_RAIL_WIDTH } from '@/constants/layoutScale';
 import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/constants/sidebarToggle';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
-import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
 import { cn } from '@/utils/cn';
 
 import { MainShellContext, type MainShellContextValue } from './MainShellContext';
 import SkipToMainLink, { MAIN_CONTENT_ID } from './SkipToMainLink';
 import styles from './style.module.less';
 import { useMainShellMobileSnapshot } from './useMainShellMobile';
+import { SIDEBAR_COLLAPSE_DURATION_MS, SIDEBAR_COLLAPSE_EASING } from './useSidebarCollapseMotion';
 import { useSystemSidebarPanel } from './useSystemSidebarPanel';
 
 interface MainSidebarRenderState {
-  /** 折叠侧栏；折叠态由壳内的 rail 承担，不再渲染侧栏内容 */
   onToggle: () => void;
+  collapsed: boolean;
+  motionPhase: 'expanded' | 'collapsing' | 'collapsed' | 'expanding';
 }
 
 interface MainDrawerSidebarRenderState {
@@ -42,10 +43,8 @@ interface MainShellProps {
   mainMinWidth?: number;
   /** 主内容区自身滚动；页面自声明框架（如 AppScrollablePageLayout）时为 false */
   mainContentScroll?: boolean;
-  /** 展开态侧栏内容 */
+  /** 桌面侧栏内容；展开、过渡与折叠窄态都由具体侧栏组件维护 */
   renderSidebar: (state: MainSidebarRenderState) => ReactNode;
-  /** 折叠态 rail 内的导航内容，rail 框架与展开按钮由壳提供 */
-  railContent: ReactNode;
   /** 窄屏 Drawer 内的侧栏内容 */
   renderDrawerSidebar: (state: MainDrawerSidebarRenderState) => ReactNode;
   /** 窄屏顶栏标题，不传则不渲染窄屏顶栏 */
@@ -60,8 +59,8 @@ interface DrawerOpenState {
 
 /**
  * 主壳：桌面端侧栏面板 + 主内容，窄屏顶栏 + 侧栏 Drawer。
- * 应用端与管理端布局都基于它构建，折叠态 rail、窄屏行为与主内容框架由壳统一提供，
- * 两端的差异只在侧栏内容、导航项、aria 文案和窄屏标题。
+ * 应用端与管理端布局都基于它构建，窄屏行为与主内容框架由壳统一提供，
+ * 侧栏具体内容和窄态呈现由侧栏组件自己维护。
  */
 function MainShell({
   panelGroupId,
@@ -69,20 +68,17 @@ function MainShell({
   mainMinWidth,
   mainContentScroll = false,
   renderSidebar,
-  railContent,
   renderDrawerSidebar,
   mobileHeaderTitle,
   children,
 }: MainShellProps) {
   const { t } = useTranslation('shell');
-  const { colorScheme } = useColorScheme();
   const desktopWindow = useDesktopWindowState();
   const location = useLocation();
   const { breakpointVersion, isMobileLayout } = useMainShellMobileSnapshot();
   const sidebar = useSystemSidebarPanel({
     collapsedWidth: MAIN_SIDEBAR_RAIL_WIDTH,
     enabled: !isMobileLayout,
-    panelGroupId,
   });
   const [drawerOpenState, setDrawerOpenState] = useState<DrawerOpenState | null>(null);
   const drawerOpen =
@@ -111,27 +107,13 @@ function MainShell({
     isMobileLayout,
     onToggleSidebar: toggleSidebar,
   } satisfies MainShellContextValue;
-
-  const renderCollapsedRail = () => (
-    <aside className={styles.rail} aria-label={sidebarAriaLabel}>
-      <div className={styles.railTop}>
-        <img
-          className={styles.railLogo}
-          src={COLOR_SCHEME_ICON_SRC[colorScheme]}
-          alt="WisePen"
-          draggable={false}
-        />
-        <AppIconButton
-          icon={<PanelLeftOpen size={18} aria-hidden="true" />}
-          label={t('navigation.expandSidebar')}
-          onPress={toggleSidebar}
-          tooltip={{ placement: 'right' }}
-          {...SIDEBAR_TOGGLE_BUTTON_PROPS}
-        />
-      </div>
-      {railContent}
-    </aside>
-  );
+  const motionStyle = {
+    '--main-sidebar-motion-duration': `${SIDEBAR_COLLAPSE_DURATION_MS}ms`,
+    '--main-sidebar-motion-ease': SIDEBAR_COLLAPSE_EASING,
+    '--main-sidebar-motion-fade-duration': '160ms',
+    '--main-sidebar-motion-reveal-delay': `${Math.round(SIDEBAR_COLLAPSE_DURATION_MS * 0.65)}ms`,
+    '--main-sidebar-motion-collapse-delay': `${SIDEBAR_COLLAPSE_DURATION_MS / 4}ms`,
+  } as CSSProperties;
 
   const mainColumn = (
     <div
@@ -169,10 +151,12 @@ function MainShell({
       <div
         className={cn(
           styles.root,
-          sidebar.collapsed && styles.rootCollapsed,
+          sidebar.motionPhase === 'collapsed' && styles.rootCollapsed,
           isMobileLayout && styles.rootMobile
         )}
-        data-main-sidebar-collapsed={sidebar.collapsed || undefined}
+        data-main-sidebar-collapsed={sidebar.motionPhase === 'collapsed' || undefined}
+        data-main-sidebar-motion-phase={sidebar.motionPhase}
+        style={motionStyle}
       >
         <SkipToMainLink />
         {isMobileLayout ? (
@@ -209,9 +193,11 @@ function MainShell({
               aria-label={sidebarAriaLabel}
               onResize={sidebar.handleResize}
             >
-              {sidebar.collapsed
-                ? renderCollapsedRail()
-                : renderSidebar({ onToggle: toggleSidebar })}
+              {renderSidebar({
+                onToggle: toggleSidebar,
+                collapsed: sidebar.motionPhase === 'collapsed',
+                motionPhase: sidebar.motionPhase,
+              })}
             </SystemResizablePanel>
 
             <SystemResizableHandle

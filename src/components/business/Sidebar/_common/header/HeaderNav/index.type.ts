@@ -20,4 +20,5 @@ export interface HeaderNavProps {
   items?: readonly HeaderNavItem[];
   sections?: readonly HeaderNavSection[];
   showIndicator?: boolean;
+  labelsHidden?: boolean;
 }

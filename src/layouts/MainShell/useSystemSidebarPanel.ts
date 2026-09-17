@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type {
   Layout,
   LayoutChangedMeta,
@@ -13,16 +13,16 @@ import { useSystemLayoutStore } from './_store/useSystemLayoutStore';
 import { focusVisibleSidebarToggle } from './focusSidebarToggle';
 import { SIDEBAR_COLLAPSE_DURATION_MS, useSidebarCollapseMotion } from './useSidebarCollapseMotion';
 
+type SidebarMotionPhase = 'expanded' | 'collapsing' | 'collapsed' | 'expanding';
+
 interface UseSystemSidebarPanelOptions {
   collapsedWidth: number;
   enabled?: boolean;
-  panelGroupId: string;
 }
 
 export function useSystemSidebarPanel({
   collapsedWidth,
   enabled = true,
-  panelGroupId,
 }: UseSystemSidebarPanelOptions) {
   const collapsed = useSystemLayoutStore((state) => state.sidebarCollapsed);
   const setCollapsed = useSystemLayoutStore((state) => state.setSidebarCollapsed);
@@ -31,6 +31,9 @@ export function useSystemSidebarPanel({
   const panelRef = useRef<PanelImperativeHandle | null>(null);
   const pendingWidthRef = useRef<number | null>(null);
   const pendingFocusToggleRef = useRef(false);
+  const [motionPhase, setMotionPhase] = useState<SidebarMotionPhase>(
+    collapsed ? 'collapsed' : 'expanded'
+  );
   const width = clampSidebarWidth(storedWidth);
   const { panelSize, minSize, maxSize, isMotionLockedRef, notifyAnimationComplete } =
     useSidebarCollapseMotion({
@@ -39,7 +42,6 @@ export function useSystemSidebarPanel({
       collapsedWidth,
       minSize: SIDEBAR_MIN_WIDTH,
       maxSize: SIDEBAR_MAX_WIDTH,
-      panelGroupId,
     });
 
   const persistWidthFromPanel = () => {
@@ -50,6 +52,7 @@ export function useSystemSidebarPanel({
 
   const handleAnimationComplete = () => {
     notifyAnimationComplete();
+    setMotionPhase(collapsed ? 'collapsed' : 'expanded');
     if (!pendingFocusToggleRef.current || !collapsed) return;
     pendingFocusToggleRef.current = false;
     focusVisibleSidebarToggle();
@@ -81,6 +84,9 @@ export function useSystemSidebarPanel({
     pendingFocusToggleRef.current = true;
     if (!collapsed) {
       persistWidthFromPanel();
+      setMotionPhase('collapsing');
+    } else {
+      setMotionPhase('expanding');
     }
     setCollapsed(!collapsed);
   };
@@ -115,6 +121,7 @@ export function useSystemSidebarPanel({
     handleResize,
     maxSize,
     minSize,
+    motionPhase,
     panelRef,
     panelSize,
     toggle,

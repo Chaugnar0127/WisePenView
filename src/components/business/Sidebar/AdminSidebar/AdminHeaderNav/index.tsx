@@ -32,7 +32,7 @@ const PAGE_ICONS = {
   tasks: ListTodo,
 } as const;
 
-function AdminHeaderNav({ collapsed }: AdminHeaderNavProps) {
+function AdminHeaderNav({ collapsed, labelsHidden = false }: AdminHeaderNavProps) {
   const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,6 +67,7 @@ function AdminHeaderNav({ collapsed }: AdminHeaderNavProps) {
       ariaLabel={t('navigationAria')}
       activeKey={location.pathname}
       collapsed={collapsed}
+      labelsHidden={labelsHidden}
       sections={sections}
     />
   );

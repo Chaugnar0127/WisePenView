@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
 import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/constants/sidebarToggle';
+import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
 
 import type { NavigationControlsProps } from './index.type';
 import styles from './style.module.less';
@@ -17,20 +18,30 @@ function NavigationControls({
   onToggleSidebar,
 }: NavigationControlsProps) {
   const { t } = useTranslation('shell');
+  const { colorScheme } = useColorScheme();
   const sidebarLabel = sidebarCollapsed
     ? t('navigation.expandSidebar')
     : t('navigation.collapseSidebar');
+  const toggleIcon = sidebarCollapsed ? (
+    <span className={styles.collapsedToggleIcon}>
+      <img
+        className={styles.collapsedLogo}
+        src={COLOR_SCHEME_ICON_SRC[colorScheme]}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+      />
+      <PanelLeftOpen className={styles.collapsedExpandIcon} size={18} aria-hidden="true" />
+    </span>
+  ) : (
+    <PanelLeftClose size={18} aria-hidden="true" />
+  );
 
   return (
     <div className={styles.root}>
       <AppIconButton
-        icon={
-          sidebarCollapsed ? (
-            <PanelLeftOpen size={18} aria-hidden="true" />
-          ) : (
-            <PanelLeftClose size={18} aria-hidden="true" />
-          )
-        }
+        className={sidebarCollapsed ? styles.collapsedToggleButton : undefined}
+        icon={toggleIcon}
         label={sidebarLabel}
         onPress={onToggleSidebar}
         {...SIDEBAR_TOGGLE_BUTTON_PROPS}

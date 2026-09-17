@@ -1,3 +1,5 @@
+export type SidebarMotionPhase = 'expanded' | 'collapsing' | 'collapsed' | 'expanding';
+
 export interface AppSidebarProps {
   canGoBack: boolean;
   canGoForward: boolean;
@@ -5,4 +7,6 @@ export interface AppSidebarProps {
   onGoForward: () => void;
   onToggle: () => void;
   onNavigate?: () => void;
+  collapsed?: boolean;
+  motionPhase?: SidebarMotionPhase;
 }

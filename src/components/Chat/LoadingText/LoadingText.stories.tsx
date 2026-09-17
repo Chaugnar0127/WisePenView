@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Chat } from '@/components/Chat';
+
 import type { LoadingTextProps } from './index.type';
 import styles from './LoadingText.stories.module.less';
 

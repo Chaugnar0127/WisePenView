@@ -1,3 +1,7 @@
+import { ProgressBar } from '@heroui/react';
+import { FileText, Image as ImageIcon, Paperclip, X } from 'lucide-react';
+import type { ReactNode } from 'react';
+
 import {
   Attachment,
   AttachmentAction,
@@ -8,10 +12,7 @@ import {
   AttachmentTitle,
 } from '@/components/_shadcn/attachment';
 import { cn } from '@/utils/cn';
-import { ProgressBar } from '@heroui/react';
-import { FileText, Image as ImageIcon, Paperclip, X } from 'lucide-react';
 
-import type { ReactNode } from 'react';
 import type {
   ChatAttachmentChipKind,
   ChatAttachmentChipProps,

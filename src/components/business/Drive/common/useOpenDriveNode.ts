@@ -1,30 +1,25 @@
 import { useOpenResource } from '@/hooks/useOpenResource';
 import type { ResourceViewer } from '@/utils/navigation/resourceTarget';
 
-import type { DriveTableRow } from '../TableDrive/index.type';
+import type { DriveViewNode } from './driveComponentModel';
 
-export interface UseClickNodeParams {
-  /** 进入 root / folder 等容器型节点（通常由导航 controller 提供） */
+export interface UseOpenDriveNodeParams {
+  /** 进入 root / folder 等容器型节点（通常由浏览 controller 提供） */
   enterFolder: (nodeId: string) => void;
 }
 
 /**
- * Drive 表格行点击行为的统一入口，按 row.node.type 路由：
- * - root / folder：容器型节点，进入下一层
- * - resource / link：交由 navigateResource 处理跳转与 scope 写入
+ * Drive 节点打开行为的统一入口，按 node.type 路由。
  */
-export const useClickNode = ({ enterFolder }: UseClickNodeParams) => {
+export const useOpenDriveNode = ({ enterFolder }: UseOpenDriveNodeParams) => {
   const openResource = useOpenResource();
 
-  return (row: DriveTableRow, viewer?: ResourceViewer) => {
-    const node = row.node;
+  return (node: DriveViewNode, viewer?: ResourceViewer) => {
     if (node.type === 'root' || node.type === 'folder') {
       enterFolder(node.id);
       return;
     }
-    if (node.type === 'loading') {
-      return;
-    }
+    if (node.type === 'loading') return;
     if (!node.resourceId) return;
     openResource({
       resourceId: node.resourceId,

@@ -31,6 +31,11 @@ const enUSDrive = {
     unnamedGroup: 'Untitled group',
     empty: 'No content',
   },
+  mobile: {
+    aria: 'Mobile Drive list',
+    back: 'Back',
+    titleFallback: 'Drive',
+  },
   sidebar: {
     createIn: 'Create in "{{name}}"',
     collapseAll: 'Collapse all',

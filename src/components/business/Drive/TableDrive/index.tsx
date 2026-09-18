@@ -5,24 +5,19 @@ import {
   type Modifiers,
   pointerWithin,
 } from '@dnd-kit/core';
-import { HardDrive, PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
+import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import AppBreadcrumb, { type AppBreadcrumbItem } from '@/components/base/AppBreadcrumb';
+import AppBreadcrumb from '@/components/base/AppBreadcrumb';
 import { AppButton } from '@/components/base/Button';
 import AppIconButton from '@/components/base/Button/AppIconButton';
 import { FolderTable } from '@/components/base/Table';
-import type { DriveNode, DriveNodeScope } from '@/domains/Drive';
-import { buildDrivePath } from '@/utils/navigation/driveRoute';
 import type { ResourceViewer } from '@/utils/navigation/resourceTarget';
 
-import {
-  getDriveNodeLabel,
-  resolveCurrentFolderTagId,
-  resolveDriveScope,
-} from '../common/driveComponentModel';
-import { useClickNode } from '../common/useClickNode';
+import { buildDriveBreadcrumbItems } from '../common/driveBreadcrumb';
+import { resolveCurrentFolderTagId, resolveDriveScope } from '../common/driveComponentModel';
+import { useOpenDriveNode } from '../common/useOpenDriveNode';
 import {
   useTableDriveActionsController,
   useTableDriveDndController,
@@ -81,21 +76,6 @@ const attachDriveDragOverlayToCursor: Modifier = ({
 
 const driveDragOverlayModifiers: Modifiers = [attachDriveDragOverlayToCursor];
 
-function toBreadcrumbItems(pathNodes: DriveNode[], scope: DriveNodeScope): AppBreadcrumbItem[] {
-  return pathNodes.map((node, index) => ({
-    key: node.id,
-    label: (
-      <>
-        {index === 0 ? <HardDrive size={14} aria-hidden="true" /> : null}
-        {getDriveNodeLabel(node)}
-      </>
-    ),
-    ...(index < pathNodes.length - 1
-      ? { to: buildDrivePath({ scope, nodeId: node.id }) }
-      : { current: true }),
-  }));
-}
-
 function TableDrive({
   groupId,
   rootId,
@@ -148,13 +128,13 @@ function TableDrive({
   };
 
   // 封装一个通用的点击节点回调，清理选中状态并刷新列表
-  const handleClickNode = useClickNode({ enterFolder: handleEnterFolder });
+  const openDriveNode = useOpenDriveNode({ enterFolder: handleEnterFolder });
   const handleActivateNode = (row: DriveTableRow, viewer?: ResourceViewer) => {
     if (row.node.type === 'loading') {
       void navigation.loadMoreChildren(row.node.parentId);
       return;
     }
-    handleClickNode(row, viewer);
+    openDriveNode(row.node, viewer);
   };
 
   // 初始化回收站控制器
@@ -238,7 +218,7 @@ function TableDrive({
   );
 
   const breadcrumb = (() => {
-    const items = toBreadcrumbItems(navigation.pathNodes, resolvedScope.scope);
+    const items = buildDriveBreadcrumbItems(navigation.pathNodes, resolvedScope.scope);
     return (
       <>
         <AppBreadcrumb

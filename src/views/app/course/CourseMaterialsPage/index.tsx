@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import TableDrive from '@/components/business/Drive/TableDrive';
+import DriveBrowser from '@/components/business/Drive/DriveBrowser';
 import { COURSE_ROLE } from '@/domains/Course';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 
@@ -19,7 +19,7 @@ function CourseMaterialsPage() {
         <p>{t('materials.description')}</p>
       </header>
       <div className={styles.driveArea}>
-        <TableDrive
+        <DriveBrowser
           scope={{ type: 'group', groupId: course.courseId }}
           actions={{
             toolbar: {

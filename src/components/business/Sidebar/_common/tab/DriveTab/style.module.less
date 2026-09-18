@@ -8,7 +8,7 @@
   background: transparent;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: var(--space-xs, var(--space-xs));
+  padding: var(--space-xs, var(--space-xs)) var(--sidebar-block-inset, var(--space-md));
   .appSubtleScrollbar();
 }
 
@@ -41,7 +41,8 @@
     width: 100%;
     padding: 0;
     padding-left: calc(
-      var(--sidebar-content-inset, var(--space-lg)) - var(--space-xs, 8px)
+      var(--sidebar-content-inset, var(--space-lg)) -
+        var(--sidebar-block-inset, var(--space-md))
     );
     color: var(--muted);
     border-radius: var(--radius-md, var(--radius-md));

@@ -3,7 +3,7 @@ import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import TableDrive from '@/components/business/Drive/TableDrive';
+import DriveBrowser from '@/components/business/Drive/DriveBrowser';
 import PageHeader from '@/components/business/PageHeader';
 import { useDriveService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
@@ -120,7 +120,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
 
       <div className={styles.previewContent}>
         {viewMode === 'tableDrive' && (
-          <TableDrive
+          <DriveBrowser
             key={tableDriveLocationKey}
             scope={driveScope}
             initialNodeId={folderId}
@@ -130,7 +130,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
         {viewMode === 'uploadQueue' && <UploadQueueTab />}
         {viewMode === 'favorites' && <FavoritesTab />}
         {isTrashView ? (
-          <TableDrive
+          <DriveBrowser
             key={tableDriveLocationKey}
             scope={driveScope}
             initialNodeId={initialNodeId}

@@ -1,4 +1,5 @@
 .sider {
+  --sidebar-block-inset: var(--space-md);
   --sidebar-content-inset: var(--space-lg);
 
   height: 100%;
@@ -22,6 +23,7 @@
 }
 
 .sider[data-sidebar-compact='true'] {
+  --sidebar-block-inset: var(--space-xs);
   --sidebar-content-inset: var(--space-sm);
 }
 

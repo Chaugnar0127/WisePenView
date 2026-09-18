@@ -17,6 +17,9 @@ const DEFAULT_SYSTEM_LAYOUT_STATE = {
   sidebarWidth: MAIN_SIDEBAR_EXPANDED_WIDTH,
 };
 
+/** 仅用于将旧版本持久化的默认宽度迁移到新的默认值。 */
+const LEGACY_DEFAULT_SIDEBAR_WIDTH = 240;
+
 const migrateSystemLayoutState = (persisted: unknown): typeof DEFAULT_SYSTEM_LAYOUT_STATE => {
   const state = persisted as
     | Partial<{
@@ -26,15 +29,18 @@ const migrateSystemLayoutState = (persisted: unknown): typeof DEFAULT_SYSTEM_LAY
         sidebarWidth: number;
       }>
     | undefined;
+  const persistedWidth = state?.sidebarWidth ?? state?.adminSidebarWidth;
+  const sidebarWidth =
+    persistedWidth === LEGACY_DEFAULT_SIDEBAR_WIDTH
+      ? DEFAULT_SYSTEM_LAYOUT_STATE.sidebarWidth
+      : (persistedWidth ?? DEFAULT_SYSTEM_LAYOUT_STATE.sidebarWidth);
 
   return {
     sidebarCollapsed:
       state?.sidebarCollapsed ??
       state?.mainSidebarCollapsed ??
       DEFAULT_SYSTEM_LAYOUT_STATE.sidebarCollapsed,
-    sidebarWidth: clampSidebarWidth(
-      state?.sidebarWidth ?? state?.adminSidebarWidth ?? DEFAULT_SYSTEM_LAYOUT_STATE.sidebarWidth
-    ),
+    sidebarWidth: clampSidebarWidth(sidebarWidth),
   };
 };
 
@@ -55,7 +61,7 @@ export const useSystemLayoutStore = create<SystemLayoutState>()(
     {
       name: 'system-layout',
       storage: createStoreJSONStorage('tab'),
-      version: 3,
+      version: 4,
       migrate: migrateSystemLayoutState,
     }
   )

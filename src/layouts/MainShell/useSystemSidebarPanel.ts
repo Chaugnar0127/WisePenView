@@ -112,7 +112,6 @@ export function useSystemSidebarPanel({
     const currentWidth = panelRef.current?.getSize().inPixels;
     if (currentWidth == null || currentWidth >= SIDEBAR_MIN_WIDTH - 0.5) return;
     panelRef.current?.resize(SIDEBAR_MIN_WIDTH);
-    setWidth(SIDEBAR_MIN_WIDTH);
   };
 
   return {

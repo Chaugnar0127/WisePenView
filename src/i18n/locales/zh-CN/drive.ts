@@ -31,6 +31,11 @@ const zhCNDrive = {
     unnamedGroup: '未命名小组',
     empty: '暂无内容',
   },
+  mobile: {
+    aria: '移动端云盘列表',
+    back: '返回',
+    titleFallback: '云盘',
+  },
   sidebar: {
     createIn: '在「{{name}}」中新建',
     collapseAll: '折叠全部',

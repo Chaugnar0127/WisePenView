@@ -201,6 +201,7 @@ function CourseLearningLayout() {
       >
         {chatDock.open ? (
           <ChatPanel
+            showHeader={true}
             showCollapseButton={false}
             resourceChat={{
               provider: chatStateProvider,

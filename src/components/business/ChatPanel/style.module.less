@@ -4,7 +4,12 @@
 .panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  box-sizing: border-box;
+  /* 壳层顶栏在面板盒外时（窄屏 /chat），面板整体上提铺满整页，顶栏高度转为内容顶部内缩，
+     这样面板的定位基准就是整页，面板内的居中/覆盖层不需要额外偏移 */
+  height: calc(100% + var(--chat-shell-inset-top, 0px));
+  margin-top: calc(-1 * var(--chat-shell-inset-top, 0px));
+  padding-top: var(--chat-shell-inset-top, 0px);
   width: 100%;
   min-width: 0;
   min-height: 0;
@@ -27,7 +32,6 @@
   --chat-content-max-width: none;
   --chat-input-max-width: 100%;
   --chat-user-message-max-width: 72%;
-  --chat-welcome-offset-y: var(--space-2xl);
   --chat-avatar-size: 24px;
   --chat-model-meta-font-size: var(--font-size-base);
   --history-nav-preview-font-size: var(--font-size-xs);
@@ -97,15 +101,19 @@
       margin: 0;
     }
 
-    .welcomeSlot {
-      position: static;
-      transform: translateY(calc(-1 * var(--chat-welcome-offset-y)));
-      pointer-events: auto;
-    }
-
     .conversationPanel[data-welcome='true'] {
+      .messageViewport {
+        opacity: 0;
+        pointer-events: none;
+      }
+
       .welcomeSlot {
+        position: static;
+        width: 100%;
+        max-width: var(--chat-input-max-width);
+        margin-inline: auto;
         margin-bottom: var(--space-lg);
+        transform: none;
       }
 
       .composerBottomSpacer {
@@ -193,7 +201,6 @@
   min-height: 0;
   display: flex;
   flex-direction: row;
-  position: relative;
   overflow: hidden;
 }
 
@@ -244,7 +251,7 @@
   top: 50%;
   right: var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)));
   left: var(--chat-message-inline-padding, var(--space-lg));
-  transform: translateY(calc(-50% - var(--chat-welcome-offset-y)));
+  transform: translateY(-50%);
   opacity: 1;
   margin-bottom: 0;
   pointer-events: none;
@@ -302,11 +309,6 @@
 }
 
 .conversationPanel[data-welcome='true'] {
-  .messageViewport {
-    opacity: 0;
-    pointer-events: none;
-  }
-
   .footerSlot {
     margin-top: 0;
     padding-top: 0;
@@ -335,7 +337,6 @@
     --chat-message-inline-padding: var(--space-md);
     --chat-message-inline-padding-end: var(--space-md);
     --chat-user-message-max-width: 88%;
-    --chat-welcome-offset-y: var(--space-md);
   }
 
   .panel:not(.fullWidth) .header {

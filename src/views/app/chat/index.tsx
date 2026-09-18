@@ -13,7 +13,7 @@ function ChatPage() {
   const { sessionId: routeSessionId } = useParams<{ sessionId: string }>();
   const setCurrentSession = useCurrentChatSessionStore((s) => s.setCurrentSession);
   const clearCurrentSession = useCurrentChatSessionStore((s) => s.clearCurrentSession);
-  // 与应用壳同源：窄屏用非 fullWidth 面板布局（不再挂 ChatPanel Header）。
+  // 与应用壳同源：窄屏用非 fullWidth 面板布局；/chat 不展示 ChatPanel Header。
   const { isMobileLayout: isCompactChat } = useMainShell();
 
   /**

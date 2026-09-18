@@ -11,7 +11,7 @@ import { useChatPanelController } from './useChatPanelController';
 
 function ChatPanel({
   fullWidth = false,
-  showHeader = true,
+  showHeader,
   onNewChat,
   resourceChat,
   agentDebug,

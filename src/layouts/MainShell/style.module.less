@@ -101,8 +101,9 @@
 }
 
 .drawerContent {
-  width: min(336px, 86vw);
-  max-width: min(336px, 86vw);
+  /* 宽度与 MAIN_SHELL_DRAWER_WIDTH 同源；极窄视口下留出背影遮罩，避免铺满整屏 */
+  width: min(var(--main-shell-drawer-width, 240px), 86vw);
+  max-width: min(var(--main-shell-drawer-width, 240px), 86vw);
   background: var(--sidebar-surface);
 }
 

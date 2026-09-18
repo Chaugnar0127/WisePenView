@@ -8,6 +8,8 @@ export const APP_WEB_SIDEBAR_COLLAPSED_WIDTH = 64;
 
 /** 新主布局：窄于该宽度时使用 Header + Drawer */
 export const MAIN_SHELL_DRAWER_MAX_WIDTH = 960;
+/** 新主布局：窄屏侧栏 Drawer 宽度，取侧栏可用的最小宽度 */
+export const MAIN_SHELL_DRAWER_WIDTH = 240;
 /** 新主布局：桌面侧栏展开宽度 */
 export const MAIN_SIDEBAR_EXPANDED_WIDTH = 288;
 /** 新主布局：桌面侧栏收起后的图标轨宽度 */
@@ -239,6 +241,7 @@ export const getLayoutScaleCssVars = (
     '--layout-sidebar-min-width': `${SIDEBAR_MIN_WIDTH}px`,
     '--layout-sidebar-max-width': `${SIDEBAR_MAX_WIDTH}px`,
     '--main-shell-drawer-max-width': `${MAIN_SHELL_DRAWER_MAX_WIDTH}px`,
+    '--main-shell-drawer-width': `${MAIN_SHELL_DRAWER_WIDTH}px`,
     '--main-sidebar-expanded-width': `${MAIN_SIDEBAR_EXPANDED_WIDTH}px`,
     '--main-sidebar-rail-width': `${MAIN_SIDEBAR_RAIL_WIDTH}px`,
     '--main-shell-mobile-header-height': `${MAIN_SHELL_MOBILE_HEADER_MIN_HEIGHT}px`,

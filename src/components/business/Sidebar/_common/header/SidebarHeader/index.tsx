@@ -1,5 +1,5 @@
-import wisePenLogo from '@/assets/sidebar_logo/WisePen_Logo.svg';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
+import { COLOR_SCHEME_LOGO_SRC, useAppTheme, useColorScheme } from '@/theme';
 import { cn } from '@/utils/cn';
 
 import NavigationControls from '../NavigationControls';
@@ -18,8 +18,15 @@ function SidebarHeader({
 }: SidebarHeaderProps) {
   const hasNav = Boolean(nav);
   const desktopWindow = useDesktopWindowState();
+  const { resolvedTheme } = useAppTheme();
+  const { colorScheme } = useColorScheme();
   const logoContent = (
-    <img className={styles.logoImage} src={wisePenLogo} alt="WisePen" draggable={false} />
+    <img
+      className={styles.logoImage}
+      src={COLOR_SCHEME_LOGO_SRC[colorScheme][resolvedTheme]}
+      alt="WisePen"
+      draggable={false}
+    />
   );
   const showHistoryControls = Boolean(onGoBack && onGoForward);
   const navigationControls = onToggle ? (

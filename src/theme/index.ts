@@ -1,4 +1,5 @@
 export { COLOR_SCHEME_ICON_SRC } from './colorSchemeIcons';
+export { COLOR_SCHEME_LOGO_SRC } from './colorSchemeLogos';
 export {
   COLOR_SCHEME,
   COLOR_SCHEME_OPTIONS,

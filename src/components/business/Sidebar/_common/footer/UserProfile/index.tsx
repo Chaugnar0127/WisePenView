@@ -25,7 +25,7 @@ import { useAuthService, useUserService } from '@/domains';
 import type { User } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
-import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
+import { COLOR_SCHEME_LOGO_SRC, useAppTheme, useColorScheme } from '@/theme';
 import { cn } from '@/utils/cn';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
@@ -43,6 +43,7 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
   const navigate = useNavigate();
   const appAuth = useAppAuth();
   const userService = useUserService();
+  const { resolvedTheme } = useAppTheme();
   const { colorScheme } = useColorScheme();
   const [user, setUser] = useState<User | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -276,8 +277,11 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
         closeText={t('actions.close', { ns: 'common' })}
       >
         <div className={styles.aboutContent}>
-          <img className={styles.aboutLogo} src={COLOR_SCHEME_ICON_SRC[colorScheme]} alt="" />
-          <div className={styles.aboutProductName}>WisePen</div>
+          <img
+            className={styles.aboutLogo}
+            src={COLOR_SCHEME_LOGO_SRC[colorScheme][resolvedTheme]}
+            alt="WisePen"
+          />
           <div className={styles.aboutVersion}>
             {t('userMenu.version', { version: __APP_VERSION__ })}
           </div>

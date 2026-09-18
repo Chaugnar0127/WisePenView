@@ -14,7 +14,7 @@
 .authContainer {
   display: flex;
   flex-direction: column;
-  width: var(--layout-auth-form-width);
+  width: 100%;
 
   :global(button) {
     font-weight: var(--font-weight-bold);
@@ -119,11 +119,7 @@
 }
 
 @media (max-width: @breakpoint-lg) {
-  .authContainer {
-    width: 100%;
-  }
-
   .title {
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
   }
 }

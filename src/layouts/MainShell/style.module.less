@@ -80,7 +80,10 @@
   align-items: center;
   gap: var(--space-sm);
   flex: 0 0 auto;
-  min-height: 56px;
+  min-height: var(--main-shell-mobile-header-height, 56px);
+  /* 页面面板会上提铺到顶栏之下，顶栏需显式压在面板之上 */
+  position: relative;
+  z-index: var(--app-z-index-raised);
   padding: 0 var(--space-sm);
   background: var(--header-surface, var(--paper));
   border-bottom: 1px solid var(--border-light);
@@ -98,8 +101,9 @@
 }
 
 .drawerContent {
-  width: min(336px, 86vw);
-  max-width: min(336px, 86vw);
+  /* 宽度与 MAIN_SHELL_DRAWER_WIDTH 同源；极窄视口下留出背影遮罩，避免铺满整屏 */
+  width: min(var(--main-shell-drawer-width, 240px), 86vw);
+  max-width: min(var(--main-shell-drawer-width, 240px), 86vw);
   background: var(--sidebar-surface);
 }
 

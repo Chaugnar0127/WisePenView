@@ -1,10 +1,14 @@
 @import '@/styles/scrollbar.module.less';
-@import (reference) '@/styles/breakpoints.less';
 
 .panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  box-sizing: border-box;
+  /* 壳层顶栏在面板盒外时（窄屏 /chat），面板整体上提铺满整页，顶栏高度转为内容顶部内缩，
+     这样面板的定位基准就是整页，面板内的居中/覆盖层不需要额外偏移 */
+  height: calc(100% + var(--chat-shell-inset-top, 0px));
+  margin-top: calc(-1 * var(--chat-shell-inset-top, 0px));
+  padding-top: var(--chat-shell-inset-top, 0px);
   width: 100%;
   min-width: 0;
   min-height: 0;
@@ -21,13 +25,16 @@
   --chat-thinking-font-size: var(--font-size-xs);
   --chat-thinking-line-height: 1.6;
   --chat-hr-margin-bottom: var(--space-sm);
-  --chat-message-inline-padding: var(--space-2xl);
-  --chat-message-inline-padding-end: calc(var(--space-xl) + var(--space-xl));
-  --chat-message-max-width: none;
-  --chat-content-max-width: none;
-  --chat-input-max-width: 100%;
+  /* 会话内容轴：文本与输入卡片共用，上限 720px，侧边距随面板实宽收缩，宽面板保持设计留白 */
+  --chat-content-max-width: 720px;
+  --chat-content-inline-padding: clamp(var(--space-sm), 4cqi, var(--space-2xl));
+  --chat-message-inline-padding: var(--chat-content-inline-padding);
+  --chat-message-inline-padding-end: var(--chat-content-inline-padding);
+  --chat-message-max-width: calc(
+    var(--chat-content-max-width) + var(--chat-content-inline-padding) * 2
+  );
+  --chat-input-max-width: var(--chat-content-max-width);
   --chat-user-message-max-width: 72%;
-  --chat-welcome-offset-y: var(--space-2xl);
   --chat-avatar-size: 24px;
   --chat-model-meta-font-size: var(--font-size-base);
   --history-nav-preview-font-size: var(--font-size-xs);
@@ -58,11 +65,6 @@
     --chat-thinking-font-size: var(--font-size-sm);
     --chat-thinking-line-height: 1.75;
     --chat-hr-margin-bottom: var(--space-lg);
-    --chat-message-inline-padding: 0;
-    --chat-message-inline-padding-end: 0;
-    --chat-content-max-width: 800px;
-    --chat-message-max-width: var(--chat-content-max-width);
-    --chat-input-max-width: 800px;
     --chat-welcome-inline-padding-end: var(--chat-message-inline-padding);
     --chat-user-message-max-width: 520px;
     --chat-avatar-size: 28px;
@@ -97,15 +99,19 @@
       margin: 0;
     }
 
-    .welcomeSlot {
-      position: static;
-      transform: translateY(calc(-1 * var(--chat-welcome-offset-y)));
-      pointer-events: auto;
-    }
-
     .conversationPanel[data-welcome='true'] {
+      .messageViewport {
+        opacity: 0;
+        pointer-events: none;
+      }
+
       .welcomeSlot {
+        position: static;
+        width: 100%;
+        max-width: var(--chat-input-max-width);
+        margin-inline: auto;
         margin-bottom: var(--space-lg);
+        transform: none;
       }
 
       .composerBottomSpacer {
@@ -193,7 +199,6 @@
   min-height: 0;
   display: flex;
   flex-direction: row;
-  position: relative;
   overflow: hidden;
 }
 
@@ -205,6 +210,8 @@
   flex-direction: column;
   position: relative;
   padding: 0;
+  /* 作为容器查询参照，让输入区侧边距按面板实宽收缩（cqi）而不是跟随视口 */
+  container-type: inline-size;
 }
 
 .sessionBar {
@@ -244,7 +251,7 @@
   top: 50%;
   right: var(--chat-message-inline-padding-end, var(--chat-message-inline-padding, var(--space-lg)));
   left: var(--chat-message-inline-padding, var(--space-lg));
-  transform: translateY(calc(-50% - var(--chat-welcome-offset-y)));
+  transform: translateY(-50%);
   opacity: 1;
   margin-bottom: 0;
   pointer-events: none;
@@ -276,7 +283,7 @@
   width: 100%;
   min-width: 0;
   margin-top: calc(-1 * var(--space-lg));
-  padding: var(--space-lg) var(--chat-message-inline-padding, var(--space-lg)) var(--space-xs);
+  padding: var(--space-lg) var(--chat-content-inline-padding, var(--space-lg)) var(--space-xs);
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--chat-footer-bg, var(--surface)) 0%, transparent) 0%,
@@ -302,11 +309,6 @@
 }
 
 .conversationPanel[data-welcome='true'] {
-  .messageViewport {
-    opacity: 0;
-    pointer-events: none;
-  }
-
   .footerSlot {
     margin-top: 0;
     padding-top: 0;
@@ -332,29 +334,11 @@
 /* 与应用壳 Drawer / data-layout-density 同源，避免 ChatPanel 早于侧栏切换。 */
 :global(html[data-layout-density='compact']) {
   .panel:not(.fullWidth) {
-    --chat-message-inline-padding: var(--space-md);
-    --chat-message-inline-padding-end: var(--space-md);
     --chat-user-message-max-width: 88%;
-    --chat-welcome-offset-y: var(--space-md);
   }
 
   .panel:not(.fullWidth) .header {
     padding-inline: var(--space-sm) var(--space-md);
-  }
-
-  .panel:not(.fullWidth) .footerSlot {
-    padding-inline: var(--space-md);
-  }
-}
-
-@media (max-width: @breakpoint-sm) {
-  .panel:not(.fullWidth) {
-    --chat-message-inline-padding: var(--space-sm);
-    --chat-message-inline-padding-end: var(--space-sm);
-  }
-
-  .panel:not(.fullWidth) .footerSlot {
-    padding-inline: var(--space-sm);
   }
 }
 

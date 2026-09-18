@@ -173,6 +173,7 @@ function ResourceHost() {
 
   const chatPanel = (
     <ChatPanel
+      showHeader={true}
       // overlay 需要收起按钮关闭；桌面 dock 仍由资源顶栏开关
       showCollapseButton={isMobileLayout}
       resourceChat={{

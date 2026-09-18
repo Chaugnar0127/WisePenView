@@ -9,6 +9,8 @@
 .compact {
   /* 窄屏走面板模式，背景与侧栏 Chat 一致 */
   background: var(--surface);
+  /* 主壳窄屏顶栏在面板盒外；面板上提铺满整页，顶栏高度由面板作为内容内缩消费 */
+  --chat-shell-inset-top: var(--main-shell-mobile-header-height, 0px);
 }
 
 .chatPanelHost {

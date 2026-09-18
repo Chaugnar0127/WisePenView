@@ -13,7 +13,7 @@ export type ThemeMode = (typeof THEME_MODE)[keyof typeof THEME_MODE];
 
 /** 主题配色 */
 export const COLOR_SCHEME = {
-  DEFAULT: 'default',
+  MIST: 'mist',
   FLORAL: 'floral',
   AQUA: 'aqua',
   SUNSET: 'sunset',
@@ -38,9 +38,9 @@ export const COLOR_SCHEME_OPTIONS: ColorSchemeOption[] = [
     descriptionKey: 'appearance.scheme.aqua.description',
   },
   {
-    id: COLOR_SCHEME.DEFAULT,
-    labelKey: 'appearance.scheme.default.label',
-    descriptionKey: 'appearance.scheme.default.description',
+    id: COLOR_SCHEME.MIST,
+    labelKey: 'appearance.scheme.mist.label',
+    descriptionKey: 'appearance.scheme.mist.description',
   },
   {
     id: COLOR_SCHEME.FLORAL,

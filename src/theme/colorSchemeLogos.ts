@@ -1,13 +1,13 @@
 import logoFullAquaDark from '@/assets/logos/logo-full-aqua-dark.svg';
 import logoFullAquaLight from '@/assets/logos/logo-full-aqua-light.svg';
-import logoFullDefaultDark from '@/assets/logos/logo-full-default-dark.svg';
-import logoFullDefaultLight from '@/assets/logos/logo-full-default-light.svg';
 import logoFullEmeraldDark from '@/assets/logos/logo-full-emerald-dark.svg';
 import logoFullEmeraldLight from '@/assets/logos/logo-full-emerald-light.svg';
 import logoFullFloralDark from '@/assets/logos/logo-full-floral-dark.svg';
 import logoFullFloralLight from '@/assets/logos/logo-full-floral-light.svg';
 import logoFullLavenderDark from '@/assets/logos/logo-full-lavender-dark.svg';
 import logoFullLavenderLight from '@/assets/logos/logo-full-lavender-light.svg';
+import logoFullMistDark from '@/assets/logos/logo-full-mist-dark.svg';
+import logoFullMistLight from '@/assets/logos/logo-full-mist-light.svg';
 import logoFullSunsetDark from '@/assets/logos/logo-full-sunset-dark.svg';
 import logoFullSunsetLight from '@/assets/logos/logo-full-sunset-light.svg';
 
@@ -15,9 +15,9 @@ import { COLOR_SCHEME, type ColorScheme } from './constants';
 import type { ResolvedTheme } from './ThemeContextValue';
 
 export const COLOR_SCHEME_LOGO_SRC: Record<ColorScheme, Record<ResolvedTheme, string>> = {
-  [COLOR_SCHEME.DEFAULT]: {
-    light: logoFullDefaultLight,
-    dark: logoFullDefaultDark,
+  [COLOR_SCHEME.MIST]: {
+    light: logoFullMistLight,
+    dark: logoFullMistDark,
   },
   [COLOR_SCHEME.FLORAL]: {
     light: logoFullFloralLight,

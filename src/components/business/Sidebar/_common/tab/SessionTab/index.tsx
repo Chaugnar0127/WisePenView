@@ -1,6 +1,6 @@
 import { ListBox, ListBoxItem, ListBoxSection } from '@heroui/react';
 import { useInfiniteScroll, useMemoizedFn } from 'ahooks';
-import { useEffect } from 'react';
+import { type KeyboardEvent, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,6 +18,7 @@ import SessionMenuItem from './SessionMenuItem';
 import styles from './style.module.less';
 
 const SESSION_PAGE_SIZE = 20;
+const SESSION_ACTIVATE_KEYS = new Set(['Enter', ' ']);
 
 const useSessionTab = () => {
   const chatService = useChatService();
@@ -105,6 +106,11 @@ function SessionTab() {
     sessionListLoading,
   } = useSessionTab();
   const selectedKeys = currentSessionId ? [`session-${currentSessionId}`] : [];
+  const handleSessionKeyDown = (event: KeyboardEvent<HTMLElement>, session: ChatSession) => {
+    if (!SESSION_ACTIVATE_KEYS.has(event.key)) return;
+    event.preventDefault();
+    selectSession(session);
+  };
 
   /**
    * @wisepen-manual-effect
@@ -146,7 +152,8 @@ function SessionTab() {
                 id={`session-${session.id}`}
                 textValue={session.title || t('session.untitled')}
                 className={cn(styles.sessionItem, styles.sessionItemWithActions)}
-                onAction={() => selectSession(session)}
+                onClick={() => selectSession(session)}
+                onKeyDown={(event) => handleSessionKeyDown(event, session)}
               >
                 <SessionMenuItem session={session} onUpdated={refresh} onDeleted={handleDeleted} />
               </ListBoxItem>

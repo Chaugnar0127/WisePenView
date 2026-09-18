@@ -140,7 +140,7 @@ const enUSProfile = {
       system: { label: 'System', description: 'Follow the operating system setting' },
     },
     scheme: {
-      default: { label: 'Mist Blue', description: 'Blue-gray palette' },
+      mist: { label: 'Mist Blue', description: 'Blue-gray palette' },
       floral: { label: 'Blossom', description: 'Soft pink palette' },
       aqua: { label: 'Aqua', description: 'Cyan-blue palette' },
       sunset: { label: 'Sunset', description: 'Warm orange palette' },

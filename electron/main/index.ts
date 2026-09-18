@@ -35,7 +35,7 @@ const preloadPath = join(currentDirectory, '../preload/index.cjs');
 const PDF_EXPORT_TIMEOUT_MS = 30_000;
 const DESKTOP_ICON_DIRECTORY = join('electron', 'assets', 'app-icons');
 const DESKTOP_ICON_FILENAMES: Record<ColorScheme, string> = {
-  default: 'default.png',
+  mist: 'default.png',
   floral: 'floral.png',
   aqua: 'aqua.png',
   sunset: 'sunset.png',

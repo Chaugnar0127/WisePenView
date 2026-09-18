@@ -127,7 +127,12 @@ function HeaderNav({
 
   return (
     <div ref={containerRef} className={styles.navContainer}>
-      {showIndicator ? <div ref={indicatorRef} className={styles.indicator} /> : null}
+      {showIndicator ? (
+        <div
+          ref={indicatorRef}
+          className={cn(styles.indicator, collapsed && styles.indicatorCollapsed)}
+        />
+      ) : null}
       <ListBox
         aria-label={ariaLabel}
         selectionMode="none"

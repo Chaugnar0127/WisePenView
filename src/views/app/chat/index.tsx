@@ -13,7 +13,7 @@ function ChatPage() {
   const { sessionId: routeSessionId } = useParams<{ sessionId: string }>();
   const setCurrentSession = useCurrentChatSessionStore((s) => s.setCurrentSession);
   const clearCurrentSession = useCurrentChatSessionStore((s) => s.clearCurrentSession);
-  // 与应用壳同源：窄屏对齐侧栏 Drawer（Header + 非 fullWidth）。
+  // 与应用壳同源：窄屏用非 fullWidth 面板布局（不再挂 ChatPanel Header）。
   const { isMobileLayout: isCompactChat } = useMainShell();
 
   /**
@@ -34,11 +34,7 @@ function ChatPage() {
   return (
     <div className={cn(styles.root, isCompactChat && styles.compact)}>
       <div className={styles.chatPanelHost}>
-        <ChatPanel
-          fullWidth={!isCompactChat}
-          showHeader={isCompactChat}
-          showCollapseButton={false}
-        />
+        <ChatPanel fullWidth={!isCompactChat} showHeader={false} showCollapseButton={false} />
       </div>
     </div>
   );

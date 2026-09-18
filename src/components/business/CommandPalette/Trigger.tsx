@@ -14,7 +14,7 @@ function CommandPaletteTrigger() {
       label={t('commandPalette.open')}
       tooltip={{
         content: t('commandPalette.tooltip'),
-        placement: 'bottom',
+        placement: 'right',
       }}
       onPress={openCommandPalette}
     />

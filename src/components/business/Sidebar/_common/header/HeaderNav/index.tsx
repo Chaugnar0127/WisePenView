@@ -1,6 +1,7 @@
-import { ListBox, ListBoxItem, ListBoxSection, Separator } from '@heroui/react';
+import { ListBox, ListBoxItem, ListBoxSection, Separator, Tooltip } from '@heroui/react';
 import { useLayoutEffect, useRef } from 'react';
 
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/components/base/Tooltip';
 import { cn } from '@/utils/cn';
 
 import type { HeaderNavItem, HeaderNavProps, HeaderNavSection } from './index.type';
@@ -73,6 +74,12 @@ function HeaderNav({
   const renderItem = (item: HeaderNavItem) => {
     const isActive = item.key === activeKey;
     const Icon = item.icon;
+    const icon = (
+      <span className={styles.menuIcon}>
+        <Icon size={18} />
+      </span>
+    );
+
     return (
       <ListBoxItem
         key={item.key}
@@ -90,14 +97,24 @@ function HeaderNav({
         )}
         onAction={item.onPress}
       >
-        <span className={styles.menuIcon}>
-          <Icon size={18} />
-        </span>
-        {!collapsed ? (
-          <span className={styles.menuLabel} aria-hidden={labelsHidden || undefined}>
-            <span className={styles.menuLabelText}>{item.name}</span>
-          </span>
-        ) : null}
+        {collapsed ? (
+          <Tooltip>
+            <Tooltip.Trigger
+              className={styles.menuTooltipTrigger}
+              {...TOOLTIP_FOCUS_PASSTHROUGH_PROPS}
+            >
+              {icon}
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right">{item.name}</Tooltip.Content>
+          </Tooltip>
+        ) : (
+          <>
+            {icon}
+            <span className={styles.menuLabel} aria-hidden={labelsHidden || undefined}>
+              <span className={styles.menuLabelText}>{item.name}</span>
+            </span>
+          </>
+        )}
       </ListBoxItem>
     );
   };

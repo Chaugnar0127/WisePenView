@@ -1,4 +1,9 @@
-import type { NumericEnumApiValue, PageApiRequest, PageR } from '@/apis/api.type';
+import type {
+  NumericEnumApiValue,
+  OptionalPageApiRequest,
+  PageApiRequest,
+  PageR,
+} from '@/apis/api.type';
 import type { UserVerificationMode } from '@/domains/User';
 
 export type UserIdentityTypeApiValue = NumericEnumApiValue<1 | 2 | 3>;
@@ -8,9 +13,13 @@ export type UserDegreeLevelApiValue = 'UNKNOWN' | 'UNDERGRADUATE' | 'MASTER' | '
 
 export interface UserDisplayBaseApiResponse {
   nickname?: string | null;
+  username?: string | null;
   realName?: string | null;
   avatar?: string | null;
   identityType?: UserIdentityTypeApiValue | null;
+  campusNo?: string | null;
+  email?: string | null;
+  mobile?: string | null;
 }
 
 interface GetUserInfoApiResponseUserInfo {
@@ -132,10 +141,43 @@ export interface RedeemVoucherApiRequest {
   voucherCode: string;
 }
 
-export type ListTransactionsApiRequest = Record<string, string | number | undefined>;
+export type WalletTransactionTypeApiValue =
+  | 'REFILL'
+  | 'SPEND'
+  | 'TRANSFER_IN'
+  | 'TRANSFER_OUT'
+  | 'INCOME'
+  | 'EXCHANGE'
+  | 'REVERSE'
+  | 'GIFT'
+  | 'ONLY_RECORD_META';
+
+export type WalletBusinessTypeApiValue = 'TOKEN' | 'COIN';
+
+export interface WalletTransactionRecordApiResponse {
+  traceId?: string | null;
+  operatorId?: string | number | null;
+  count?: string | number | null;
+  walletTransactionType?: WalletTransactionTypeApiValue | null;
+  walletBusinessType?: WalletBusinessTypeApiValue | null;
+  meta?: string | null;
+  billingDetail?: string | null;
+  operatorDisplay?: UserDisplayBaseApiResponse | null;
+  createTime?: string | null;
+}
+
+export interface ListTransactionsApiRequest extends OptionalPageApiRequest {
+  groupId?: string;
+  walletTransactionTypes?: WalletTransactionTypeApiValue[];
+  walletBusinessType?: WalletBusinessTypeApiValue;
+}
+
+export type ListTransactionsApiResponse = PageR<WalletTransactionRecordApiResponse>;
+
+export type TokenTransferTypeApiValue = 'GROUP_INFLOW' | 'USER_INFLOW';
 
 export interface TransferTokenBetweenGroupAndUserApiRequest {
   groupId: string;
   tokenCount: number;
-  tokenTransferType: 1 | 2;
+  tokenTransferType: TokenTransferTypeApiValue;
 }

@@ -87,6 +87,7 @@ export function useChatInputController({
     : !value.trim() || voiceInputProps.isActive;
 
   async function handleSend(): Promise<void> {
+    const sessionVersion = store.getState().sessionVersion;
     const text = completionState.value.trim();
     if (!text || sending) return;
     if (!isAuthenticated) {
@@ -121,6 +122,7 @@ export function useChatInputController({
     }
 
     try {
+      if (store.getState().sessionVersion !== sessionVersion) return;
       const latestCompletionState = selectChatInputCompletionState(store.getState());
       const sendAccepted = await onSend(text, {
         model: selectedModel,
@@ -133,7 +135,7 @@ export function useChatInputController({
           latestCompletionState.selectedTools
         ),
       });
-      if (sendAccepted === false) return;
+      if (sendAccepted === false || store.getState().sessionVersion !== sessionVersion) return;
       clearAfterSend();
     } catch (err) {
       toast.danger(t('input.sendFailed', { error: parseErrorMessage(err) }));

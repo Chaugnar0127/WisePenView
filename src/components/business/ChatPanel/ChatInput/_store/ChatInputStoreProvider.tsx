@@ -17,8 +17,9 @@ export function ChatInputStoreProvider({
 
   /**
    * @wisepen-manual-effect
-   * 执行时机：当前聊天会话切换，或新建会话首次取得后端 ID 时同步工具选择作用域。
-   * 不可替代原因：工具勾选保存在 ChatInput 实例 store，需要响应父级会话身份变化并迁移 draft。
+   * 执行时机：目前會話切換或新建會話取得後端 ID 時，同步輸入與工具選擇的作用域。
+   * 不可替代原因：ChatInput 的實例 store 需響應 URL 的會話身份；草稿升級保留輸入與附件，
+   * 切換至其他會話則清除舊輸入，讓尚未完成的操作失效。
    * cleanup：没有订阅或异步任务，无需清理。
    */
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { ArrowLeft, BookOpen, FolderOpen, Home, Settings, UsersRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 import { AppButton } from '@/components/base/Button';
 import { COURSE_ROLE } from '@/domains/Course';
@@ -9,6 +9,7 @@ import {
   buildCourseLearningPath,
   buildCoursePath,
 } from '@/utils/navigation/appRoute';
+import { buildChatSessionLocation, getChatSessionId } from '@/utils/navigation/chatRoute';
 
 import { useCourseContext } from '../CourseContext';
 import styles from './style.module.less';
@@ -17,6 +18,7 @@ function CourseNavigationSidebar() {
   const { t } = useTranslation('course');
   const { course } = useCourseContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const navItems = [
     { key: 'home', label: t('nav.home'), icon: Home, to: buildCoursePath(course.courseId, 'home') },
     {
@@ -87,7 +89,7 @@ function CourseNavigationSidebar() {
           return (
             <NavLink
               key={item.key}
-              to={item.to}
+              to={buildChatSessionLocation({ pathname: item.to }, getChatSessionId(location))}
               className={({ isActive }) =>
                 `${styles.navItem} ${isActive ? styles.navItemActive : ''}`
               }

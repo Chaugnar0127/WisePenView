@@ -6,10 +6,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { AppButton } from '@/components/base/Button';
 import { useChatSessionHistoryRefreshStore } from '@/components/business/ChatPanel/_store/useChatSessionHistoryRefreshStore';
-import { useCurrentChatSessionStore } from '@/components/business/ChatPanel/_store/useCurrentChatSessionStore';
-import { useNewChatSessionStore } from '@/components/business/ChatPanel/_store/useNewChatSessionStore';
 import { useChatService } from '@/domains';
 import type { ChatSession, PageResult } from '@/domains/Chat';
+import { useChatSessionRoute } from '@/hooks/useChatSessionRoute';
 import { cn } from '@/utils/cn';
 import { buildChatPath } from '@/utils/navigation/appRoute';
 
@@ -22,9 +21,7 @@ const SESSION_ACTIVATE_KEYS = new Set(['Enter', ' ']);
 
 const useSessionTab = () => {
   const chatService = useChatService();
-  const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
-  const setCurrentSession = useCurrentChatSessionStore((state) => state.setCurrentSession);
-  const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
+  const { sessionId: currentSessionId, selectSession: selectRouteSession } = useChatSessionRoute();
   const sessionItems = useSidebarSessionHistoryStore((state) => state.sessionItems);
   const setSessionPageResult = useSidebarSessionHistoryStore((state) => state.setSessionPageResult);
   const removeSession = useSidebarSessionHistoryStore((state) => state.removeSession);
@@ -47,14 +44,6 @@ const useSessionTab = () => {
       manual: true,
       isNoMore: (data) => Boolean(data && (data.total === 0 || data.list.length >= data.total)),
       onSuccess: (payload) => {
-        // 始终以 store 最新 sessionId 为准，避免闭包里读到旧值后回写错误会话。
-        const latestSessionId = useCurrentChatSessionStore.getState().currentSessionId;
-        if (latestSessionId) {
-          const currentSession = payload.list.find((item) => item.id === latestSessionId);
-          if (currentSession) {
-            setCurrentSession({ id: currentSession.id, title: currentSession.title });
-          }
-        }
         setSessionPageResult(payload, payload.page > 1);
       },
     }
@@ -66,16 +55,14 @@ const useSessionTab = () => {
 
   const hasMoreSessions = Boolean(sessionPageData) && !noMoreSessions;
 
-  const handleDeleted = (sessionId: string) => {
+  const handleDeleted = useMemoizedFn((sessionId: string) => {
     if (currentSessionId === sessionId) {
-      clearCurrentSession();
+      void selectRouteSession(undefined, true);
     }
     removeSession(sessionId);
-    useNewChatSessionStore.getState().clearNewChatSessionById(sessionId);
-  };
+  });
 
   const selectSession = (session: ChatSession) => {
-    setCurrentSession({ id: session.id, title: session.title });
     navigate(buildChatPath(session.id));
   };
 
@@ -88,12 +75,12 @@ const useSessionTab = () => {
     selectSession,
     sessionItems,
     sessionListLoading,
+    currentSessionId,
   };
 };
 
 function SessionTab() {
   const { t } = useTranslation('chat');
-  const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
   const refreshVersion = useChatSessionHistoryRefreshStore((state) => state.refreshVersion);
   const {
     handleDeleted,
@@ -104,6 +91,7 @@ function SessionTab() {
     selectSession,
     sessionItems,
     sessionListLoading,
+    currentSessionId,
   } = useSessionTab();
   const selectedKeys = currentSessionId ? [`session-${currentSessionId}`] : [];
   const handleSessionKeyDown = (event: KeyboardEvent<HTMLElement>, session: ChatSession) => {

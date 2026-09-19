@@ -2,7 +2,7 @@ import type { CapabilitySkillSelection, ChatAgentOption, ChatModel } from '@/dom
 
 export interface ChatInputProps {
   onSend: (text: string, opts?: SendOptions) => boolean | void | Promise<boolean | void>;
-  getUploadSessionId: () => Promise<string>;
+  getUploadSessionId: () => Promise<string | undefined>;
   sending: boolean;
   sessionId?: string;
   promoteDraftToolSelection: boolean;

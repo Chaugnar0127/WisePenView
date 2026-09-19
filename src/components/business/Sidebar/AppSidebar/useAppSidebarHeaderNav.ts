@@ -2,10 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { useCurrentRouteHandle } from '@/bootstrap/router';
-import { useCurrentChatSessionStore } from '@/components/business/ChatPanel/_store/useCurrentChatSessionStore';
-import { clearNewChatSessionStore } from '@/components/business/ChatPanel/_store/useNewChatSessionStore';
 import type { HeaderNavItem } from '@/components/business/Sidebar/_common/header/HeaderNav/index.type';
-import { APP_SIDEBAR_HEADER_NAV_KEY } from '@/config/appSidebar';
 import { useNoteService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { useOpenResource } from '@/hooks/useOpenResource';
@@ -32,7 +29,6 @@ export function useAppSidebarHeaderNav({
   const appAuth = useAppAuth();
   const noteService = useNoteService();
   const openResource = useOpenResource();
-  const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
   const selectedKey = useCurrentRouteHandle()?.appSidebar?.selectedHeaderNavKey ?? undefined;
 
   const { loading: creatingNote, run: createNote } = useApi(
@@ -60,10 +56,6 @@ export function useAppSidebarHeaderNav({
     if (!appAuth.isAuthenticated) {
       appAuth.requireLogin();
       return;
-    }
-    if (item.key === APP_SIDEBAR_HEADER_NAV_KEY.CHAT) {
-      clearCurrentSession();
-      clearNewChatSessionStore();
     }
     navigate(item.to);
     onNavigate?.();

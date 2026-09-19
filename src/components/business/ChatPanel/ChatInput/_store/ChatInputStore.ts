@@ -59,6 +59,8 @@ interface ChatInputCompletionState {
 }
 
 interface ChatInputState {
+  // 真正切換會話時遞增，讓舊輸入的非同步工作失效；草稿升級保留同一版本。
+  sessionVersion: number;
   activeDocRefs: LocalResourcePayload[];
   activeAttachments: LocalAttachmentPayload[];
   attachmentOpen: boolean;
@@ -126,6 +128,7 @@ interface ChatInputPersistedState {
 export const ChatInputStoreContext = createContext<ChatInputStoreApi | null>(null);
 
 const INITIAL_STATE: ChatInputState = {
+  sessionVersion: 0,
   activeDocRefs: [],
   activeAttachments: [],
   attachmentOpen: false,
@@ -312,6 +315,14 @@ export function createChatInputStore(): ChatInputStoreApi {
             }
 
             return {
+              // 草稿升級為正式會話時保留附件；真正切換會話時丟棄舊輸入與晚到的上傳。
+              ...(!shouldPromoteDraft && {
+                sessionVersion: state.sessionVersion + 1,
+                value: '',
+                activeDocRefs: [],
+                activeAttachments: [],
+                pendingAttachmentUploads: [],
+              }),
               selectedTools,
               toolSelectionScope: nextScope,
               toolSelectionsByScope,

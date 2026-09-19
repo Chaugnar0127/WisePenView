@@ -21,20 +21,37 @@ const DEFAULT_REWARD_PREVIEW: UserTaskRewardPreview = {
 const getRandomRewardAmount = (preview: UserTaskRewardPreview): number => {
   const min = preview.minRewardAmount ?? DEFAULT_REWARD_PREVIEW.minRewardAmount!;
   const max = Math.max(preview.maxRewardAmount ?? min, min);
-  const step = preview.rewardStepAmount ?? DEFAULT_REWARD_PREVIEW.rewardStepAmount!;
+  const step = 1; // 展示的随机数不需要严格按照 step 取整，避免出现过于规律的数字
   const minUnit = Math.ceil(min / step);
   const maxUnit = Math.floor(max / step);
   const unit = minUnit + Math.floor(Math.random() * (maxUnit - minUnit + 1));
   return unit * step;
 };
 
+const getRollingMemes = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
+};
+
+const getRandomItem = (items: string[]): string => items[Math.floor(Math.random() * items.length)]!;
+
+const getRandomRewardText = (preview: UserTaskRewardPreview, rollingMemes: string[]): string => {
+  if (Math.random() < 0.2) {
+    return getRandomItem(rollingMemes);
+  }
+  return getRandomRewardAmount(preview).toLocaleString();
+};
+
 function UserCheckIn() {
   const { t } = useTranslation(['shell', 'common']);
   const userService = useUserService();
+  const rollingMemes = getRollingMemes(t('checkIn.rollingMemes', { returnObjects: true }));
   const [isOpen, setIsOpen] = useState(false);
   const [canCheckIn, setCanCheckIn] = useState(false);
   const [rewardPreview, setRewardPreview] = useState<UserTaskRewardPreview>(DEFAULT_REWARD_PREVIEW);
-  const [displayAmount, setDisplayAmount] = useState(getRandomRewardAmount(DEFAULT_REWARD_PREVIEW));
+  const [displayText, setDisplayText] = useState(() =>
+    getRandomRewardText(DEFAULT_REWARD_PREVIEW, rollingMemes)
+  );
   const [result, setResult] = useState<UserTaskCheckInResult | null>(null);
 
   const { loading: loadingStatus } = useApi(
@@ -49,7 +66,7 @@ function UserCheckIn() {
         setCanCheckIn(Boolean(task?.enabled && task.canComplete));
         if (task?.rewardPreview) {
           setRewardPreview(task.rewardPreview);
-          setDisplayAmount(getRandomRewardAmount(task.rewardPreview));
+          setDisplayText(getRandomRewardText(task.rewardPreview, rollingMemes));
         }
       },
     }
@@ -65,9 +82,9 @@ function UserCheckIn() {
 
   useInterval(
     () => {
-      setDisplayAmount(getRandomRewardAmount(rewardPreview));
+      setDisplayText(getRandomRewardText(rewardPreview, rollingMemes));
     },
-    isOpen && !result && !checkingIn ? 90 : undefined
+    isOpen && !result && !checkingIn ? 120 : undefined
   );
 
   const handleOpen = () => {
@@ -83,7 +100,7 @@ function UserCheckIn() {
   };
 
   const rewardUnit = rewardPreview.rewardType === 'COIN' ? t('checkIn.coin') : t('checkIn.token');
-  const shownAmount = result?.rewardAmount ?? displayAmount;
+  const shownReward = result ? result.rewardAmount.toLocaleString() : displayText;
   const alreadyCheckedIn = !canCheckIn && !result;
   const guaranteeAmount = rewardPreview.maxRewardAmount ?? DEFAULT_REWARD_PREVIEW.maxRewardAmount!;
   const daysUntilGuarantee =
@@ -146,7 +163,7 @@ function UserCheckIn() {
           </p>
           {alreadyCheckedIn ? null : (
             <div className={styles.reward}>
-              <strong className={styles.rewardAmount}>{shownAmount.toLocaleString()}</strong>
+              <strong className={styles.rewardAmount}>{shownReward}</strong>
               <span className={styles.rewardType}>{rewardUnit}</span>
             </div>
           )}

@@ -7,6 +7,16 @@ export type {
   UserProfileInfo,
   UserSearchUser,
 } from './entity/user';
+export type {
+  UserTaskCheckInResult,
+  UserTaskCode,
+  UserTaskOnceStatus,
+  UserTaskPeriodicStatus,
+  UserTaskRewardPreview,
+  UserTaskRewardType,
+  UserTaskStatus,
+  UserTaskType,
+} from './entity/userTask';
 export type { DegreeLevel, FeedbackType, UserVerificationMode } from './enum';
 export {
   DEGREE,

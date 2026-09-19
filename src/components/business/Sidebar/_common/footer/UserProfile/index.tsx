@@ -29,6 +29,7 @@ import { COLOR_SCHEME_LOGO_SRC, useAppTheme, useColorScheme } from '@/theme';
 import { cn } from '@/utils/cn';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
+import UserCheckIn from '../UserCheckIn';
 import UserFeedbackModal from '../UserFeedbackModal';
 import styles from './style.module.less';
 
@@ -257,6 +258,7 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
               <span className={styles.username}>{displayName}</span>
               <span className={styles.tag}>{identityLabel}</span>
             </div>
+            <UserCheckIn />
             <Dropdown>
               <Dropdown.Trigger
                 aria-label={t('userMenu.openSettingsAria')}

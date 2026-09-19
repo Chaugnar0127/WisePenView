@@ -19,4 +19,5 @@ export { SkillApi } from '@/domains/Skill/apis/SkillApi';
 export { SpeechApi } from '@/domains/Speech/apis/SpeechApi';
 export { TagApi } from '@/domains/Tag/apis/TagApi';
 export { UserApi, UserWalletApi } from '@/domains/User/apis/UserApi';
+export { UserTaskApi } from '@/domains/User/apis/UserTaskApi';
 export { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';

@@ -1,5 +1,6 @@
 import type { AdminMessage } from '../entity/message';
 import type { User, UserAccountProfile, UserSearchUser } from '../entity/user';
+import type { UserTaskCheckInResult, UserTaskStatus } from '../entity/userTask';
 import type { DegreeLevel, FeedbackType } from '../enum';
 
 /** UserService 接口：供依赖注入使用 */
@@ -25,6 +26,8 @@ export interface IUserService {
   listAdminMessages(params: ListAdminMessagesRequest): Promise<ListAdminMessagesResponse>;
   publishMessage(params: PublishMessageRequest): Promise<void>;
   submitFeedback(params: SubmitFeedbackRequest): Promise<void>;
+  listTaskStatus(): Promise<UserTaskStatus[]>;
+  dailyCheckIn(): Promise<UserTaskCheckInResult>;
   /** 退出登录时清理缓存 */
   clearUserCache(): void;
 }

@@ -19,3 +19,4 @@ export { SkillApi } from '@/domains/Skill/mock/SkillApi.mock';
 export { SpeechApi } from '@/domains/Speech/mock/SpeechApi.mock';
 export { TagApi } from '@/domains/Tag/mock/TagApi.mock';
 export { UserApi, UserWalletApi } from '@/domains/User/mock/UserApi.mock';
+export { UserTaskApi } from '@/domains/User/mock/UserTaskApi.mock';

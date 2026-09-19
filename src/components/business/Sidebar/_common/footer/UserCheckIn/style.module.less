@@ -1,0 +1,68 @@
+.trigger {
+  position: relative;
+  display: inline-flex;
+}
+
+.pendingDot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+  text-align: center;
+}
+
+.description {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--font-size-sm, 13px);
+}
+
+.reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+.rewardAmount {
+  min-width: 190px;
+  color: var(--accent-text);
+  font-size: 38px;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.1;
+}
+
+.rewardType {
+  color: var(--muted);
+  font-size: var(--font-size-sm, 13px);
+}
+
+.result {
+  width: 100%;
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--success-soft);
+  color: var(--success-soft-foreground);
+  font-size: var(--font-size-sm, 13px);
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}

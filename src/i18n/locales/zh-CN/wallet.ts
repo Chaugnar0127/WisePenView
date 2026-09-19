@@ -21,8 +21,9 @@ const zhCNWallet = {
     empty: '暂无交易明细',
     tabs: {
       all: '全部',
-      recharge: '充值',
-      spend: '消费',
+      income: '收入',
+      spend: '支出',
+      record: '记录',
     },
     columns: {
       time: '时间',
@@ -32,10 +33,15 @@ const zhCNWallet = {
       operator: '操作人',
     },
     kind: {
-      recharge: '充值',
+      refill: '充值',
       spend: '消费',
       transferIn: '划入',
       transferOut: '划出',
+      income: '收入',
+      exchange: '兑换',
+      reverse: '冲正',
+      gift: '赠送',
+      onlyRecordMeta: '记录',
     },
   },
   transfer: {

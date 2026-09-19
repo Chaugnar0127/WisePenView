@@ -30,3 +30,15 @@ export function formatCompactNumber(num: number): string {
 
   return formatNumber(num);
 }
+
+/** 百万单位格式化（计算点余额专用：100.0M） */
+export function formatMillionNumber(num: number, locale?: string): string {
+  if (!Number.isFinite(num)) return '0M';
+
+  const value = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(num / 1_000_000);
+
+  return `${value}M`;
+}

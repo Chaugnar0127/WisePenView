@@ -4,9 +4,12 @@ import mockdata from '@/domains/Wallet/mock/mockdata.json';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 
 import type { UserWalletApi as UserWalletApiContract } from '../apis/UserApi';
+import type { WalletTransactionRecordApiResponse } from '../apis/UserApi.type';
 
 let balance = Number(mockdata.tokenBalance);
-const records = structuredClone(mockdata.transactions.records);
+const records = structuredClone(
+  mockdata.transactions.records
+) as WalletTransactionRecordApiResponse[];
 export const UserWalletApi: typeof UserWalletApiContract = {
   getUserWalletInfo: () =>
     mockResponse({
@@ -25,30 +28,55 @@ export const UserWalletApi: typeof UserWalletApiContract = {
     records.unshift({
       traceId: `mock-${crypto.randomUUID()}`,
       createTime: new Date().toISOString(),
-      tokenTransactionType: 'REFILL',
-      tokenCount: 500,
-      title: '充值',
-      subTitle: `****${code.slice(-4)}`,
-      operatorName: '示例用户',
+      walletTransactionType: 'REFILL',
+      walletBusinessType: 'TOKEN',
+      count: 500,
+      meta: `****${code.slice(-4)}`,
+      operatorDisplay: {
+        nickname: '示例用户',
+        username: 'mock-user',
+        avatar: null,
+        identityType: 1,
+        realName: '示例用户',
+        campusNo: '20250000',
+        email: null,
+        mobile: null,
+      },
     });
   },
   listTransactions: (params) => {
-    const rows = records.filter((r) => !params.type || r.tokenTransactionType === params.type);
+    const transactionTypes = params.walletTransactionTypes ?? [];
+    const rows = records.filter((r) => {
+      if (params.walletBusinessType && r.walletBusinessType !== params.walletBusinessType) {
+        return false;
+      }
+      return (
+        transactionTypes.length === 0 ||
+        (r.walletTransactionType != null && transactionTypes.includes(r.walletTransactionType))
+      );
+    });
     const page = Number(params.page ?? 1);
     const size = Number(params.size ?? 20);
-    return mockResponse({ list: rows.slice((page - 1) * size, page * size), total: rows.length });
+    return mockResponse({
+      list: rows.slice((page - 1) * size, page * size),
+      total: rows.length,
+      page,
+      size,
+      totalPage: size === 0 ? 0 : Math.ceil(rows.length / size),
+    });
   },
   transferTokenBetweenGroupAndUser: async ({ groupId, tokenCount, tokenTransferType }) => {
     const group = getMockGroup(groupId);
     const groupBalance = Number(group.tokenBalance ?? 0);
+    const isGroupInflow = tokenTransferType === 'GROUP_INFLOW';
     if (
       !Number.isFinite(tokenCount) ||
       tokenCount <= 0 ||
-      (tokenTransferType === 1 ? balance : groupBalance) < tokenCount
+      (isGroupInflow ? balance : groupBalance) < tokenCount
     ) {
       throw createClientError(FRONTEND_CLIENT_ERROR.VALIDATION, { field: 'tokenCount' });
     }
-    const amount = tokenTransferType === 1 ? -tokenCount : tokenCount;
+    const amount = isGroupInflow ? -tokenCount : tokenCount;
     balance += amount;
     group.tokenBalance = (groupBalance - amount).toString();
   },

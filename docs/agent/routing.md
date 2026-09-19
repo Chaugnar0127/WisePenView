@@ -37,6 +37,10 @@
 
 除 `/`、认证页面和 `/admin/*` 外，业务路由统一由登录守卫保护。`userService.getUserInfo()` 是会话真相；加载时展示 Spin，校验失败进入带当前 URL 回跳参数的登录页。登录成功后的默认入口是 `/chat`，匿名入口 `/` 不承载真实会话路由。桌面端生产启动 URL 为 `/`。
 
+Chat 的目前會話只由 URL 決定：主聊天頁讀取 `/chat/:sessionId`，`/chat` 表示新對話；資源與課程內嵌 Chat 讀取 `chat` query，例如 `/resources/note/note-001?chat=session-001`。選擇歷史會話或開始新對話使用 push，新建成功後用 replace 寫入後端 ID。Zustand 只快取標題與 Agent 等會話資料，不保存目前選中的 ID，也不從 `sessionStorage` 恢復選中狀態。
+
+內嵌 Chat 切換會話只修改 `chat` query，保留頁面位置、檢視參數和錨點；開始新對話則移除該參數。從 Chat 開啟資源、切換資源 viewer，以及同一課程內切換節點或頁面時保留會話 ID。離開到其他功能後是否繼續會話，以目的 URL 為準。
+
 ## 云盘与资源
 
 | 路径                                      | 参数与行为          |

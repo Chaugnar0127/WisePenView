@@ -12,6 +12,11 @@ import { buildAgentFromResourceItem } from '../mapper/agent.mapper';
 import { selectChatInputWebSearchTools } from '../mapper/capabilityPicker.mapper';
 import { ChatServicesMap } from '../mapper/ChatServices.map';
 import { mapResourceItemToResourceSkillSummary } from '../mapper/workspace.mapper';
+import {
+  cacheSessions,
+  getSessionCacheSnapshot,
+  removeCachedSession,
+} from '../session/sessionCache';
 import type {
   BindChatModelProviderRequest,
   ChatInputCapabilityOptions,
@@ -191,40 +196,54 @@ const getChatInputCapabilityOptions = async (
 };
 
 const createSession = async (params?: CreateSessionRequest): Promise<ChatSession> => {
+  const snapshot = getSessionCacheSnapshot();
   const payload = ChatServicesMap.mapCreateSessionRequest(params);
   const data = await ChatSessionApi.createSession(payload);
   if (!data) {
     throw createClientError(FRONTEND_CLIENT_ERROR.CHAT_CREATE_SESSION_FAILED);
   }
-  return ChatServicesMap.mapCreateSessionFromApi(data);
+  const session = ChatServicesMap.mapCreateSessionFromApi(data);
+  cacheSessions([session], snapshot);
+  return session;
 };
 
 const setSessionAgent = async (params: SetSessionAgentRequest): Promise<ChatSession> => {
+  const snapshot = getSessionCacheSnapshot();
   const payload = ChatServicesMap.mapSetSessionAgentRequest(params);
   const data = await ChatSessionApi.setSessionAgent(payload);
   if (!data) {
     throw createClientError(FRONTEND_CLIENT_ERROR.CHAT_CREATE_SESSION_FAILED);
   }
-  return ChatServicesMap.mapSetSessionAgentFromApi(data);
+  const session = ChatServicesMap.mapSetSessionAgentFromApi(data);
+  cacheSessions([session], snapshot);
+  return session;
 };
 
 const renameSession = async (params: RenameSessionRequest): Promise<ChatSession> => {
+  const snapshot = getSessionCacheSnapshot();
   const payload = ChatServicesMap.mapRenameSessionRequest(params);
   const data = await ChatSessionApi.renameSession(payload);
   if (!data) {
     throw createClientError(FRONTEND_CLIENT_ERROR.CHAT_RENAME_SESSION_FAILED);
   }
-  return ChatServicesMap.mapRenameSessionFromApi(data);
+  const session = ChatServicesMap.mapRenameSessionFromApi(data);
+  cacheSessions([session], snapshot);
+  return session;
 };
 
 const deleteSession = async (params: DeleteSessionRequest): Promise<void> => {
+  const snapshot = getSessionCacheSnapshot();
   await ChatSessionApi.deleteSession({ session_id: params.sessionId });
+  removeCachedSession(params.sessionId, snapshot);
 };
 
 const listSessions = async (params?: ListSessionsRequest): Promise<PageResult<ChatSession>> => {
+  const snapshot = getSessionCacheSnapshot();
   const query = ChatServicesMap.mapListSessionsRequest(params);
   const payload = await ChatSessionApi.listSessions(query);
-  return ChatServicesMap.mapListSessionsFromApi(payload);
+  const page = ChatServicesMap.mapListSessionsFromApi(payload);
+  cacheSessions(page.list, snapshot, true);
+  return page;
 };
 
 const listHistoryMessages = async (

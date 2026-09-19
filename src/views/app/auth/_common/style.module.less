@@ -15,6 +15,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: var(--layout-auth-form-width);
+  margin-inline: auto;
 
   :global(button) {
     font-weight: var(--font-weight-bold);
@@ -121,5 +123,11 @@
 @media (max-width: @breakpoint-lg) {
   .title {
     margin-bottom: var(--space-lg);
+  }
+}
+
+@media (max-width: @breakpoint-sm) {
+  .authContainer {
+    max-width: none;
   }
 }

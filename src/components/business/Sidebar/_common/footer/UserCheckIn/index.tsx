@@ -8,6 +8,7 @@ import { AppButton, AppIconButton } from '@/components/base/Button';
 import { useUserService } from '@/domains';
 import type { UserTaskCheckInResult, UserTaskRewardPreview } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
+import { cn } from '@/utils/cn';
 
 import styles from './style.module.less';
 
@@ -127,29 +128,26 @@ function UserCheckIn() {
         title={t('checkIn.title')}
         size="sm"
         isDismissable={!checkingIn}
+        footerClassName={styles.footer}
         actions={
           result || alreadyCheckedIn ? (
-            <AppButton variant="primary" onPress={() => handleOpenChange(false)}>
+            <AppButton
+              variant="primary"
+              className={styles.footerButton}
+              onPress={() => handleOpenChange(false)}
+            >
               {t('actions.close', { ns: 'common' })}
             </AppButton>
           ) : (
-            <>
-              <AppButton
-                variant="secondary"
-                isDisabled={checkingIn}
-                onPress={() => handleOpenChange(false)}
-              >
-                {t('actions.cancel', { ns: 'common' })}
-              </AppButton>
-              <AppButton
-                variant="primary"
-                isDisabled={checkingIn}
-                aria-busy={checkingIn || undefined}
-                onPress={() => runCheckIn()}
-              >
-                {checkingIn ? t('checkIn.checkingIn') : t('checkIn.confirm')}
-              </AppButton>
-            </>
+            <AppButton
+              variant="primary"
+              className={styles.footerButton}
+              isDisabled={checkingIn}
+              aria-busy={checkingIn || undefined}
+              onPress={() => runCheckIn()}
+            >
+              {checkingIn ? t('checkIn.checkingIn') : t('checkIn.confirm')}
+            </AppButton>
           )
         }
       >
@@ -162,23 +160,35 @@ function UserCheckIn() {
                 : t('checkIn.description')}
           </p>
           {alreadyCheckedIn ? null : (
-            <div className={styles.reward}>
+            <div
+              className={cn(styles.reward, result ? styles.rewardSettled : styles.rewardRolling)}
+            >
               <strong className={styles.rewardAmount}>{shownReward}</strong>
               <span className={styles.rewardType}>{rewardUnit}</span>
+              {result ? (
+                <span className={styles.rewardConfetti} aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              ) : null}
             </div>
           )}
           {result ? (
             <div className={styles.result}>
               <span>
-                {t('checkIn.guaranteeCountdown', {
-                  count: daysUntilGuarantee,
-                })}
+                {t('checkIn.guaranteeCountdownPrefix')}
+                <strong className={styles.resultValue}>{daysUntilGuarantee}</strong>
+                {t('checkIn.guaranteeCountdownSuffix')}
               </span>
               <span>
-                {t('checkIn.guaranteeReward', {
-                  amount: guaranteeAmount.toLocaleString(),
-                  unit: rewardUnit,
-                })}
+                {t('checkIn.guaranteeRewardPrefix')}
+                <strong className={styles.resultValue}>
+                  {guaranteeAmount.toLocaleString()} {rewardUnit}
+                </strong>
               </span>
             </div>
           ) : null}

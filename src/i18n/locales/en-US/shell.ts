@@ -82,8 +82,9 @@ const enUSShell = {
     confirm: 'Check in now',
     checkingIn: 'Checking in...',
     success: 'Check-in complete. Your reward has been added.',
-    guaranteeCountdown: '{{count}} more days until the guarantee reward',
-    guaranteeReward: 'Guarantee reward: {{amount}} {{unit}}',
+    guaranteeCountdownPrefix: '',
+    guaranteeCountdownSuffix: ' more days until the guarantee reward',
+    guaranteeRewardPrefix: 'Guarantee reward: ',
     rollingMemes: [
       'Meow meow meow',
       'Loading luck',

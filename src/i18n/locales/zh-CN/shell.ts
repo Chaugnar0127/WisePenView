@@ -82,8 +82,9 @@ const zhCNShell = {
     confirm: '立即签到',
     checkingIn: '签到中...',
     success: '签到成功，奖励已到账',
-    guaranteeCountdown: '再来 {{count}} 天必领保底奖励',
-    guaranteeReward: '保底奖励：{{amount}} {{unit}}',
+    guaranteeCountdownPrefix: '再来 ',
+    guaranteeCountdownSuffix: ' 天必领保底奖励',
+    guaranteeRewardPrefix: '保底奖励：',
     rollingMemes: [
       '喵喵喵喵喵',
       '加载好运中',

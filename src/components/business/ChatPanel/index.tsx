@@ -12,15 +12,12 @@ import { useChatPanelController } from './useChatPanelController';
 function ChatPanel({
   fullWidth = false,
   showHeader,
-  onNewChat,
   resourceChat,
   agentDebug,
   showCollapseButton = true,
 }: ChatPanelProps) {
   const { t } = useTranslation(['chat', 'common']);
   const controller = useChatPanelController({
-    fullWidth,
-    onNewChat,
     resourceChat,
     agentDebug,
   });

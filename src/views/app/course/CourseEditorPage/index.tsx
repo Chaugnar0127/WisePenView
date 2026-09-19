@@ -1,10 +1,11 @@
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { buildCoursePath } from '@/utils/navigation/appRoute';
+import { buildChatSessionLocation, getChatSessionId } from '@/utils/navigation/chatRoute';
 
 import CourseAssessmentSection from './_components/CourseAssessmentSection';
 import CourseBasicSection from './_components/CourseBasicSection';
@@ -22,6 +23,7 @@ function CourseEditorPage() {
   const { t } = useTranslation('course');
   const { course, refreshCourse } = useCourseContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const editor = useCourseEditorFormController({ course, refreshCourse });
   const { activeSection, setEditorScrollElement, navigateToSection, handleEditorScroll } =
     useCourseEditorNavigationController();
@@ -32,7 +34,14 @@ function CourseEditorPage() {
         <AppIconButton
           icon={<ArrowLeft aria-hidden />}
           label={t('editor.back')}
-          onPress={() => navigate(buildCoursePath(course.courseId, 'home'))}
+          onPress={() =>
+            navigate(
+              buildChatSessionLocation(
+                { pathname: buildCoursePath(course.courseId, 'home') },
+                getChatSessionId(location)
+              )
+            )
+          }
         />
         <div>
           <strong>{course.name}</strong>

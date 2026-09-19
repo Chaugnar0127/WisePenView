@@ -1,9 +1,10 @@
 import { useMemoizedFn } from 'ahooks';
 import { startTransition } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { parsePath, useLocation, useNavigate } from 'react-router-dom';
 
 import { usePdfPreviewProgressStore } from '@/components/business/PdfViewer/_store/usePdfPreviewProgressStore';
 import type { DriveResourceLocation } from '@/domains/Drive';
+import { buildChatSessionLocation, getChatSessionId } from '@/utils/navigation/chatRoute';
 import { buildResourcePath } from '@/utils/navigation/resourceRoute';
 import {
   resolveResourceKind,
@@ -43,6 +44,7 @@ const appendPdfPreviewProgress = (path: string, resourceId: string, viewer?: Res
  */
 export const useOpenResource = (): OpenResourceNavigationFn => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return useMemoizedFn((target) => {
     const resourceId = target.resourceId.trim();
@@ -60,9 +62,12 @@ export const useOpenResource = (): OpenResourceNavigationFn => {
       driveLocation: target.driveLocation,
     });
     const path = appendPdfPreviewProgress(basePath, resourceId, viewer);
+    const { pathname = '', search = '', hash = '' } = parsePath(path);
 
     startTransition(() => {
-      navigate(path, { replace: target.replace });
+      navigate(buildChatSessionLocation({ pathname, search, hash }, getChatSessionId(location)), {
+        replace: target.replace,
+      });
     });
   });
 };

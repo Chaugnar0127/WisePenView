@@ -1,7 +1,7 @@
 import { Meter, ProgressBar } from '@heroui/react';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { AppButton } from '@/components/base/Button';
 import { Spin } from '@/components/base/Feedback';
@@ -11,6 +11,7 @@ import { useApi } from '@/hooks/useApi';
 import { useCourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { buildCourseLearningPath } from '@/utils/navigation/appRoute';
+import { buildChatSessionLocation, getChatSessionId } from '@/utils/navigation/chatRoute';
 
 import styles from './style.module.less';
 
@@ -19,6 +20,7 @@ function CourseHomeTab() {
   const { course } = useCourseContext();
   const courseService = useCourseService();
   const navigate = useNavigate();
+  const location = useLocation();
   const canEditOutline = course.myRole === COURSE_ROLE.TEACHER;
   const { data, loading, error, refresh } = useApi(() =>
     courseService.getCourseHome(course.courseId)
@@ -63,7 +65,14 @@ function CourseHomeTab() {
           </div>
           <AppButton
             variant="primary"
-            onPress={() => navigate(buildCourseLearningPath(course.courseId))}
+            onPress={() =>
+              navigate(
+                buildChatSessionLocation(
+                  { pathname: buildCourseLearningPath(course.courseId) },
+                  getChatSessionId(location)
+                )
+              )
+            }
           >
             {canEditOutline ? t('home.enterEditing') : t('home.enterLearning')}
             <ArrowRight size={16} aria-hidden />

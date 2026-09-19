@@ -27,8 +27,6 @@ import {
   CommandSeparator,
 } from '@/components/_shadcn';
 import { Spin } from '@/components/base/Feedback';
-import { useCurrentChatSessionStore } from '@/components/business/ChatPanel/_store/useCurrentChatSessionStore';
-import { clearNewChatSessionStore } from '@/components/business/ChatPanel/_store/useNewChatSessionStore';
 import { DriveCreateModal, type DriveCreateType } from '@/components/business/Drive/Modals';
 import { useDriveService, useNoteService } from '@/domains';
 import type { RootNode } from '@/domains/Drive';
@@ -90,7 +88,6 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
   const driveService = useDriveService();
   const noteService = useNoteService();
   const openResource = useOpenResource();
-  const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [preparingType, setPreparingType] = useState<CreateResourceType>();
@@ -149,12 +146,8 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
     closePalette();
   };
 
-  const handleNavigate = (path: string, resetChat = false) => {
+  const handleNavigate = (path: string) => {
     closePalette();
-    if (resetChat) {
-      clearCurrentSession();
-      clearNewChatSessionStore();
-    }
     navigate(path);
   };
 
@@ -211,7 +204,7 @@ function CommandPalette({ isOpen, onOpenChange }: CommandPaletteProps) {
       label: t('navigation.newChat', { ns: 'shell' }),
       keywords: ['chat', '对话', '聊天'],
       icon: MessageSquarePlus,
-      onSelect: () => handleNavigate(APP_ROUTE_PATH.CHAT, true),
+      onSelect: () => handleNavigate(APP_ROUTE_PATH.CHAT),
     },
     {
       id: 'personal-drive',

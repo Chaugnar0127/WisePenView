@@ -1,17 +1,11 @@
 import { toast } from '@heroui/react';
-import { useLatest } from 'ahooks';
+import { useLatest, useMemoizedFn, useUnmountedRef } from 'ahooks';
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from 'ai';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 
 import { useChatPanelStore } from '@/components/business/ChatPanel/_store/useChatPanelStore';
 import { useChatSessionHistoryRefreshStore } from '@/components/business/ChatPanel/_store/useChatSessionHistoryRefreshStore';
-import { useCurrentChatSessionStore } from '@/components/business/ChatPanel/_store/useCurrentChatSessionStore';
-import {
-  clearNewChatSessionStore,
-  useNewChatSessionStore,
-} from '@/components/business/ChatPanel/_store/useNewChatSessionStore';
 import type { ChatPanelProps } from '@/components/business/ChatPanel/index.type';
 import { useChatService } from '@/domains';
 import {
@@ -20,21 +14,20 @@ import {
   type CreateSessionRequest,
   useChatHistory,
   useChatSession,
+  useChatSessionMetadata,
   type WisePenUIMessage,
 } from '@/domains/Chat';
 import { useApi } from '@/hooks/useApi';
+import { useChatSessionRoute } from '@/hooks/useChatSessionRoute';
 import { useAppAuth } from '@/layouts/App/AppAuthContext';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
-import { buildChatPath } from '@/utils/navigation/appRoute';
 
 import type { SendOptions } from './ChatInput/index.type';
 
-type UseChatPanelControllerOptions = Pick<
-  ChatPanelProps,
-  'onNewChat' | 'resourceChat' | 'agentDebug'
-> & { fullWidth: boolean };
+type UseChatPanelControllerOptions = Pick<ChatPanelProps, 'resourceChat' | 'agentDebug'>;
 
 interface PendingDebugSend {
+  locationKey: string;
   text: string;
   opts?: SendOptions;
   resolve: (sent: boolean) => void;
@@ -53,29 +46,27 @@ function listPendingToolApprovalIds(messages: readonly WisePenUIMessage[]): stri
 }
 
 export function useChatPanelController({
-  fullWidth,
-  onNewChat,
   resourceChat,
   agentDebug,
 }: UseChatPanelControllerOptions) {
   const { t } = useTranslation(['chat', 'common']);
-  const navigate = useNavigate();
   const appAuth = useAppAuth();
   const chatService = useChatService();
   const setChatPanelCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
-  const setChatPanelDraftOpen = useChatPanelStore((state) => state.setChatPanelDraftOpen);
   const requestChatSessionHistoryRefresh = useChatSessionHistoryRefreshStore(
     (state) => state.requestRefresh
   );
-  const newChatSessionId = useNewChatSessionStore((state) => state.newChatSessionId);
-  const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
-  const currentSessionTitle = useCurrentChatSessionStore((state) => state.currentSessionTitle);
-  const currentSessionAgentId = useCurrentChatSessionStore((state) => state.currentSessionAgentId);
-  const currentSessionAgentVersion = useCurrentChatSessionStore(
-    (state) => state.currentSessionAgentVersion
-  );
-  const setCurrentSession = useCurrentChatSessionStore((state) => state.setCurrentSession);
-  const clearCurrentSession = useCurrentChatSessionStore((state) => state.clearCurrentSession);
+  const { sessionId: currentSessionId, selectSession, locationKey } = useChatSessionRoute();
+  const currentSession = useChatSessionMetadata(currentSessionId);
+  const routeLatest = useLatest({ sessionId: currentSessionId, locationKey });
+  const unmountedRef = useUnmountedRef();
+  const creatingSessionRef = useRef<{
+    locationKey: string;
+    promise: Promise<ChatSession | undefined>;
+  } | null>(null);
+  const [newChatSessionId, setNewChatSessionId] = useState<string>();
+  const newSessionIdLatest = useLatest(newChatSessionId);
+  const pendingHistoryRefreshRef = useRef<string | undefined>(undefined);
   const resourceStateProvider = resourceChat?.provider;
   const resourceChatContext = resourceChat?.context;
   const clearResourceChatContext = resourceChat?.clearContext;
@@ -141,58 +132,75 @@ export function useChatPanelController({
   /**
    * @wisepen-manual-effect
    * 执行时机：新建会话收到首个可渲染内容后通知侧栏刷新历史列表。
-   * 不可替代原因：新会话标记与侧栏刷新版本位于两个独立 Zustand store。
+   * 不可替代原因：首個串流內容到達時才刷新列表；新建標記只屬於這個面板實例。
    * cleanup：没有订阅或延迟任务，无需清理。
    */
   useEffect(() => {
     if (currentSessionId == null || currentSessionId === '') return;
-    const pendingId = useNewChatSessionStore.getState().newChatSessionId;
+    const pendingId = pendingHistoryRefreshRef.current;
     if (pendingId !== currentSessionId) return;
     if (!hasRenderableChatContent) return;
     requestChatSessionHistoryRefresh();
-    clearNewChatSessionStore();
+    pendingHistoryRefreshRef.current = undefined;
   }, [currentSessionId, hasRenderableChatContent, requestChatSessionHistoryRefresh]);
 
-  const panelTitle = currentSessionTitle || t('panel.newChat');
+  const panelTitle =
+    currentSession?.title || t(currentSessionId ? 'session.untitled' : 'panel.newChat');
 
-  const ensureChatSession = async (agentParams?: CreateSessionRequest): Promise<string> => {
-    if (!appAuth.isAuthenticated) {
-      appAuth.requireLogin();
-      throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
-        reason: t('input.loginRequired'),
-      });
-    }
-    const existingSessionId =
-      useCurrentChatSessionStore.getState().currentSessionId ?? currentSessionId;
-    if (existingSessionId) {
-      const sessionAgentMatched =
-        !agentParams ||
-        (agentParams.agentId == null
-          ? currentSessionAgentId == null
-          : currentSessionAgentId === agentParams.agentId &&
-            (agentParams.agentVersion == null ||
-              currentSessionAgentVersion === agentParams.agentVersion));
-      if (!sessionAgentMatched) {
-        const updatedSession = await runSetSessionAgent({
-          sessionId: existingSessionId,
-          agentId: agentParams?.agentId,
-          agentVersion: agentParams?.agentVersion,
+  const ensureChatSession = useMemoizedFn(
+    async (agentParams?: CreateSessionRequest): Promise<string | undefined> => {
+      if (unmountedRef.current) return;
+      if (!appAuth.isAuthenticated) {
+        appAuth.requireLogin();
+        throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
+          reason: t('input.loginRequired'),
         });
-        setCurrentSession(updatedSession);
       }
-      return existingSessionId;
+      let targetSessionId = currentSessionId;
+      let targetSession = currentSession;
+      if (!targetSessionId) {
+        if (creatingSessionRef.current?.locationKey !== locationKey) {
+          const promise = runCreateSession(agentParams).then(async (createdSession) => {
+            if (unmountedRef.current || routeLatest.current.locationKey !== locationKey) return;
+            setNewChatSessionId(createdSession.id);
+            pendingHistoryRefreshRef.current = createdSession.id;
+            await selectSession(createdSession.id, true);
+            requestChatSessionHistoryRefresh();
+            return createdSession;
+          });
+          creatingSessionRef.current = { locationKey, promise };
+          const clearPending = () => {
+            if (creatingSessionRef.current?.promise === promise) creatingSessionRef.current = null;
+          };
+          void promise.then(clearPending, clearPending);
+        }
+        const createdSession = await creatingSessionRef.current.promise;
+        if (!createdSession) return;
+        targetSessionId = createdSession.id;
+        targetSession = createdSession;
+      }
+      if (unmountedRef.current || routeLatest.current.sessionId !== targetSessionId) return;
+      const targetLocationKey = routeLatest.current.locationKey;
+      if (agentParams) {
+        const sessionAgentMatched =
+          targetSession != null &&
+          (agentParams.agentId == null
+            ? targetSession.agentId == null
+            : targetSession.agentId === agentParams.agentId &&
+              (agentParams.agentVersion == null ||
+                targetSession.agentVersion === agentParams.agentVersion));
+        if (!sessionAgentMatched) {
+          await runSetSessionAgent({
+            sessionId: targetSessionId,
+            agentId: agentParams.agentId,
+            agentVersion: agentParams.agentVersion,
+          });
+        }
+      }
+      if (unmountedRef.current || routeLatest.current.locationKey !== targetLocationKey) return;
+      return targetSessionId;
     }
-
-    const createdSession = await runCreateSession(agentParams);
-    useNewChatSessionStore.getState().setNewChatSessionId(createdSession.id);
-    setCurrentSession(createdSession);
-    requestChatSessionHistoryRefresh();
-    setChatPanelDraftOpen(false);
-    if (fullWidth) {
-      navigate(buildChatPath(createdSession.id), { replace: true });
-    }
-    return createdSession.id;
-  };
+  );
 
   const loadHistoryMessages = async (sessionId: string): Promise<boolean> => {
     try {
@@ -249,13 +257,14 @@ export function useChatPanelController({
       agentParams = { agentId: null, agentVersion: null };
     }
 
-    let targetSessionId: string;
+    let targetSessionId: string | undefined;
     try {
       targetSessionId = await ensureChatSession(agentParams);
     } catch (error) {
       toast.danger(parseErrorMessage(error));
       return false;
     }
+    if (!targetSessionId) return false;
 
     const selectedSkillIds = opts?.selectedSkills?.map((skill) => skill.skillId);
     const resourceSkillIds = resourceStateProvider?.onDemandSkillIds;
@@ -287,13 +296,14 @@ export function useChatPanelController({
   };
 
   const handleSend = async (text: string, opts?: SendOptions): Promise<boolean> => {
+    if (unmountedRef.current || routeLatest.current.locationKey !== locationKey) return false;
     if (!appAuth.isAuthenticated) {
       appAuth.requireLogin();
       return false;
     }
     if (agentDebug?.isDirty && opts?.selectedAgent?.agentId === agentDebug.agent.agentId) {
       return new Promise<boolean>((resolve) => {
-        setPendingDebugSend({ text, opts, resolve });
+        setPendingDebugSend({ text, opts, resolve, locationKey });
       });
     }
     return sendImmediately(text, opts);
@@ -352,7 +362,11 @@ export function useChatPanelController({
     setSavingDebugDraft(true);
     try {
       const saved = await agentDebug.onSaveDraft();
-      if (!saved) {
+      if (
+        !saved ||
+        unmountedRef.current ||
+        routeLatest.current.locationKey !== pendingDebugSend.locationKey
+      ) {
         resolvePendingDebugSend(false);
         return;
       }
@@ -369,9 +383,6 @@ export function useChatPanelController({
   const handleCollapsePanel = () => {
     setSessionBarOpen(false);
     setChatPanelCollapsed(true);
-    if (!currentSessionId) {
-      setChatPanelDraftOpen(false);
-    }
   };
 
   const handleToggleSessionBar = () => {
@@ -391,15 +402,16 @@ export function useChatPanelController({
       appAuth.requireLogin();
       return;
     }
+    if (session.id === currentSessionId) {
+      setSessionBarOpen(false);
+      return;
+    }
     void stop();
     clearResourceChatContext?.();
-    setCurrentSession(session);
-    clearNewChatSessionStore();
-    setChatPanelDraftOpen(false);
+    setNewChatSessionId(undefined);
+    pendingHistoryRefreshRef.current = undefined;
     setSessionBarOpen(false);
-    if (fullWidth) {
-      navigate(buildChatPath(session.id), { replace: true });
-    }
+    void selectSession(session.id);
   };
 
   const handleNewChat = () => {
@@ -409,14 +421,10 @@ export function useChatPanelController({
     }
     void stop();
     clearResourceChatContext?.();
+    setNewChatSessionId(undefined);
+    pendingHistoryRefreshRef.current = undefined;
     setSessionBarOpen(false);
-    if (onNewChat) {
-      onNewChat();
-      return;
-    }
-    clearCurrentSession();
-    clearNewChatSessionStore();
-    setChatPanelDraftOpen(true);
+    void selectSession();
   };
 
   /**
@@ -435,21 +443,35 @@ export function useChatPanelController({
       historyActionsLatest.current.clearConversation();
       return;
     }
-    if (useNewChatSessionStore.getState().newChatSessionId === currentSessionId) return;
     const targetSessionId = currentSessionId;
     const actions = historyActionsLatest.current;
+    const isNewSession = newSessionIdLatest.current === targetSessionId;
     let cancelled = false;
     void (async () => {
+      if (isNewSession) return;
       const loaded = await actions.loadHistoryMessages(targetSessionId);
       if (!loaded || cancelled) return;
-      if (useCurrentChatSessionStore.getState().currentSessionId !== targetSessionId) return;
+      if (routeLatest.current.sessionId !== targetSessionId) return;
       await actions.resumeSessionStream();
     })();
     return () => {
       cancelled = true;
+      if (isNewSession) {
+        setNewChatSessionId((id) => (id === targetSessionId ? undefined : id));
+      }
+      if (pendingHistoryRefreshRef.current === targetSessionId) {
+        pendingHistoryRefreshRef.current = undefined;
+      }
       void stop();
     };
-  }, [appAuth.isAuthenticated, currentSessionId, historyActionsLatest, stop]);
+  }, [
+    appAuth.isAuthenticated,
+    currentSessionId,
+    historyActionsLatest,
+    newSessionIdLatest,
+    routeLatest,
+    stop,
+  ]);
 
   return {
     canLoadMoreHistory,

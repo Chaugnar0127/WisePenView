@@ -20,7 +20,7 @@ export function ChatInputFileProvider({
   getUploadSessionId,
 }: {
   children: ReactNode;
-  getUploadSessionId: () => Promise<string>;
+  getUploadSessionId: () => Promise<string | undefined>;
 }) {
   const { t } = useTranslation('chat');
   const chatService = useChatService();
@@ -47,7 +47,12 @@ export function ChatInputFileProvider({
       status: 'uploading',
     });
     try {
+      const sessionVersion = store.getState().sessionVersion;
       const sessionId = await getUploadSessionId();
+      if (!sessionId || store.getState().sessionVersion !== sessionVersion) {
+        removePendingAttachmentUpload(id);
+        return null;
+      }
       const result = await chatService.uploadAttachment({
         sessionId,
         file,
@@ -81,6 +86,7 @@ export function ChatInputFileProvider({
   }
 
   async function routeFiles(fileList: FileList | File[]): Promise<void> {
+    const sessionVersion = store.getState().sessionVersion;
     const files = Array.from(fileList);
     let acceptedImageCount =
       store.getState().activeAttachments.filter((attachment) => attachment.kind === 'image')
@@ -111,6 +117,7 @@ export function ChatInputFileProvider({
       }
       acceptedImageCount += 1;
       const thumbnailUrl = await generateThumbnail(file, 48).catch(() => '');
+      if (store.getState().sessionVersion !== sessionVersion) return;
       void uploadAndAddAttachment(file, { kind: 'image', thumbnailUrl });
     }
   }

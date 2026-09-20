@@ -1,6 +1,7 @@
-import { getGroupDisplayConfig } from '@/components/Group/GroupDisplayConfig';
-import MemberList from '@/components/Group/MemberList';
-import { useGroupContext } from '@/layouts/Group/GroupContext';
+import { getGroupDisplayConfig } from '@/components/business/Group/GroupDisplayConfig';
+import MemberList from '@/components/business/Group/MemberList';
+import { useGroupContext } from '@/views/app/group/GroupRoute/GroupContext';
+
 import layout from '../../style.module.less';
 
 function GroupMembersPage() {

@@ -1,10 +1,15 @@
-import { AppButton, AppIconButton } from '@/components/Button';
-import { getGroupDisplayConfig } from '@/components/Group/GroupDisplayConfig';
-import InviteUserModal from '@/components/Group/MemberList/Modals/InviteUserModal';
+import { Link, Tabs } from '@heroui/react';
+import { linkVariants } from '@heroui/styles';
+import { ArrowLeft, BookOpen, UserPlus } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link as RouterLink, Outlet, useMatch, useNavigate } from 'react-router-dom';
+
+import { AppButton, AppIconButton } from '@/components/base/Button';
+import { getGroupDisplayConfig } from '@/components/business/Group/GroupDisplayConfig';
+import InviteUserModal from '@/components/business/Group/MemberList/Modals/InviteUserModal';
+import PageHeader from '@/components/business/PageHeader';
 import { GROUP_TYPE } from '@/domains/Group';
-import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
-import { useGroupContext } from '@/layouts/Group/GroupContext';
-import PageHeader from '@/layouts/_common/PageHeader';
 import {
   APP_ROUTE_PATH,
   buildCoursePath,
@@ -12,13 +17,8 @@ import {
   type GroupRoutePage,
 } from '@/utils/navigation/appRoute';
 import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
-import { Link, Tabs } from '@heroui/react';
+import { useGroupContext } from '@/views/app/group/GroupRoute/GroupContext';
 
-import { linkVariants } from '@heroui/styles';
-import { ArrowLeft, BookOpen, UserPlus } from 'lucide-react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
 import page from './style.module.less';
 
 export interface GroupDetailOutletContextValue {
@@ -26,24 +26,30 @@ export interface GroupDetailOutletContextValue {
   refreshWallet: () => void;
 }
 
-const GROUP_PAGE_BY_KEY: Record<string, GroupRoutePage> = {
-  'group.files': 'files',
-  'group.members': 'members',
-  'group.wallet': 'wallet',
-  'group.tokenTransfer': 'token-transfer',
-  'group.settings': 'settings',
-};
-
 function GroupDetail() {
   const { t } = useTranslation('group');
   const { group, currentUserRole } = useGroupContext();
-  const routeMeta = useAppRouteMeta();
   const navigate = useNavigate();
   const [walletRefreshVersion, setWalletRefreshVersion] = useState(0);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const displayConfig = getGroupDisplayConfig(group.groupType, currentUserRole);
   const ownerName = group.ownerInfo?.realName?.trim() || group.ownerInfo?.nickname?.trim() || '-';
-  const activePage = GROUP_PAGE_BY_KEY[routeMeta?.pageKey ?? ''] ?? 'files';
+  const isFilesPage = useMatch(`${APP_ROUTE_PATH.GROUPS}/:groupId/files/*`) != null;
+  const isMembersPage = useMatch(`${APP_ROUTE_PATH.GROUPS}/:groupId/members`) != null;
+  const isWalletPage = useMatch(`${APP_ROUTE_PATH.GROUPS}/:groupId/wallet`) != null;
+  const isTokenTransferPage = useMatch(`${APP_ROUTE_PATH.GROUPS}/:groupId/token-transfer`) != null;
+  const isSettingsPage = useMatch(`${APP_ROUTE_PATH.GROUPS}/:groupId/settings`) != null;
+  const activePage: GroupRoutePage = isFilesPage
+    ? 'files'
+    : isMembersPage
+      ? 'members'
+      : isWalletPage
+        ? 'wallet'
+        : isTokenTransferPage
+          ? 'token-transfer'
+          : isSettingsPage
+            ? 'settings'
+            : 'files';
   const tabs = [
     { key: 'files', label: t('detail.tabs.files') },
     { key: 'members', label: t('detail.tabs.members') },

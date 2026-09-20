@@ -6,7 +6,16 @@ export const SIDEBAR_COLLAPSED_WIDTH = 0;
 /** Web App 侧栏收起后保留展开按钮的独立区域 */
 export const APP_WEB_SIDEBAR_COLLAPSED_WIDTH = 64;
 
-export const ADMIN_SIDEBAR_COLLAPSED_WIDTH = 80;
+/** 新主布局：窄于该宽度时使用 Header + Drawer */
+export const MAIN_SHELL_DRAWER_MAX_WIDTH = 960;
+/** 新主布局：窄屏侧栏 Drawer 宽度，取侧栏可用的最小宽度 */
+export const MAIN_SHELL_DRAWER_WIDTH = 240;
+/** 新主布局：桌面侧栏展开宽度 */
+export const MAIN_SIDEBAR_EXPANDED_WIDTH = 288;
+/** 新主布局：桌面侧栏收起后的图标轨宽度 */
+export const MAIN_SIDEBAR_RAIL_WIDTH = 64;
+/** 新主布局：窄屏顶栏最小高度（与 Chat / 资源顶栏同高度节奏） */
+export const MAIN_SHELL_MOBILE_HEADER_MIN_HEIGHT = 56;
 
 /** 主内容区 Panel 下限*/
 export const MAIN_MIN_WIDTH = 560;
@@ -78,7 +87,7 @@ export const NOTE_WITH_SIDE_PANEL_MIN_WIDTH =
 export const WORKSPACE_INNER_WITH_CHAT_AND_SIDE_MIN_WIDTH =
   NOTE_WITH_SIDE_PANEL_MIN_WIDTH + CHAT_PANEL_MIN_WIDTH + LAYOUT_RESIZE_HANDLE_RESERVE;
 
-export const LAYOUT_COMPACT_MAX_WIDTH = WORKSPACE_THREE_COLUMN_MIN_WIDTH;
+export const LAYOUT_COMPACT_MAX_WIDTH = MAIN_SHELL_DRAWER_MAX_WIDTH;
 
 /** fullWidth ChatInput 窄于此宽度时，模型按钮改为仅图标 */
 export const FULL_WIDTH_MODEL_ICON_ONLY_MAX_WIDTH = 800;
@@ -231,6 +240,11 @@ export const getLayoutScaleCssVars = (
     '--chat-full-width-min-width': `${CHAT_FULL_WIDTH_MIN_WIDTH}px`,
     '--layout-sidebar-min-width': `${SIDEBAR_MIN_WIDTH}px`,
     '--layout-sidebar-max-width': `${SIDEBAR_MAX_WIDTH}px`,
+    '--main-shell-drawer-max-width': `${MAIN_SHELL_DRAWER_MAX_WIDTH}px`,
+    '--main-shell-drawer-width': `${MAIN_SHELL_DRAWER_WIDTH}px`,
+    '--main-sidebar-expanded-width': `${MAIN_SIDEBAR_EXPANDED_WIDTH}px`,
+    '--main-sidebar-rail-width': `${MAIN_SIDEBAR_RAIL_WIDTH}px`,
+    '--main-shell-mobile-header-height': `${MAIN_SHELL_MOBILE_HEADER_MIN_HEIGHT}px`,
     '--layout-sidebar-min-height': `${SIDEBAR_MIN_HEIGHT}px`,
     '--layout-sidebar-session-list-min-height': `${SIDEBAR_SESSION_LIST_MIN_HEIGHT}px`,
     '--layout-window-min-height': `${WINDOW_MIN_HEIGHT}px`,

@@ -1,7 +1,8 @@
-import { AppButton } from '@/components/Button';
-import AppModal from '@/components/Overlay/AppModal';
-
 import { useTranslation } from 'react-i18next';
+
+import AppModal from '@/components/base/AppModal';
+import { AppButton } from '@/components/base/Button';
+
 import GroupPolicyShellCard from '../GroupPolicyShellCard';
 import styles from '../style.module.less';
 

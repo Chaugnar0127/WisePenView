@@ -1,10 +1,11 @@
-import { Checkbox } from '@/components/Input';
-import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
-import { useInteractService } from '@/domains';
-import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { Checkbox } from '@/components/base/Input';
+import AppAlertDialog from '@/components/business/AppAlertDialog';
+import { useInteractService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
 
 interface DeleteCollectionModalProps {
   onOpenChange: (open: boolean) => void;

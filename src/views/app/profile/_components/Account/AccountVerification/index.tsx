@@ -1,11 +1,12 @@
-import { AppButton } from '@/components/Button';
-import AppBanner from '@/components/Overlay/AppBanner';
-import AppModal from '@/components/Overlay/AppModal';
-import { USER_STATUS } from '@/domains/User';
-
 import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import AppBanner from '@/components/base/AppBanner';
+import AppModal from '@/components/base/AppModal';
+import { AppButton } from '@/components/base/Button';
+import { USER_STATUS } from '@/domains/User';
+
 import VerifyBanner from '../VerifyBanner';
 import AccountVerificationForm from './AccountVerificationForm';
 import AccountVerificationOutcomeDialog from './AccountVerificationOutcomeDialog';

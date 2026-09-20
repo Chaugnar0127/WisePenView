@@ -1,10 +1,11 @@
-import { AppButton } from '@/components/Button';
-import { FormField, TextArea } from '@/components/Input';
-import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
 import { Switch, Tabs } from '@heroui/react';
-
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { AppButton } from '@/components/base/Button';
+import { FormField, TextArea } from '@/components/base/Input';
+import AppAlertDialog from '@/components/business/AppAlertDialog';
+
 import type { GuidedPromptFields, SoulFieldKey } from '../../../../guidedPrompt';
 import {
   buildGuidedPrompt,

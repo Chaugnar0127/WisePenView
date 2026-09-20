@@ -1,6 +1,6 @@
 'use client';
 
-import { Input } from '@/components/Input';
+import { Input } from '@/components/base/Input';
 import { cn } from '@/utils/cn';
 import { Header, ListBox, ListBoxItem, ListBoxSection, Separator } from '@heroui/react';
 import { Command as CommandPrimitive } from 'cmdk';

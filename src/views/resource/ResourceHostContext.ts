@@ -1,20 +1,21 @@
-import type { ChatPanelAgentDebugConfig } from '@/components/ChatPanel/index.type';
+import {
+  createContext,
+  type DependencyList,
+  type ReactNode,
+  useContext,
+  useEffectEvent,
+  useLayoutEffect,
+} from 'react';
+
+import type { ChatPanelAgentDebugConfig } from '@/components/business/ChatPanel/index.type';
 import type {
   ResourceChatContext,
   ResourceChatStateProvider,
-} from '@/components/ChatPanel/ResourceChatProtocol';
+} from '@/components/business/ChatPanel/ResourceChatProtocol';
 import type { DriveResourceLocation } from '@/domains/Drive';
 import type { ResourceItem } from '@/domains/Resource';
 import type { ResourceHeaderConfig } from '@/layouts/Resource/ResourceHeader/index.type';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
-import {
-  createContext,
-  useContext,
-  useEffectEvent,
-  useLayoutEffect,
-  type DependencyList,
-  type ReactNode,
-} from 'react';
 
 export interface OpenResourceTarget {
   resourceId: string;

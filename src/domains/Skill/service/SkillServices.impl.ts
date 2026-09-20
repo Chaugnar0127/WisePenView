@@ -1,11 +1,12 @@
-import type { IResourceService } from '@/domains/Resource';
-import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
+import { putOssPresignedUrl, SkillApi } from '@domain-apis';
+
 import type { AssetUploadTicketApiResponse } from '@/domains/_shared/apis/versionAssetApi.type';
 import { createOssStsClientManager } from '@/domains/_shared/ossStsClient';
+import type { IResourceService } from '@/domains/Resource';
+import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
-import { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';
 import { isRecord } from '@/utils/typeGuards';
-import { SkillApi } from '../apis/SkillApi';
+
 import { SkillServicesMap } from '../mapper/SkillServices.map';
 import type {
   ISkillService,
@@ -166,6 +167,13 @@ export const createSkillServices = (deps: SkillServicesDeps): ISkillService => {
       info,
       bundle,
     });
+  };
+
+  const getSkillPermissionOverview: ISkillService['getSkillPermissionOverview'] = async (
+    resourceId
+  ) => {
+    const data = await SkillApi.getSkillInfo({ resourceId });
+    return SkillServicesMap.mapSkillPermissionOverviewFromApi(data, resourceId);
   };
 
   const updateSkillInfo = async (resourceId: string, name?: string, description?: string) => {
@@ -373,6 +381,7 @@ export const createSkillServices = (deps: SkillServicesDeps): ISkillService => {
     createSkill,
     forkSkill,
     getSkillDetail,
+    getSkillPermissionOverview,
     getSkillVersionFiles,
     updateSkillInfo,
     publishVersion,

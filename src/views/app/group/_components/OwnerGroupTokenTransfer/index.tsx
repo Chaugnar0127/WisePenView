@@ -1,15 +1,17 @@
 /**
  * 高级组组长：个人计算点与小组池之间的 Token 划拨（transferTokenBetweenGroupAndUser）。
  */
-import { AppButton } from '@/components/Button';
-import { FormField, Input } from '@/components/Input';
+import { Skeleton, toast } from '@heroui/react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { AppButton } from '@/components/base/Button';
+import { FormField, Input } from '@/components/base/Input';
 import { useGroupService, useWalletService } from '@/domains';
 import { WALLET_TOKEN_TRANSFER_TYPE } from '@/domains/Wallet';
 import { useApi } from '@/hooks/useApi';
-import { Skeleton, toast } from '@heroui/react';
+import { formatMillionNumber } from '@/utils/format';
 
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { OwnerGroupTokenTransferProps } from './index.type';
 import styles from './style.module.less';
 
@@ -56,7 +58,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
       walletService.transferTokenBetweenGroupAndUser({
         groupId,
         tokenCount: amount,
-        tokenTransferType: WALLET_TOKEN_TRANSFER_TYPE.TO_GROUP,
+        tokenTransferType: WALLET_TOKEN_TRANSFER_TYPE.GROUP_INFLOW,
       }),
     {
       manual: true,
@@ -73,7 +75,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
       walletService.transferTokenBetweenGroupAndUser({
         groupId,
         tokenCount: amount,
-        tokenTransferType: WALLET_TOKEN_TRANSFER_TYPE.TO_OWNER,
+        tokenTransferType: WALLET_TOKEN_TRANSFER_TYPE.USER_INFLOW,
       }),
     {
       manual: true,
@@ -132,7 +134,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
             <Skeleton className={styles.balanceSkeleton} />
           ) : (
             <p className={styles.balanceValue}>
-              {personalBal.toLocaleString(locale)}
+              {formatMillionNumber(personalBal, locale)}
               <span className={styles.unit}>{t('transfer.unit')}</span>
             </p>
           )}
@@ -143,7 +145,7 @@ function OwnerGroupTokenTransfer({ groupId, onTransferSuccess }: OwnerGroupToken
             <Skeleton className={styles.balanceSkeleton} />
           ) : (
             <p className={styles.balanceValue}>
-              {groupBal.toLocaleString(locale)}
+              {formatMillionNumber(groupBal, locale)}
               <span className={styles.unit}>{t('transfer.unit')}</span>
             </p>
           )}

@@ -1,5 +1,7 @@
+import type { ResourcePermissionOverview } from '@/domains/Resource';
 import { ResourceServicesMap } from '@/domains/Resource/mapper/ResourceServices.map';
 import { normalizeNonNegativeNumber } from '@/utils/normalize/normalizeNumber';
+
 import type {
   AgentAssetResourceTypeApiValue,
   AgentInfoApiResponse,
@@ -155,8 +157,18 @@ const mapAgentDetail = (params: {
   };
 };
 
+const mapAgentPermissionOverviewFromApi = (
+  info: AgentInfoApiResponse | null | undefined,
+  resourceId: string
+): ResourcePermissionOverview =>
+  ResourceServicesMap.mapResourcePermissionOverviewFromApi(
+    info?.resourceInfo ?? { resourceId, resourceName: '', ownerInfo: {} },
+    resourceId
+  );
+
 export const AgentServicesMap = {
   mapAgentDetail,
+  mapAgentPermissionOverviewFromApi,
   mapSaveAgentDraftRequests,
   mapSpec,
   resolveAssetResourceType,

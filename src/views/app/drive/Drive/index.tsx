@@ -1,8 +1,13 @@
-import TableDrive from '@/components/Drive/TableDrive';
+import { Tabs, toast } from '@heroui/react';
+import type { Key } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import DriveBrowser from '@/components/business/Drive/DriveBrowser';
+import PageHeader from '@/components/business/PageHeader';
 import { useDriveService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
 import { useApi } from '@/hooks/useApi';
-import PageHeader from '@/layouts/_common/PageHeader';
 import { parseErrorMessage } from '@/utils/error';
 import {
   buildDrivePath,
@@ -12,10 +17,6 @@ import {
   DRIVE_UPLOAD_QUEUE_PATH,
 } from '@/utils/navigation/driveRoute';
 import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
-import { Tabs, toast } from '@heroui/react';
-import type { Key } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
 
 import FavoritesTab from '../_components/FavoritesTab';
 import UploadQueueTab from '../_components/UploadQueueTab';
@@ -87,7 +88,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
       navigate(buildDrivePath({ scope: driveScope }));
       return;
     }
-    navigate(buildDriveSystemFolderPath({ view: viewMode, nodeId }));
+    navigate(buildDriveSystemFolderPath({ nodeId }));
   };
 
   return (
@@ -119,7 +120,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
 
       <div className={styles.previewContent}>
         {viewMode === 'tableDrive' && (
-          <TableDrive
+          <DriveBrowser
             key={tableDriveLocationKey}
             scope={driveScope}
             initialNodeId={folderId}
@@ -129,7 +130,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
         {viewMode === 'uploadQueue' && <UploadQueueTab />}
         {viewMode === 'favorites' && <FavoritesTab />}
         {isTrashView ? (
-          <TableDrive
+          <DriveBrowser
             key={tableDriveLocationKey}
             scope={driveScope}
             initialNodeId={initialNodeId}

@@ -1,6 +1,6 @@
 'use client';
 
-import AppIconButton from '@/components/Button/AppIconButton';
+import AppIconButton from '@/components/base/Button/AppIconButton';
 import { cn } from '@/utils/cn';
 import * as React from 'react';
 import styles from './attachment.module.less';

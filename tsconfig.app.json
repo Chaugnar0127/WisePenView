@@ -18,15 +18,13 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
     "paths": {
       "@/*": ["./src/*"],
-      "@services-registry": ["./src/domains/_registry/registry.impl.ts"]
+      "@domain-apis": ["./src/domains/_registry/apis.impl.ts"]
     }
   },
   "include": ["src"]

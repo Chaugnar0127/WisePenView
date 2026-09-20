@@ -1,16 +1,15 @@
-import { parseErrorMessage } from '@/utils/error';
 import { toast } from '@heroui/react';
 import useInfiniteScroll from 'ahooks/es/useInfiniteScroll';
 import type {
-  InfiniteScrollOptions,
   Data as UseInfiniteScrollData,
+  InfiniteScrollOptions,
   Service as UseInfiniteScrollService,
 } from 'ahooks/es/useInfiniteScroll/types';
 import usePagination from 'ahooks/es/usePagination';
 import type {
+  Data as UsePaginationData,
   PaginationOptions,
   PaginationResult,
-  Data as UsePaginationData,
   Params as UsePaginationParams,
   Service as UsePaginationService,
 } from 'ahooks/es/usePagination/types';
@@ -20,6 +19,8 @@ import type {
   Result as UseRequestResult,
   Service as UseRequestService,
 } from 'ahooks/es/useRequest/src/types';
+
+import { isWisePenError, parseErrorMessage } from '@/utils/error';
 
 interface UseApiErrorOptions<TParams extends unknown[]> {
   getErrorMessage?: (error: Error, params: TParams) => string;
@@ -50,13 +51,18 @@ const isApiDataEmpty = <TData>(data: TData | undefined): boolean => {
   return false;
 };
 
+const isUnauthorizedError = (error: Error): boolean =>
+  isWisePenError(error) &&
+  error.meta?.httpStatus === 401 &&
+  (error.meta.authSessionState === 'handled' || error.meta.authSessionState === 'stale');
+
 const notifyApiError = <TParams extends unknown[]>(
   error: Error,
   params: TParams,
   options: UseApiErrorOptions<TParams>
 ): void => {
   const { getErrorMessage, onErrorEffect, showErrorToast = true } = options;
-  if (showErrorToast) {
+  if (showErrorToast && !isUnauthorizedError(error)) {
     toast.danger(getErrorMessage ? getErrorMessage(error, params) : parseErrorMessage(error));
   }
   onErrorEffect?.(error, params);

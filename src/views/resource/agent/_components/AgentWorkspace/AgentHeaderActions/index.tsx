@@ -1,9 +1,10 @@
-import { AppButton } from '@/components/Button';
-import VersionDropdown from '@/components/VersionDropdown';
-import type { VersionDropdownItem } from '@/components/VersionDropdown/index.type';
-
 import { Save, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+import { AppButton } from '@/components/base/Button';
+import VersionDropdown from '@/components/business/VersionDropdown';
+import type { VersionDropdownItem } from '@/components/business/VersionDropdown/index.type';
+
 import styles from '../../../style.module.less';
 
 interface AgentHeaderActionsProps {

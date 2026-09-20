@@ -1,4 +1,4 @@
-import type { SkillFileDropPosition } from '@/components/Skill/SkillFileTree/index.type';
+import type { SkillFileDropPosition } from '@/components/business/Skill/SkillFileTree/index.type';
 import type { SkillFileNode } from '@/domains/Skill';
 
 export const ROOT_PATH = '/';

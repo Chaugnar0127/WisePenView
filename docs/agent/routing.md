@@ -37,6 +37,10 @@
 
 除 `/`、认证页面和 `/admin/*` 外，业务路由统一由登录守卫保护。`userService.getUserInfo()` 是会话真相；加载时展示 Spin，校验失败进入带当前 URL 回跳参数的登录页。登录成功后的默认入口是 `/chat`，匿名入口 `/` 不承载真实会话路由。桌面端生产启动 URL 为 `/`。
 
+Chat 的目前會話只由 URL 決定：主聊天頁讀取 `/chat/:sessionId`，`/chat` 表示新對話；資源與課程內嵌 Chat 讀取 `chat` query，例如 `/resources/note/note-001?chat=session-001`。選擇歷史會話或開始新對話使用 push，新建成功後用 replace 寫入後端 ID。Zustand 只快取標題與 Agent 等會話資料，不保存目前選中的 ID，也不從 `sessionStorage` 恢復選中狀態。
+
+內嵌 Chat 切換會話只修改 `chat` query，保留頁面位置、檢視參數和錨點；開始新對話則移除該參數。從 Chat 開啟資源、切換資源 viewer，以及同一課程內切換節點或頁面時保留會話 ID。離開到其他功能後是否繼續會話，以目的 URL 為準。
+
 ## 云盘与资源
 
 | 路径                                      | 参数与行为          |
@@ -79,11 +83,13 @@ home 与 info 是同级路由。settings 只允许教师访问；无权限时保
 - 应用与管理端分别提供所属壳层的错误页，未匹配路由使用全局 404。
 - 管理端公告跳转地址的自由文本与历史失效示例暂不纳入本次约束。
 
-## Route Meta、Tab 与面包屑
+## 路由布局、Tab 与面包屑
 
-- App 路由通过 `handle.app` 声明 `pageKey`、`headerNav` 和 `sidebarTab`。
-- `useAppRouteMeta()` 从最深匹配读取元数据。顶部导航不保存额外选择状态；侧栏允许临时切换，但 pathname 变化时恢复路由默认面板。
-- 页面级 Tab 直接调用领域 route builder，不抽象 `useRouteTab`。
+- 需要共享内容容器的路由通过 `AppScrollablePageLayout`、`AppFixedPageLayout` 或 `ResourceHost` 嵌套表达；不要使用 route `handle` 存放布局配置。
+- 资源工作区由 `src/layouts/Resource/ResourceHost` 作为路由布局元素提供顶栏、对话栏和 `ResourceHostContext`；`AppLayout` 只负责应用端主壳，不感知具体业务路由，页面按需通过 `useMainShell` 取侧栏折叠态与切换命令。
+- 壳 chrome（侧栏面板、折叠 rail、窄屏顶栏与侧栏 Drawer、主内容区、`MainShellContext`）由 `src/layouts/MainShell` 统一提供；`AppLayout` 与 `AdminLayout` 基于 `MainShell` 构建，只传入面板 id、展开态侧栏内容、rail 导航内容与窄屏标题，保证两端壳行为一致。
+- 路由通过 `handle.appSidebar.selectedHeaderNavKey` 声明一级侧栏选中项；使用 `null` 明确表示不选中任何入口，侧栏不反向解析 pathname。
+- 小组和课程页面使用 `useMatch` 判断当前子路由；页面级 Tab 直接调用领域 route builder，不抽象 `useRouteTab`。
 - 面包屑数据统一为 `{ key, label, to?, current? }`。祖先项必须有真实 `to` 并渲染 Link；当前项不可点击且带 `aria-current="page"`。
 - 拖放等领域交互通过面包屑 `renderItem` 扩展，不改变导航协议。
 

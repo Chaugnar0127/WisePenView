@@ -1,19 +1,20 @@
-import AppAvatar from '@/components/Avatar';
-import { AppButton } from '@/components/Button';
-import { UploadZone } from '@/components/Input';
-import AppModal from '@/components/Overlay/AppModal';
+import { toast, Tooltip } from '@heroui/react';
+import { Camera, Check, TriangleAlert, X } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import AppModal from '@/components/base/AppModal';
+import AppAvatar from '@/components/base/Avatar';
+import { AppButton } from '@/components/base/Button';
+import { UploadZone } from '@/components/base/Input';
+import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/components/base/Tooltip';
 import { useImageService, useUserService } from '@/domains';
 import { assertImageProxyUploadLimit } from '@/domains/Image';
 import { IDENTITY, USER_STATUS } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
-import { TOOLTIP_FOCUS_PASSTHROUGH_PROPS } from '@/layouts/_common/a11y/tooltipFocusPassthrough';
 import { parseErrorMessage } from '@/utils/error';
 import { IMAGE_UPLOAD_MAX_SIZE_LABEL } from '@/utils/image/uploadLimit';
-import { toast, Tooltip } from '@heroui/react';
 
-import { Camera, Check, TriangleAlert, X } from 'lucide-react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { AccountHeaderProps } from './index.type';
 import styles from './style.module.less';
 function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {

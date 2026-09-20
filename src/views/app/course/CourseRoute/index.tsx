@@ -1,14 +1,15 @@
-import { AppButton } from '@/components/Button';
-import { ResultState, Spin } from '@/components/Feedback';
+import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
+
+import { AppButton } from '@/components/base/Button';
+import { ResultState, Spin } from '@/components/base/Feedback';
 import { useCourseService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { CourseContext } from '@/layouts/Course/CourseContext';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
-import { ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import styles from './style.module.less';
 
 function CourseRoute() {

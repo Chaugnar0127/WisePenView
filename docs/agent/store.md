@@ -3,7 +3,7 @@
 ## 一、目录归属
 
 - `src/store` 只放生命周期注册和持久化基础设施，不放业务 store，不提供统一业务导出。
-- 组件状态放到对应组件的 `_store` 目录，例如 `src/components/ChatPanel/_store`。
+- 组件状态放到对应组件的 `_store` 目录，例如 `src/components/business/ChatPanel/_store`。
 - 页面私有状态放到对应 view 的 `_store` 目录。
 - 布局状态放到对应 layout 的 `_store` 目录。
 - 只有由 service 维护、表达稳定业务缓存语义的状态才进入 domain；不要因为调用方较多就把 UI 状态提升到 domain。

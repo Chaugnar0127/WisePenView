@@ -1,20 +1,21 @@
-import { AppButton } from '@/components/Button';
-import CourseCard from '@/components/Course/CourseCard';
-import { Empty, Spin } from '@/components/Feedback';
+import { Plus, UserPlus } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+
+import { AppButton } from '@/components/base/Button';
+import { Empty, Spin } from '@/components/base/Feedback';
+import CourseCard from '@/components/business/CourseCard';
+import PageHeader from '@/components/business/PageHeader';
 import { useCourseService, useUserService } from '@/domains';
 import { IDENTITY } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
-import PageHeader from '@/layouts/_common/PageHeader';
 import {
   buildCourseListPath,
   buildCoursePath,
   parseCourseListRouteQuery,
 } from '@/utils/navigation/appRoute';
 
-import { Plus, UserPlus } from 'lucide-react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import PublicListPagination from '../_components/PublicListPagination';
 import { CreateCourseModal, JoinCourseModal } from '../_components/PublicModals';
 import PublicSectionTabs from '../_components/PublicSectionTabs';

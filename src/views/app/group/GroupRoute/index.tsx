@@ -1,15 +1,16 @@
-import { AppButton } from '@/components/Button';
-import { ResultState, Spin } from '@/components/Feedback';
-import { useGroupService } from '@/domains';
-import type { Group, GroupResConfig } from '@/domains/Group';
-import { useApi } from '@/hooks/useApi';
-import { GroupContext, type GroupCurrentUserRole } from '@/layouts/Group/GroupContext';
-import { parseErrorMessage } from '@/utils/error';
-import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
+
+import { AppButton } from '@/components/base/Button';
+import { ResultState, Spin } from '@/components/base/Feedback';
+import { useGroupService } from '@/domains';
+import type { Group, GroupResConfig } from '@/domains/Group';
+import { useApi } from '@/hooks/useApi';
+import { parseErrorMessage } from '@/utils/error';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+import { GroupContext, type GroupCurrentUserRole } from '@/views/app/group/GroupRoute/GroupContext';
+
 import styles from './style.module.less';
 
 type GroupRouteLoaded = {

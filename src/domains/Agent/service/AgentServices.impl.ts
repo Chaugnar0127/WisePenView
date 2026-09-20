@@ -1,7 +1,8 @@
+import { AgentApi, putOssPresignedUrl } from '@domain-apis';
+
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { computeFileMd5 } from '@/utils/oss/computeFileMd5';
-import { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';
-import { AgentApi } from '../apis/AgentApi';
+
 import { AgentServicesMap } from '../mapper/AgentServices.map';
 import type { IAgentService } from './index.type';
 
@@ -25,6 +26,10 @@ export const createAgentServices = (): IAgentService => ({
         ? await AgentApi.getAgentVersionBundleInfo(resourceId, version)
         : undefined;
     return AgentServicesMap.mapAgentDetail({ resourceId, info, bundle });
+  },
+  async getAgentPermissionOverview(resourceId) {
+    const data = await AgentApi.getAgentInfo(resourceId);
+    return AgentServicesMap.mapAgentPermissionOverviewFromApi(data, resourceId);
   },
   async saveAgentDraft(request) {
     const requests = AgentServicesMap.mapSaveAgentDraftRequests(request);

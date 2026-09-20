@@ -1,4 +1,5 @@
 import { apiPost } from '@/apis/request';
+
 import type {
   LoginApiRequest,
   LoginApiResponse,
@@ -12,7 +13,7 @@ import type {
 } from './AuthApi.type';
 
 function login(req: LoginApiRequest): Promise<LoginApiResponse> {
-  return apiPost('/auth/login', req);
+  return apiPost('/auth/login', req, { skipUnauthorizedHandling: true });
 }
 
 function logout(): Promise<LogoutApiResponse> {

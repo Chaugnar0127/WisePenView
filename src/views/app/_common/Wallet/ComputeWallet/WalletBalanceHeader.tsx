@@ -1,7 +1,9 @@
-import { AppButton } from '@/components/Button';
 import { Skeleton } from '@heroui/react';
-
 import { useTranslation } from 'react-i18next';
+
+import { AppButton } from '@/components/base/Button';
+import { formatMillionNumber } from '@/utils/format';
+
 import styles from './style.module.less';
 
 interface WalletBalanceHeaderProps {
@@ -27,7 +29,7 @@ function WalletBalanceHeader({
           <Skeleton className={styles.balanceSkeleton} />
         ) : (
           <p className={styles.balanceValue}>
-            {balance.toLocaleString(locale)}
+            {formatMillionNumber(balance, locale)}
             <span className={styles.unit}>{t('balance.unit')}</span>
           </p>
         )}

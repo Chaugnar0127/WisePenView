@@ -1,14 +1,15 @@
-import { AppButton } from '@/components/Button';
-import AppAlertDialog from '@/components/Overlay/AppAlertDialog';
-import { useCourseService } from '@/domains';
-import { useApi } from '@/hooks/useApi';
-import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { toast } from '@heroui/react';
-
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+
+import { AppButton } from '@/components/base/Button';
+import AppAlertDialog from '@/components/business/AppAlertDialog';
+import { useCourseService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
+
 import styles from '../../style.module.less';
 
 interface CourseDangerSectionProps {

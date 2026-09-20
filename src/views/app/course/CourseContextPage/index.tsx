@@ -1,10 +1,12 @@
-import { useAppRouteMeta } from '@/hooks/useAppRouteMeta';
-import { useCourseContext } from '@/layouts/Course/CourseContext';
-import { buildCoursePath } from '@/utils/navigation/appRoute';
-import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 import { Tabs } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useMatch, useNavigate } from 'react-router-dom';
+
+import { useCourseContext } from '@/layouts/Course/CourseContext';
+import { APP_ROUTE_PATH, buildCoursePath } from '@/utils/navigation/appRoute';
+import { buildChatSessionLocation, getChatSessionId } from '@/utils/navigation/chatRoute';
+import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
+
 import styles from './style.module.less';
 
 const COURSE_CONTEXT_TAB_KEYS = ['home', 'info'] as const;
@@ -14,8 +16,9 @@ function CourseContextPage() {
   const { t } = useTranslation('course');
   const { course } = useCourseContext();
   const navigate = useNavigate();
-  const routeMeta = useAppRouteMeta();
-  const activeTabKey: CourseContextTabKey = routeMeta?.pageKey === 'course.info' ? 'info' : 'home';
+  const location = useLocation();
+  const isInfoPage = useMatch(`${APP_ROUTE_PATH.COURSES}/:courseId/info`) != null;
+  const activeTabKey: CourseContextTabKey = isInfoPage ? 'info' : 'home';
   const tabItems = [
     { key: 'home', label: t('nav.home') },
     { key: 'info', label: t('nav.info') },
@@ -46,7 +49,12 @@ function CourseContextPage() {
           onSelectionChange={(key) => {
             const nextKey = String(key);
             if (COURSE_CONTEXT_TAB_KEYS.includes(nextKey as CourseContextTabKey)) {
-              navigate(buildCoursePath(course.courseId, nextKey as CourseContextTabKey));
+              navigate(
+                buildChatSessionLocation(
+                  { pathname: buildCoursePath(course.courseId, nextKey as CourseContextTabKey) },
+                  getChatSessionId(location)
+                )
+              );
             }
           }}
           className={`${underlineTabs.underlineTabs} ${styles.contextTabs}`}

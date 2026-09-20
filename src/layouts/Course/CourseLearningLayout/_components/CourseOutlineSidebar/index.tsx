@@ -1,26 +1,33 @@
-import { AppButton } from '@/components/Button';
-import AppIconButton from '@/components/Button/AppIconButton';
-import { UploadDocumentModal } from '@/components/Drive/Modals';
-import { Spin } from '@/components/Feedback';
-import { FormField, Input } from '@/components/Input';
-import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
-import Tree, { type DataNode, type TreeAllowDropInfo, type TreeDropInfo } from '@/components/Tree';
-import type { CourseOutlineContainerNode, CourseOutlineNode } from '@/domains/Course';
-import ResourceShellHeader from '@/layouts/Resource/ResourceShellHeader';
-import { parseErrorMessage } from '@/utils/error';
 import { ArrowLeft, CheckCircle2, Circle, LoaderCircle, Plus, Search } from 'lucide-react';
 import type { Key, KeyboardEvent } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { findOutlineNode, type CourseOutlineResourcePageState } from '../../model';
+
+import { AppButton } from '@/components/base/Button';
+import AppIconButton from '@/components/base/Button/AppIconButton';
+import { Spin } from '@/components/base/Feedback';
+import { FormField, Input } from '@/components/base/Input';
+import Tree, {
+  type DataNode,
+  type TreeAllowDropInfo,
+  type TreeDropInfo,
+} from '@/components/base/Tree';
+import AppAlertDialog from '@/components/business/AppAlertDialog';
+import AppFormDialog from '@/components/business/AppFormDialog';
+import { UploadDocumentModal } from '@/components/business/Drive/Modals';
+import type { CourseOutlineContainerNode, CourseOutlineNode } from '@/domains/Course';
+import ResourceWorkspaceHeader from '@/layouts/Resource/ResourceWorkspaceHeader';
+import { parseErrorMessage } from '@/utils/error';
+
+import { type CourseOutlineResourcePageState, findOutlineNode } from '../../model';
 import styles from '../../style.module.less';
 import CourseOutlineMoveModal from './CourseOutlineMoveModal';
 import CourseOutlineNodeTitle from './CourseOutlineNodeTitle';
 import CourseResourcePickerModal from './CourseResourcePickerModal';
 import {
+  type CourseOutlineResourceTarget,
   findCourseOutlineResourceTarget,
   resolveCourseOutlineResourceDrop,
-  type CourseOutlineResourceTarget,
 } from './model';
 import { useCourseOutlineEditingController } from './useCourseOutlineEditingController';
 
@@ -279,7 +286,7 @@ function CourseOutlineSidebar(props: CourseOutlineSidebarProps) {
   return (
     <>
       <aside className={styles.outlineSidebar}>
-        <ResourceShellHeader
+        <ResourceWorkspaceHeader
           className={styles.outlineHeader}
           inlineTitle={
             <span className={styles.courseRow}>

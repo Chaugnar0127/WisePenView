@@ -1,17 +1,18 @@
-import { AppButton } from '@/components/Button';
-import { FormField, Input } from '@/components/Input';
+import { Alert, Form, toast } from '@heroui/react';
+import { type FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+
+import { AppButton } from '@/components/base/Button';
+import { FormField } from '@/components/base/Input';
 import { useAuthService } from '@/domains';
 import type { ResetPasswordRequest } from '@/domains/Auth';
 import { useApi } from '@/hooks/useApi';
+import { type FieldErrors, hasFieldErrors, runFieldValidation } from '@/utils/formValidation';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import { Alert, Form, toast } from '@heroui/react';
 
-import { hasFieldErrors, runFieldValidation, type FieldErrors } from '@/utils/formValidation';
-import { User } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import auth from '../Auth.module.less';
+import AuthIconField from '../_common/AuthIconField';
+import auth from '../_common/style.module.less';
 
 type ResetPasswordField = keyof ResetPasswordRequest;
 
@@ -82,10 +83,10 @@ function ResetPassword() {
           errorMessage={formErrors.userName}
           isRequired
         >
-          <div className={auth.inputWithIcon}>
-            <User className={auth.inputIcon} size={18} aria-hidden="true" />
-            <Input placeholder={t('resetPassword.userNamePlaceholder')} autoComplete="username" />
-          </div>
+          <AuthIconField
+            placeholder={t('resetPassword.userNamePlaceholder')}
+            autoComplete="username"
+          />
         </FormField>
 
         <div className={auth.formActions}>

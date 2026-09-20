@@ -11,21 +11,17 @@ export const WALLET_TARGET_TYPE = createEnum([
 export type WalletTargetType = EnumValue<typeof WALLET_TARGET_TYPE>;
 
 /**
- * listTransactions 可选 type（与后端 TokenTransactionType 数值一致，Service 层会转为枚举名）。
- * 「全部」不传；个人 Tab「充值」-> REFILL；小组「充值」前端合并 REFILL + TRANSFER_IN（划入）；「消费」合并 SPEND + TRANSFER_OUT。
+ * listTransactions 可选 walletBusinessType。
  */
-export const WALLET_TOKEN_TX_TYPE = createEnum([
-  { value: 1, key: 'REFILL', label: '充值' },
-  { value: 2, key: 'SPEND', label: '消费' },
-  { value: 3, key: 'TRANSFER_IN', label: '划入' },
-  { value: 4, key: 'TRANSFER_OUT', label: '划出' },
+export const WALLET_BUSINESS_TYPE = createEnum([
+  { value: 'TOKEN', key: 'TOKEN', label: '计算点' },
+  { value: 'COIN', key: 'COIN', label: '金币' },
 ] as const);
+export type WalletBusinessType = EnumValue<typeof WALLET_BUSINESS_TYPE>;
 
-/** Owner<->Group 划拨：1 转入小组，2 转回组长 */
+/** Owner<->Group 划拨：GROUP_INFLOW 转入小组，USER_INFLOW 转回组长 */
 export const WALLET_TOKEN_TRANSFER_TYPE = createEnum([
-  { value: 1, key: 'TO_GROUP', label: '转入小组' },
-  { value: 2, key: 'TO_OWNER', label: '转回组长' },
+  { value: 'GROUP_INFLOW', key: 'GROUP_INFLOW', label: '转入小组' },
+  { value: 'USER_INFLOW', key: 'USER_INFLOW', label: '转回组长' },
 ] as const);
-
-/** Tab 内合并两类流水时，每类 listTransactions 的 size 上限（超出则分页可能不完整） */
-export const WALLET_TX_TAB_MERGE_FETCH_CAP = 500;
+export type WalletTokenTransferType = EnumValue<typeof WALLET_TOKEN_TRANSFER_TYPE>;

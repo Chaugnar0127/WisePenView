@@ -1,10 +1,11 @@
-import { AppButton } from '@/components/Button';
-import { DataTable, type DataTableColumn } from '@/components/Table';
-import { formatFileSize } from '@/utils/format/formatFileSize';
 import { ProgressBar } from '@heroui/react';
-
 import { CircleAlert, CircleCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+import { AppButton } from '@/components/base/Button';
+import { DataTable, type DataTableColumn } from '@/components/base/Table';
+import { formatFileSize } from '@/utils/format/formatFileSize';
+
 import styles from './style.module.less';
 import { formatFileType, type UploadQueueRow } from './uploadQueueModel';
 import { useUploadQueue } from './useUploadQueue';

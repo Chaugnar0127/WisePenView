@@ -1,7 +1,8 @@
-import { AppButton } from '@/components/Button';
-import AppBanner from '@/components/Overlay/AppBanner';
-
 import { useTranslation } from 'react-i18next';
+
+import AppBanner from '@/components/base/AppBanner';
+import { AppButton } from '@/components/base/Button';
+
 import type { VerifyBannerProps } from './index.type';
 import styles from './style.module.less';
 

@@ -1,21 +1,25 @@
+import { useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+
 import { useCourseService } from '@/domains';
 import { useApi } from '@/hooks/useApi';
 import { buildCourseLearningPath, buildCoursePath } from '@/utils/navigation/appRoute';
-import { useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { buildChatSessionLocation, getChatSessionId } from '@/utils/navigation/chatRoute';
+
 import {
   appendCourseOutlineResources,
   collectOutlineResources,
+  type CourseOutlineResourcePageState,
   filterCourseOutline,
   findOutlineNode,
   findOutlineResourceByResourceId,
   markCourseOutlineResourceRead,
-  type CourseOutlineResourcePageState,
 } from '../model';
 
 export const useCourseLearningNavigationController = (courseId: string) => {
   const courseService = useCourseService();
   const navigate = useNavigate();
+  const location = useLocation();
   const { outlineNodeId = '' } = useParams<{ outlineNodeId: string }>();
   const [searchQuery, setSearchQuery] = useState('');
   const [resourcePageStateMap, setResourcePageStateMap] = useState<
@@ -135,6 +139,14 @@ export const useCourseLearningNavigationController = (courseId: string) => {
       .catch(() => undefined);
   };
 
+  const openOutlineNode = (nodeId: string) =>
+    navigate(
+      buildChatSessionLocation(
+        { pathname: buildCourseLearningPath(courseId, nodeId) },
+        getChatSessionId(location)
+      )
+    );
+
   return {
     outlineNodes,
     visibleNodes,
@@ -149,11 +161,17 @@ export const useCourseLearningNavigationController = (courseId: string) => {
     expandOutlineNode,
     loadMoreOutlineResources,
     refresh: refreshOutline,
-    openOutlineNode: (nodeId: string) => navigate(buildCourseLearningPath(courseId, nodeId)),
+    openOutlineNode,
     openResource: (resourceId: string) => {
       const resource = findOutlineResourceByResourceId(outlineNodes, resourceId);
-      if (resource) navigate(buildCourseLearningPath(courseId, resource.nodeId));
+      if (resource) void openOutlineNode(resource.nodeId);
     },
-    openCourseHome: () => navigate(buildCoursePath(courseId, 'home')),
+    openCourseHome: () =>
+      navigate(
+        buildChatSessionLocation(
+          { pathname: buildCoursePath(courseId, 'home') },
+          getChatSessionId(location)
+        )
+      ),
   };
 };

@@ -1,12 +1,13 @@
-import { AppButton } from '@/components/Button';
-import { FormField, Input, TextArea } from '@/components/Input';
-import AppModal from '@/components/Overlay/AppModal';
-import { useCourseService } from '@/domains';
-import { useApi } from '@/hooks/useApi';
 import { toast } from '@heroui/react';
-
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import AppModal from '@/components/base/AppModal';
+import { AppButton } from '@/components/base/Button';
+import { FormField, Input, TextArea } from '@/components/base/Input';
+import { useCourseService } from '@/domains';
+import { useApi } from '@/hooks/useApi';
+
 import styles from './style.module.less';
 
 interface CreateCourseModalProps {

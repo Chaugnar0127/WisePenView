@@ -22,11 +22,11 @@ ComponentName/
 ## 二、HeroUI 使用
 
 - Button、Input、Select、Checkbox 等基础交互控件使用 HeroUI 或项目已有封装。
-- Modal 类业务浮层使用项目 `Overlay` 封装；只有封装组件本身和明确记录过的特殊浮层可以直接使用底层 `Modal` / `AlertDialog`。
+- Modal 类业务浮层使用项目浮层封装（`src/components/base/AppModal` 与 `src/components/business/App*Dialog`）；只有封装组件本身和明确记录过的特殊浮层可以直接使用底层 `Modal` / `AlertDialog`。
 
 ## 三、Modal 约定
 
-新增业务弹窗按语义选择封装：只需要用户在“继续/取消”之间做明确决策的 yes/no 弹窗使用 `src/components/Overlay/AppAlertDialog`，主体可以包含补充说明或只读列表；只有 `Input` 或 `InputOTP` 的输入型弹窗使用 `src/components/Overlay/AppFormDialog`，结构遵循 HeroUI 的 Modal with form 写法，由 `Modal.Dialog` 内的 `Form` 统一处理提交；展示只读内容、二维码、服务协议、iframe、邀请码、成功结果等非任务型内容使用 `src/components/Overlay/AppDisplayDialog`，主操作只表达“关闭、复制、打开、前往”等后续动作；带选择、上传、勾选、文本域、复杂编辑或延迟内容的业务弹窗使用 `src/components/Overlay/AppModal` 作为可定制起点。`AppModal` 不承担确认、危险、提交、提示 banner 等具体任务语义，只统一 Modal 外壳、标题、body/footer slot 和 `DeferredContent` 延迟渲染能力；业务弹窗不要直接使用底层 `@/components/Overlay` Modal、`@heroui/react` Modal 或 `@heroui/react` AlertDialog，除非弹窗是高度定制的 command palette、无标准 header/footer 的轻浮层，且在代码旁说明原因。
+新增业务弹窗按语义选择封装：只需要用户在“继续/取消”之间做明确决策的 yes/no 弹窗使用 `src/components/business/AppAlertDialog`，主体可以包含补充说明或只读列表；只有 `Input` 或 `InputOTP` 的输入型弹窗使用 `src/components/business/AppFormDialog`，结构遵循 HeroUI 的 Modal with form 写法，由 `Modal.Dialog` 内的 `Form` 统一处理提交；展示只读内容、二维码、服务协议、iframe、邀请码、成功结果等非任务型内容使用 `src/components/business/AppDisplayDialog`，主操作只表达“关闭、复制、打开、前往”等后续动作；带选择、上传、勾选、文本域、复杂编辑或延迟内容的业务弹窗使用 `src/components/base/AppModal` 作为可定制起点。`AppModal` 不承担确认、危险、提交、提示 banner 等具体任务语义，只统一 Modal 外壳、标题、body/footer slot 和 `DeferredContent` 延迟渲染能力；业务弹窗不要直接使用底层 `@/components/base/Modal`、`@heroui/react` Modal 或 `@heroui/react` AlertDialog，除非弹窗是高度定制的 command palette、无标准 header/footer 的轻浮层，且在代码旁说明原因。
 
 - 受控属性使用 `isOpen` 和 `onOpenChange`。
 - 关闭弹窗调用 `onOpenChange(false)`。
@@ -42,7 +42,7 @@ ComponentName/
 ## 四、Popover 约定
 
 - 操作菜单、单选和多选 Picker 使用 `@heroui/react` 的 `Dropdown`，复用其原生分组、标题、描述、选择指示器、危险态和子菜单能力。
-- 业务 Popover 使用 `src/components/Overlay/AppPopover`，不要直接组合底层 `Popover.Content` / `Popover.Dialog`。
+- 业务 Popover 使用 `src/components/base/AppPopover`，不要直接组合底层 `Popover.Content` / `Popover.Dialog`。
 - 标准标题通过 `AppPopover.Content` 的 `title` 传入；无标题轻浮层省略 `title`，两者共用同一内容间距。
 - 危险提示型 Popover 使用 `variant="danger"`；菜单中的删除、退出等危险操作使用 `Dropdown.Item variant="danger"`。
 - 宽度、最大高度等业务布局通过 `className` 保留在调用方，不重复设置边框、圆角、背景或阴影。

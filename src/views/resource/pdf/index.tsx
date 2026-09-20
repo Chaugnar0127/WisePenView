@@ -1,6 +1,11 @@
-import { AppButton } from '@/components/Button';
-import { ResultState, Spin } from '@/components/Feedback';
-import PdfViewer from '@/components/PdfViewer/index';
+import { FilePenLine } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+
+import { AppButton } from '@/components/base/Button';
+import { ResultState, Spin } from '@/components/base/Feedback';
+import PdfViewer from '@/components/business/PdfViewer/index';
 import { useDocumentService, useInteractService } from '@/domains';
 import type { ResourceItem } from '@/domains/Resource';
 import { useApi } from '@/hooks/useApi';
@@ -14,10 +19,6 @@ import {
 } from '@/utils/navigation/resourceTarget';
 import { useResourceHostLayoutConfig } from '@/views/resource/ResourceHostContext';
 
-import { FilePenLine } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { useDocumentViewerSwitcher } from '../_hooks/useDocumentViewerSwitcher';
 import styles from './style.module.less';
 
@@ -94,7 +95,12 @@ function PdfView({ resourceId }: PdfViewProps = {}) {
     refresh: refreshDocInfo,
   } = useApi(
     async () => {
-      return await documentService.getDocInfo(resourceId as string);
+      const info = await documentService.getDocInfo(resourceId as string);
+      if (import.meta.env.MODE === 'mock') {
+        const { MOCK_PDF_PREVIEW_URL } = await import('./mock/pdfPreview');
+        return { ...info, previewUrl: MOCK_PDF_PREVIEW_URL };
+      }
+      return info;
     },
     {
       ready: Boolean(resourceId),

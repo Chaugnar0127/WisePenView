@@ -1,11 +1,13 @@
-import AppIconButton from '@/components/Button/AppIconButton';
-import { Empty } from '@/components/Feedback';
-import SkillFileTree from '@/components/Skill/SkillFileTree';
-import type { DataNode } from '@/components/Tree';
-import type { SkillFileNode } from '@/domains/Skill';
 import type { TFunction } from 'i18next';
 import { FolderPlus, Plus, Upload } from 'lucide-react';
 import type { RefObject } from 'react';
+
+import AppIconButton from '@/components/base/Button/AppIconButton';
+import { Empty } from '@/components/base/Feedback';
+import type { DataNode } from '@/components/base/Tree';
+import SkillFileTree from '@/components/business/Skill/SkillFileTree';
+import type { SkillFileNode } from '@/domains/Skill';
+
 import type { useSkillFileActionsController } from '../_controllers/useSkillFileActionsController';
 import styles from '../style.module.less';
 import SkillSaveQueueDock from './SkillSaveQueueDock';

@@ -1,7 +1,9 @@
-import type { User, UserAccountProfile } from '@/domains/User';
+import { UserApi, UserTaskApi } from '@domain-apis';
+
 import { registerServiceCacheCleaner } from '@/domains/_shared/cacheRegistry';
 import { createTtlCache } from '@/domains/_shared/ttlCache';
-import { UserApi } from '../apis/UserApi';
+import type { User, UserAccountProfile } from '@/domains/User';
+
 import { UserServicesMap } from '../mapper/UserServices.map';
 import type {
   ConfirmEmailVerifyRequest,
@@ -102,6 +104,16 @@ const submitFeedback = async (params: SubmitFeedbackRequest): Promise<void> => {
   await UserApi.addFeedback(payload);
 };
 
+const listTaskStatus = async () => {
+  const data = await UserTaskApi.listTaskStatus();
+  return UserServicesMap.mapTaskStatusesFromApi(data);
+};
+
+const dailyCheckIn = async () => {
+  const data = await UserTaskApi.dailyCheckIn();
+  return UserServicesMap.mapTaskCheckInFromApi(data);
+};
+
 export const createUserServices = (): IUserService => {
   /** 闭包级缓存，仅存非敏感展示字段，退出登录时清理，读缓存自动过期。 */
   const userInfoCache = createTtlCache<string, CachedUserSafe>(USER_INFO_CACHE_TTL_MS);
@@ -164,6 +176,8 @@ export const createUserServices = (): IUserService => {
     listAdminMessages,
     publishMessage,
     submitFeedback,
+    listTaskStatus,
+    dailyCheckIn,
     clearUserCache,
   };
 };

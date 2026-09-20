@@ -1,3 +1,7 @@
+import { existsSync, promises as fs, statSync } from 'node:fs';
+import { dirname, join, resolve, sep } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import {
   app,
   BrowserWindow,
@@ -10,9 +14,7 @@ import {
   shell,
   type WebContents,
 } from 'electron';
-import { existsSync, promises as fs, statSync } from 'node:fs';
-import { dirname, join, resolve, sep } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import {
   DESKTOP_MAC_TRAFFIC_LIGHT_POSITION,
   WINDOW_DEFAULT_HEIGHT,
@@ -20,7 +22,7 @@ import {
   WINDOW_MIN_HEIGHT,
   WINDOW_MIN_WIDTH,
 } from '../../src/constants/layoutScale';
-import { COLOR_SCHEME, DEFAULT_COLOR_SCHEME, type ColorScheme } from '../../src/theme/constants';
+import { COLOR_SCHEME, type ColorScheme, DEFAULT_COLOR_SCHEME } from '../../src/theme/constants';
 import { APP_ROUTE_PATH, isAuthenticatedAppRoutePath } from '../../src/utils/navigation/appRoute';
 import { DESKTOP_CHANNEL, type DesktopNavigationState } from '../shared/channels';
 
@@ -33,7 +35,7 @@ const preloadPath = join(currentDirectory, '../preload/index.cjs');
 const PDF_EXPORT_TIMEOUT_MS = 30_000;
 const DESKTOP_ICON_DIRECTORY = join('electron', 'assets', 'app-icons');
 const DESKTOP_ICON_FILENAMES: Record<ColorScheme, string> = {
-  default: 'default.png',
+  mist: 'default.png',
   floral: 'floral.png',
   aqua: 'aqua.png',
   sunset: 'sunset.png',

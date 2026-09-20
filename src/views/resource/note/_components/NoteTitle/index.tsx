@@ -1,19 +1,20 @@
+import '@blocknote/mantine/style.css';
+
 import type { Block as BlockNoteBlock } from '@blocknote/core';
 import { en, zh } from '@blocknote/core/locales';
 import { BlockNoteView } from '@blocknote/mantine';
-import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
+import { toast } from '@heroui/react';
 import { useDebounceFn, useLatest, useMemoizedFn, useMount, useUnmount } from 'ahooks';
-import { useEffect, useImperativeHandle, useRef, type KeyboardEvent, type Ref } from 'react';
+import { type KeyboardEvent, type Ref, useEffect, useImperativeHandle, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useNewNoteStore } from '@/components/Note/_store/useNewNoteStore';
-import { getProseMirrorRoot } from '@/components/Note/CustomBlockNote/engines/editor/dom';
+import { useNewNoteStore } from '@/components/business/Note/_store/useNewNoteStore';
+import { getProseMirrorRoot } from '@/components/business/Note/CustomBlockNote/engines/editor/dom';
 import { useNoteService } from '@/domains';
 import { useAppTheme } from '@/theme';
-
 import { parseErrorMessage } from '@/utils/error';
-import { toast } from '@heroui/react';
+
 import styles from './style.module.less';
 
 export interface NoteTitleHandle {
@@ -24,6 +25,9 @@ export interface NoteTitleHandle {
 }
 
 export type NoteTitleSaveStatus = 'saving' | 'saved' | 'failed';
+
+type CreateBlockNoteOptions = NonNullable<Parameters<typeof useCreateBlockNote>[0]>;
+type NoteTitlePasteHandler = NonNullable<CreateBlockNoteOptions['pasteHandler']>;
 
 interface NoteTitleProps {
   id: string;
@@ -52,6 +56,14 @@ function getBlockPlainText(block: { content?: unknown[] } | undefined): string {
     })
     .join('');
 }
+
+const handlePasteIntoTitle: NoteTitlePasteHandler = ({ event, editor }) => {
+  const titleText = (event.clipboardData?.getData('text/plain') ?? '').replace(/\s+/g, ' ').trim();
+  if (titleText) {
+    editor.insertInlineContent(titleText);
+  }
+  return true;
+};
 
 const DEFAULT_HEADING_BLOCK = [
   {
@@ -96,7 +108,9 @@ function NoteTitle({
   const { resolvedTheme } = useAppTheme();
   const noteService = useNoteService();
   const latestIdRef = useLatest(id);
+  const latestFocusOnMountRef = useLatest(focusOnMount);
   const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasAutoFocusedRef = useRef(false);
   const saveVersionRef = useRef(0);
   const emitSaveStatus = useMemoizedFn(onSaveStatusChange);
   const untitledTitle = t('title.untitled');
@@ -112,6 +126,7 @@ function NoteTitle({
       },
     },
     trailingBlock: false,
+    pasteHandler: handlePasteIntoTitle,
   });
   const { run: scheduleTitleSync, cancel: cancelTitleSync } = useDebounceFn(
     (currentId: string, saveVersion: number) => {
@@ -149,12 +164,42 @@ function NoteTitle({
     [editor, untitledTitle]
   );
 
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：标题编辑器挂载后，等待外部协同状态允许编辑时自动聚焦一次。
+   * 不可替代原因：聚焦是浏览器 DOM 的命令式副作用，且协同连接状态可能晚于组件挂载完成。
+   * cleanup：取消轮询 timer，避免卸载后继续检查旧编辑器状态。
+   */
   useMount(() => {
-    if (!focusOnMount) return;
-    focusTimerRef.current = setTimeout(() => {
-      editor.focus();
-      focusTimerRef.current = null;
-    }, 0);
+    let cancelled = false;
+    let attemp_time = 0;
+
+    const tryFocus = () => {
+      if (cancelled || hasAutoFocusedRef.current) {
+        return;
+      }
+      if (latestFocusOnMountRef.current) {
+        editor.focus();
+        hasAutoFocusedRef.current = true;
+        focusTimerRef.current = null;
+        return;
+      }
+      attemp_time += 1;
+      if (attemp_time >= 200) {
+        focusTimerRef.current = null;
+        return;
+      }
+      focusTimerRef.current = setTimeout(tryFocus, 100);
+    };
+
+    focusTimerRef.current = setTimeout(tryFocus, 0);
+    return () => {
+      cancelled = true;
+      if (focusTimerRef.current) {
+        clearTimeout(focusTimerRef.current);
+        focusTimerRef.current = null;
+      }
+    };
   });
 
   /**

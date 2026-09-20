@@ -1,8 +1,10 @@
+import type { ResourcePermissionOverview } from '@/domains/Resource';
 import { ResourceServicesMap } from '@/domains/Resource/mapper/ResourceServices.map';
 import { normalizeUserDisplayBaseFromApi } from '@/domains/User/mapper/userEnum.mapper';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { normalizeId } from '@/utils/normalize/normalizeId';
 import { normalizeNonNegativeNumber } from '@/utils/normalize/normalizeNumber';
+
 import type {
   DocMetaInfoApiResponse,
   GetDocInfoApiResponse,
@@ -90,9 +92,16 @@ const mapGetDocInfoFromApi = (data: GetDocInfoApiResponse): DocDisplayInfoRespon
     : undefined,
 });
 
+const mapDocPermissionOverviewFromApi = (
+  data: GetDocInfoApiResponse,
+  resourceId: string
+): ResourcePermissionOverview =>
+  ResourceServicesMap.mapResourcePermissionOverviewFromApi(data.resourceInfo, resourceId);
+
 export const DocumentServicesMap = {
   mapUploadDocToApi,
   mapDocumentProcessStatusFromApi,
   mapListPendingDocsFromApi,
   mapGetDocInfoFromApi,
+  mapDocPermissionOverviewFromApi,
 };

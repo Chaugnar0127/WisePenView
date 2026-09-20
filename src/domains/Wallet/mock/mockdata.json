@@ -6,30 +6,57 @@
     "records": [
       {
         "traceId": "mock-1",
-        "time": "2025-12-20 14:30:00",
-        "type": "RECHARGE",
-        "amount": 1000,
-        "title": "点卡充值",
-        "subTitle": "****8829",
-        "operatorName": "张三"
+        "meta": "****8829",
+        "operatorDisplay": {
+          "nickname": "张三",
+          "username": "zhangsan",
+          "avatar": null,
+          "identityType": 1,
+          "realName": "张三",
+          "campusNo": "20250001",
+          "email": null,
+          "mobile": null
+        },
+        "walletTransactionType": "REFILL",
+        "walletBusinessType": "TOKEN",
+        "count": 1000,
+        "createTime": "2025-12-20 14:30:00"
       },
       {
         "traceId": "mock-2",
-        "time": "2025-12-21 09:15:00",
-        "type": "SPEND",
-        "amount": -120,
-        "title": "AI 服务调用",
-        "subTitle": "GPT-4-Turbo",
-        "operatorName": "张三"
+        "meta": "GPT-4-Turbo",
+        "operatorDisplay": {
+          "nickname": "张三",
+          "username": "zhangsan",
+          "avatar": null,
+          "identityType": 1,
+          "realName": "张三",
+          "campusNo": "20250001",
+          "email": null,
+          "mobile": null
+        },
+        "walletTransactionType": "SPEND",
+        "walletBusinessType": "TOKEN",
+        "count": 120,
+        "createTime": "2025-12-21 09:15:00"
       },
       {
         "traceId": "mock-3",
-        "time": "2025-12-22 11:00:00",
-        "type": "RECHARGE",
-        "amount": 500,
-        "title": "点卡充值",
-        "subTitle": "****1001",
-        "operatorName": "李四"
+        "meta": "****1001",
+        "operatorDisplay": {
+          "nickname": "李四",
+          "username": "lisi",
+          "avatar": null,
+          "identityType": 1,
+          "realName": "李四",
+          "campusNo": "20250002",
+          "email": null,
+          "mobile": null
+        },
+        "walletTransactionType": "TRANSFER_IN",
+        "walletBusinessType": "TOKEN",
+        "count": 500,
+        "createTime": "2025-12-22 11:00:00"
       }
     ]
   }

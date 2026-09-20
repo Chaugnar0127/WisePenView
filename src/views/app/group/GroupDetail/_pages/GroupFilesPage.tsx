@@ -1,9 +1,11 @@
-import TableDrive from '@/components/Drive/TableDrive';
-import { getGroupDisplayConfig } from '@/components/Group/GroupDisplayConfig';
-import { buildDriveNodeScope } from '@/domains/Drive';
-import { useGroupContext } from '@/layouts/Group/GroupContext';
-import { buildGroupFilesPath } from '@/utils/navigation/appRoute';
 import { useNavigate, useParams } from 'react-router-dom';
+
+import DriveBrowser from '@/components/business/Drive/DriveBrowser';
+import { getGroupDisplayConfig } from '@/components/business/Group/GroupDisplayConfig';
+import { buildDriveNodeScope } from '@/domains/Drive';
+import { buildGroupFilesPath } from '@/utils/navigation/appRoute';
+import { useGroupContext } from '@/views/app/group/GroupRoute/GroupContext';
+
 import layout from '../../style.module.less';
 import page from '../style.module.less';
 
@@ -20,7 +22,7 @@ function GroupFilesPage() {
 
   return (
     <div className={`${layout.tabPane} ${page.fileTabPane}`}>
-      <TableDrive
+      <DriveBrowser
         key={`${scope.rootId}\u0000${folderId ?? scope.rootId}`}
         scope={scope}
         initialNodeId={folderId}

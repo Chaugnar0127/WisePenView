@@ -1,18 +1,19 @@
-import { AppButton } from '@/components/Button';
-import { ResultState, Spin } from '@/components/Feedback';
-import type { DataNode } from '@/components/Tree';
-import VersionDropdown from '@/components/VersionDropdown';
+import { toast } from '@heroui/react';
+import { Pencil, Save, Settings, Upload } from 'lucide-react';
+import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+
+import { AppButton } from '@/components/base/Button';
+import { ResultState, Spin } from '@/components/base/Feedback';
+import type { DataNode } from '@/components/base/Tree';
+import VersionDropdown from '@/components/business/VersionDropdown';
 import { SkillServicesMap } from '@/domains/Skill';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import type { ResourceHostLayoutConfig } from '@/views/resource/ResourceHostContext';
-import { toast } from '@heroui/react';
 
-import { Pencil, Save, Settings, Upload } from 'lucide-react';
-import { useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import ResourceLayoutConfig from '../_components/ResourceLayoutConfig';
 import SkillActionDialogs from './_components/SkillActionDialogs';
 import SkillEditorPanel from './_components/SkillEditorPanel';

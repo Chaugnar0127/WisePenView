@@ -6,17 +6,17 @@ export type {
   ToolApprovalRequestData,
   WisePenUIMessage,
 } from './entity/message';
-export { MODEL_PROVIDER_ID } from './enum/model';
 export type { ModelProviderId } from './enum/model';
+export { MODEL_PROVIDER_ID } from './enum/model';
 export { buildAgentFromResourceItem, buildDefaultPersonalAgent } from './mapper/agent.mapper';
+export type {
+  CapabilitySkillSelection,
+  CapabilityToolOption,
+} from './mapper/capabilityPicker.mapper';
 export {
   buildCapabilityPickerSections as buildSkillMenuSections,
   mapChatInputToolSelectionOverrides,
   selectChatInputWebSearchTools,
-} from './mapper/capabilityPicker.mapper';
-export type {
-  CapabilitySkillSelection,
-  CapabilityToolOption,
 } from './mapper/capabilityPicker.mapper';
 export type {
   BindChatModelProviderRequest,
@@ -63,5 +63,6 @@ export type {
   ToolApprovalStatusRequest,
   UseChatSessionOptions,
 } from './session/index.type';
+export { useChatSessionMetadata } from './session/sessionCache';
 export { useChatHistory } from './session/useChatHistory';
 export { useChatSession } from './session/useChatSession';

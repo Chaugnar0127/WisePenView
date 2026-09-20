@@ -1,11 +1,10 @@
-import { AppButton } from '@/components/Button';
-import { ResultState } from '@/components/Feedback';
-import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import ErrorPageShell from '@/views/app/error/_components/ErrorPageShell';
-
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import shellStyles from '../_components/ErrorPageShell/style.module.less';
+
+import { AppButton } from '@/components/base/Button';
+import { ResultState } from '@/components/base/Feedback';
+import { ErrorPageActions, ErrorPageShell } from '@/components/business/ErrorPage';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
 function ForbiddenRoute() {
   const { t } = useTranslation('errors');
@@ -18,12 +17,12 @@ function ForbiddenRoute() {
         title={t('page.forbiddenTitle')}
         subTitle={t('page.forbiddenDescription')}
         extra={
-          <div className={shellStyles.actions}>
+          <ErrorPageActions>
             <AppButton variant="primary" onPress={() => navigate(-1)}>
               {t('page.backPrevious')}
             </AppButton>
             <AppButton onPress={() => navigate(APP_ROUTE_PATH.CHAT)}>{t('page.backApp')}</AppButton>
-          </div>
+          </ErrorPageActions>
         }
       />
     </ErrorPageShell>

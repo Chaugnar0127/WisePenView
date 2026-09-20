@@ -1,7 +1,12 @@
+import { toast } from '@heroui/react';
+import { useMemoizedFn, useUnmount } from 'ahooks';
+import type { TFunction } from 'i18next';
+import { type RefObject, useState, useSyncExternalStore } from 'react';
+
 import type {
   NoteBodyEditorHandle,
   NoteCollaborationUser,
-} from '@/components/Note/CustomBlockNote/index.type';
+} from '@/components/business/Note/CustomBlockNote/index.type';
 import { useInlineCommentService, useInteractService, useUserService } from '@/domains';
 import type {
   NoteInfoDisplayData,
@@ -12,12 +17,9 @@ import { NoteInlineCommentSession, useNoteSession } from '@/domains/Note';
 import { useApi } from '@/hooks/useApi';
 import { useSmoothFlag } from '@/hooks/useSmoothFlag';
 import { parseErrorMessage } from '@/utils/error';
-import { useResourceHostChatContextActions } from '@/views/resource/ResourceHostContext';
 import { useResourceSidePanelStore } from '@/views/resource/_store/useResourceSidePanelStore';
-import { toast } from '@heroui/react';
-import { useMemoizedFn, useUnmount } from 'ahooks';
-import type { TFunction } from 'i18next';
-import { useState, useSyncExternalStore, type RefObject } from 'react';
+import { useResourceHostChatContextActions } from '@/views/resource/ResourceHostContext';
+
 import {
   createNoteChatStateProvider,
   createNoteSelectionChatContext,

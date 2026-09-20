@@ -1,8 +1,9 @@
-import JoinByInviteCodeModal from '@/components/Group/JoinByInviteCodeModal';
-import { useGroupService } from '@/domains';
-import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+
+import JoinByInviteCodeModal from '@/components/business/Group/JoinByInviteCodeModal';
+import { useGroupService } from '@/domains';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
 function PublicInvitePage() {
   const { t } = useTranslation('group');

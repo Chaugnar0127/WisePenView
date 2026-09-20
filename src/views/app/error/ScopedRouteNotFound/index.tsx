@@ -1,10 +1,9 @@
-import { AppButton } from '@/components/Button';
-import { ResultState } from '@/components/Feedback';
-import ErrorPageShell from '@/views/app/error/_components/ErrorPageShell';
-
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import shellStyles from '../_components/ErrorPageShell/style.module.less';
+
+import { AppButton } from '@/components/base/Button';
+import { ResultState } from '@/components/base/Feedback';
+import { ErrorPageActions, ErrorPageShell } from '@/components/business/ErrorPage';
 
 export interface ScopedRouteNotFoundProps {
   homePath: string;
@@ -22,12 +21,12 @@ function ScopedRouteNotFound({ homePath, homeLabelKey }: ScopedRouteNotFoundProp
         title={t('page.notFoundTitle')}
         subTitle={t('page.notFoundDescription')}
         extra={
-          <div className={shellStyles.actions}>
+          <ErrorPageActions>
             <AppButton variant="primary" onPress={() => navigate(homePath)}>
               {t(homeLabelKey)}
             </AppButton>
             <AppButton onPress={() => navigate(-1)}>{t('page.backPrevious')}</AppButton>
-          </div>
+          </ErrorPageActions>
         }
       />
     </ErrorPageShell>

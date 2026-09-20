@@ -1,4 +1,5 @@
-import { SpeechApi } from '../apis/SpeechApi';
+import { SpeechApi } from '@domain-apis';
+
 import { SpeechServicesMap } from '../mapper/SpeechServices.map';
 import type { ISpeechService } from './index.type';
 

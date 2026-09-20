@@ -1,4 +1,5 @@
-import { useGroupContext } from '@/layouts/Group/GroupContext';
+import { useGroupContext } from '@/views/app/group/GroupRoute/GroupContext';
+
 import GroupDescriptionSettings from '../_components/GroupDescriptionSettings';
 
 function GroupSettingsPage() {

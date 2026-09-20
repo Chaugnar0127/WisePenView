@@ -34,8 +34,9 @@
 - API DTO 只放在 `src/domains/<Domain>/apis/*Api.type.ts`，不直接泄漏到组件 props。
 - 字段映射、协议兼容、ID/时间/枚举归一化集中在 mapper。
 - service 负责编排和抛错，不做 UI 提示，不直接 import Axios，不直接 import 其它 service 实现。
-- 真实 service 只在 `src/domains/_registry/registry.impl.ts` 装配；mock service 只在 `registry.mock.ts` 装配。
+- 正式與 mock 共用 `src/domains/_registry/registry.ts` 的 service 裝配；service 經 `@domain-apis` 呼叫 API，由建置模式選擇正式或 mock I/O。
 - 组件通过 `useXxxService()` 获取领域能力；跨 service 依赖通过 registry 显式注入。
+- `src/layouts` 只放路由壳与壳内私有实现（壳组件、壳状态、壳 controller）。a11y 适配、样式 mixin、通用 hook、DOM/工具函数、跨层常量属于全局基建，按归属放 `src/styles`、`src/hooks`、`src/utils`、`src/constants`、`src/components/base`，禁止落到 `layouts` 下。
 
 ## React 与样式
 

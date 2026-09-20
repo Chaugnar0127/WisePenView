@@ -4,7 +4,7 @@ import {
   type ResourceChatContext,
   type ResourceChatStateProvider,
   type ResourceOpenChatState,
-} from '@/components/ChatPanel/ResourceChatProtocol';
+} from '@/components/business/ChatPanel/ResourceChatProtocol';
 import type { ChatFrontendState } from '@/domains/Chat';
 import type { NoteSelectionSnapshot, NoteSessionStatus, SelectedNoteScope } from '@/domains/Note';
 import i18n from '@/i18n';

@@ -1,13 +1,14 @@
+import { useTranslation } from 'react-i18next';
+
+import type { AppBreadcrumbItem } from '@/components/base/AppBreadcrumb';
 import {
   getDriveNodeLabel,
   getDriveScopeGroupId,
-} from '@/components/Drive/common/driveComponentModel';
-import type { AppBreadcrumbItem } from '@/components/Navigation/AppBreadcrumb';
+} from '@/components/business/Drive/common/driveComponentModel';
 import { useDriveService, useGroupService } from '@/domains';
 import type { DriveResourceLocation } from '@/domains/Drive';
 import { useApi } from '@/hooks/useApi';
 import { buildDrivePath } from '@/utils/navigation/driveRoute';
-import { useTranslation } from 'react-i18next';
 
 export function useResourceBreadcrumb(resourceId?: string, driveLocation?: DriveResourceLocation) {
   const { t } = useTranslation('workspace');

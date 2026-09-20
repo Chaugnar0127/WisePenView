@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from '@/apis/request';
-import { serializeRepeatKeyQuery } from '@/apis/serializeRepeatKeyQuery';
+
 import type {
   ChangeResourceActionPermissionApiRequest,
   GlobalSearchApiRequest,
@@ -12,10 +12,27 @@ import type {
 
 // /resource/item/*
 
+const serializeListResourcesQuery = (params: Record<string, unknown>): string => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item !== undefined && item !== null && String(item) !== '') {
+          searchParams.append(key, String(item));
+        }
+      });
+      return;
+    }
+    searchParams.append(key, String(value));
+  });
+  return searchParams.toString();
+};
+
 function listResources(req: ListResourceItemsApiRequest): Promise<ResourceListPageApiResponse> {
   return apiGet('/resource/item/listResources', {
     params: req,
-    paramsSerializer: serializeRepeatKeyQuery,
+    paramsSerializer: serializeListResourcesQuery,
   });
 }
 

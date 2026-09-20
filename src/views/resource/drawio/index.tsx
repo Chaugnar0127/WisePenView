@@ -1,7 +1,12 @@
-import { DRAWIO_EMBED_URL } from '@/apis/clientUrls';
-import { AppButton } from '@/components/Button';
-import { ResultState, Spin } from '@/components/Feedback';
-import AppDisplayDialog from '@/components/Overlay/AppDisplayDialog';
+import { useMemoizedFn } from 'ahooks';
+import { History, Save } from 'lucide-react';
+import { type DependencyList, type ReactNode, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+
+import { AppButton } from '@/components/base/Button';
+import { ResultState, Spin } from '@/components/base/Feedback';
+import AppDisplayDialog from '@/components/business/AppDisplayDialog';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useInteractService, useNoteService, useUserService } from '@/domains';
 import type {
@@ -16,33 +21,23 @@ import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { RESOURCE_KIND } from '@/utils/navigation/resourceTarget';
 import {
-  useResourceHostLayoutConfig,
   type ResourceHostLayoutConfig,
+  useResourceHostLayoutConfig,
 } from '@/views/resource/ResourceHostContext';
 
-import { useMemoizedFn } from 'ahooks';
-import { History, Save } from 'lucide-react';
-import { useState, type DependencyList, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { useDrawioEditorSession } from './_hooks/useDrawioEditorSession';
 import {
   buildDrawioUrl,
   decodeBase64Utf8,
-  readDrawioEmbedOrigin,
   type DrawioSaveState,
+  readDrawioEmbedOrigin,
   type WisePenTheme,
 } from './drawioProtocol';
 import styles from './style.module.less';
 
-const WISEPEN_COLOR_SCHEMES = new Set([
-  'default',
-  'warm',
-  'academic',
-  'violet',
-  'forest',
-  'minimal',
-]);
+const WISEPEN_COLOR_SCHEMES = new Set(['mist', 'floral', 'aqua', 'sunset', 'emerald', 'lavender']);
+const LEGACY_MIST_COLOR_SCHEME = 'default';
+const DRAWIO_EMBED_URL = import.meta.env.VITE_DRAWIO_EMBED_URL || 'https://embed.diagrams.net/';
 
 interface DrawioViewProps {
   resourceId?: string;
@@ -77,6 +72,7 @@ function readWisePenColorScheme(): string {
   if (rootScheme && WISEPEN_COLOR_SCHEMES.has(rootScheme)) {
     return rootScheme;
   }
+  if (rootScheme === LEGACY_MIST_COLOR_SCHEME) return 'mist';
 
   try {
     const storedScheme = window.localStorage.getItem(STORAGE_KEYS.colorScheme);
@@ -84,11 +80,12 @@ function readWisePenColorScheme(): string {
     if (storedScheme && WISEPEN_COLOR_SCHEMES.has(storedScheme)) {
       return storedScheme;
     }
+    if (storedScheme === LEGACY_MIST_COLOR_SCHEME) return 'mist';
   } catch {
     // localStorage 不可用时使用默认主题。
   }
 
-  return 'default';
+  return 'mist';
 }
 
 function DrawioLayoutConfig({

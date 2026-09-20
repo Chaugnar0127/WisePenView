@@ -1,11 +1,12 @@
-import { awaitAddrReady, notifyAddrFailure } from '@/apis/apiServerAddr';
-import { buildApiUrl } from '@/apis/clientUrls';
-import { applyXDeveloperHeader } from '@/apis/developmentTraffic';
-import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { useChat } from '@ai-sdk/react';
 import { useLatest } from 'ahooks';
 import { DefaultChatTransport } from 'ai';
 import { useRef } from 'react';
+
+import { applyXDeveloperHeader, awaitAddrReady, notifyAddrFailure } from '@/apis/runtime';
+import { buildApiUrl } from '@/utils/api/buildApiUrl';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+
 import type { ChatMessageMetadata, WisePenUIMessage } from '../entity/message';
 import { mapChatCompletionRequest } from '../mapper/chatCompletion.mapper';
 import { normalizeChatSseResponse } from './chatSseNormalizer';

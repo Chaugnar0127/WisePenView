@@ -14,7 +14,7 @@ import type { IInteractService } from '@/domains/Interact';
 import type { IMessageService } from '@/domains/Message';
 import type { INoteService } from '@/domains/Note';
 import type { IQuotaService } from '@/domains/Quota';
-import type { IResourceService } from '@/domains/Resource';
+import type { IResourcePermissionService, IResourceService } from '@/domains/Resource';
 import type { ISkillService } from '@/domains/Skill';
 import type { ISpeechService } from '@/domains/Speech';
 import type { ITagService } from '@/domains/Tag';
@@ -23,7 +23,7 @@ import type { IWalletService } from '@/domains/Wallet';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 
 import { ServicesContext } from './context';
-import type { ServicesContextValue } from './registry';
+import type { ServicesContextValue } from './registry.types';
 
 /** 内部 hook，供 useXxxService 复用；必须在 ServicesProvider 内使用 */
 function useServicesContext(): ServicesContextValue {
@@ -51,6 +51,8 @@ export const useInteractService = (): IInteractService => useServicesContext().i
 export const useMessageService = (): IMessageService => useServicesContext().messageService;
 export const useNoteService = (): INoteService => useServicesContext().noteService;
 export const useQuotaService = (): IQuotaService => useServicesContext().quotaService;
+export const useResourcePermissionService = (): IResourcePermissionService =>
+  useServicesContext().resourcePermissionService;
 export const useResourceService = (): IResourceService => useServicesContext().resourceService;
 export const useSkillService = (): ISkillService => useServicesContext().skillService;
 export const useSpeechService = (): ISpeechService => useServicesContext().speechService;

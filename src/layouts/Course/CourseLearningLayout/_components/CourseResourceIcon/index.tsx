@@ -1,4 +1,4 @@
-import EntryIcon from '@/components/Icons/EntryIcon';
+import EntryIcon from '@/components/base/Icons/EntryIcon';
 import type { CourseOutlineNode } from '@/domains/Course';
 
 interface CourseResourceIconProps {

@@ -1,13 +1,16 @@
-import { AppButton } from '@/components/Button';
-import { FormField, PasswordInput } from '@/components/Input';
-import { AppAlertDialog, AppFormDialog } from '@/components/Overlay';
-import { useChatService } from '@/domains';
-import type { ToolOption } from '@/domains/Chat';
-import { useApi } from '@/hooks/useApi';
 import { Switch } from '@heroui/react';
 import { KeyRound, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { AppButton } from '@/components/base/Button';
+import { FormField, PasswordInput } from '@/components/base/Input';
+import AppAlertDialog from '@/components/business/AppAlertDialog';
+import AppFormDialog from '@/components/business/AppFormDialog';
+import { useChatService } from '@/domains';
+import type { ToolOption } from '@/domains/Chat';
+import { useApi } from '@/hooks/useApi';
+
 import styles from './style.module.less';
 
 function WebSearchSettingsSection() {

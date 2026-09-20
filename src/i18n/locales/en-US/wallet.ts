@@ -21,8 +21,9 @@ const enUSWallet = {
     empty: 'No transactions',
     tabs: {
       all: 'All',
-      recharge: 'Credits added',
-      spend: 'Spent',
+      income: 'Income',
+      spend: 'Outflow',
+      record: 'Record',
     },
     columns: {
       time: 'Time',
@@ -32,10 +33,15 @@ const enUSWallet = {
       operator: 'Operator',
     },
     kind: {
-      recharge: 'Recharge',
+      refill: 'Recharge',
       spend: 'Spend',
       transferIn: 'Transfer in',
       transferOut: 'Transfer out',
+      income: 'Income',
+      exchange: 'Exchange',
+      reverse: 'Reversal',
+      gift: 'Reward',
+      onlyRecordMeta: 'Record',
     },
   },
   transfer: {

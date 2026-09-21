@@ -1,3 +1,4 @@
+export type { UserInviteRecord, UserInviteRecordList, UserInviteStatus } from './entity/invite';
 export type { AdminMessage, MessageDeliveryScope, MessageType } from './entity/message';
 export type {
   User,
@@ -34,6 +35,7 @@ export type {
   IUserService,
   ListAdminMessagesRequest,
   ListAdminMessagesResponse,
+  ListUserInviteRecordsRequest,
   ListUserSearchSuggestionsRequest,
   PublishMessageDeliveryScope,
   PublishMessageRequest,

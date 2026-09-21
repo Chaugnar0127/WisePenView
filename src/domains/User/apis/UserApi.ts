@@ -14,6 +14,8 @@ import type {
   ListAdminMessagesApiResponse,
   ListTransactionsApiRequest,
   ListTransactionsApiResponse,
+  ListUserInviteRecordsApiRequest,
+  ListUserInviteRecordsApiResponse,
   ListUserSearchSuggestionsApiRequest,
   PublishMessageApiRequest,
   RedeemVoucherApiRequest,
@@ -76,6 +78,12 @@ function addFeedback(req: AddFeedbackApiRequest): Promise<void> {
   return apiPost('/system/feedback/addFeedback', req);
 }
 
+function listInviteRecords(
+  req: ListUserInviteRecordsApiRequest
+): Promise<ListUserInviteRecordsApiResponse> {
+  return apiGet('/user/invite/listRecords', { params: req });
+}
+
 export const UserApi = {
   getUserInfo,
   searchUser,
@@ -89,6 +97,7 @@ export const UserApi = {
   listAdminMessages,
   publishMessage,
   addFeedback,
+  listInviteRecords,
 };
 
 /** User Wallet API: /user/wallet/* */

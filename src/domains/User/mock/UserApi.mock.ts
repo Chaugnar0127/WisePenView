@@ -1,7 +1,11 @@
 import { mockPage, mockResponse } from '@/domains/_shared/mock/response';
 
 import type { UserApi as UserApiContract } from '../apis/UserApi';
-import type { GetUserInfoApiResponse, UserSearchUserApiResponse } from '../apis/UserApi.type';
+import type {
+  GetUserInfoApiResponse,
+  UserInviteRecordApiResponse,
+  UserSearchUserApiResponse,
+} from '../apis/UserApi.type';
 import mockdata from './mockdata.json';
 export { UserWalletApi } from './UserWalletApi.mock';
 
@@ -30,6 +34,25 @@ const mockSearchUsers: UserSearchUserApiResponse[] = [
     realName: '陈思齐',
     avatar: '',
     identityType: 3,
+  },
+];
+
+/** 邀请记录 mock：脱敏虚拟用户，覆盖已绑定与奖励已发放两种状态 */
+const mockInviteRecords: UserInviteRecordApiResponse[] = [
+  {
+    id: 'mock-invite-1',
+    inviteeUserId: '20001',
+    inviteeDisplay: { nickname: '同学甲', username: 'mock_invitee_a', identityType: 1 },
+    status: 'REWARDED',
+    createTime: '2026-03-02T10:12:00Z',
+    rewardTime: '2026-03-05T09:30:00Z',
+  },
+  {
+    id: 'mock-invite-2',
+    inviteeUserId: '20002',
+    inviteeDisplay: { nickname: '同学乙', username: 'mock_invitee_b', identityType: 1 },
+    status: 'BOUND',
+    createTime: '2026-03-08T14:05:00Z',
   },
 ];
 
@@ -106,4 +129,5 @@ export const UserApi: typeof UserApiContract = {
     ),
   publishMessage: async () => undefined,
   addFeedback: async () => undefined,
+  listInviteRecords: (params) => mockResponse(mockPage(mockInviteRecords, params)),
 };

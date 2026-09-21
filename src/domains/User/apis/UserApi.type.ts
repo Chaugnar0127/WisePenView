@@ -37,6 +37,7 @@ interface GetUserInfoApiResponseUserInfo {
 
 interface GetUserInfoApiResponseUserProfile {
   sex: UserSexApiValue;
+  inviteCode: string | null;
   university: string | null;
   college: string | null;
   major: string | null;
@@ -112,6 +113,23 @@ export interface AdminMessageApiModel {
 }
 
 export type ListAdminMessagesApiResponse = PageR<AdminMessageApiModel>;
+
+/** 用户邀请 API: /user/invite/* */
+
+export type UserInviteStatusApiValue = 'BOUND' | 'REWARDED';
+
+export type ListUserInviteRecordsApiRequest = PageApiRequest;
+
+export interface UserInviteRecordApiResponse {
+  id?: string | number | null;
+  inviteeUserId?: string | number | null;
+  inviteeDisplay?: UserDisplayBaseApiResponse | null;
+  status?: UserInviteStatusApiValue | null;
+  createTime?: string | null;
+  rewardTime?: string | null;
+}
+
+export type ListUserInviteRecordsApiResponse = PageR<UserInviteRecordApiResponse>;
 
 export type PublishMessageApiDeliveryScope = 'DIRECT' | 'ALL_USERS';
 export type PublishMessageApiType = 'SYSTEM' | 'NORMAL';

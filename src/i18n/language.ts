@@ -2,6 +2,12 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from './resources';
 
+/** 界面语言选项，labelKey 位于 common 命名空间 */
+export const LANGUAGE_OPTIONS: Array<{ id: SupportedLanguage; labelKey: string }> = [
+  { id: 'zh-CN', labelKey: 'language.zhCN' },
+  { id: 'en-US', labelKey: 'language.enUS' },
+];
+
 function normalizeLanguage(language: string | null | undefined): SupportedLanguage | undefined {
   if (!language) return undefined;
   const normalized = language.toLowerCase();

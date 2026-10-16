@@ -8,6 +8,7 @@
 
 ## 核心流程
 
+- Skill 的版本、文件、配置和预览状态不进入 URL，由编辑器工作区维护。依据：[编辑器入口](index.tsx)、[导航流程](controllers/useSkillNavigationController.ts)。
 - 工作区以 account、resource 与 draft version 组合识别；切换 resource 或版本时，旧工作区草稿不可回写新工作区。
 - 文件树、Config 与版本浏览是不同 UI 状态，但保存 snapshot 必须使用当次 revision，避免新编辑被旧请求标记为已保存。
 - local draft cache 是 best-effort 恢复能力；读取、写入或清理失败不得阻断目前编辑流程。

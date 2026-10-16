@@ -10,14 +10,14 @@
 
 - Drive 有 personal 与 group 两种 scope；group scope 必须带有效 `groupId`，root identity 由 scope 决定。
 - root、folder、resource、link 是不同节点语义；loading node 是 UI 分页占位，不属于 domain service 的持久化节点。
-- folder 主要由 tag tree 映射；resource 与 link 由资源及其所在 tag／parent 映射。节点 ID 编码必须保留足以反解 scope 与 parent 的信息。
+- folder 主要由 tag tree 映射；resource 与 link 由资源及其所在 tag／parent 映射。节点 ID 编码必须保留足以反解 scope 与 parent 的信息。标签树过滤规则以 [Tag](../Tag/BUSINESS.md) 为准，资源绑定与位置操作以 [Resource](../Resource/BUSINESS.md) 为准。
 - `.Trash` 与 `.Shared` 是系统文件夹语义，不当作普通用户文件夹处理。
-- 个人 root 的可见子节点由 personal root、shared root 与可见 tag 规则共同决定；隐藏 tag 不直接进入 Drive 树。
+- 个人 root 由 personal root、shared root 与普通标签节点组合；Drive 对原始标签树的节点分类由 `model/driveNode.ts` 维护，不能直接替换成普通 Tag 视图的过滤结果。
 
 ## 权限与生命周期
 
-- group Drive 的添加、移动、删除与权限操作受 group／tag／resource permission 共同限制。
-- 个人节点删除先移入 trash；group 节点从 group 移除与个人 trash 是不同命令，不能混用。
+- Drive 操作需遵守节点的 scope 与类型限制；标签策略的唯一来源是 [Tag](../Tag/BUSINESS.md)，资源权限主体与继承的唯一来源是 [Resource](../Resource/BUSINESS.md)。
+- Drive 将节点意图映射为个人回收站或小组移除等命令；这些资源操作的区别见 [Resource](../Resource/BUSINESS.md)，不要在 Drive 另建一套资源位置语义。
 - rename、move、mount、unmount 与 permission 更新成功后，调用方必须刷新受影响的 Drive view。
 - cursor 只对创建它的 parent 与 page scope 有效；非法或跨 parent 使用必须回传 validation error。
 

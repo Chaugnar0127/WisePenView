@@ -76,7 +76,7 @@ controllers -X-> 兄弟 controller
 parts -X-> 页面 controller
 ```
 
-Controller 之间不要互相 import、调用或共享可变对象。确需共享的无状态规则下沉到最近的纯模型模块；需要协调的运行时行为提升到顶层组件。这样可以避免循环依赖、隐藏刷新链路和隐式状态同步。
+同层行为域的 Controller 之间不要互相 import、调用或共享可变对象。确需共享的无状态规则下沉到最近的纯模型模块；需要协调的运行时行为提升到顶层组件。父 Controller 可以组合只服务自身的外部 I/O 子 Hook，例如工作区草稿的 IndexedDB 持久化；子 Hook 不编排兄弟流程，也不向 UI 暴露内部 ref 或缓存状态。
 
 ## 五、JSX 与弹窗归属
 

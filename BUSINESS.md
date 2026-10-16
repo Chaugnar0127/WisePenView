@@ -7,6 +7,10 @@
 | 业务域／流程          | 代码根目录                     | 唯一知识文档                                                                           |
 | --------------------- | ------------------------------ | -------------------------------------------------------------------------------------- |
 | Drive                 | `src/domains/Drive`            | [`src/domains/Drive/BUSINESS.md`](src/domains/Drive/BUSINESS.md)                       |
+| Resource              | `src/domains/Resource`         | [`src/domains/Resource/BUSINESS.md`](src/domains/Resource/BUSINESS.md)                 |
+| Tag                   | `src/domains/Tag`              | [`src/domains/Tag/BUSINESS.md`](src/domains/Tag/BUSINESS.md)                           |
+| Image                 | `src/domains/Image`            | [`src/domains/Image/BUSINESS.md`](src/domains/Image/BUSINESS.md)                       |
+| Document              | `src/domains/Document`         | [`src/domains/Document/BUSINESS.md`](src/domains/Document/BUSINESS.md)                 |
 | Skill domain          | `src/domains/Skill`            | [`src/domains/Skill/BUSINESS.md`](src/domains/Skill/BUSINESS.md)                       |
 | Skill editor workflow | `src/components/editors/skill` | [`src/components/editors/skill/BUSINESS.md`](src/components/editors/skill/BUSINESS.md) |
 

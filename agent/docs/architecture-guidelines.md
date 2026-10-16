@@ -8,7 +8,8 @@
 
 - 超过 400 行：warning，先检查职责边界，不要求为行数机械拆分。
 - 超过 600 行：error，必须拆分或在 ESLint 配置中为明确不适合拆分的代码文件登记例外及原因。
-- 第一轮先对 `src/components/editors/skill` 试行；通过两次审查后再扩大目录范围。
+- 计入空行与注释，文件结尾的换行不额外增加一行；400／600 行本身不超过门槛。
+- 当前检查范围为 `src/components/editors/skill` 与 Resource、Tag、Image、Document 四个 domain；按业务域逐批扩大，合并前完成业务知识与架构行为两次审查。
 - 生成代码文件、第三方 `_shadcn`、fixture、snapshot、样式与 build output 不纳入检查。
 
 warning 与 error 都应逐项审查。处理方式是创建稳定责任边界并拆分，或保留在原代码文件并说明 ESLint 例外理由。审查时至少回答：代码文件能否用一句话说明责任？同一组状态与行为是否共同维护不变量？一次更改是否经常跨越不相关的行为域？
@@ -31,8 +32,9 @@ warning 与 error 都应逐项审查。处理方式是创建稳定责任边界�
 - `src/views/...`：页面或流程私有的 UI、Controller、config 与 store。
 - `src/components/base`：不带业务语义的可复用组件。
 - `src/components/business`：跨页面复用且有稳定业务语义的组件。
+- `src/components/editors`：资源编辑器及其私有 Controller、模型与外部 I/O 适配，按编辑器契约与宿主通信。
 - `base` 不得依赖 `business`；domain 不得反向依赖 view、component 或 layout。
-- Controller 不得 import 兄弟 Controller；跨域流程由共同父层以语义化 callback 编排。
+- 同层行为域的 Controller 不得互相 import；跨域流程由共同父层以语义化 callback 编排。父 Controller 可组合专责外部 I/O 的私有子 Hook，但不暴露其内部 ref 或缓存状态。
 - API DTO 必须在 mapper／service 边界转成前端稳定类型，不直接作为组件 Props。
 
 ## 四、高内聚低耦合检查

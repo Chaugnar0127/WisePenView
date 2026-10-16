@@ -450,7 +450,14 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/components/editors/skill/**/*.{ts,tsx,js,jsx}'],
+    files: [
+      'src/components/editors/skill/**/*.{ts,tsx,js,jsx}',
+      'src/domains/{Resource,Tag,Image,Document}/**/*.{ts,tsx,js,jsx}',
+    ],
+    ignores: [
+      '**/{fixtures,__fixtures__,snapshots,__snapshots__,generated,__generated__}/**',
+      '**/*.{fixture,snapshot,generated}.{ts,tsx,js,jsx}',
+    ],
     plugins: { wisepen: wisePenPlugin },
     rules: {
       'max-lines': ['warn', { max: 400 }],

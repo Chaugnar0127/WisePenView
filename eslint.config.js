@@ -296,7 +296,8 @@ const fileLengthRule = (limit) => ({
   create(context) {
     return {
       Program(node) {
-        const actual = context.sourceCode.lines.length;
+        const lines = context.sourceCode.lines;
+        const actual = lines.length - (lines.at(-1) === '' ? 1 : 0);
         if (actual > limit) {
           context.report({
             node,

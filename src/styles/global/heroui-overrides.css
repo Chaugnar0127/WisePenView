@@ -69,16 +69,6 @@
   border-end-end-radius: var(--app-radius-button);
 }
 
-:is(.button-group, .toggle-button-group):is(
-    .button-group--horizontal,
-    .toggle-button-group--horizontal,
-    .button-group--vertical,
-    .toggle-button-group--vertical
-  )
-  > :is(.button, .toggle-button):only-child {
-  border-radius: var(--app-radius-button);
-}
-
 :is(.toggle-button-group--detached) > .toggle-button {
   border-radius: var(--app-radius-button);
 }

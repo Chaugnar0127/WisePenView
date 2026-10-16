@@ -7,6 +7,7 @@
 @import '../theme/palette.css' layer(base);
 /* 与 HeroUI token 位于同一层，通过选择器明确覆盖主题。 */
 @import '../theme/tokens.css' layer(base);
+@import '../theme/radius.css' layer(base);
 @import './heroui-overrides.css' layer(components);
 
 @theme inline {
@@ -363,9 +364,6 @@ body {
   margin: 0;
   min-width: 320px;
   width: 100%;
-  height: 100dvh;
-  max-height: 100dvh;
-  overflow: hidden;
   font-family: var(--app-font-family);
   background: var(--background);
   color: var(--foreground);
@@ -385,75 +383,6 @@ select {
 input,
 textarea {
   font-weight: var(--field-text-font-weight, var(--font-weight-medium, 500));
-}
-
-html {
-  height: 100dvh;
-  max-height: 100dvh;
-  overflow: hidden;
-}
-
-#root {
-  width: 100%;
-  height: 100dvh;
-  max-height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-#root :is(input, textarea, [contenteditable='true'], [contenteditable=''], [role='textbox']) {
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-#root
-  :is(
-    input,
-    textarea,
-    [contenteditable='true'],
-    [contenteditable=''],
-    [role='textbox'],
-    .markdown,
-    .bn-editor,
-    .ProseMirror,
-    .cm-editor,
-    .cm-content,
-    .monaco-editor,
-    .pdfViewer,
-    .textLayer,
-    .docx-wrapper,
-    iframe
-  )
-  :is(*) {
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-#root
-  :is(
-    .markdown,
-    .bn-editor,
-    .ProseMirror,
-    .cm-editor,
-    .cm-content,
-    .monaco-editor,
-    .pdfViewer,
-    .textLayer,
-    .docx-wrapper,
-    pre,
-    code,
-    kbd,
-    samp,
-    iframe
-  ) {
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-#root img {
-  -webkit-user-drag: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

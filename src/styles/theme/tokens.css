@@ -9,9 +9,7 @@
   --scrollbar-gutter: auto;
   --scrollbar-width: thin;
   --scrollbar-size: 8px;
-  --scrollbar-radius: 999px;
-  /* 圆角基准 */
-  --radius: 8px;
+  /* 圆角变量集中在 theme/radius.css，按基准、基础刻度、应用语义三层组织。 */
 }
 
 /* WisePen 桌面端排版：正文 14px、辅助文本 12px，重点层级使用 16px 以上字号。 */
@@ -91,38 +89,6 @@
   --chat-input-container-padding-block: 8px;
   --layout-welcome-title-size: 2rem;
   --layout-welcome-icon-size: 3.75rem;
-  /* 基础圆角 */
-  --radius-xs: calc(var(--radius) * 0.25);
-  --radius-sm: calc(var(--radius) * 0.5);
-  --radius-md: calc(var(--radius) * 0.75);
-  --radius-lg: calc(var(--radius) * 1);
-  --radius-xl: calc(var(--radius) * 1.5);
-  --radius-2xl: calc(var(--radius) * 2);
-  --radius-3xl: calc(var(--radius) * 3);
-  --radius-4xl: calc(var(--radius) * 4);
-  --radius-full: 999px;
-  /* 应用圆角 */
-  --app-radius-field: var(--radius-lg);
-  --app-radius-tooltip: var(--radius-md);
-  --app-radius-menu-item: var(--radius-md);
-  --app-radius-button: var(--radius-lg);
-  --app-radius-pill: var(--radius-full);
-  --app-radius-content: var(--radius-lg);
-  --app-radius-sidebar-item: var(--radius-lg);
-  --app-radius-breadcrumb-item: var(--radius-lg);
-  --app-radius-modal: var(--radius-xl);
-  --app-radius-popover: var(--radius-xl);
-  --app-popover-content-padding: var(--space-xs);
-  --app-popover-item-inset: var(--app-radius-menu-item);
-  --app-radius-popover-item: max(
-    0px,
-    calc(var(--app-radius-popover) - var(--app-popover-item-inset))
-  );
-  --app-radius-popover-control: max(
-    0px,
-    calc(var(--app-radius-popover) - var(--app-popover-content-padding))
-  );
-  --app-radius-scrollbar: var(--scrollbar-radius);
   /* 业务页统一内边距；运行时会按窗口尺寸覆盖，兜底值与“我的小组”常规窗口一致。 */
   --app-page-padding-block-start: var(--space-lg);
   --app-page-padding-block-end: var(--space-lg);
@@ -172,10 +138,6 @@
   /* 延迟显示 Tooltip，减少鼠标经密集图标区时的视觉干扰。 */
   --tooltip-delay: 400ms;
   --tooltip-close-delay: 100ms;
-  --table-shell-radius: var(--app-radius-content);
-  --table-control-radius: var(--app-radius-field);
-  --table-overlay-radius: var(--app-radius-popover);
-  --table-inner-radius: var(--app-radius-menu-item);
   /* Overlay 层级统一由主题维护，避免业务样式各自猜数字造成互相遮挡。 */
   --app-z-index-base: 0;
   --app-z-index-raised: 1;

@@ -14,7 +14,7 @@
   gap: var(--space-xs);
   padding: var(--chat-input-card-padding-block, var(--space-sm)) var(--space-md);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--app-radius-content);
   background: var(--surface);
   box-shadow: var(--card-shadow);
   container-type: inline-size;
@@ -62,7 +62,7 @@
   min-width: 0;
   padding: var(--space-xs) var(--space-sm);
   border-left: 2px solid var(--accent);
-  border-radius: var(--radius-xl);
+  border-radius: var(--app-radius-content);
   background: var(--surface-secondary);
 }
 
@@ -164,7 +164,7 @@
   height: 32px;
   min-width: 32px;
   min-height: 32px;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   padding: 0 !important;
   line-height: 1;
 
@@ -191,7 +191,7 @@
 .toolbarPopover {
   padding: 0;
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
+  border-radius: var(--app-radius-popover);
   background: var(--overlay);
   box-shadow: var(--card-shadow);
 }
@@ -243,7 +243,7 @@
   width: 56px;
   height: 12px;
   margin: var(--space-xs) var(--space-xs) var(--space-2xs);
-  border-radius: var(--radius-sm);
+  border-radius: var(--app-radius-inline);
 }
 
 .popoverSkeletonRow {
@@ -260,7 +260,7 @@
   flex-shrink: 0;
   width: 16px;
   height: 16px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--app-radius-inline);
 }
 
 .popoverSkeletonLabel {
@@ -268,7 +268,7 @@
   min-width: 0;
   height: 12px;
   max-width: 72%;
-  border-radius: var(--radius-sm);
+  border-radius: var(--app-radius-inline);
 }
 
 .popoverSkeletonLabelWide {
@@ -294,7 +294,7 @@
   min-width: 16px;
   height: 16px;
   padding: 0 var(--space-2xs);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: var(--accent);
   color: var(--accent-foreground);
   font-size: 10px;
@@ -326,7 +326,7 @@
 
   :global(.wisepen-tree__content) {
     min-height: 24px;
-    border-radius: var(--radius-lg);
+    border-radius: var(--app-radius-menu-item);
   }
 }
 
@@ -349,7 +349,7 @@
   .appSubtleScrollbar();
   padding: var(--space-xs);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
+  border-radius: var(--app-radius-popover);
   background: var(--background);
 }
 
@@ -393,7 +393,7 @@
   align-items: center;
   justify-content: center;
   border: 1px dashed var(--accent);
-  border-radius: calc(var(--radius-xl) - var(--radius-xs));
+  border-radius: calc(var(--app-radius-content) - var(--space-2xs));
   background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
   color: var(--accent-text);
   font-size: var(--font-size-sm);
@@ -431,7 +431,7 @@
 
 .dropOverlayLabel {
   padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-md);
+  border-radius: var(--app-radius-menu-item);
   background: color-mix(in srgb, var(--surface) 70%, transparent);
 }
 

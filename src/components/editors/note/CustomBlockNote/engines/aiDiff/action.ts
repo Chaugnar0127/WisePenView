@@ -3,7 +3,6 @@ import type * as Y from 'yjs';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { isRecord } from '@/utils/type/typeGuards';
 
-import { updateTableBlockPreservingRowHeights } from '../../plugins/TablePlugin/rowHeight';
 import type { CustomBlockNoteEditor } from '../../registry/noteEditorComposition';
 import type {
   NoteAiDiffAcceptedBlockUpdate,
@@ -55,19 +54,16 @@ function updateBlock(
   block: Record<string, unknown>,
   update: NoteAiDiffAcceptedBlockUpdate
 ): Record<string, unknown> {
-  const blockToUpdate = block as Parameters<CustomBlockNoteEditor['updateBlock']>[0];
-  const blockUpdate = update as Parameters<CustomBlockNoteEditor['updateBlock']>[1];
-  const updated =
-    block.type === 'table'
-      ? updateTableBlockPreservingRowHeights(editor, blockToUpdate, blockUpdate)
-      : editor.updateBlock(blockToUpdate, blockUpdate);
-  const updatedBlock = updated as unknown as Record<string, unknown>;
-  if (!updatedBlock) {
+  const updated = editor.updateBlock(
+    block as Parameters<CustomBlockNoteEditor['updateBlock']>[0],
+    update as Parameters<CustomBlockNoteEditor['updateBlock']>[1]
+  ) as unknown as Record<string, unknown>;
+  if (!updated) {
     throw createClientError(FRONTEND_CLIENT_ERROR.INTERNAL_STATE, {
       reason: `AI Diff block 更新未生效：${String(block.id ?? '')}`,
     });
   }
-  return updatedBlock;
+  return updated;
 }
 
 function resolveAcceptedUpdate(

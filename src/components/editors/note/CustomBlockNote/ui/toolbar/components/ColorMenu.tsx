@@ -13,8 +13,8 @@ import {
 
 import {
   blockHasInlineContent,
+  colorStyleExists,
   getSelectedBlocks,
-  stringStyleExists,
   toStyleUpdate,
 } from '../utils';
 import { type ButtonGroupChildProps, ToolbarButton } from './ToolbarButton';
@@ -29,8 +29,8 @@ export function ColorMenu(buttonGroupProps: ButtonGroupChildProps) {
       if (!editor.isEditable || !getSelectedBlocks(editor).find(blockHasInlineContent)) {
         return undefined;
       }
-      const hasTextColor = stringStyleExists(editor, 'textColor');
-      const hasBackgroundColor = stringStyleExists(editor, 'backgroundColor');
+      const hasTextColor = colorStyleExists(editor, 'textColor');
+      const hasBackgroundColor = colorStyleExists(editor, 'backgroundColor');
       if (!hasTextColor && !hasBackgroundColor) {
         return undefined;
       }

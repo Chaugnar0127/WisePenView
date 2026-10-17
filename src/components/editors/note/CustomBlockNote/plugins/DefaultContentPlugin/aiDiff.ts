@@ -62,17 +62,12 @@ function applyColorStyle(
   element.dataset[attribute] = value;
 }
 
-function renderStyledText(
-  text: string,
-  inline: Record<string, unknown>,
-  registry: NotePluginRegistry
-): HTMLElement {
+function renderStyledText(text: string, inline: Record<string, unknown>): HTMLElement {
   const root = document.createElement('span');
   root.className = styles.styledText;
   const inlineStyles = readInlineStyles(inline);
   applyColorStyle(root, 'textColor', inlineStyles.textColor);
   applyColorStyle(root, 'backgroundColor', inlineStyles.backgroundColor);
-  applyStringStylePlugins(root, inlineStyles, registry);
 
   let contentRoot = root;
   for (const [style, tag] of BOOLEAN_STYLE_TAGS) {
@@ -83,18 +78,6 @@ function renderStyledText(
   }
   contentRoot.textContent = text;
   return root;
-}
-
-/** 取值型样式（字号、字体等）由样式插件自己声明渲染方式，未注册的取值直接跳过。 */
-function applyStringStylePlugins(
-  element: HTMLElement,
-  inlineStyles: Record<string, unknown>,
-  registry: NotePluginRegistry
-): void {
-  for (const [style, value] of Object.entries(inlineStyles)) {
-    if (typeof value !== 'string') continue;
-    registry.stylePlugins.get(style)?.aiDiff.applyTextStyle(element, value);
-  }
 }
 
 function renderInlineChildren(content: unknown, registry: NotePluginRegistry): DocumentFragment {
@@ -279,12 +262,8 @@ export function listRichTextChangeTargets(
 }
 
 export const textInlineAiDiff: NoteInlineAiDiff = {
-  renderAiContent(aiContent, registry) {
-    return renderStyledText(
-      typeof aiContent.text === 'string' ? aiContent.text : '',
-      aiContent,
-      registry
-    );
+  renderAiContent(aiContent) {
+    return renderStyledText(typeof aiContent.text === 'string' ? aiContent.text : '', aiContent);
   },
 };
 

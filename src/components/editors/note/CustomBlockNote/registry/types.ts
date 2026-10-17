@@ -6,9 +6,7 @@ import type {
   InlineContentConfig,
   InlineContentSchema,
   InlineContentSpec,
-  StyleConfig,
   StyleSchema,
-  StyleSpec,
 } from '@blocknote/core';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
 import type { Node as PMNode } from '@tiptap/pm/model';
@@ -313,29 +311,13 @@ export interface NoteInlinePlugin extends NoteContentPluginBase {
   aiDiff: NoteInlineAiDiff;
 }
 
-/** 声明式样式插件：向 schema 注册一个 mark（styleSpec），表达选中文字的排版属性，
- *  例如字号、字体。它不参与内容树，与 block / inline 插件共用同一棵插件树和 id 校验。 */
-export interface NoteStylePlugin extends NotePluginNodeBase {
-  kind: 'style';
-  type: string;
-  spec: StyleSpec<StyleConfig>;
-  aiDiff: NoteStyleAiDiff;
-}
-
-/** 取值型样式的 AI Diff 预览渲染。样式不进入内容树，因此没有 markdown / 纯文本 /
- *  查找替换这类内容能力矩阵；会影响用户可见排版的消费方只有 AI Diff，由插件自己声明。 */
-export interface NoteStyleAiDiff {
-  /** 把样式值写到文本容器上，视觉结果必须与 spec 的 render / toExternalHTML 一致。 */
-  applyTextStyle: (element: HTMLElement, value: string) => void;
-}
-
 export interface NotePluginBundle extends NotePluginNodeBase {
   kind: 'bundle';
   children: readonly NotePluginNode[];
 }
 
 export type NoteContentPlugin = NoteBlockPlugin | NoteInlinePlugin;
-export type NotePluginNode = NotePluginBundle | NoteContentPlugin | NoteStylePlugin;
+export type NotePluginNode = NotePluginBundle | NoteContentPlugin;
 
 export interface NoteEditorExtension extends NotePluginNodeBase {
   print?: NotePrintContribution;
@@ -354,7 +336,6 @@ export interface NotePluginRegistry {
   contentPlugins: readonly NoteContentPlugin[];
   blockPlugins: ReadonlyMap<string, NoteBlockPlugin>;
   inlinePlugins: ReadonlyMap<string, NoteInlinePlugin>;
-  stylePlugins: ReadonlyMap<string, NoteStylePlugin>;
   defaultBlock?: NoteBlockInsertion;
   editorExtensions: readonly NoteEditorExtension[];
 }

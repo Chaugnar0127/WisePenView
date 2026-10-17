@@ -1,17 +1,24 @@
 import type { BlockConfig } from '@blocknote/core';
 
-import {
-  COLOR_KEYS,
-  type ColorKey,
-} from '@/components/editors/note/CustomBlockNote/ui/editorMenus/colorPaletteData';
 import { isRecord } from '@/utils/type/typeGuards';
 
-export const HIGHLIGHT_COLOR_KEYS = COLOR_KEYS;
+export const HIGHLIGHT_COLOR_KEYS = [
+  'default',
+  'gray',
+  'brown',
+  'red',
+  'orange',
+  'yellow',
+  'green',
+  'blue',
+  'purple',
+  'pink',
+] as const;
 
 export const HIGHLIGHT_BORDER_COLOR_KEYS = ['auto', ...HIGHLIGHT_COLOR_KEYS] as const;
 export const HIGHLIGHT_TEXT_ALIGNMENT_KEYS = ['left', 'center', 'right'] as const;
 
-export type HighlightColor = ColorKey;
+export type HighlightColor = (typeof HIGHLIGHT_COLOR_KEYS)[number];
 export type HighlightBorderColor = (typeof HIGHLIGHT_BORDER_COLOR_KEYS)[number];
 export type HighlightTextAlignment = (typeof HIGHLIGHT_TEXT_ALIGNMENT_KEYS)[number];
 

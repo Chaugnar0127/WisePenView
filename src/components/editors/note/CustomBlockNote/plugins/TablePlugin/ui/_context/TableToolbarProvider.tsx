@@ -9,7 +9,6 @@ import {
 import { useBlockNoteEditor, useEditorState } from '@blocknote/react';
 import type { ReactNode } from 'react';
 
-import { updateTableBlockPreservingRowHeights } from '@/components/editors/note/CustomBlockNote/plugins/TablePlugin/rowHeight';
 import { blockNoteSchema } from '@/components/editors/note/CustomBlockNote/registry/noteEditorComposition';
 import type { ColorKey } from '@/components/editors/note/CustomBlockNote/ui/editorMenus/colorPaletteData';
 import {
@@ -146,8 +145,7 @@ export function TableToolbarProvider({ children }: { children: ReactNode }) {
 
   const updateTableContent = (tableContent: TableContent<InlineContentSchema, StyleSchema>) => {
     if (!state) return;
-    updateTableBlockPreservingRowHeights(
-      editor,
+    editor.updateBlock(
       state.block,
       toBlockUpdate({
         type: 'table',

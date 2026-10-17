@@ -1,4 +1,4 @@
-import type { BlockSpecs, ExtensionFactoryInstance, StyleSpecs } from '@blocknote/core';
+import type { BlockSpecs, ExtensionFactoryInstance } from '@blocknote/core';
 import { BlockNoteSchema } from '@blocknote/core';
 import type { EditorProps } from '@tiptap/pm/view';
 
@@ -14,7 +14,6 @@ import type {
   NotePluginBundle,
   NotePluginNode,
   NotePluginRegistry,
-  NoteStylePlugin,
 } from './types';
 
 export interface CreateNotePluginRegistryOptions {
@@ -90,13 +89,10 @@ export function createNotePluginRegistry(
   const contentPlugins = nodes.filter(
     (node): node is NoteContentPlugin => node.kind === 'block' || node.kind === 'inline'
   );
-  const stylePlugins = nodes.filter((node): node is NoteStylePlugin => node.kind === 'style');
   const sortedContentPlugins = sortByDependencies(contentPlugins, seenIds);
-  const sortedStylePlugins = sortByDependencies(stylePlugins, seenIds);
   const sortedEditorExtensions = sortByDependencies(editorExtensions, seenIds);
   const blockPlugins = new Map<string, NoteBlockPlugin>();
   const inlinePlugins = new Map<string, NoteInlinePlugin>();
-  const stylePluginsByType = new Map<string, NoteStylePlugin>();
   let defaultBlock: NotePluginRegistry['defaultBlock'];
 
   for (const plugin of sortedContentPlugins) {
@@ -137,23 +133,12 @@ export function createNotePluginRegistry(
     }
   }
 
-  for (const plugin of sortedStylePlugins) {
-    const currentOwner = stylePluginsByType.get(plugin.type);
-    if (currentOwner) {
-      throw createRegistryError(
-        `Note style type ${plugin.type} 存在多个 owner：${currentOwner.id}、${plugin.id}`
-      );
-    }
-    stylePluginsByType.set(plugin.type, plugin);
-  }
-
   return {
     root,
     services,
     contentPlugins: sortedContentPlugins,
     blockPlugins,
     inlinePlugins,
-    stylePlugins: stylePluginsByType,
     defaultBlock,
     editorExtensions: sortedEditorExtensions,
   };
@@ -173,7 +158,6 @@ export function createDefaultNoteBlock(registry: NotePluginRegistry): Record<str
 export function createNoteBlockNoteSchema(registry: NotePluginRegistry) {
   const blockSpecs: BlockSpecs = {};
   const inlineContentSpecs: NoteInlineContentSpecs = {};
-  const styleSpecs: StyleSpecs = {};
 
   for (const plugin of registry.contentPlugins) {
     if (plugin.kind === 'block') {
@@ -183,14 +167,9 @@ export function createNoteBlockNoteSchema(registry: NotePluginRegistry) {
     }
   }
 
-  for (const plugin of registry.stylePlugins.values()) {
-    styleSpecs[plugin.type] = plugin.spec;
-  }
-
   return BlockNoteSchema.create().extend({
     blockSpecs,
     inlineContentSpecs,
-    styleSpecs,
   });
 }
 

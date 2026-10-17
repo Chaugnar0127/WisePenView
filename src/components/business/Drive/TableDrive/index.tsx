@@ -12,8 +12,10 @@ import { useTranslation } from 'react-i18next';
 import AppBreadcrumb from '@/components/base/AppBreadcrumb';
 import { AppButton } from '@/components/base/Button';
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
 import { FolderTable } from '@/components/base/Table';
 import EntryIcon from '@/components/business/Icons/EntryIcon';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import type { ResourceViewer } from '@/domains/Resource/model/resourceTarget';
 
 import { buildDriveBreadcrumbItems } from '../common/driveBreadcrumb';
@@ -222,19 +224,21 @@ function TableDrive({
     const items = buildDriveBreadcrumbItems(navigation.pathNodes, resolvedScope.scope);
     return (
       <>
-        <AppBreadcrumb
-          items={items}
-          ariaLabel={t('aria.folderPath', { ns: 'table' })}
-          renderItem={(content, item) => (
-            <ExternalFileDroppableBreadcrumb
-              nodeId={item.key}
-              isActive={externalDnd.activeBreadcrumbNodeId === item.key}
-              handlers={externalDnd.breadcrumbDragHandlers}
-            >
-              {dnd.renderBreadcrumbItem(content, item)}
-            </ExternalFileDroppableBreadcrumb>
-          )}
-        />
+        <GuideAnchor id={GUIDE_TOOL_ID.drivePath} layout="area">
+          <AppBreadcrumb
+            items={items}
+            ariaLabel={t('aria.folderPath', { ns: 'table' })}
+            renderItem={(content, item) => (
+              <ExternalFileDroppableBreadcrumb
+                nodeId={item.key}
+                isActive={externalDnd.activeBreadcrumbNodeId === item.key}
+                handlers={externalDnd.breadcrumbDragHandlers}
+              >
+                {dnd.renderBreadcrumbItem(content, item)}
+              </ExternalFileDroppableBreadcrumb>
+            )}
+          />
+        </GuideAnchor>
         {breadcrumbExtra}
       </>
     );
@@ -253,21 +257,25 @@ function TableDrive({
           {t('table.addFromPersonal')}
         </AppButton>
       ) : null}
-      <AppIconButton
-        icon={
-          interaction.isDetailPanelCollapsed ? (
-            <PanelRightOpen size={16} aria-hidden="true" />
-          ) : (
-            <PanelRightClose size={16} aria-hidden="true" />
-          )
-        }
-        label={
-          interaction.isDetailPanelCollapsed ? t('table.expandDetails') : t('table.collapseDetails')
-        }
-        size="sm"
-        className={styles.detailPanelToggle}
-        onPress={() => interaction.setIsDetailPanelCollapsed((collapsed) => !collapsed)}
-      />
+      <GuideAnchor id={GUIDE_TOOL_ID.driveDetails}>
+        <AppIconButton
+          icon={
+            interaction.isDetailPanelCollapsed ? (
+              <PanelRightOpen size={16} aria-hidden="true" />
+            ) : (
+              <PanelRightClose size={16} aria-hidden="true" />
+            )
+          }
+          label={
+            interaction.isDetailPanelCollapsed
+              ? t('table.expandDetails')
+              : t('table.collapseDetails')
+          }
+          size="sm"
+          className={styles.detailPanelToggle}
+          onPress={() => interaction.setIsDetailPanelCollapsed((collapsed) => !collapsed)}
+        />
+      </GuideAnchor>
     </div>
   );
 
@@ -311,63 +319,67 @@ function TableDrive({
         <div className={styles.driveFrame}>
           <div className={styles.driveBody}>
             <div className={styles.tablePanel}>
-              <FolderTable<DriveTableRow>
-                ariaLabel={t('table.aria')}
-                items={interaction.rows}
-                columns={columns}
-                loading={navigation.loading}
-                breadcrumb={breadcrumb}
-                toolbar={toolbar}
-                expandedRowKeys={navigation.expandedRowKeys}
-                onExpandedChange={navigation.handleExpandedChange}
-                selectedRowKey={interaction.selectedRow?.id}
-                onRowSelect={handleRowSelect}
-                onRowActivate={handleActivateNode}
-                renderEntryIcon={(row) => (
-                  <EntryIcon
-                    entryType={row.node.type === 'resource' ? 'resource' : row.node.type}
-                    resourceType={row.node.type === 'resource' ? row.node.resourceType : undefined}
-                    resourceIconType={
-                      row.node.type === 'resource' || row.node.type === 'link'
-                        ? row.node.resourceIconType
-                        : undefined
-                    }
-                    folderVariant={
-                      row.node.type === 'folder' && row.node.systemType === 'shared'
-                        ? 'shared'
-                        : undefined
-                    }
-                  />
-                )}
-                renderNameContent={renderNameContent}
-                renderRow={dnd.renderRow}
-                bodyDragHandlers={externalDnd.bodyDragHandlers}
-                bodyOverlay={
-                  externalDnd.isBackgroundDropActive ? (
-                    <div className={styles.fileDropOverlay} aria-hidden="true">
-                      {t('table.dropToUpload')}
-                    </div>
-                  ) : null
-                }
-                loadMore={{
-                  loading: navigation.loadingMore,
-                  hasMore: navigation.hasMore,
-                  onLoadMore: navigation.loadMore,
-                }}
-                totalCount={navigation.totalCount}
-                summary={t('table.summary', { count: navigation.totalCount })}
-                className={styles.table}
-                emptyText={trash.emptyText}
-                emptyDescription={trash.emptyDescription}
-                emptyIcon={trash.isTrashView ? <Trash2 size={20} aria-hidden /> : undefined}
-                sortDescriptor={interaction.sortDescriptor}
-                onSortChange={interaction.handleSortChange}
-                isPinnedFirst={isDrivePinnedFirstRow}
-                rowActions={resolveRowActions}
-                isEditMode={isEditMode}
-                checkboxSelection={checkboxSelection}
-                selectionFooter={selectionFooter}
-              />
+              <GuideAnchor id={GUIDE_TOOL_ID.driveFiles} layout="fill">
+                <FolderTable<DriveTableRow>
+                  ariaLabel={t('table.aria')}
+                  items={interaction.rows}
+                  columns={columns}
+                  loading={navigation.loading}
+                  breadcrumb={breadcrumb}
+                  toolbar={toolbar}
+                  expandedRowKeys={navigation.expandedRowKeys}
+                  onExpandedChange={navigation.handleExpandedChange}
+                  selectedRowKey={interaction.selectedRow?.id}
+                  onRowSelect={handleRowSelect}
+                  onRowActivate={handleActivateNode}
+                  renderEntryIcon={(row) => (
+                    <EntryIcon
+                      entryType={row.node.type === 'resource' ? 'resource' : row.node.type}
+                      resourceType={
+                        row.node.type === 'resource' ? row.node.resourceType : undefined
+                      }
+                      resourceIconType={
+                        row.node.type === 'resource' || row.node.type === 'link'
+                          ? row.node.resourceIconType
+                          : undefined
+                      }
+                      folderVariant={
+                        row.node.type === 'folder' && row.node.systemType === 'shared'
+                          ? 'shared'
+                          : undefined
+                      }
+                    />
+                  )}
+                  renderNameContent={renderNameContent}
+                  renderRow={dnd.renderRow}
+                  bodyDragHandlers={externalDnd.bodyDragHandlers}
+                  bodyOverlay={
+                    externalDnd.isBackgroundDropActive ? (
+                      <div className={styles.fileDropOverlay} aria-hidden="true">
+                        {t('table.dropToUpload')}
+                      </div>
+                    ) : null
+                  }
+                  loadMore={{
+                    loading: navigation.loadingMore,
+                    hasMore: navigation.hasMore,
+                    onLoadMore: navigation.loadMore,
+                  }}
+                  totalCount={navigation.totalCount}
+                  summary={t('table.summary', { count: navigation.totalCount })}
+                  className={styles.table}
+                  emptyText={trash.emptyText}
+                  emptyDescription={trash.emptyDescription}
+                  emptyIcon={trash.isTrashView ? <Trash2 size={20} aria-hidden /> : undefined}
+                  sortDescriptor={interaction.sortDescriptor}
+                  onSortChange={interaction.handleSortChange}
+                  isPinnedFirst={isDrivePinnedFirstRow}
+                  rowActions={resolveRowActions}
+                  isEditMode={isEditMode}
+                  checkboxSelection={checkboxSelection}
+                  selectionFooter={selectionFooter}
+                />
+              </GuideAnchor>
             </div>
             <aside
               className={styles.detailPanel}
@@ -375,12 +387,14 @@ function TableDrive({
               aria-label={t('table.detailsAsideAria')}
             >
               {!interaction.isDetailPanelCollapsed ? (
-                <DriveDetailPanel
-                  key={interaction.selectedRow?.id ?? (isEditMode ? 'edit-mode' : 'empty')}
-                  selectedRow={interaction.selectedRow}
-                  isEditMode={isEditMode}
-                  selectedCount={interaction.selectedActionTargets.length}
-                />
+                <GuideAnchor id={GUIDE_TOOL_ID.driveDetailsOpen} layout="fill">
+                  <DriveDetailPanel
+                    key={interaction.selectedRow?.id ?? (isEditMode ? 'edit-mode' : 'empty')}
+                    selectedRow={interaction.selectedRow}
+                    isEditMode={isEditMode}
+                    selectedCount={interaction.selectedActionTargets.length}
+                  />
+                </GuideAnchor>
               ) : null}
             </aside>
           </div>

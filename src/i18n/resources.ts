@@ -14,6 +14,7 @@ import enUSResource from './locales/en-US/resource';
 import enUSShell from './locales/en-US/shell';
 import enUSSkill from './locales/en-US/skill';
 import enUSTable from './locales/en-US/table';
+import enUSTour from './locales/en-US/tour';
 import enUSWallet from './locales/en-US/wallet';
 import enUSWorkspace from './locales/en-US/workspace';
 import zhCNAdmin from './locales/zh-CN/admin';
@@ -32,6 +33,7 @@ import zhCNResource from './locales/zh-CN/resource';
 import zhCNShell from './locales/zh-CN/shell';
 import zhCNSkill from './locales/zh-CN/skill';
 import zhCNTable from './locales/zh-CN/table';
+import zhCNTour from './locales/zh-CN/tour';
 import zhCNWallet from './locales/zh-CN/wallet';
 import zhCNWorkspace from './locales/zh-CN/workspace';
 
@@ -58,6 +60,7 @@ export const I18N_NAMESPACES = {
   NOTE: 'note',
   AGENT: 'agent',
   SKILL: 'skill',
+  TOUR: 'tour',
   ADMIN: 'admin',
 } as const;
 
@@ -82,6 +85,7 @@ export const resources = {
     [I18N_NAMESPACES.NOTE]: zhCNNote,
     [I18N_NAMESPACES.AGENT]: zhCNAgent,
     [I18N_NAMESPACES.SKILL]: zhCNSkill,
+    [I18N_NAMESPACES.TOUR]: zhCNTour,
     [I18N_NAMESPACES.ADMIN]: zhCNAdmin,
   },
   'en-US': {
@@ -102,6 +106,7 @@ export const resources = {
     [I18N_NAMESPACES.NOTE]: enUSNote,
     [I18N_NAMESPACES.AGENT]: enUSAgent,
     [I18N_NAMESPACES.SKILL]: enUSSkill,
+    [I18N_NAMESPACES.TOUR]: enUSTour,
     [I18N_NAMESPACES.ADMIN]: enUSAdmin,
   },
 } as const;

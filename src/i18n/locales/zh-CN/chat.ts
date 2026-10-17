@@ -68,7 +68,7 @@ const zhCNChat = {
     },
     skillMenu: {
       title: 'Skill',
-      configure: '配置 Agent',
+      configure: '配置',
       selectSkill: '选择 Skill',
       otherTitle: '其他 Skill',
       selectedOtherAria: '已选择的其他 Skill',

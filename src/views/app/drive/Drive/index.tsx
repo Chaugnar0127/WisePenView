@@ -3,8 +3,10 @@ import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { GuideAnchor, GuideScope } from '@/components/base/Guide';
 import PageHeader from '@/components/base/PageHeader';
 import DriveBrowser from '@/components/business/Drive/DriveBrowser';
+import { GUIDE_TOOL_ID, GUIDE_TOUR_ID } from '@/constants/tour';
 import { useDriveService } from '@/domains';
 import { buildDriveNodeScope } from '@/domains/Drive';
 import { useApi } from '@/hooks/useApi';
@@ -92,7 +94,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
   };
 
   return (
-    <>
+    <GuideScope tourId={GUIDE_TOUR_ID.drive}>
       <PageHeader title={t('page.title')} subtitle={t('page.subtitle')} />
 
       <Tabs
@@ -101,21 +103,23 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
         onSelectionChange={handleViewModeSelectionChange}
         className={`${underlineTabs.underlineTabs} ${styles.detailTabs}`}
       >
-        <Tabs.ListContainer>
-          <Tabs.List aria-label={t('page.viewAria')}>
-            {[
-              { key: 'tableDrive', label: t('page.tabs.drive') },
-              { key: 'uploadQueue', label: t('page.tabs.uploadQueue') },
-              { key: 'favorites', label: t('page.tabs.favorites') },
-              { key: 'trash', label: t('page.tabs.trash') },
-            ].map((item) => (
-              <Tabs.Tab key={item.key} id={item.key}>
-                {item.label}
-                <Tabs.Indicator />
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
-        </Tabs.ListContainer>
+        <GuideAnchor id={GUIDE_TOOL_ID.driveViews} asChild>
+          <Tabs.ListContainer>
+            <Tabs.List aria-label={t('page.viewAria')}>
+              {[
+                { key: 'tableDrive', label: t('page.tabs.drive') },
+                { key: 'uploadQueue', label: t('page.tabs.uploadQueue') },
+                { key: 'favorites', label: t('page.tabs.favorites') },
+                { key: 'trash', label: t('page.tabs.trash') },
+              ].map((item) => (
+                <Tabs.Tab key={item.key} id={item.key}>
+                  {item.label}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs.ListContainer>
+        </GuideAnchor>
       </Tabs>
 
       <div className={styles.previewContent}>
@@ -143,7 +147,7 @@ function Drive({ viewMode = 'tableDrive' }: DriveProps) {
           />
         ) : null}
       </div>
-    </>
+    </GuideScope>
   );
 }
 

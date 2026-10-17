@@ -87,7 +87,6 @@
   --note-editor-canvas-width: calc(
     var(--note-editor-content-width) + var(--note-editor-gutter) + var(--note-editor-gutter)
   );
-  --note-outline-open-width: var(--layout-note-outline-open-width, 320px);
 }
 
 .contentRowOutlineOpen .mainPanel {
@@ -95,11 +94,11 @@
   margin-left: clamp(
     0px,
     calc(
-      var(--note-editor-canvas-width) + var(--note-outline-open-width) +
-        var(--note-outline-open-width) - 100cqw
+      var(--note-editor-canvas-width) + var(--layout-note-outline-open-width) +
+        var(--layout-note-outline-open-width) - 100cqw
     ),
     min(
-      var(--note-outline-open-width),
+      var(--layout-note-outline-open-width),
       max(0px, calc(100cqw - var(--layout-note-editor-min-width, 560px)))
     )
   );

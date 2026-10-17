@@ -4,6 +4,7 @@ import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
 
 import { AuthServicesMap } from '../mapper/AuthServices.map';
 import type {
+  ChangePasswordRequest,
   LoginRequest,
   NewPasswordRequest,
   RegisterRequest,
@@ -37,10 +38,16 @@ const newPassword = async (params: NewPasswordRequest) => {
   await AuthApi.forgotPasswordReset(apiParams);
 };
 
+const changePassword = async (params: ChangePasswordRequest) => {
+  const apiParams = AuthServicesMap.mapChangePasswordRequest(params);
+  await AuthApi.changePassword(apiParams);
+};
+
 export const createAuthServices = (): IAuthService => ({
   login,
   register,
   resetPassword,
   newPassword,
+  changePassword,
   logout,
 });

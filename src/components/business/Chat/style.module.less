@@ -67,6 +67,31 @@
         flex-grow: 1;
       }
     }
+
+    .conversationPanel[data-welcome='true']:has([data-welcome-starters='rich']),
+    .conversationPanel[data-welcome='true']:has(.welcomeSlot[data-welcome-mode='rich']) {
+      .messageViewport {
+        flex: 0 0 0;
+      }
+
+      .welcomeSlot {
+        flex: 1 1 auto;
+        min-height: 0;
+        margin-bottom: var(--space-md);
+        overflow: hidden;
+      }
+
+      .welcomeSlotInner {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+      }
+
+      .composerBottomSpacer {
+        flex-grow: 0;
+      }
+    }
   }
 }
 
@@ -214,9 +239,31 @@
     margin-bottom var(--motion-duration-emphasis) var(--motion-ease-fluid);
 }
 
+.welcomeSlot:has([data-welcome-starters='focused']),
+.welcomeSlot[data-welcome-mode='focused'] {
+  transform: translateY(calc(-50% - var(--chat-welcome-composer-lift, 2.75rem)));
+}
+
+.welcomeSlot:has([data-welcome-starters='rich']),
+.welcomeSlot[data-welcome-mode='rich'] {
+  top: var(--space-md);
+  bottom: var(--chat-welcome-scroll-bottom, 11.5rem);
+  height: auto;
+  transform: none;
+  overflow: hidden;
+}
+
 .welcomeSlotInner {
   min-height: 0;
   overflow: hidden;
+}
+
+.welcomeSlotInner:has([data-welcome-starters='rich']),
+.welcomeSlot[data-welcome-mode='rich'] .welcomeSlotInner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .welcomeSlot[data-visible='false'] {

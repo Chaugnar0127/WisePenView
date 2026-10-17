@@ -2,8 +2,22 @@ import i18n from '@/i18n';
 
 import styles from './style.module.less';
 
-export type ColorKey =
-  'default' | 'gray' | 'brown' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
+/** 笔记颜色枚举；`theme` 跟随应用 accent，与有序列表序号同色源。 */
+export const COLOR_KEYS = [
+  'default',
+  'theme',
+  'gray',
+  'brown',
+  'red',
+  'orange',
+  'yellow',
+  'green',
+  'blue',
+  'purple',
+  'pink',
+] as const;
+
+export type ColorKey = (typeof COLOR_KEYS)[number];
 
 interface ColorItem {
   key: ColorKey;
@@ -13,6 +27,11 @@ interface ColorItem {
   backgroundClassName: string;
 }
 
+/**
+ * ColorSwatchPicker 需要可解析色值做选中匹配。
+ */
+const THEME_COLOR_PICKER_VALUE = '#00acc1';
+
 export const colorItems: ColorItem[] = [
   {
     key: 'default',
@@ -20,6 +39,13 @@ export const colorItems: ColorItem[] = [
     value: '#111827',
     textClassName: styles.textDefault,
     backgroundClassName: styles.backgroundDefault,
+  },
+  {
+    key: 'theme',
+    label: 'editor.color.theme',
+    value: THEME_COLOR_PICKER_VALUE,
+    textClassName: styles.textTheme,
+    backgroundClassName: styles.backgroundTheme,
   },
   {
     key: 'gray',

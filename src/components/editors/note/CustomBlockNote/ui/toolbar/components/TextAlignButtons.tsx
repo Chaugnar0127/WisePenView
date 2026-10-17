@@ -11,6 +11,7 @@ import { ToggleButtonGroup } from '@heroui/react';
 import { AlignCenter, AlignLeft, AlignRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { updateTableBlockPreservingRowHeights } from '@/components/editors/note/CustomBlockNote/plugins/TablePlugin/rowHeight';
 import { getSafeTableCellSelection } from '@/components/editors/note/CustomBlockNote/plugins/TablePlugin/ui/tableHandles/safe';
 import { blockNoteSchema } from '@/components/editors/note/CustomBlockNote/registry/noteEditorComposition';
 
@@ -96,7 +97,8 @@ export function TextAlignButtons() {
         targetCell.props.textAlignment = alignment;
       }
     }
-    editor.updateBlock(
+    updateTableBlockPreservingRowHeights(
+      editor,
       state.block,
       toBlockUpdate({
         type: 'table',

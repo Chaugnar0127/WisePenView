@@ -3,6 +3,7 @@ import type { ChatAgentOption } from '@/domains/Chat';
 import type { useChatSessionController } from '../_controllers/useChatSessionController';
 import type { useChatTurnController } from '../_controllers/useChatTurnController';
 import type { SendOptions } from '../send.type';
+import type { WelcomeScreenConfig } from '../WelcomeConfigurable/Starter/index.type';
 
 export interface ChatConversationProps {
   /** 对话域：消息、运行状态、历史分页与取消；由对话区按需解包 */
@@ -17,4 +18,6 @@ export interface ChatConversationProps {
   onClearContext?: () => void;
   /** 发送入口由顶层组合：登录校验、宿主守卫后再落到对话域 */
   onSend: (text: string, opts?: SendOptions) => boolean | void | Promise<boolean | void>;
+  /** 新建对话空态 Welcome；不传则仅 Hero + 标题 */
+  welcomeConfig?: WelcomeScreenConfig;
 }

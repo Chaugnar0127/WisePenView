@@ -21,6 +21,11 @@
   overflow: hidden;
 }
 
+.root[data-highlight-background-color='theme'] {
+  --highlight-background: var(--accent-soft);
+  --highlight-border: var(--accent-border, var(--accent));
+}
+
 .root[data-highlight-background-color='gray'] {
   --highlight-background: color-mix(in srgb, #9b9a97 15%, var(--surface));
   --highlight-border: color-mix(in srgb, #9b9a97 52%, var(--border-light));
@@ -66,6 +71,10 @@
   --highlight-border: color-mix(in srgb, #c9438d 48%, var(--border-light));
 }
 
+.root[data-highlight-border-color='theme'] {
+  --highlight-border: var(--accent-border, var(--accent));
+}
+
 .root[data-highlight-border-color='gray'] {
   --highlight-border: color-mix(in srgb, #9b9a97 52%, var(--border-light));
 }
@@ -100,6 +109,10 @@
 
 .root[data-highlight-border-color='pink'] {
   --highlight-border: color-mix(in srgb, #c9438d 52%, var(--border-light));
+}
+
+.root[data-highlight-text-color='theme'] {
+  --highlight-foreground: var(--accent-text);
 }
 
 .root[data-highlight-text-color='gray'] {

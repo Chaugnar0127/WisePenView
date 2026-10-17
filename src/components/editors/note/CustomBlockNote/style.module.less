@@ -108,7 +108,7 @@
     --bn-shadow-light: var(--surface-shadow);
     --bn-border: 1px solid var(--border-light);
     --bn-border-radius: var(--app-radius-menu-item);
-    --bn-ui-base-z-index: var(--app-z-index-editor-menu, 180);
+    --bn-ui-base-z-index: var(--app-z-index-editor-menu);
     --prosemirror-highlight: var(--foreground);
     --prosemirror-highlight-bg: var(--surface);
 
@@ -117,6 +117,17 @@
     --mantine-primary-color-light: var(--accent-soft);
     --mantine-primary-color-light-hover: var(--accent-soft-hover);
     --mantine-primary-color-light-color: var(--accent);
+  }
+
+  /* 主题色：与有序列表序号同源，直接绑定应用 accent token */
+  :global([data-style-type='textColor'][data-value='theme']),
+  :global([data-text-color='theme']) {
+    color: var(--accent-text);
+  }
+
+  :global([data-style-type='backgroundColor'][data-value='theme']),
+  :global([data-background-color='theme']) {
+    background-color: var(--accent-soft);
   }
 
   /* 文本选区使用主题柔和色，不跟随浏览器默认蓝色。 */
@@ -178,11 +189,15 @@
   :global(.ProseMirror td > *),
   :global(.ProseMirror th > *) {
     position: relative;
-    z-index: calc(var(--note-table-selection-layer, 25) + 1);
+    z-index: calc(var(--app-z-index-editor-block-overlay) + 1);
   }
 
   :global(.ProseMirror .column-resize-handle) {
-    background-color: var(--accent);
+    right: calc(var(--note-table-resize-line-width, 2px) / -2);
+    width: var(--note-table-resize-line-width, 2px);
+    border-radius: var(--app-radius-pill);
+    /* 列宽提示线统一由表格浮层绘制，避免原生 4px 线与 1px 自定义线叠加后变粗。 */
+    background-color: transparent;
   }
 
   :global(.bn-table-drop-cursor) {
@@ -352,6 +367,38 @@
     }
   }
 
+  /*
+   * 行内 NodeView 外层若变成 block/flex-100%，会独占一行并把后续正文挤到下一行。
+   * 与 InlineMath 一样强制保持行内盒。
+   */
+  :global(.bn-editor .bn-ic-react-node-view-renderer.node-inlineChecklist),
+  :global(
+      .bn-editor .bn-ic-react-node-view-renderer.node-inlineChecklist > [data-node-view-wrapper]
+    ) {
+    display: inline !important;
+    width: auto !important;
+    max-width: 100%;
+    height: auto !important;
+    overflow: visible !important;
+    vertical-align: baseline;
+    line-height: inherit;
+  }
+
+  /* 行内任务：字号/字重/行高跟随块；与正文基线对齐（勿用 top，否则整卡上抬） */
+  :global(.bn-editor .bn-block-content .bn-inline-content .bn-inline-checklist-root) {
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    max-width: min(100%, var(--note-editor-content-width, 820px)) !important;
+    vertical-align: baseline !important;
+  }
+
+  :global(.bn-editor .bn-block-content .bn-inline-content .bn-inline-checklist-root .bn-inline-checklist-label) {
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+  }
+
   :global(.bn-editor .bn-block-content[data-content-type='heading']) {
     font-size: 25px !important;
     font-weight: var(--font-weight-medium) !important;
@@ -449,7 +496,7 @@
   :global(
     .bn-editor .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
   ) {
-    z-index: var(--app-z-index-editor-toolbar, 220);
+    z-index: var(--app-z-index-editor-toolbar);
   }
 
   :global(
@@ -457,7 +504,7 @@
       .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
       > div.wise-code-block-toolbarWrapper
   ) {
-    z-index: calc(var(--app-z-index-editor-toolbar, 220) + 1);
+    z-index: calc(var(--app-z-index-editor-toolbar) + 1);
   }
 
   :global(.bn-editor .bn-block-content[data-content-type='codeBlock'] .wise-code-block-toolbar) {
@@ -574,7 +621,7 @@
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    z-index: calc(var(--app-z-index-editor-toolbar, 220) + 2);
+    z-index: calc(var(--app-z-index-editor-toolbar) + 2);
     box-sizing: border-box;
     width: 220px;
     padding: var(--space-2xs-plus);
@@ -939,7 +986,7 @@
   .bn-drag-preview
     .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
 ) {
-  z-index: var(--app-z-index-editor-toolbar, 220);
+  z-index: var(--app-z-index-editor-toolbar);
 }
 
 :global(
@@ -947,7 +994,7 @@
     .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
     > div.wise-code-block-toolbarWrapper
 ) {
-  z-index: calc(var(--app-z-index-editor-toolbar, 220) + 1);
+  z-index: calc(var(--app-z-index-editor-toolbar) + 1);
 }
 
 :global(
@@ -1068,7 +1115,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: calc(var(--app-z-index-editor-toolbar, 220) + 2);
+  z-index: calc(var(--app-z-index-editor-toolbar) + 2);
   box-sizing: border-box;
   width: 220px;
   padding: var(--space-2xs-plus);

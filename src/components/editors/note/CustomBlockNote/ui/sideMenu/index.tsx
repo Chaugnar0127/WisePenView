@@ -36,6 +36,7 @@ import {
   exportNoteFullHtml,
   exportNoteMarkdown,
 } from '@/components/editors/note/CustomBlockNote/engines/markdown/markdownExport';
+import { updateTableBlockPreservingRowHeights } from '@/components/editors/note/CustomBlockNote/plugins/TablePlugin/rowHeight';
 import type { CustomBlockNoteEditor } from '@/components/editors/note/CustomBlockNote/registry/noteEditorComposition';
 import {
   blockNoteSchema,
@@ -461,7 +462,12 @@ function CustomSideMenu({
   const applyContentAction = (actionId: string) => {
     const update = owner?.sideMenu?.apply?.(block as unknown as Record<string, unknown>, actionId);
     if (!update) return;
-    editor.updateBlock(block, toBlockUpdate(update));
+    const blockUpdate = toBlockUpdate(update);
+    if (block.type === 'table' && update.content !== undefined) {
+      updateTableBlockPreservingRowHeights(editor, block, blockUpdate);
+    } else {
+      editor.updateBlock(block, blockUpdate);
+    }
     closeMenu();
     window.setTimeout(() => editor.focus());
   };

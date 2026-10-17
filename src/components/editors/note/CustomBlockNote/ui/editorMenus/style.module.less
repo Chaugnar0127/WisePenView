@@ -1,6 +1,6 @@
 .colorPanel {
   --note-color-swatch-size: var(--control-height-sm);
-  --note-color-swatch-columns: 10;
+  --note-color-swatch-columns: 11;
 
   width: max-content;
   padding: var(--space-md);
@@ -57,6 +57,16 @@
   border-radius: var(--app-radius-inline);
 }
 
+.colorBorderPreview {
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  display: block;
+  border: 2px solid currentColor;
+  border-radius: var(--app-radius-inline);
+  background: transparent;
+}
+
 .backgroundDefault {
   background:
     linear-gradient(
@@ -71,6 +81,11 @@
 
 .textDefault {
   color: var(--overlay-foreground);
+}
+
+/* 与有序列表序号一致：跟随应用主题 accent */
+.textTheme {
+  color: var(--accent-text);
 }
 
 .textGray {
@@ -107,6 +122,10 @@
 
 .textPink {
   color: #ad1a72;
+}
+
+.backgroundTheme {
+  background: var(--accent-soft);
 }
 
 .backgroundGray {

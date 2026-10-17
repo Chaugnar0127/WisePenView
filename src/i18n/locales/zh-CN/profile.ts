@@ -3,6 +3,7 @@ const zhCNProfile = {
     title: '账号管理',
     subtitle: '管理账号信息',
     sectionTitle: '账号',
+    changePassword: '修改密码',
     username: '用户名',
     campusNo: '学工号',
     email: '邮箱',

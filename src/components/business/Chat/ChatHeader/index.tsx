@@ -3,6 +3,8 @@ import { History, PanelRightClose, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 
 import styles from '../style.module.less';
@@ -44,17 +46,21 @@ function ChatHeader({
       </div>
 
       <div className={styles.headerRight}>
-        <AppIconButton
-          icon={<Plus size={18} aria-hidden="true" />}
-          label={t('panel.create')}
-          onPress={onNewChat}
-        />
-        <AppIconButton
-          icon={<History size={18} aria-hidden="true" />}
-          label={sessionBarLabel}
-          isActive={sessionBarOpen}
-          onPress={onToggleSessionBar}
-        />
+        <GuideAnchor id={GUIDE_TOOL_ID.noteNewChat}>
+          <AppIconButton
+            icon={<Plus size={18} aria-hidden="true" />}
+            label={t('panel.create')}
+            onPress={onNewChat}
+          />
+        </GuideAnchor>
+        <GuideAnchor id={GUIDE_TOOL_ID.noteHistory}>
+          <AppIconButton
+            icon={<History size={18} aria-hidden="true" />}
+            label={sessionBarLabel}
+            isActive={sessionBarOpen}
+            onPress={onToggleSessionBar}
+          />
+        </GuideAnchor>
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import { Separator } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 
 import AppAvatar from '@/components/base/Avatar';
+import { GuideAnchor } from '@/components/base/Guide';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import type { NoteInfoDisplayData } from '@/domains/Note';
 
 import styles from './style.module.less';
@@ -23,50 +25,52 @@ function NoteInfoBar({ noteInfoDisplay }: NoteInfoBarProps) {
   const authorNamesText = authors.map((author) => author.name).join(', ');
 
   return (
-    <div className={styles.noteInfoBar}>
-      <div className={styles.metaRow}>
-        <div className={`${styles.noteInfoItem} ${styles.authorsInfoItem}`}>
-          <div
-            className={styles.authorsInfo}
-            aria-label={
-              hasAuthors ? t('info.authors', { names: authorNamesText }) : t('info.noAuthors')
-            }
-          >
-            {hasAuthors ? (
-              <>
-                <div className={styles.avatarStack} aria-hidden="true">
-                  {authors.map((author) => (
-                    <AppAvatar
-                      key={author.id}
-                      aria-label={author.name}
-                      className={styles.avatar}
-                      title={author.name}
-                    >
-                      {author.avatar ? (
-                        <AppAvatar.Image alt={author.name} src={author.avatar} />
-                      ) : null}
-                      <AppAvatar.Fallback className={styles.avatarFallback}>
-                        {getAvatarText(author.name)}
-                      </AppAvatar.Fallback>
-                    </AppAvatar>
-                  ))}
-                </div>
-                <span className={styles.authorNames} title={authorNamesText}>
-                  {authorNamesText}
-                </span>
-              </>
-            ) : (
-              <span className={styles.noteInfoValue}>{t('info.empty')}</span>
-            )}
+    <GuideAnchor id={GUIDE_TOOL_ID.noteInfo} layout="area">
+      <div className={styles.noteInfoBar} aria-label={t('info.bar')}>
+        <div className={styles.metaRow}>
+          <div className={`${styles.noteInfoItem} ${styles.authorsInfoItem}`}>
+            <div
+              className={styles.authorsInfo}
+              aria-label={
+                hasAuthors ? t('info.authors', { names: authorNamesText }) : t('info.noAuthors')
+              }
+            >
+              {hasAuthors ? (
+                <>
+                  <div className={styles.avatarStack} aria-hidden="true">
+                    {authors.map((author) => (
+                      <AppAvatar
+                        key={author.id}
+                        aria-label={author.name}
+                        className={styles.avatar}
+                        title={author.name}
+                      >
+                        {author.avatar ? (
+                          <AppAvatar.Image alt={author.name} src={author.avatar} />
+                        ) : null}
+                        <AppAvatar.Fallback className={styles.avatarFallback}>
+                          {getAvatarText(author.name)}
+                        </AppAvatar.Fallback>
+                      </AppAvatar>
+                    ))}
+                  </div>
+                  <span className={styles.authorNames} title={authorNamesText}>
+                    {authorNamesText}
+                  </span>
+                </>
+              ) : (
+                <span className={styles.noteInfoValue}>{t('info.empty')}</span>
+              )}
+            </div>
+          </div>
+          <Separator orientation="vertical" className={styles.infoDivider} />
+          <div className={styles.noteInfoItem}>
+            <span className={styles.noteInfoLabel}>{t('info.lastEdited')}</span>
+            <span className={styles.noteInfoValue}>{lastEditedAtText}</span>
           </div>
         </div>
-        <Separator orientation="vertical" className={styles.infoDivider} />
-        <div className={styles.noteInfoItem}>
-          <span className={styles.noteInfoLabel}>{t('info.lastEdited')}</span>
-          <span className={styles.noteInfoValue}>{lastEditedAtText}</span>
-        </div>
       </div>
-    </div>
+    </GuideAnchor>
   );
 }
 

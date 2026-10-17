@@ -2,7 +2,9 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
+import { GuideScope } from '@/components/base/Guide';
 import { RESOURCE_MAIN_MIN_WIDTH } from '@/constants/layoutScale';
+import { GUIDE_TOUR_ID } from '@/constants/tour';
 import type { DriveNodeScope } from '@/domains/Drive';
 import {
   normalizeResourceKind,
@@ -44,6 +46,8 @@ function ResourceRouteBoundary() {
   }>();
   const search = new URLSearchParams(location.search);
   const viewerParam = search.get('viewer') ?? undefined;
+  const resourceKind = normalizeResourceKind(rawResourceType);
+  const isNoteResource = resourceKind === RESOURCE_KIND.NOTE;
   const target: ResourceTarget = {
     resourceType: rawResourceType,
     resourceId,
@@ -51,7 +55,7 @@ function ResourceRouteBoundary() {
   };
   const routeContext = {
     resourceId,
-    resourceType: normalizeResourceKind(rawResourceType),
+    resourceType: resourceKind,
     viewer: resolveResourceViewer({ resourceType: rawResourceType, viewer: viewerParam }),
     driveLocation: parseResourceDriveLocation(search),
   };
@@ -110,38 +114,40 @@ function ResourceRouteBoundary() {
   };
 
   return (
-    <ResourceChatBindingProvider>
-      <ChatDockLayout
-        leftMinWidth={RESOURCE_MAIN_MIN_WIDTH}
-        panelId="app-resource-chat"
-        chatLabel={t('shell.chatPanel')}
-        left={
-          <ResourceHost
-            routeContext={routeContext}
-            openResource={openResource}
-            navigateToDrive={navigateToDrive}
-            switchResourceViewer={switchResourceViewer}
-            navigateResourceHash={navigateResourceHash}
-          >
-            <RouteOutletBoundary>
-              <ResourceTargetResolver
-                target={target}
-                onTargetChange={handleTargetChange}
-                onClose={() => void navigate(APP_ROUTE_PATH.DRIVE_PERSONAL)}
-              />
-            </RouteOutletBoundary>
-          </ResourceHost>
-        }
-        right={
-          <ResourceChatPanel
-            target={routeContext}
-            showCollapseButton={isMobileLayout}
-            context={chatContext}
-            clearContext={resourceChatContextActions.clearContext}
-          />
-        }
-      />
-    </ResourceChatBindingProvider>
+    <GuideScope tourId={isNoteResource ? GUIDE_TOUR_ID.note : undefined}>
+      <ResourceChatBindingProvider>
+        <ChatDockLayout
+          leftMinWidth={RESOURCE_MAIN_MIN_WIDTH}
+          panelId="app-resource-chat"
+          chatLabel={t('shell.chatPanel')}
+          left={
+            <ResourceHost
+              routeContext={routeContext}
+              openResource={openResource}
+              navigateToDrive={navigateToDrive}
+              switchResourceViewer={switchResourceViewer}
+              navigateResourceHash={navigateResourceHash}
+            >
+              <RouteOutletBoundary>
+                <ResourceTargetResolver
+                  target={target}
+                  onTargetChange={handleTargetChange}
+                  onClose={() => void navigate(APP_ROUTE_PATH.DRIVE_PERSONAL)}
+                />
+              </RouteOutletBoundary>
+            </ResourceHost>
+          }
+          right={
+            <ResourceChatPanel
+              target={routeContext}
+              showCollapseButton={isMobileLayout}
+              context={chatContext}
+              clearContext={resourceChatContextActions.clearContext}
+            />
+          }
+        />
+      </ResourceChatBindingProvider>
+    </GuideScope>
   );
 }
 

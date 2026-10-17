@@ -17,14 +17,20 @@ import styles from './style.module.less';
 interface ColorPaletteSectionConfig {
   color?: string;
   onChange: (color: ColorKey) => void;
+  /** 覆盖默认分区标题（如「边框颜色」） */
+  title?: string;
 }
 
 interface ColorPaletteContentProps {
   text?: ColorPaletteSectionConfig;
+  /** 边框色：样式同字体色条，标题默认为「边框颜色」 */
+  border?: ColorPaletteSectionConfig;
   background?: ColorPaletteSectionConfig;
   onReset?: () => void;
   className?: string;
 }
+
+type ColorSectionMode = 'text' | 'border' | 'background';
 
 function ColorSection({
   title,
@@ -34,7 +40,7 @@ function ColorSection({
 }: {
   title: string;
   selectedColor?: string;
-  mode: 'text' | 'background';
+  mode: ColorSectionMode;
   onSelect: (color: ColorKey) => void;
 }) {
   const selectedItem = getColorItem(selectedColor);
@@ -64,14 +70,19 @@ function ColorSection({
             }
             onPress={() => onSelect(item.key)}
           >
-            {mode === 'text' ? (
+            {mode === 'background' ? (
+              <span className={clsx(styles.colorBackgroundPreview, item.backgroundClassName)} />
+            ) : mode === 'border' ? (
+              <span
+                className={clsx(styles.colorBorderPreview, item.textClassName)}
+                aria-hidden="true"
+              />
+            ) : (
               <Baseline
                 size={20}
                 className={clsx(styles.colorTextPreview, item.textClassName)}
                 aria-hidden="true"
               />
-            ) : (
-              <span className={clsx(styles.colorBackgroundPreview, item.backgroundClassName)} />
             )}
           </ColorSwatchPicker.Item>
         ))}
@@ -82,6 +93,7 @@ function ColorSection({
 
 export function ColorPaletteContent({
   text,
+  border,
   background,
   onReset,
   className,
@@ -91,15 +103,23 @@ export function ColorPaletteContent({
     <div className={clsx(styles.colorPanel, className)}>
       {text ? (
         <ColorSection
-          title={t('editor.color.text')}
+          title={text.title ?? t('editor.color.text')}
           selectedColor={text.color}
           mode="text"
           onSelect={text.onChange}
         />
       ) : null}
+      {border ? (
+        <ColorSection
+          title={border.title ?? t('editor.color.border')}
+          selectedColor={border.color}
+          mode="border"
+          onSelect={border.onChange}
+        />
+      ) : null}
       {background ? (
         <ColorSection
-          title={t('editor.color.background')}
+          title={background.title ?? t('editor.color.background')}
           selectedColor={background.color}
           mode="background"
           onSelect={background.onChange}

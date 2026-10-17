@@ -1,0 +1,26 @@
+/* 目标块闪烁：时长与 NOTE_ANCHOR_HIGHLIGHT_DURATION_MS 保持一致。 */
+.anchorHighlight {
+  /*
+   * 闪烁曲线：前 80%（1000ms）保持满亮度不动，后 20%（250ms）迅速衰减到透明。
+   * 关键帧百分比与 1.25s 总时长绑定，改动任一处都要同步另一处与 NOTE_ANCHOR_HIGHLIGHT_DURATION_MS。
+   */
+  animation: noteAnchorHighlight 1.25s var(--motion-ease-out);
+  border-radius: var(--app-radius-detail);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: var(--accent-soft);
+  }
+}
+
+/* 类名由 ProseMirror 的节点装饰写入，keyframes 必须与声明同文件才能被同步改写。 */
+@keyframes noteAnchorHighlight {
+  0%,
+  80% {
+    background: var(--accent-soft);
+  }
+
+  100% {
+    background: transparent;
+  }
+}

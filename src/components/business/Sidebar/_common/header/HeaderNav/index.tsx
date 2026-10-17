@@ -89,6 +89,7 @@ function HeaderNav({
         aria-label={item.name}
         aria-current={isActive ? 'page' : undefined}
         data-nav-active={isActive ? 'true' : undefined}
+        data-guide-tool-id={item.toolId}
         isDisabled={item.isDisabled}
         className={clsx(
           styles.menuItem,
@@ -109,6 +110,7 @@ function HeaderNav({
                       render={({ ref: tooltipRef, ...tooltipProps }) => (
                         <div
                           {...tooltipProps}
+                          data-guide-tool-id={item.toolId}
                           tabIndex={itemProps.tabIndex}
                           ref={mergeRefs(itemRef, tooltipRef)}
                         />

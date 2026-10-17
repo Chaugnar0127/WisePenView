@@ -3,6 +3,8 @@ import { ArrowUp, Bot, Mic, Plus, Settings, SlidersHorizontal, Square } from 'lu
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useAppAuth } from '@/layouts/App/_context';
 
 import AgentPicker from '../AgentPicker';
@@ -96,20 +98,22 @@ function InputToolbar({
             onPress={requireLogin}
           />
         )}
-        <AppIconButton
-          icon={
-            sending ? (
-              <Square size={14} fill="currentColor" aria-hidden="true" />
-            ) : (
-              <ArrowUp size={18} aria-hidden="true" />
-            )
-          }
-          label={sending ? t('input.stop') : t('input.send')}
-          variant={sending ? 'ghost' : 'primary'}
-          onPress={handlePrimaryAction}
-          isDisabled={sending ? !onCancel : sendDisabled}
-          className={sending ? styles.stopButtonActive : undefined}
-        />
+        <GuideAnchor id={GUIDE_TOOL_ID.chatSend}>
+          <AppIconButton
+            icon={
+              sending ? (
+                <Square size={14} fill="currentColor" aria-hidden="true" />
+              ) : (
+                <ArrowUp size={18} aria-hidden="true" />
+              )
+            }
+            label={sending ? t('input.stop') : t('input.send')}
+            variant={sending ? 'ghost' : 'primary'}
+            onPress={handlePrimaryAction}
+            isDisabled={sending ? !onCancel : sendDisabled}
+            className={sending ? styles.stopButtonActive : undefined}
+          />
+        </GuideAnchor>
       </div>
     </div>
   );

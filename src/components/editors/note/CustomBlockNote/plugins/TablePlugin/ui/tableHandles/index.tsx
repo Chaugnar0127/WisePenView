@@ -1,4 +1,5 @@
 import {
+  EMPTY_CELL_HEIGHT,
   type InlineContentSchema,
   isTableCellSelection,
   mapTableCell,
@@ -18,6 +19,7 @@ import { useEventListener, useMount, useUnmount } from 'ahooks';
 import { Plus, Table2 } from 'lucide-react';
 import {
   type CSSProperties,
+  type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
   useEffect,
@@ -31,6 +33,8 @@ import AppIconButton from '@/components/base/Button/AppIconButton';
 import { useNoteEditorReadOnlyContext } from '@/components/editors/note/CustomBlockNote/engines/editor/_context';
 import { blockNoteSchema } from '@/components/editors/note/CustomBlockNote/registry/noteEditorComposition';
 
+import { findTableRowPosition, setTableRowHeight } from '../../rowHeight';
+import { clearTableRowResizePreview, setTableRowResizePreview } from '../../rowResizePreview';
 import { tableRailSelectionState, useTableRailSelectionState } from './railSelectionState';
 import { getTableHandles, hasMountedEditorView } from './safe';
 import styles from './style.module.less';
@@ -41,6 +45,28 @@ type InsertTarget = RowInsertTarget | ColumnInsertTarget | null;
 type SelectionTarget = { orientation: 'row' | 'column'; index: number };
 type SelectionDragTarget = SelectionTarget | null;
 type SelectionRange = { orientation: 'row' | 'column'; startIndex: number; endIndex: number };
+type ColumnResizeGuideState = { left: number; visible: boolean };
+type RowResizeDrag = {
+  blockId: string;
+  rowIndex: number;
+  rowPos: number | null;
+  captureElement: HTMLButtonElement;
+  pointerId: number;
+  startHandleTop: number;
+  startY: number;
+  startHeight: number;
+  minHeight: number;
+  height: number;
+};
+
+/** 行高下限由内容自然高度决定，EMPTY_CELL_HEIGHT 只是空单元格高度。 */
+function measureRowMinHeight(row: HTMLTableRowElement) {
+  const previousHeight = row.style.height;
+  row.style.height = 'auto';
+  const minHeight = Math.round(row.getBoundingClientRect().height);
+  row.style.height = previousHeight;
+  return Math.max(EMPTY_CELL_HEIGHT, minHeight);
+}
 
 function getTargetKey(target: Exclude<InsertTarget, null>) {
   return `${target.orientation}:${target.index}:${target.side}`;
@@ -122,13 +148,163 @@ function MountedTableInsertHandles() {
   const hoveredSelectionKeyRef = useRef<string | null>(null);
   const dragSelectionRef = useRef<SelectionDragTarget>(null);
   const didDragSelectionRef = useRef(false);
+  const rowResizeRef = useRef<RowResizeDrag | null>(null);
+  const rowResizeLayerRef = useRef<HTMLDivElement | null>(null);
+  const [resizingRowIndex, setResizingRowIndex] = useState<number | null>(null);
+  const [columnResizeGuide, setColumnResizeGuide] = useState<ColumnResizeGuideState | null>(null);
+
+  const updateHoveredColumnBoundary = (clientX: number, clientY: number) => {
+    if (!state?.show) {
+      setColumnResizeGuide((current) =>
+        current?.visible ? { ...current, visible: false } : current
+      );
+      return;
+    }
+    const tableWrapper = state?.widgetContainer?.closest('.tableWrapper');
+    const tableElement = tableWrapper?.querySelector('table');
+    const portalContainer = tableWrapper?.closest<HTMLElement>('.bn-block-content');
+    let nextLeft: number | null = null;
+
+    if (tableElement && portalContainer) {
+      const tableRect = tableElement.getBoundingClientRect();
+      const containerRect = portalContainer.getBoundingClientRect();
+      if (clientY >= tableRect.top && clientY <= tableRect.bottom) {
+        const cell = document
+          .elementsFromPoint(clientX, clientY)
+          .find(
+            (element): element is HTMLTableCellElement =>
+              element instanceof HTMLTableCellElement && tableElement.contains(element)
+          );
+        if (cell) {
+          const rect = cell.getBoundingClientRect();
+          let nearestDistance = Number.POSITIVE_INFINITY;
+          for (const edge of [rect.left, rect.right]) {
+            // 表格最左侧无法向前调整列宽，其余边界与原生列宽拖拽保持一致。
+            if (edge === rect.left && Math.abs(edge - tableRect.left) < 1) {
+              continue;
+            }
+            const distance = Math.abs(edge - clientX);
+            if (distance <= 6 && distance < nearestDistance) {
+              nearestDistance = distance;
+              nextLeft = edge - containerRect.left;
+            }
+          }
+        }
+      }
+    }
+
+    setColumnResizeGuide((current) => {
+      if (nextLeft !== null) {
+        if (current?.visible && Math.abs(current.left - nextLeft) < 0.5) {
+          return current;
+        }
+        return { left: nextLeft, visible: true };
+      }
+      return current?.visible ? { ...current, visible: false } : current;
+    });
+  };
+
+  const applyRowResizePreview = (drag: RowResizeDrag) => {
+    if (drag.rowPos === null || !hasMountedEditorView(editor)) return;
+    setTableRowResizePreview(editor.prosemirrorView, drag.rowPos, drag.height);
+  };
+
+  const clearRowResizePreview = () => {
+    if (!hasMountedEditorView(editor)) return;
+    clearTableRowResizePreview(editor.prosemirrorView);
+  };
+
+  const cancelRowResize = (pointerId?: number) => {
+    const drag = rowResizeRef.current;
+    if (!drag) return;
+    if (pointerId !== undefined && pointerId !== drag.pointerId) return;
+    rowResizeRef.current = null;
+    if (drag.captureElement.hasPointerCapture(drag.pointerId)) {
+      drag.captureElement.releasePointerCapture(drag.pointerId);
+    }
+    drag.captureElement.style.removeProperty('top');
+    clearRowResizePreview();
+    setResizingRowIndex(null);
+    tableHandles?.unfreezeHandles();
+  };
+
+  const finishRowResize = (pointerId?: number) => {
+    const drag = rowResizeRef.current;
+    if (!drag) return;
+    if (pointerId !== undefined && pointerId !== drag.pointerId) return;
+    rowResizeRef.current = null;
+    if (drag.captureElement.hasPointerCapture(drag.pointerId)) {
+      drag.captureElement.releasePointerCapture(drag.pointerId);
+    }
+    drag.captureElement.style.removeProperty('top');
+    setResizingRowIndex(null);
+    window.setTimeout(() => tableHandles?.unfreezeHandles());
+    if (drag.height === Math.round(drag.startHeight)) {
+      clearRowResizePreview();
+      return;
+    }
+    const applied = setTableRowHeight(editor, drag.blockId, drag.rowIndex, drag.height);
+    if (!applied) {
+      clearRowResizePreview();
+    }
+  };
+
+  const updateRowResize = (pointerId: number, clientY: number, preventDefault: () => void) => {
+    const drag = rowResizeRef.current;
+    if (!drag || pointerId !== drag.pointerId) return;
+    preventDefault();
+    const nextHeight = Math.max(
+      drag.minHeight,
+      Math.round(drag.startHeight + clientY - drag.startY)
+    );
+    if (nextHeight === drag.height) return;
+    drag.height = nextHeight;
+    applyRowResizePreview(drag);
+    drag.captureElement.style.top = `${drag.startHandleTop + drag.height - drag.startHeight}px`;
+  };
 
   useUnmount(() => {
+    cancelRowResize();
     dragSelectionRef.current = null;
     isPressingInsertRef.current = false;
     tableRailSelectionState.clear();
     tableHandles?.unfreezeHandles();
   });
+
+  useEventListener(
+    'pointermove',
+    (event) => updateRowResize(event.pointerId, event.clientY, () => event.preventDefault()),
+    { capture: true }
+  );
+  useEventListener('pointerup', (event) => finishRowResize(event.pointerId), { capture: true });
+  useEventListener('pointercancel', (event) => cancelRowResize(event.pointerId), { capture: true });
+  // 原生列宽拖拽只在 5px 命中区内显示提示线，这里补一条与行高拖拽一致的悬停竖线。
+  useEventListener(
+    'mousemove',
+    (event) => updateHoveredColumnBoundary(event.clientX, event.clientY),
+    { target: editor.domElement, capture: true }
+  );
+  useEventListener(
+    'mouseleave',
+    () => {
+      setColumnResizeGuide((current) =>
+        current?.visible ? { ...current, visible: false } : current
+      );
+    },
+    { target: editor.domElement }
+  );
+  useEventListener('mousemove', (event) => event.stopPropagation(), {
+    target: rowResizeLayerRef,
+  });
+  useEventListener(
+    'keydown',
+    (event) => {
+      if (!rowResizeRef.current || event.key !== 'Escape') return;
+      event.preventDefault();
+      cancelRowResize();
+    },
+    { capture: true }
+  );
 
   /**
    * @wisepen-manual-effect
@@ -533,6 +709,66 @@ function MountedTableInsertHandles() {
     insert(target);
     tableHandles.unfreezeHandles();
   };
+
+  const handleRowResizePointerDown = (
+    event: PointerEvent<HTMLButtonElement>,
+    rowIndex: number,
+    row: HTMLTableRowElement
+  ) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = row.getBoundingClientRect();
+    rowResizeRef.current = {
+      blockId: state.block.id,
+      rowIndex,
+      rowPos: findTableRowPosition(editor, state.block.id, rowIndex),
+      captureElement: event.currentTarget,
+      pointerId: event.pointerId,
+      startHandleTop: Number.parseFloat(event.currentTarget.style.top) || 0,
+      startY: event.clientY,
+      startHeight: rect.height,
+      minHeight: measureRowMinHeight(row),
+      height: Math.round(rect.height),
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setResizingRowIndex(rowIndex);
+    tableHandles.freezeHandles();
+  };
+
+  const handleRowResizeReset = (event: MouseEvent<HTMLButtonElement>, rowIndex: number) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setTableRowHeight(editor, state.block.id, rowIndex, null);
+  };
+
+  const handleRowResizeKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    rowIndex: number,
+    row: HTMLTableRowElement
+  ) => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    event.stopPropagation();
+    const step = event.shiftKey ? 24 : 8;
+    const currentHeight =
+      rowResizeRef.current?.rowIndex === rowIndex
+        ? rowResizeRef.current.height
+        : row.getBoundingClientRect().height;
+    const nextHeight = Math.max(
+      measureRowMinHeight(row),
+      Math.round(currentHeight + (event.key === 'ArrowDown' ? step : -step))
+    );
+    setTableRowHeight(editor, state.block.id, rowIndex, nextHeight);
+  };
+
+  const rowResizeHandles = rows.map((row, index) => ({
+    key: `row-resize-${index}`,
+    index,
+    row,
+    top: row.getBoundingClientRect().bottom - containerRect.top,
+  }));
+
   return createPortal(
     <>
       <div
@@ -589,6 +825,38 @@ function MountedTableInsertHandles() {
             onClick={(event) => handleSelectionClick(event, target)}
           />
         ))}
+      </div>
+      <div ref={rowResizeLayerRef} className={styles.rowResizeLayer} contentEditable={false}>
+        {rowResizeHandles.map(({ key, index, row, top }) => (
+          <button
+            key={key}
+            type="button"
+            className={styles.rowResizeHandle}
+            data-active={resizingRowIndex === index ? 'true' : undefined}
+            style={{ left: tableLeft, top, width: tableWidth }}
+            aria-label={t('table.resizeRow', { index: index + 1 })}
+            title={t('table.resizeRow', { index: index + 1 })}
+            onPointerDown={(event) => handleRowResizePointerDown(event, index, row)}
+            onPointerMove={(event) =>
+              updateRowResize(event.pointerId, event.clientY, () => event.preventDefault())
+            }
+            onPointerUp={(event) => finishRowResize(event.pointerId)}
+            onPointerCancel={(event) => cancelRowResize(event.pointerId)}
+            onDoubleClick={(event) => handleRowResizeReset(event, index)}
+            onKeyDown={(event) => handleRowResizeKeyDown(event, index, row)}
+          />
+        ))}
+      </div>
+      <div className={styles.columnResizeLayer} contentEditable={false}>
+        <span
+          className={styles.columnResizeGuide}
+          data-active={state.show && columnResizeGuide?.visible ? 'true' : undefined}
+          style={{
+            left: columnResizeGuide?.left ?? 0,
+            top: tableTop,
+            height: tableHeight,
+          }}
+        />
       </div>
       {state.show ? (
         <div className={styles.insertLayer} contentEditable={false}>

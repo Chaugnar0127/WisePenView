@@ -21,6 +21,7 @@ release
 .env.*.local
 
 # Editor directories and files
+.delta/
 .cursor/
 .vscode/*
 *.code-workspace

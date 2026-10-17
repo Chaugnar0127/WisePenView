@@ -1,6 +1,8 @@
 import { apiPost } from '@/apis/request';
 
 import type {
+  ChangePasswordApiRequest,
+  ChangePasswordApiResponse,
   LoginApiRequest,
   LoginApiResponse,
   LogoutApiResponse,
@@ -32,10 +34,15 @@ function forgotPasswordReset(req: NewPasswordApiRequest): Promise<NewPasswordApi
   return apiPost('/auth/resetPassword', req);
 }
 
+function changePassword(req: ChangePasswordApiRequest): Promise<ChangePasswordApiResponse> {
+  return apiPost('/auth/changePassword', req);
+}
+
 export const AuthApi = {
   login,
   logout,
   register,
   forgotPasswordEmail,
   forgotPasswordReset,
+  changePassword,
 };

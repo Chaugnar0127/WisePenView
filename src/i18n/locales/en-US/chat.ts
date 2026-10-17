@@ -70,7 +70,7 @@ const enUSChat = {
     },
     skillMenu: {
       title: 'Skills',
-      configure: 'Configure Agent',
+      configure: 'Configure',
       selectSkill: 'Select Skills',
       otherTitle: 'Other Skills',
       selectedOtherAria: 'Selected other Skills',

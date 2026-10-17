@@ -7,8 +7,10 @@ import { useTranslation } from 'react-i18next';
 
 import AppModal from '@/components/base/AppModal';
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
 import type { DriveSelectionItem } from '@/components/business/Drive/common/driveComponentModel';
 import DriveNavigator from '@/components/business/Drive/DriveNavigator';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useChatService } from '@/domains';
 import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from '@/domains/Chat';
 
@@ -175,72 +177,79 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
       <Dropdown isOpen={open} onOpenChange={setOpen}>
         <Dropdown.Trigger
           render={({ disabled, ...triggerProps }) => (
-            <AppIconButton
-              {...triggerProps}
-              isDisabled={disabled}
-              icon={renderAgentIcon(selectedAgent, 17)}
-              label={t('input.agentPicker.trigger')}
-              tooltip={{ content: getAgentLabel(selectedAgent) }}
-            />
+            <GuideAnchor id={GUIDE_TOOL_ID.chatAgent}>
+              <AppIconButton
+                {...triggerProps}
+                isDisabled={disabled}
+                icon={renderAgentIcon(selectedAgent, 17)}
+                label={t('input.agentPicker.trigger')}
+                tooltip={{ content: getAgentLabel(selectedAgent) }}
+              />
+            </GuideAnchor>
           )}
         />
-        <Dropdown.Popover className={styles.popoverPanelAgent} placement="top">
-          {showSkeleton ? (
-            skeleton
-          ) : (
-            <Dropdown.Menu aria-label={t('input.agentPicker.trigger')} onAction={handleMenuAction}>
-              <Dropdown.Section selectionMode="single" selectedKeys={[selectedAgent.agentId]}>
-                <Header>{t('input.agentPicker.title')}</Header>
-                {displayAgents.map((agent) => {
-                  const description =
-                    agent.source === 'CURRENT_DRAFT'
-                      ? t('input.agentPicker.currentDraft')
-                      : agent.agentType === 'GROUP' && agent.groupName
-                        ? agent.groupName
-                        : null;
-                  return (
+        <GuideAnchor id={GUIDE_TOOL_ID.chatAgentOpen} asChild>
+          <Dropdown.Popover className={styles.popoverPanelAgent} placement="top">
+            {showSkeleton ? (
+              skeleton
+            ) : (
+              <Dropdown.Menu
+                aria-label={t('input.agentPicker.trigger')}
+                onAction={handleMenuAction}
+              >
+                <Dropdown.Section selectionMode="single" selectedKeys={[selectedAgent.agentId]}>
+                  <Header>{t('input.agentPicker.title')}</Header>
+                  {displayAgents.map((agent) => {
+                    const description =
+                      agent.source === 'CURRENT_DRAFT'
+                        ? t('input.agentPicker.currentDraft')
+                        : agent.agentType === 'GROUP' && agent.groupName
+                          ? agent.groupName
+                          : null;
+                    return (
+                      <Dropdown.Item
+                        key={agent.agentId}
+                        id={agent.agentId}
+                        textValue={getAgentLabel(agent)}
+                      >
+                        {renderAgentIcon(agent, 14)}
+                        <span className={styles.listItemText}>
+                          <Label>{getAgentLabel(agent)}</Label>
+                          {description ? <Description>{description}</Description> : null}
+                        </span>
+                        <Dropdown.ItemIndicator />
+                      </Dropdown.Item>
+                    );
+                  })}
+                </Dropdown.Section>
+                {hasMorePersonalAgents ? <Separator /> : null}
+                {hasMorePersonalAgents ? (
+                  <Dropdown.Section>
                     <Dropdown.Item
-                      key={agent.agentId}
-                      id={agent.agentId}
-                      textValue={getAgentLabel(agent)}
+                      id={LOAD_MORE_PERSONAL_ACTION}
+                      textValue={t('session.loadMore')}
+                      isDisabled={loadingMorePersonal}
+                      shouldCloseOnSelect={false}
                     >
-                      {renderAgentIcon(agent, 14)}
-                      <span className={styles.listItemText}>
-                        <Label>{getAgentLabel(agent)}</Label>
-                        {description ? <Description>{description}</Description> : null}
-                      </span>
-                      <Dropdown.ItemIndicator />
+                      <ChevronDown size={14} aria-hidden="true" />
+                      <Label>{t('session.loadMore')}</Label>
                     </Dropdown.Item>
-                  );
-                })}
-              </Dropdown.Section>
-              {hasMorePersonalAgents ? <Separator /> : null}
-              {hasMorePersonalAgents ? (
+                  </Dropdown.Section>
+                ) : null}
+                <Separator />
                 <Dropdown.Section>
                   <Dropdown.Item
-                    id={LOAD_MORE_PERSONAL_ACTION}
-                    textValue={t('session.loadMore')}
-                    isDisabled={loadingMorePersonal}
-                    shouldCloseOnSelect={false}
+                    id={SELECT_FROM_GROUP_ACTION}
+                    textValue={t('input.agentPicker.selectFromGroup')}
                   >
-                    <ChevronDown size={14} aria-hidden="true" />
-                    <Label>{t('session.loadMore')}</Label>
+                    <Folder size={14} color="var(--resource-icon-folder)" aria-hidden="true" />
+                    <Label>{t('input.agentPicker.selectFromGroup')}</Label>
                   </Dropdown.Item>
                 </Dropdown.Section>
-              ) : null}
-              <Separator />
-              <Dropdown.Section>
-                <Dropdown.Item
-                  id={SELECT_FROM_GROUP_ACTION}
-                  textValue={t('input.agentPicker.selectFromGroup')}
-                >
-                  <Folder size={14} color="var(--resource-icon-folder)" aria-hidden="true" />
-                  <Label>{t('input.agentPicker.selectFromGroup')}</Label>
-                </Dropdown.Item>
-              </Dropdown.Section>
-            </Dropdown.Menu>
-          )}
-        </Dropdown.Popover>
+              </Dropdown.Menu>
+            )}
+          </Dropdown.Popover>
+        </GuideAnchor>
       </Dropdown>
       <GroupAgentPickerModal
         open={groupModalOpen}

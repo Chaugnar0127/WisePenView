@@ -79,6 +79,7 @@ export function useAppSidebarHeaderNav({
         key: item.key,
         name: t(item.labelKey),
         icon: item.icon,
+        toolId: item.toolId,
         isDisabled: creatingNote,
         onPress: handleCreateNote,
       };
@@ -89,6 +90,7 @@ export function useAppSidebarHeaderNav({
       key: item.key,
       name: t(item.labelKey),
       icon: item.icon,
+      toolId: item.toolId,
       onPress: () => handleNavItemPress(item),
     };
   });

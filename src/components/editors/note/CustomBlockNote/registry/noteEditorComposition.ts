@@ -1,8 +1,11 @@
 import { createAiDiffEditorExtension } from '../engines/aiDiff/extension';
+import { anchorHighlightEditorExtension } from '../engines/anchorHighlight/extension';
 import { searchEditorExtension } from '../engines/search/extension';
+import { checklistPlugin } from '../plugins/ChecklistPlugin';
 import { codeBlockPlugin } from '../plugins/CodeBlockPlugin';
 import { createDefaultContentPlugin } from '../plugins/DefaultContentPlugin';
 import { emojiEditorExtension } from '../plugins/EmojiPlugin/emojiExtension';
+import { fontPlugin } from '../plugins/FontPlugin';
 import { createHighlightBlockPlugin } from '../plugins/HighlightBlockPlugin';
 import { latexPlugin } from '../plugins/LatexPlugin';
 import { mermaidPlugin } from '../plugins/MermaidPlugin';
@@ -28,10 +31,12 @@ const notePluginTree = {
   id: 'note',
   children: [
     defaultContentPlugin,
+    fontPlugin,
     highlightBlockPlugin,
     codeBlockPlugin,
     tablePlugin,
     latexPlugin,
+    checklistPlugin,
     mermaidPlugin,
   ],
 } satisfies NotePluginBundle;
@@ -42,7 +47,12 @@ const noteEditorServices = {
 
 export const notePluginRegistry = createNotePluginRegistry({
   root: notePluginTree,
-  editorExtensions: [aiDiffEditorExtension, emojiEditorExtension, searchEditorExtension],
+  editorExtensions: [
+    aiDiffEditorExtension,
+    anchorHighlightEditorExtension,
+    emojiEditorExtension,
+    searchEditorExtension,
+  ],
   services: noteEditorServices,
 });
 

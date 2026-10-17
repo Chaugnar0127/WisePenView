@@ -38,7 +38,7 @@ export const NOTE_EDITOR_MIN_WIDTH = 560;
 export const RESOURCE_MAIN_MIN_WIDTH = NOTE_EDITOR_MIN_WIDTH;
 
 /** 笔记大纲展开宽度与收起宽度；对齐飞书文档目录的可读宽度。 */
-export const NOTE_OUTLINE_OPEN_WIDTH = 280;
+export const NOTE_OUTLINE_OPEN_WIDTH = 215;
 export const NOTE_OUTLINE_COLLAPSED_WIDTH = 40;
 
 /** Chat 侧栏/分栏面板宽度边界：保证输入卡片可读，并限制拖拽到超宽。 */

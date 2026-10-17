@@ -15,6 +15,8 @@ export interface ChatInputProps {
   preferredAgent?: ChatAgentOption | null;
   /** 全宽页默认可展示模型名；窄宽时自动仅图标（与侧栏一致） */
   fullWidth: boolean;
+  /** 由外层 ChatConversation 提供 ChatInputStoreProvider 时为 true */
+  useExternalStore?: boolean;
 }
 
 export type { LocalAttachmentPayload, LocalAttachmentUpload, SendOptions } from '../../send.type';

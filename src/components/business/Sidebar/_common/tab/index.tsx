@@ -4,7 +4,9 @@ import { BookOpen, FolderOpen, type LucideIcon, MessageSquare } from 'lucide-rea
 import type { ComponentPropsWithRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { GuideAnchor } from '@/components/base/Guide';
 import CommandPaletteTrigger from '@/components/business/CommandPalette/Trigger';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useAppAuth } from '@/layouts/App/_context';
 import { mergeRefs } from '@/utils/react/mergeRefs';
 
@@ -125,26 +127,28 @@ function AppSidebarTabs() {
       >
         <Tabs.ListContainer className={styles.tabListContainer}>
           <div className={styles.tabToolbar}>
-            <Tabs.List className={styles.tabList} aria-label={t('sidebar.contentAria')}>
-              <SidebarViewTab
-                id={SIDEBAR_VIEW_TAB.SESSIONS}
-                label={t('sidebar.sessions')}
-                icon={MessageSquare}
-                selected={selectedTab === SIDEBAR_VIEW_TAB.SESSIONS}
-              />
-              <SidebarViewTab
-                id={SIDEBAR_VIEW_TAB.DRIVE}
-                label={t('sidebar.drive')}
-                icon={FolderOpen}
-                selected={selectedTab === SIDEBAR_VIEW_TAB.DRIVE}
-              />
-              <SidebarViewTab
-                id={SIDEBAR_VIEW_TAB.COURSES}
-                label={t('sidebar.courses')}
-                icon={BookOpen}
-                selected={selectedTab === SIDEBAR_VIEW_TAB.COURSES}
-              />
-            </Tabs.List>
+            <GuideAnchor id={GUIDE_TOOL_ID.sidebarLibrary}>
+              <Tabs.List className={styles.tabList} aria-label={t('sidebar.contentAria')}>
+                <SidebarViewTab
+                  id={SIDEBAR_VIEW_TAB.SESSIONS}
+                  label={t('sidebar.sessions')}
+                  icon={MessageSquare}
+                  selected={selectedTab === SIDEBAR_VIEW_TAB.SESSIONS}
+                />
+                <SidebarViewTab
+                  id={SIDEBAR_VIEW_TAB.DRIVE}
+                  label={t('sidebar.drive')}
+                  icon={FolderOpen}
+                  selected={selectedTab === SIDEBAR_VIEW_TAB.DRIVE}
+                />
+                <SidebarViewTab
+                  id={SIDEBAR_VIEW_TAB.COURSES}
+                  label={t('sidebar.courses')}
+                  icon={BookOpen}
+                  selected={selectedTab === SIDEBAR_VIEW_TAB.COURSES}
+                />
+              </Tabs.List>
+            </GuideAnchor>
             <span className={styles.tabSearch}>
               <CommandPaletteTrigger />
             </span>

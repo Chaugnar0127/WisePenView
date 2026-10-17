@@ -3,6 +3,7 @@ const enUSProfile = {
     title: 'Account',
     subtitle: 'Manage account information',
     sectionTitle: 'Account details',
+    changePassword: 'Change password',
     username: 'Username',
     campusNo: 'Campus ID',
     email: 'Email',

@@ -4,7 +4,9 @@ import type { Key } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
 import ProviderLogo from '@/components/business/Icons/ProviderLogo';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import type { ChatModel } from '@/domains/Chat';
 
 import styles from './style.module.less';
@@ -79,63 +81,74 @@ function ModelSelector({
         <Dropdown.Trigger
           isDisabled={disabled}
           render={({ disabled, ...triggerProps }) => (
-            <AppIconButton
-              {...triggerProps}
-              isDisabled={disabled}
-              icon={triggerIcon}
-              label={triggerLabel}
-            />
+            <GuideAnchor id={GUIDE_TOOL_ID.chatModel}>
+              <AppIconButton
+                {...triggerProps}
+                isDisabled={disabled}
+                icon={triggerIcon}
+                label={triggerLabel}
+              />
+            </GuideAnchor>
           )}
         />
       ) : (
-        <Dropdown.Trigger
-          className={styles.trigger}
-          aria-label={triggerLabel}
-          isDisabled={disabled}
-        >
-          {loading ? (
-            <LoaderCircle size={16} className={styles.spinIcon} />
-          ) : (
-            <ProviderLogo provider={selected?.provider ?? 'openai'} size={16} />
-          )}
-          <span>{triggerLabel}</span>
-          <ChevronDown size={16} />
-        </Dropdown.Trigger>
-      )}
-      <Dropdown.Popover className={styles.popover} placement={placement}>
-        {models.length === 0 ? (
-          <div className={styles.empty}>{t('modelSelector.empty')}</div>
-        ) : (
-          <Dropdown.Menu
-            aria-label={t('modelSelector.select')}
-            selectionMode="single"
-            selectedKeys={selected ? [selected.id] : []}
-            className={styles.list}
-            onAction={handleAction}
+        <GuideAnchor id={GUIDE_TOOL_ID.chatModel}>
+          <Dropdown.Trigger
+            className={styles.trigger}
+            aria-label={triggerLabel}
+            isDisabled={disabled}
           >
-            <Dropdown.Section>
-              <Header>{t('modelSelector.title')}</Header>
-              {orderedModels.map((model) => (
-                <Dropdown.Item key={model.id} id={model.id} textValue={model.name}>
-                  <ProviderLogo provider={model.provider} size={18} />
-                  <span className={styles.info}>
-                    <span className={styles.nameRow}>
-                      <Label>{model.name}</Label>
-                      {isFreeModel(model) ? (
-                        <Chip size="sm" variant="soft" color="success" className={styles.freeChip}>
-                          <Chip.Label>{t('modelSelector.free')}</Chip.Label>
-                        </Chip>
-                      ) : null}
+            {loading ? (
+              <LoaderCircle size={16} className={styles.spinIcon} />
+            ) : (
+              <ProviderLogo provider={selected?.provider ?? 'openai'} size={16} />
+            )}
+            <span>{triggerLabel}</span>
+            <ChevronDown size={16} />
+          </Dropdown.Trigger>
+        </GuideAnchor>
+      )}
+      <GuideAnchor id={GUIDE_TOOL_ID.chatModelOpen} asChild>
+        <Dropdown.Popover className={styles.popover} placement={placement}>
+          {models.length === 0 ? (
+            <div className={styles.empty}>{t('modelSelector.empty')}</div>
+          ) : (
+            <Dropdown.Menu
+              aria-label={t('modelSelector.select')}
+              selectionMode="single"
+              selectedKeys={selected ? [selected.id] : []}
+              className={styles.list}
+              onAction={handleAction}
+            >
+              <Dropdown.Section>
+                <Header>{t('modelSelector.title')}</Header>
+                {orderedModels.map((model) => (
+                  <Dropdown.Item key={model.id} id={model.id} textValue={model.name}>
+                    <ProviderLogo provider={model.provider} size={18} />
+                    <span className={styles.info}>
+                      <span className={styles.nameRow}>
+                        <Label>{model.name}</Label>
+                        {isFreeModel(model) ? (
+                          <Chip
+                            size="sm"
+                            variant="soft"
+                            color="success"
+                            className={styles.freeChip}
+                          >
+                            <Chip.Label>{t('modelSelector.free')}</Chip.Label>
+                          </Chip>
+                        ) : null}
+                      </span>
+                      <Description>{renderProviderText(model)}</Description>
                     </span>
-                    <Description>{renderProviderText(model)}</Description>
-                  </span>
-                  <Dropdown.ItemIndicator />
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Section>
-          </Dropdown.Menu>
-        )}
-      </Dropdown.Popover>
+                    <Dropdown.ItemIndicator />
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Section>
+            </Dropdown.Menu>
+          )}
+        </Dropdown.Popover>
+      </GuideAnchor>
     </Dropdown>
   );
 }

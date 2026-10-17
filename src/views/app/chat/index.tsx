@@ -1,6 +1,8 @@
 import { clsx } from 'clsx';
 
+import { GuideScope } from '@/components/base/Guide';
 import Chat from '@/components/business/Chat';
+import { GUIDE_TOUR_ID } from '@/constants/tour';
 import { useMainShell } from '@/layouts/MainShell/_context';
 
 import styles from './style.module.less';
@@ -10,15 +12,17 @@ function ChatPage() {
   const { isMobileLayout: isCompactChat } = useMainShell();
 
   return (
-    <div className={clsx(styles.root, isCompactChat && styles.compact)}>
-      <div className={styles.chatHost}>
-        <Chat
-          fullWidth={isCompactChat ? 'panel' : 'page'}
-          showHeader={false}
-          showCollapseButton={false}
-        />
+    <GuideScope tourId={GUIDE_TOUR_ID.chat}>
+      <div className={clsx(styles.root, isCompactChat && styles.compact)}>
+        <div className={styles.chatHost}>
+          <Chat
+            fullWidth={isCompactChat ? 'panel' : 'page'}
+            showHeader={false}
+            showCollapseButton={false}
+          />
+        </div>
       </div>
-    </div>
+    </GuideScope>
   );
 }
 

@@ -1,4 +1,3 @@
-import { defaultBlockSpecs } from '@blocknote/core';
 import { PanelLeft, PanelTop, StretchHorizontal, Table2 } from 'lucide-react';
 
 import i18n from '@/i18n';
@@ -6,6 +5,8 @@ import i18n from '@/i18n';
 import { collectInlineTextMatches } from '../../engines/search/findReplace';
 import type { NoteBlockPlugin, NoteSideMenuAction } from '../../registry/types';
 import { readTableContent, TableAiContentView, type TableContentLike } from './AiDiffView';
+import { createTableRowResizePreviewExtension } from './rowResizePreview';
+import { noteTableBlockSpec } from './tableSpec';
 
 function tableActions(content: TableContentLike | null): NoteSideMenuAction[] {
   return [
@@ -41,7 +42,8 @@ export const tablePlugin = {
   id: 'table',
   type: 'table',
   contentModel: 'table',
-  spec: defaultBlockSpecs.table,
+  spec: noteTableBlockSpec,
+  extensions: () => [createTableRowResizePreviewExtension()],
   capabilities: {
     markdownImport: { support: 'default' },
     markdownExport: { support: 'default' },
@@ -80,6 +82,9 @@ export const tablePlugin = {
 .note-print-body tr {
   break-inside: avoid-page;
   page-break-inside: avoid;
+}
+.note-print-body tr[data-row-height] {
+  height: var(--note-table-row-height, auto);
 }
 .note-print-body th,
 .note-print-body td {

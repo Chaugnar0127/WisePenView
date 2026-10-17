@@ -12,6 +12,7 @@ export const APP_ROUTE_PATH = {
   AUTH_ONBOARDING_BIND: '/onboarding/bind',
   AUTH_PASSWORD_FORGOT: '/password/forgot',
   AUTH_PASSWORD_RESET: '/password/reset',
+  AUTH_PASSWORD_CHANGE: '/password/change',
   AUTH_EMAIL_VERIFY: '/email/verify',
   CHAT: '/chat',
   NOTIFICATIONS: '/notifications',
@@ -64,6 +65,7 @@ const AUTHENTICATED_APP_ROUTE_ROOTS = [
   APP_ROUTE_PATH.INVITE,
   APP_ROUTE_PATH.RESOURCES,
   APP_ROUTE_PATH.PROFILE,
+  APP_ROUTE_PATH.AUTH_PASSWORD_CHANGE,
 ] as const;
 
 export const isAuthenticatedAppRoutePath = (pathname: string): boolean =>

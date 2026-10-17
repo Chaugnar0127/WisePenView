@@ -2,8 +2,10 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppBreadcrumb from '@/components/base/AppBreadcrumb';
+import { GuideAnchor } from '@/components/base/Guide';
 import { FolderTable } from '@/components/base/Table';
 import EntryIcon from '@/components/business/Icons/EntryIcon';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 
 import { buildDriveBreadcrumbItems } from '../common/driveBreadcrumb';
 import { resolveDriveScope } from '../common/driveComponentModel';
@@ -43,11 +45,13 @@ function MobileDrive({
   const openDriveNode = useOpenDriveNode({ enterFolder: handleEnterFolder });
   const rows = navigation.dataSource.map((node) => toDriveTableRow(node, t));
   const breadcrumb = (
-    <AppBreadcrumb
-      items={buildDriveBreadcrumbItems(navigation.pathNodes, resolvedScope.scope)}
-      ariaLabel={t('aria.folderPath', { ns: 'table' })}
-      className={styles.breadcrumb}
-    />
+    <GuideAnchor id={GUIDE_TOOL_ID.drivePath} layout="area">
+      <AppBreadcrumb
+        items={buildDriveBreadcrumbItems(navigation.pathNodes, resolvedScope.scope)}
+        ariaLabel={t('aria.folderPath', { ns: 'table' })}
+        className={styles.breadcrumb}
+      />
+    </GuideAnchor>
   );
 
   const handleActivateNode = (row: DriveTableRow) => {
@@ -84,50 +88,54 @@ function MobileDrive({
 
   return (
     <main className={styles.mobileDrive} aria-label={t('mobile.aria')}>
-      <FolderTable<DriveTableRow>
-        ariaLabel={t('mobile.aria')}
-        items={rows}
-        columns={[
-          {
-            id: 'name',
-            label: t('table.columns.name'),
-            width: 'fill',
-            align: 'start',
-            isRowHeader: true,
-            isNameColumn: true,
-          },
-        ]}
-        loading={navigation.loading}
-        breadcrumb={breadcrumb}
-        expandedRowKeys={navigation.expandedRowKeys}
-        onExpandedChange={navigation.handleExpandedChange}
-        onRowActivate={handleActivateNode}
-        renderEntryIcon={(row) => (
-          <EntryIcon
-            entryType={row.node.type === 'resource' ? 'resource' : row.node.type}
-            resourceType={row.node.type === 'resource' ? row.node.resourceType : undefined}
-            resourceIconType={
-              row.node.type === 'resource' || row.node.type === 'link'
-                ? row.node.resourceIconType
-                : undefined
-            }
-            folderVariant={
-              row.node.type === 'folder' && row.node.systemType === 'shared' ? 'shared' : undefined
-            }
-          />
-        )}
-        renderNameContent={renderNameContent}
-        loadMore={{
-          loading: navigation.loadingMore,
-          hasMore: navigation.hasMore,
-          onLoadMore: navigation.loadMore,
-        }}
-        totalCount={navigation.totalCount}
-        summary={null}
-        emptyText={t('navigator.empty')}
-        className={styles.mobileTable}
-        isPinnedFirst={isDrivePinnedFirstRow}
-      />
+      <GuideAnchor id={GUIDE_TOOL_ID.driveFiles} layout="fill">
+        <FolderTable<DriveTableRow>
+          ariaLabel={t('mobile.aria')}
+          items={rows}
+          columns={[
+            {
+              id: 'name',
+              label: t('table.columns.name'),
+              width: 'fill',
+              align: 'start',
+              isRowHeader: true,
+              isNameColumn: true,
+            },
+          ]}
+          loading={navigation.loading}
+          breadcrumb={breadcrumb}
+          expandedRowKeys={navigation.expandedRowKeys}
+          onExpandedChange={navigation.handleExpandedChange}
+          onRowActivate={handleActivateNode}
+          renderEntryIcon={(row) => (
+            <EntryIcon
+              entryType={row.node.type === 'resource' ? 'resource' : row.node.type}
+              resourceType={row.node.type === 'resource' ? row.node.resourceType : undefined}
+              resourceIconType={
+                row.node.type === 'resource' || row.node.type === 'link'
+                  ? row.node.resourceIconType
+                  : undefined
+              }
+              folderVariant={
+                row.node.type === 'folder' && row.node.systemType === 'shared'
+                  ? 'shared'
+                  : undefined
+              }
+            />
+          )}
+          renderNameContent={renderNameContent}
+          loadMore={{
+            loading: navigation.loadingMore,
+            hasMore: navigation.hasMore,
+            onLoadMore: navigation.loadMore,
+          }}
+          totalCount={navigation.totalCount}
+          summary={null}
+          emptyText={t('navigator.empty')}
+          className={styles.mobileTable}
+          isPinnedFirst={isDrivePinnedFirstRow}
+        />
+      </GuideAnchor>
     </main>
   );
 }

@@ -16,6 +16,10 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import { useNoteEditorReadOnlyContext } from '@/components/editors/note/CustomBlockNote/engines/editor/_context';
+import {
+  FontFamilyMenu,
+  FontSizeMenu,
+} from '@/components/editors/note/CustomBlockNote/plugins/FontPlugin/ui/FontMenus';
 import { TableToolbarProvider } from '@/components/editors/note/CustomBlockNote/plugins/TablePlugin/ui/_context';
 import {
   type TableRailSelectionOrientation,
@@ -34,6 +38,7 @@ import {
 
 import { BlockTypeMenu } from './components/BlockTypeMenu';
 import { ColorMenu } from './components/ColorMenu';
+import { ConvertToTaskToolbarButton } from './components/ConvertToTaskButton';
 import { FileCaptionToolbarButton } from './components/FileButtons';
 import { CreateLinkToolbarButton } from './components/LinkButton';
 import { NestButtons } from './components/NestButtons';
@@ -247,6 +252,11 @@ function CustomFormattingToolbar({
             <ToolbarSeparator />
             <TextStyleButtons />
             <ToolbarSeparator />
+            <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.toolbar.fontAndSize')}>
+              <FontFamilyMenu />
+              <FontSizeMenu />
+            </ButtonGroup>
+            <ToolbarSeparator />
             <TextAlignButtons />
             <ToolbarSeparator />
             <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.color.label')}>
@@ -256,7 +266,10 @@ function CustomFormattingToolbar({
             <ToolbarSeparator />
             <NestButtons />
             <ToolbarSeparator />
-            <CreateLinkToolbarButton onOpenChange={onLinkPopoverOpenChange} />
+            <ButtonGroup size="sm" variant="ghost" aria-label={t('editor.toolbar.linkAndTask')}>
+              <CreateLinkToolbarButton onOpenChange={onLinkPopoverOpenChange} />
+              <ConvertToTaskToolbarButton />
+            </ButtonGroup>
             <ToolbarSeparator />
             <TableDeleteAction />
           </>
@@ -359,7 +372,7 @@ function TableRailFormattingToolbar({
       focusManagerProps={{ disabled: true }}
       elementProps={{
         // GenericPopover 只读取 style.zIndex，并据此生成最终的内联层级。
-        style: { zIndex: 'var(--app-z-index-editor-toolbar, 220)' },
+        style: { zIndex: 'var(--app-z-index-editor-toolbar)' },
       }}
     >
       {show ? <CustomFormattingToolbar {...toolbarProps} /> : null}

@@ -1,12 +1,16 @@
+import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
+import { AppButton } from '@/components/base/Button';
 import { Spin } from '@/components/base/Feedback';
 import PageHeader from '@/components/base/PageHeader';
 import { useUserService } from '@/domains';
 import type { UserAccountProfile } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
+import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
 import {
   AccountForm,
@@ -28,6 +32,7 @@ function toDisplayValue(raw: string | null | undefined, emptyLabel: string, pend
 function Account() {
   const { t } = useTranslation(['profile', 'common']);
   const userService = useUserService();
+  const navigate = useNavigate();
   const [user, setUser] = useState<UserAccountProfile | null>(null);
   const emptyLabel = t('form.emptyValue');
 
@@ -68,7 +73,16 @@ function Account() {
 
         <div className={styles.panels}>
           <section className={styles.panel}>
-            <h3 className={styles.sectionTitle}>{t('account.sectionTitle')}</h3>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>{t('account.sectionTitle')}</h3>
+              <AppButton
+                variant="danger-soft"
+                onPress={() => navigate(APP_ROUTE_PATH.AUTH_PASSWORD_CHANGE)}
+              >
+                <Lock size={16} aria-hidden="true" />
+                {t('account.changePassword')}
+              </AppButton>
+            </div>
             <SettingsList items={accountItems} />
           </section>
 

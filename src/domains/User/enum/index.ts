@@ -32,8 +32,15 @@ export const USER_STATUS = createEnum([
 export const USER_VERIFICATION = createEnum([
   { value: 'EDU_EMAIL', key: 'EDU_EMAIL', label: '邮箱认证' },
   { value: 'FDU_UIS_SYS', key: 'FDU_UIS_SYS', label: 'UIS认证' },
+  { value: 'CAMPUS_IDENTITY_PROVIDER', key: 'CAMPUS_IDENTITY_PROVIDER', label: '校园身份认证' },
 ] as const);
 export type UserVerificationMode = EnumValue<typeof USER_VERIFICATION>;
+
+/** 认证提供方（与后端 verificationProviderCode 对齐） */
+export const USER_VERIFICATION_PROVIDER = createEnum([
+  { value: 'FUDAN_UIS', key: 'FUDAN_UIS', label: '复旦 UIS' },
+] as const);
+export type UserVerificationProvider = EnumValue<typeof USER_VERIFICATION_PROVIDER>;
 
 /** 用户反馈类型选项 */
 export const FEEDBACK_TYPE = createEnum([

@@ -177,7 +177,13 @@ const zhCNProfile = {
     avatarHint: '支持 JPG、PNG、GIF、WebP，单张不超过 {{maxSize}}。',
     avatarUpload: '点击或拖拽头像图片到此区域',
     status: { unverified: '未认证', banned: '封禁' },
-    verification: { verified: '已认证', EDU_EMAIL: '邮箱认证', FDU_UIS_SYS: 'UIS 认证' },
+    verification: {
+      verified: '已认证',
+      EDU_EMAIL: '邮箱认证',
+      FDU_UIS_SYS: 'UIS 认证',
+      CAMPUS_IDENTITY_PROVIDER: '校园身份认证',
+    },
+    verificationProvider: { FUDAN_UIS: '复旦 UIS' },
   },
   verification: {
     banner: '请通过邮箱验证或复旦 UIS 认证完成账号验证，否则部分功能可能无法正常使用。',

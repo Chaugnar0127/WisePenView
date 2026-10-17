@@ -1,4 +1,6 @@
 .tooltip {
+  --guide-action-radius: var(--app-radius-button);
+
   width: min(20rem, calc(100vw - var(--space-lg) * 2));
   max-height: calc(100dvh - var(--space-lg) * 2);
   overflow: auto;
@@ -7,7 +9,7 @@
   color: var(--foreground);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
-  border-radius: var(--app-radius-content);
+  border-radius: var(--app-radius-popover);
   box-shadow: var(--shadow-lg);
 }
 
@@ -41,13 +43,15 @@
 .skip,
 .back,
 .primary {
+  flex-shrink: 0;
   border: 0;
   outline: none;
   box-shadow: none;
-  border-radius: var(--app-radius-menu-item);
+  border-radius: var(--guide-action-radius);
   font: inherit;
   font-size: var(--font-size-sm);
   line-height: var(--line-height-sm);
+  white-space: nowrap;
   cursor: var(--cursor-interactive);
   appearance: none;
 
@@ -61,7 +65,17 @@
 .arrow {
   display: block;
   overflow: visible;
-  fill: currentColor;
+}
+
+.arrowFill {
+  fill: var(--surface);
+}
+
+.arrowStroke {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: var(--border-width);
+  stroke-linejoin: round;
 }
 
 .top {
@@ -83,9 +97,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-2xs);
   padding: var(--space-2xs) var(--space-sm);
   color: var(--accent-foreground);
   background: var(--accent);
   text-align: center;
   font-variant-numeric: tabular-nums;
+}
+
+.enterIcon {
+  flex-shrink: 0;
+  opacity: 0.8;
 }

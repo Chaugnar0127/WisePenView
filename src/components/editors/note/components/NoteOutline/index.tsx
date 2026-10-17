@@ -51,7 +51,7 @@ function NoteOutline({ items, activeId, onNavigate, title, open, onOpenChange }:
   }
 
   return (
-    <div className={styles.panel}>
+    <div className={styles.panel} data-guide-tool-id={GUIDE_TOOL_ID.noteOutlinePanel}>
       <aside className={styles.aside} aria-label={t('outline.sidebar')}>
         <div className={styles.header}>
           <span className={styles.title}>{t('outline.title')}</span>

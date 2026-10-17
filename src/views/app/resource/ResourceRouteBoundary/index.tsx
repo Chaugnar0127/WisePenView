@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { GuideScope } from '@/components/base/Guide';
+import { GuideAnchor, GuideScope } from '@/components/base/Guide';
 import { RESOURCE_MAIN_MIN_WIDTH } from '@/constants/layoutScale';
-import { GUIDE_TOUR_ID } from '@/constants/tour';
+import { GUIDE_TOOL_ID, GUIDE_TOUR_ID } from '@/constants/tour';
 import type { DriveNodeScope } from '@/domains/Drive';
 import {
   normalizeResourceKind,
@@ -138,12 +138,14 @@ function ResourceRouteBoundary() {
             </ResourceHost>
           }
           right={
-            <ResourceChatPanel
-              target={routeContext}
-              showCollapseButton={isMobileLayout}
-              context={chatContext}
-              clearContext={resourceChatContextActions.clearContext}
-            />
+            <GuideAnchor id={GUIDE_TOOL_ID.noteAiPanel} layout="fill">
+              <ResourceChatPanel
+                target={routeContext}
+                showCollapseButton={isMobileLayout}
+                context={chatContext}
+                clearContext={resourceChatContextActions.clearContext}
+              />
+            </GuideAnchor>
           }
         />
       </ResourceChatBindingProvider>

@@ -14,47 +14,55 @@ export const chatTour: GuideTourConfig = {
       undefined,
       { offset: 0 }
     ),
-    step('upload', GUIDE_TOOL_ID.chatUpload, 'chat.upload.title', 'chat.upload.content', 'top'),
+    step('voice', GUIDE_TOOL_ID.chatVoice, 'chat.voice.title', 'chat.voice.content', 'top'),
     step(
-      'upload-open',
-      GUIDE_TOOL_ID.chatUploadOpen,
-      'chat.uploadOpen.title',
-      'chat.uploadOpen.content',
-      'top',
-      GUIDE_ACTION_ID.openUploadMenu,
-      { restore: GUIDE_ACTION_ID.openUploadMenu }
-    ),
-    step('agent', GUIDE_TOOL_ID.chatAgent, 'chat.agent.title', 'chat.agent.content', 'top'),
-    step(
-      'agent-open',
-      GUIDE_TOOL_ID.chatAgentOpen,
-      'chat.agentOpen.title',
-      'chat.agentOpen.content',
-      'top',
-      GUIDE_ACTION_ID.openAgentMenu,
-      { restore: GUIDE_ACTION_ID.openAgentMenu }
-    ),
-    step('skill', GUIDE_TOOL_ID.chatSkill, 'chat.skill.title', 'chat.skill.content', 'top'),
-    step(
-      'skill-open',
-      GUIDE_TOOL_ID.chatSkillOpen,
-      'chat.skillOpen.title',
-      'chat.skillOpen.content',
-      'top',
-      GUIDE_ACTION_ID.openSkillMenu,
-      { restore: GUIDE_ACTION_ID.openSkillMenu }
-    ),
-    step('model', GUIDE_TOOL_ID.chatModel, 'chat.model.title', 'chat.model.content', 'top'),
-    step(
-      'model-open',
+      'model',
       GUIDE_TOOL_ID.chatModelOpen,
-      'chat.modelOpen.title',
-      'chat.modelOpen.content',
+      'chat.model.title',
+      'chat.model.content',
       'top',
       GUIDE_ACTION_ID.openModelMenu,
-      { offset: 0, restore: GUIDE_ACTION_ID.openModelMenu }
+      {
+        offset: 0,
+        restore: GUIDE_ACTION_ID.openModelMenu,
+        spotlightToolIds: [GUIDE_TOOL_ID.chatModel, GUIDE_TOOL_ID.chatModelOpen],
+      }
     ),
-    step('voice', GUIDE_TOOL_ID.chatVoice, 'chat.voice.title', 'chat.voice.content', 'top'),
-    step('send', GUIDE_TOOL_ID.chatSend, 'chat.send.title', 'chat.send.content', 'top'),
+    step(
+      'upload',
+      GUIDE_TOOL_ID.chatUploadOpen,
+      'chat.upload.title',
+      'chat.upload.content',
+      'top',
+      GUIDE_ACTION_ID.openUploadMenu,
+      {
+        restore: GUIDE_ACTION_ID.openUploadMenu,
+        spotlightToolIds: [GUIDE_TOOL_ID.chatUpload, GUIDE_TOOL_ID.chatUploadOpen],
+      }
+    ),
+    step(
+      'agent',
+      GUIDE_TOOL_ID.chatAgentOpen,
+      'chat.agent.title',
+      'chat.agent.content',
+      'top',
+      GUIDE_ACTION_ID.openAgentMenu,
+      {
+        restore: GUIDE_ACTION_ID.openAgentMenu,
+        spotlightToolIds: [GUIDE_TOOL_ID.chatAgent, GUIDE_TOOL_ID.chatAgentOpen],
+      }
+    ),
+    step(
+      'skill',
+      GUIDE_TOOL_ID.chatSkillOpen,
+      'chat.skill.title',
+      'chat.skill.content',
+      'top',
+      GUIDE_ACTION_ID.openSkillMenu,
+      {
+        restore: GUIDE_ACTION_ID.openSkillMenu,
+        spotlightToolIds: [GUIDE_TOOL_ID.chatSkill, GUIDE_TOOL_ID.chatSkillOpen],
+      }
+    ),
   ],
 };

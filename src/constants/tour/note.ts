@@ -5,54 +5,56 @@ import type { GuideTourConfig } from './types';
 
 export const noteTour: GuideTourConfig = {
   steps: [
-    step('title', GUIDE_TOOL_ID.noteTitle, 'note.title.title', 'note.title.content', 'bottom'),
-    step('info', GUIDE_TOOL_ID.noteInfo, 'note.info.title', 'note.info.content', 'bottom'),
-    step('body', GUIDE_TOOL_ID.noteBody, 'note.body.title', 'note.body.content', 'top'),
-    step('outline', GUIDE_TOOL_ID.noteOutline, 'note.outline.title', 'note.outline.content'),
     step(
-      'outline-open',
-      GUIDE_TOOL_ID.noteOutlineOpen,
-      'note.outlineOpen.title',
-      'note.outlineOpen.content',
+      'outline',
+      GUIDE_TOOL_ID.noteOutlinePanel,
+      'note.outline.title',
+      'note.outline.content',
       'right',
       GUIDE_ACTION_ID.openOutline,
-      { restore: GUIDE_ACTION_ID.openOutline }
+      {
+        offset: 20,
+        preventFlip: false,
+        restore: GUIDE_ACTION_ID.openOutline,
+      }
     ),
-    step('more', GUIDE_TOOL_ID.noteMore, 'note.more.title', 'note.more.content', 'bottom'),
     step(
-      'more-open',
+      'more',
       GUIDE_TOOL_ID.noteMoreOpen,
-      'note.moreOpen.title',
-      'note.moreOpen.content',
+      'note.more.title',
+      'note.more.content',
       'left',
       GUIDE_ACTION_ID.openResourceMenu,
-      { restore: GUIDE_ACTION_ID.openResourceMenu }
-    ),
-    step('chat', GUIDE_TOOL_ID.noteChat, 'note.chat.title', 'note.chat.content', 'left'),
-    step(
-      'new-chat',
-      GUIDE_TOOL_ID.noteNewChat,
-      'note.newChat.title',
-      'note.newChat.content',
-      'bottom',
-      GUIDE_ACTION_ID.openChat
+      {
+        offset: 20,
+        preventFlip: false,
+        spotlightToolIds: [GUIDE_TOOL_ID.noteMore, GUIDE_TOOL_ID.noteMoreOpen],
+      }
     ),
     step(
-      'history',
-      GUIDE_TOOL_ID.noteHistory,
-      'note.history.title',
-      'note.history.content',
-      'bottom',
-      GUIDE_ACTION_ID.openChat
+      'export',
+      GUIDE_TOOL_ID.notePrintPdf,
+      'note.export.title',
+      'note.export.content',
+      'left',
+      GUIDE_ACTION_ID.openResourceMenu,
+      {
+        offset: 20,
+        preventFlip: false,
+        spotlightToolIds: [GUIDE_TOOL_ID.notePrintPdf, GUIDE_TOOL_ID.noteDownloadMarkdown],
+      }
     ),
     step(
-      'composer',
-      GUIDE_TOOL_ID.chatComposer,
-      'note.composer.title',
-      'note.composer.content',
-      'top',
+      'chat',
+      GUIDE_TOOL_ID.noteAiPanel,
+      'note.chat.title',
+      'note.chat.content',
+      'left',
       GUIDE_ACTION_ID.openChat,
-      { offset: 0 }
+      {
+        offset: 20,
+        preventFlip: false,
+      }
     ),
   ],
 };

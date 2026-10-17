@@ -59,7 +59,6 @@ const AuthBindingOnboarding = lazy(() => import('@/views/app/auth/AuthBindingOnb
 const ResetPassword = lazy(() => import('@/views/app/auth/ResetPassword'));
 const NewPassword = lazy(() => import('@/views/app/auth/NewPassword'));
 const VerifyEmail = lazy(() => import('@/views/app/auth/VerifyEmail'));
-const ChangePassword = lazy(() => import('@/views/app/auth/ChangePassword'));
 const ResourceRouteBoundary = lazy(() => import('@/views/app/resource/ResourceRouteBoundary'));
 const ChatPage = lazy(() => import('@/views/app/chat'));
 const NotificationsPage = lazy(() => import('@/views/app/notifications'));
@@ -139,10 +138,6 @@ const router = createBrowserRouter([
     element: <AuthenticatedRouteGuard />,
     errorElement: <AppError />,
     children: [
-      {
-        element: <AuthLayout />,
-        children: [{ path: 'password/change', element: <ChangePassword /> }],
-      },
       {
         element: (
           <AppAuthProvider mode="authenticated">

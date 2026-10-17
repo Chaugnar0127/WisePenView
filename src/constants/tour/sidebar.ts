@@ -3,55 +3,53 @@ import { step } from './step';
 import { GUIDE_TOOL_ID } from './toolId';
 import type { GuideTourConfig } from './types';
 
+/** tab 内容铺满侧栏内容区，四周都不外扩，避免高亮越过侧栏边界。 */
+const TAB_PANEL_SPOTLIGHT_PADDING = { top: 0, right: 0, bottom: 0, left: 0 } as const;
+
 export const sidebarTour: GuideTourConfig = {
   steps: [
     step(
-      'new-chat',
-      GUIDE_TOOL_ID.sidebarNewChat,
-      'sidebar.newChat.title',
-      'sidebar.newChat.content'
+      'navigation',
+      GUIDE_TOOL_ID.sidebarNavigation,
+      'sidebar.navigation.title',
+      'sidebar.navigation.content',
+      'right',
+      undefined,
+      // 菜单横向铺满侧栏，左右不再外扩；上下收紧，避开 logo 和分割线。
+      { spotlightPadding: { top: 8, right: 0, bottom: 6, left: 0 } }
     ),
     step(
-      'new-note',
-      GUIDE_TOOL_ID.sidebarNewNote,
-      'sidebar.newNote.title',
-      'sidebar.newNote.content'
-    ),
-    step('drive', GUIDE_TOOL_ID.sidebarDrive, 'sidebar.drive.title', 'sidebar.drive.content'),
-    step('groups', GUIDE_TOOL_ID.sidebarGroups, 'sidebar.groups.title', 'sidebar.groups.content'),
-    step(
-      'notifications',
-      GUIDE_TOOL_ID.sidebarNotifications,
-      'sidebar.notifications.title',
-      'sidebar.notifications.content'
+      'sessions',
+      GUIDE_TOOL_ID.sidebarContent,
+      'sidebar.sessions.title',
+      'sidebar.sessions.content',
+      'right-start',
+      GUIDE_ACTION_ID.showSidebarSessions,
+      { spotlightPadding: TAB_PANEL_SPOTLIGHT_PADDING }
     ),
     step(
-      'library',
-      GUIDE_TOOL_ID.sidebarLibrary,
-      'sidebar.library.title',
-      'sidebar.library.content'
+      'drive',
+      GUIDE_TOOL_ID.sidebarContent,
+      'sidebar.drive.title',
+      'sidebar.drive.content',
+      'right-start',
+      GUIDE_ACTION_ID.showSidebarDrive,
+      { spotlightPadding: TAB_PANEL_SPOTLIGHT_PADDING }
     ),
     step(
-      'collapse',
-      GUIDE_TOOL_ID.sidebarCollapse,
-      'sidebar.collapse.title',
-      'sidebar.collapse.content',
-      'bottom'
+      'courses',
+      GUIDE_TOOL_ID.sidebarContent,
+      'sidebar.courses.title',
+      'sidebar.courses.content',
+      'right-start',
+      GUIDE_ACTION_ID.showSidebarCourses,
+      { spotlightPadding: TAB_PANEL_SPOTLIGHT_PADDING }
     ),
     step(
       'account',
       GUIDE_TOOL_ID.sidebarAccount,
       'sidebar.account.title',
       'sidebar.account.content'
-    ),
-    step(
-      'account-open',
-      GUIDE_TOOL_ID.sidebarAccountOpen,
-      'sidebar.accountOpen.title',
-      'sidebar.accountOpen.content',
-      'right',
-      GUIDE_ACTION_ID.openAccountMenu,
-      { restore: GUIDE_ACTION_ID.openAccountMenu }
     ),
   ],
 };

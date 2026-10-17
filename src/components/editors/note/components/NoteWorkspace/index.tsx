@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AppButton } from '@/components/base/Button';
 import { Spin } from '@/components/base/Feedback';
+import { registerGuideActionHandler } from '@/components/base/Guide';
 import InlineComment from '@/components/business/InlineComment';
 import EditorPresentationBinding from '@/components/editors/_runtime/EditorPresentationBinding';
 import type { EditorPresentation } from '@/components/editors/editor.type';
@@ -16,6 +17,7 @@ import type {
 } from '@/components/editors/note/CustomBlockNote/index.type';
 import { NoteEditorSlot } from '@/components/editors/note/CustomBlockNote/NoteEditorSession';
 import { useNoteEditorStatus } from '@/components/editors/note/CustomBlockNote/useNoteEditorStatus';
+import { GUIDE_ACTION_ID } from '@/constants/tour';
 import { useInteractService } from '@/domains';
 import type { NoteInfoDisplayData } from '@/domains/Note';
 import { encodeNoteClientContentSignature } from '@/domains/Note';
@@ -48,8 +50,8 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
   const titleEditorRef = useRef<NoteTitleHandle>(null);
   const scrollBarHideTimerRef = useRef<number | null>(null);
   const [isMainScrolling, setIsMainScrolling] = useState(false);
-  // 目录默认展开，用户仍可手动收起
-  const [isOutlineOpen, setIsOutlineOpen] = useState(true);
+  // 目录默认收起，避免挤占正文空间，用户仍可手动展开
+  const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const [outlineItems, setOutlineItems] = useState<NoteOutlineItem[]>([]);
   const [activeHeadingId, setActiveHeadingId] = useState<string | undefined>(undefined);
   const [titleSaveStatus, setTitleSaveStatus] = useState<NoteTitleSaveStatus>('saved');
@@ -75,6 +77,22 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
     untitledTitle,
     status: session.status,
   });
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：目录展开状态变化时同步注册引导动作。
+   * 不可替代原因：引导层直接调用目录状态 setter，不依赖对收起/展开按钮的模拟点击。
+   * cleanup：撤销动作处理器。
+   */
+  useEffect(
+    () =>
+      registerGuideActionHandler(GUIDE_ACTION_ID.openOutline, {
+        isOpen: () => isOutlineOpen,
+        open: () => setIsOutlineOpen(true),
+        close: () => setIsOutlineOpen(false),
+      }),
+    [isOutlineOpen]
+  );
   const interactService = useInteractService();
   useApi(() => interactService.recordResourceRead(resourceId), { refreshDeps: [resourceId] });
   const headerSaveStatus = resolveNoteHeaderSaveStatus(session.saveStatus, titleSaveStatus);

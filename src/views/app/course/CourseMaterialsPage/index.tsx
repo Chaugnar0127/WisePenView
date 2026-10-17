@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import DriveBrowser from '@/components/business/Drive/DriveBrowser';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { COURSE_ROLE } from '@/domains/Course';
 import { useCourseContext } from '@/layouts/Course/_context';
 
@@ -13,9 +14,9 @@ function CourseMaterialsPage() {
     course.myRole === COURSE_ROLE.TEACHER || course.myRole === COURSE_ROLE.ASSISTANT;
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-guide-tool-id={GUIDE_TOOL_ID.courseMaterialsPage}>
       <header className={styles.header}>
-        <h1>{t('materials.title')}</h1>
+        <h1 data-guide-tool-id={GUIDE_TOOL_ID.courseMaterialsTitle}>{t('materials.title')}</h1>
         <p>{t('materials.description')}</p>
       </header>
       <div className={styles.driveArea}>

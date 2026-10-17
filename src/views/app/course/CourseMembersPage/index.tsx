@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { DataTable, type DataTableColumn } from '@/components/base/Table';
 import { getGroupDisplayConfig } from '@/components/business/Group/GroupDisplayConfig';
 import MemberList from '@/components/business/Group/MemberList';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useCourseService, useGroupService } from '@/domains';
 import type { CourseMember } from '@/domains/Course';
 import { COURSE_ROLE } from '@/domains/Course';
@@ -28,9 +29,9 @@ function TeacherCourseMembersView({ courseId, memberCount }: CourseMembersViewPr
   });
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-guide-tool-id={GUIDE_TOOL_ID.courseMembersPage}>
       <header className={styles.header}>
-        <h1>{t('members.title')}</h1>
+        <h1 data-guide-tool-id={GUIDE_TOOL_ID.courseMembersTitle}>{t('members.title')}</h1>
         <p>{t('members.count', { count: memberCount })}</p>
       </header>
       <div className={styles.contentArea}>
@@ -99,9 +100,9 @@ function StudentCourseMembersView({ courseId, memberCount }: CourseMembersViewPr
   ];
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-guide-tool-id={GUIDE_TOOL_ID.courseMembersPage}>
       <header className={styles.header}>
-        <h1>{t('members.title')}</h1>
+        <h1 data-guide-tool-id={GUIDE_TOOL_ID.courseMembersTitle}>{t('members.title')}</h1>
         <p>{t('members.count', { count: data?.total ?? memberCount })}</p>
       </header>
       <div className={styles.contentArea}>

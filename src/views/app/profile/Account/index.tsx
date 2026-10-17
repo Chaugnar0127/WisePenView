@@ -1,7 +1,6 @@
 import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 
 import { AppButton } from '@/components/base/Button';
 import { Spin } from '@/components/base/Feedback';
@@ -10,12 +9,12 @@ import { useUserService } from '@/domains';
 import type { UserAccountProfile } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
-import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
 import {
   AccountForm,
   AccountHeader,
   AccountVerification,
+  ChangePasswordModal,
   SettingsList,
 } from '../_components/Account';
 import type { ProfileFieldKey } from '../profile.config';
@@ -32,8 +31,8 @@ function toDisplayValue(raw: string | null | undefined, emptyLabel: string, pend
 function Account() {
   const { t } = useTranslation(['profile', 'common']);
   const userService = useUserService();
-  const navigate = useNavigate();
   const [user, setUser] = useState<UserAccountProfile | null>(null);
+  const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
   const emptyLabel = t('form.emptyValue');
 
   const { loading, runAsync: reloadUserInfo } = useApi(() => userService.getFullUserInfo(), {
@@ -75,10 +74,7 @@ function Account() {
           <section className={styles.panel}>
             <div className={styles.sectionHeader}>
               <h3 className={styles.sectionTitle}>{t('account.sectionTitle')}</h3>
-              <AppButton
-                variant="danger-soft"
-                onPress={() => navigate(APP_ROUTE_PATH.AUTH_PASSWORD_CHANGE)}
-              >
+              <AppButton variant="danger-soft" onPress={() => setChangePasswordModalOpen(true)}>
                 <Lock size={16} aria-hidden="true" />
                 {t('account.changePassword')}
               </AppButton>
@@ -99,6 +95,10 @@ function Account() {
           ) : null}
         </div>
       </Spin>
+      <ChangePasswordModal
+        isOpen={changePasswordModalOpen}
+        onOpenChange={setChangePasswordModalOpen}
+      />
     </>
   );
 }

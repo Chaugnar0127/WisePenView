@@ -21,6 +21,8 @@ export interface HeaderNavProps {
   ariaLabel: string;
   activeKey?: string;
   collapsed?: boolean;
+  /** 给菜单本身挂新手指引锚点；分割线不计入高亮范围。 */
+  guideToolId?: GuideToolId;
   items?: readonly HeaderNavItem[];
   sections?: readonly HeaderNavSection[];
   showIndicator?: boolean;

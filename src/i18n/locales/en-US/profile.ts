@@ -196,7 +196,9 @@ const enUSProfile = {
       verified: 'Verified',
       EDU_EMAIL: 'Email verified',
       FDU_UIS_SYS: 'UIS verified',
+      CAMPUS_IDENTITY_PROVIDER: 'Campus identity verified',
     },
+    verificationProvider: { FUDAN_UIS: 'Fudan UIS' },
   },
   verification: {
     banner:

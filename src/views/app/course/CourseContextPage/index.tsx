@@ -2,6 +2,7 @@ import { Tabs } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useMatch, useNavigate } from 'react-router-dom';
 
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useCourseContext } from '@/layouts/Course/_context';
 import { APP_ROUTE_PATH, buildCoursePath } from '@/utils/navigation/appRoute';
 import { buildChatSessionLocation, getChatSessionId } from '@/utils/navigation/chatRoute';
@@ -26,11 +27,14 @@ function CourseContextPage() {
   const courseKicker = [course.term, course.category].filter(Boolean).join(' · ');
 
   return (
-    <div className={styles.root}>
+    <div
+      className={styles.root}
+      data-guide-tool-id={activeTabKey === 'home' ? GUIDE_TOOL_ID.courseHomePage : undefined}
+    >
       <header className={styles.courseHeader}>
         <div className={styles.courseKicker}>{courseKicker}</div>
         <div className={styles.courseTitleRow}>
-          <h1>{course.name}</h1>
+          <h1 data-guide-tool-id={GUIDE_TOOL_ID.courseHomeTitle}>{course.name}</h1>
         </div>
         <p>{course.description}</p>
         <div className={styles.courseMeta}>

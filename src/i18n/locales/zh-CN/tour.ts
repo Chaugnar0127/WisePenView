@@ -7,163 +7,108 @@ const zhCNTour = {
     skip: '跳过',
   },
   sidebar: {
-    newChat: {
-      title: '新建对话',
-      content: '点击开始一条新对话',
+    navigation: {
+      title: '功能导航区',
+      content:
+        '左上角集中了最常用的功能。和 AI 聊天、新建笔记、打开云盘、进小组或看消息，都可以从这里开始。',
     },
-    newNote: {
-      title: '新建笔记',
-      content: '创建笔记并打开编辑器，自动保存在云盘。',
+    sessions: {
+      title: '接着上次聊',
+      content: '点「对话」就能看到和 AI 的历史对话记录。想继续哪一段，点开即可。',
     },
     drive: {
-      title: '我的云盘',
-      content: '浏览、上传和收藏文件。',
+      title: '文件就在手边',
+      content: '切到「文件」，可方便地查看个人云盘目录。常用文件点一下就能打开。',
     },
-    groups: {
-      title: '我的小组',
-      content: '进入已加入的小组，或加入新小组。',
-    },
-    notifications: {
-      title: '消息',
-      content: '显示邀请和系统消息。',
-    },
-    library: {
-      title: '最近',
-      content: '对话、文件和课程的快捷入口。',
-    },
-    collapse: {
-      title: '收起',
-      content: '收起侧边栏。',
+    courses: {
+      title: '课程一目了然',
+      content: '切到「课程」可以看到你加入的全部课程，点击即可快速进入想要的课程。',
     },
     account: {
-      title: '账号',
-      content: '查看用量、管理账号，或退出登录。',
+      title: '设置在这里',
+      content: '账号、额度、外观等设置收在这里，可随时按需调整。',
     },
-    accountOpen: {
-      title: '账号菜单',
-      content: '用量、账号、外观和退出等功能入口。',
+  },
+  courseResources: {
+    home: {
+      title: '课程基础信息',
+      content:
+        '课程大纲、学习进度和教学安排等基础信息都汇总在这里。忘记上课时间、考核方式时可由此处进行查看。',
+    },
+    learning: {
+      title: '从这里进入学习',
+      content: '左侧的「学习」和主页里的「进入学习」都能打开课程内容，查看详细的学习章节。',
+    },
+    materials: {
+      title: '资料集中在这里',
+      content: '本课程的课件、资料和共享文件都收在这里。需要找材料时，可以在这里寻找。',
+    },
+    members: {
+      title: '认识课程成员',
+      content: '「人员」里列出了所有成员和各自的身份，可以在此处寻找老师、助教或特定同学。',
     },
   },
   chat: {
     composer: {
-      title: '输入',
-      content: '输入和AI对话。',
-    },
-    upload: {
-      title: '附件',
-      content: '附加本地文件，或从云盘引用。',
-    },
-    uploadOpen: {
-      title: '附件来源',
-      content: '从本地选取，或从云盘引用。',
-    },
-    agent: {
-      title: 'Agent',
-      content: '更换Agent。',
-    },
-    agentOpen: {
-      title: 'Agent 列表',
-      content: '选择Agent。',
-    },
-    skill: {
-      title: 'Skill',
-      content: '给对话加上 Skill 或工具。',
-    },
-    skillOpen: {
-      title: 'Skill 与工具',
-      content: '选择Skill。',
-    },
-    model: {
-      title: '模型',
-      content: '切换模型。',
-    },
-    modelOpen: {
-      title: '模型列表',
-      content: '选择模型。',
+      title: '从这里开始对话',
+      content: '把问题或想法写进输入框，开始与AI进行对话。',
     },
     voice: {
-      title: '语音',
-      content: '语言输入入口。',
+      title: '语音输入',
+      content: '除文字输入外还支持语音输入，更快捷更方便地展开对话。',
     },
-    send: {
-      title: '发送',
-      content: '点这里发送，或在输入框回车。',
+    model: {
+      title: '挑一个合适的模型',
+      content: '不同模型擅长的事情不太一样。点开这里看看有哪些模型可选，选择最适合的那一个。',
+    },
+    upload: {
+      title: '带上材料再提问',
+      content: '如果有材料需要提供，可以从这里添加。既能选择本机文件，也能选择个人云盘里的内容。',
+    },
+    agent: {
+      title: '配置专业 Agent',
+      content: 'Agent 可为 AI 配置稳定工作流。点开这里进行配置，让对话更贴合当前的任务。',
+    },
+    skill: {
+      title: '给AI添加技能',
+      content:
+        'Skill 和工具能让 AI 拥有更强的能力，比如以专家的思维进行思考、编写代码并运行等。点开这里按需添加，用不上时也可以随时取消。',
     },
   },
   note: {
-    title: {
-      title: '标题',
-      content: '在此输入标题。',
-    },
-    info: {
-      title: '信息',
-      content: '作者和上次编辑时间。',
-    },
-    body: {
-      title: '正文',
-      content: '此处输入正文。输入 / 插入标题、列表或表格。',
-    },
     outline: {
-      title: '目录',
-      content: '展开或收起文中的标题。',
-    },
-    outlineOpen: {
-      title: '目录项',
-      content: '点击跳转对应位置。',
+      title: '目录树帮你快速定位重点',
+      content: '目录树会跟随笔记的标题块自动更新，点击目录树节点能快速跳转到对应位置。',
     },
     more: {
-      title: '更多',
-      content: '搜索、导出、分享和删除等功能入口。',
-    },
-    moreOpen: {
       title: '更多操作',
-      content: '选择更多操作。',
+      content: '搜索、分享、导出和删除这些操作，都收在“更多”里。',
+    },
+    export: {
+      title: '导出笔记',
+      content: '如果想把笔记保存成本机文件，可以从这里导出为 PDF 或 Markdown。',
     },
     chat: {
-      title: '笔记 AI',
-      content: '展开右侧对话，可阅读修改当前笔记。',
-    },
-    newChat: {
-      title: '新对话',
-      content: '新建对话。',
-    },
-    history: {
-      title: '历史',
-      content: '选择这篇笔记的历史对话。',
-    },
-    composer: {
-      title: '提问',
-      content: '输入和这篇笔记有关的问题。',
+      title: '让 AI 陪你改笔记',
+      content: '打开右侧 AI 对话栏，就能围绕这篇笔记与AI进行讨论，必要时能让 AI 直接帮你修改。',
     },
   },
   drive: {
-    views: {
-      title: '视图',
-      content: '文件、上传队列、收藏、回收站。',
-    },
-    path: {
-      title: '路径',
-      content: '点击导航栏回到上层文件夹。',
-    },
-    create: {
-      title: '新建',
-      content: '在当前文件夹里新建或上传。',
-    },
-    createOpen: {
-      title: '新建菜单',
-      content: '文件夹、笔记、图表，或从本地添加。',
-    },
     files: {
-      title: '文件',
-      content: '点击打开。',
+      title: '维护自己的文件系统',
+      content: '个人云盘支持你在 WisePen 维护一个专属的文件系统。',
     },
-    details: {
-      title: '详情',
-      content: '展开或收起文件详情。',
+    uploadQueue: {
+      title: '上传进度',
+      content: '文件上传进度会展示在此处，方便你随时掌握文件上传情况。',
     },
-    detailsOpen: {
-      title: '详情栏',
-      content: '显示名称、时间和权限。',
+    favorites: {
+      title: '个人收藏夹',
+      content: '收藏常用的资料，这样下次使用时就不必再翻目录了。',
+    },
+    trash: {
+      title: '误删了也能找回',
+      content: '删除的文件会先进入回收站。发现删错了，可以来这里恢复；确认不要了再彻底清除。',
     },
   },
 };

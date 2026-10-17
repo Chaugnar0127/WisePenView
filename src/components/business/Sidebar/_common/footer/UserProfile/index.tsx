@@ -15,15 +15,15 @@ import {
   ShieldUser,
   UserPlus,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import AppAvatar from '@/components/base/Avatar';
 import { AppButton } from '@/components/base/Button';
-import { GuideAnchor } from '@/components/base/Guide';
+import { GuideAnchor, registerGuideActionHandler } from '@/components/base/Guide';
 import AppDisplayDialog from '@/components/business/AppDisplayDialog';
-import { GUIDE_TOOL_ID } from '@/constants/tour';
+import { GUIDE_ACTION_ID, GUIDE_TOOL_ID } from '@/constants/tour';
 import { useAuthService, useUserService } from '@/domains';
 import type { User } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
@@ -53,7 +53,24 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const authService = useAuthService();
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：账号菜单挂载或展开状态变化时注册引导动作。
+   * 不可替代原因：引导层直接修改菜单 open 状态，不依赖对账号按钮的模拟点击。
+   * cleanup：撤销动作处理器。
+   */
+  useEffect(
+    () =>
+      registerGuideActionHandler(GUIDE_ACTION_ID.openAccountMenu, {
+        isOpen: () => accountMenuOpen,
+        open: () => setAccountMenuOpen(true),
+        close: () => setAccountMenuOpen(false),
+      }),
+    [accountMenuOpen]
+  );
 
   useMount(() => {
     if (!appAuth.isAuthenticated) return;
@@ -260,7 +277,7 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
         )}
       >
         {collapsed ? (
-          <Dropdown>
+          <Dropdown isOpen={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
             <Tooltip>
               <span className={styles.avatarTooltipTrigger}>
                 <GuideAnchor id={GUIDE_TOOL_ID.sidebarAccount}>
@@ -284,7 +301,7 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
               <span className={styles.tag}>{identityLabel}</span>
             </div>
             <UserCheckIn />
-            <Dropdown>
+            <Dropdown isOpen={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
               <GuideAnchor id={GUIDE_TOOL_ID.sidebarAccount}>
                 <Dropdown.Trigger
                   aria-label={t('userMenu.openSettingsAria')}

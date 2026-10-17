@@ -6,16 +6,16 @@ import {
   pointerWithin,
 } from '@dnd-kit/core';
 import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppBreadcrumb from '@/components/base/AppBreadcrumb';
 import { AppButton } from '@/components/base/Button';
 import AppIconButton from '@/components/base/Button/AppIconButton';
-import { GuideAnchor } from '@/components/base/Guide';
+import { GuideAnchor, registerGuideActionHandler } from '@/components/base/Guide';
 import { FolderTable } from '@/components/base/Table';
 import EntryIcon from '@/components/business/Icons/EntryIcon';
-import { GUIDE_TOOL_ID } from '@/constants/tour';
+import { GUIDE_ACTION_ID, GUIDE_TOOL_ID } from '@/constants/tour';
 import type { ResourceViewer } from '@/domains/Resource/model/resourceTarget';
 
 import { buildDriveBreadcrumbItems } from '../common/driveBreadcrumb';
@@ -105,6 +105,23 @@ function TableDrive({
 
   // 初始化交互控制器
   const interaction = useTableDriveInteractionController({ dataSource: navigation.dataSource, t });
+  const { isDetailPanelCollapsed, setIsDetailPanelCollapsed } = interaction;
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：详情栏折叠状态变化时注册引导动作。
+   * 不可替代原因：引导层直接调用详情栏状态 setter，不依赖按钮模拟点击。
+   * cleanup：撤销动作处理器。
+   */
+  useEffect(
+    () =>
+      registerGuideActionHandler(GUIDE_ACTION_ID.openDetails, {
+        isOpen: () => !isDetailPanelCollapsed,
+        open: () => setIsDetailPanelCollapsed(false),
+        close: () => setIsDetailPanelCollapsed(true),
+      }),
+    [isDetailPanelCollapsed, setIsDetailPanelCollapsed]
+  );
 
   // 封装一个通用的节点操作成功回调，清理选中状态并刷新列表
   const handleNodeActionSuccess = () => {

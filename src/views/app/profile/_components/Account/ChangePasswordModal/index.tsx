@@ -1,8 +1,9 @@
 import { Form } from '@heroui/react';
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
+import AppModal from '@/components/base/AppModal';
 import { AppButton } from '@/components/base/Button';
 import { FormField, PasswordInput } from '@/components/base/Input';
 import AppDisplayDialog from '@/components/business/AppDisplayDialog';
@@ -12,14 +13,20 @@ import { useApi } from '@/hooks/useApi';
 import { authSessionCoordinator } from '@/utils/auth/authSessionCoordinator';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import { type FieldErrors, hasFieldErrors } from '@/utils/validation/formValidation';
+import {
+  validateConfirmPasswordField,
+  validatePasswordField,
+} from '@/views/app/auth/_common/passwordValidation';
 
-import { validateConfirmPasswordField, validatePasswordField } from '../_common/passwordValidation';
-import auth from '../_common/style.module.less';
+import type { ChangePasswordModalProps } from './index.type';
+import styles from './style.module.less';
 
 type ChangePasswordFormValues = ChangePasswordRequest & {
   confirmPassword: string;
 };
 type ChangePasswordField = keyof ChangePasswordFormValues;
+
+const CHANGE_PASSWORD_FORM_ID = 'change-password-form';
 
 const DEFAULT_CHANGE_PASSWORD_VALUES: ChangePasswordFormValues = {
   oldPassword: '',
@@ -27,21 +34,30 @@ const DEFAULT_CHANGE_PASSWORD_VALUES: ChangePasswordFormValues = {
   confirmPassword: '',
 };
 
-function ChangePassword() {
+function ChangePasswordModal({ isOpen, onOpenChange }: ChangePasswordModalProps) {
   const authService = useAuthService();
-  const { t } = useTranslation('auth');
+  const { t } = useTranslation(['auth', 'common']);
+  const navigate = useNavigate();
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [formValues, setFormValues] = useState<ChangePasswordFormValues>(
     DEFAULT_CHANGE_PASSWORD_VALUES
   );
   const [formErrors, setFormErrors] = useState<FieldErrors<ChangePasswordField>>({});
-  const navigate = useNavigate();
+
+  const resetForm = () => {
+    setFormValues(DEFAULT_CHANGE_PASSWORD_VALUES);
+    setFormErrors({});
+  };
 
   const { loading, run: submitChangePassword } = useApi(
     (values: ChangePasswordRequest) => authService.changePassword(values),
     {
       manual: true,
-      onSuccess: () => setSuccessModalOpen(true),
+      onSuccess: () => {
+        resetForm();
+        onOpenChange(false);
+        setSuccessModalOpen(true);
+      },
     }
   );
 
@@ -67,15 +83,17 @@ function ChangePassword() {
 
     switch (field) {
       case 'oldPassword':
-        return values.oldPassword.length > 0 ? undefined : t('changePassword.oldPasswordRequired');
+        return values.oldPassword.length > 0
+          ? undefined
+          : t('auth:changePassword.oldPasswordRequired');
       case 'newPassword':
         return validatePasswordField(
           values.newPassword,
           {
-            required: t('changePassword.passwordRequired'),
-            minLength: t('changePassword.passwordMinLength'),
-            containsLetter: t('changePassword.passwordContainsLetter'),
-            containsNumber: t('changePassword.passwordContainsNumber'),
+            required: t('auth:changePassword.passwordRequired'),
+            minLength: t('auth:changePassword.passwordMinLength'),
+            containsLetter: t('auth:changePassword.passwordContainsLetter'),
+            containsNumber: t('auth:changePassword.passwordContainsNumber'),
           },
           options
         );
@@ -84,8 +102,8 @@ function ChangePassword() {
           values.confirmPassword,
           values.newPassword,
           {
-            required: t('changePassword.confirmPasswordRequired'),
-            mismatch: t('changePassword.confirmPasswordMismatch'),
+            required: t('auth:changePassword.confirmPasswordRequired'),
+            mismatch: t('auth:changePassword.confirmPasswordMismatch'),
           },
           options
         );
@@ -122,22 +140,84 @@ function ChangePassword() {
     return !hasFieldErrors(nextErrors);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!validateForm()) return;
+  const handleFormSubmit = () => {
+    if (loading || !validateForm()) return;
     submitChangePassword({
       oldPassword: formValues.oldPassword,
       newPassword: formValues.newPassword,
     });
   };
 
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleFormSubmit();
+  };
+
+  const handleClose = () => {
+    if (loading) return;
+    resetForm();
+    onOpenChange(false);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      handleClose();
+      return;
+    }
+    onOpenChange(true);
+  };
+
+  if (successModalOpen) {
+    return (
+      <AppDisplayDialog
+        isOpen
+        onOpenChange={setSuccessModalOpen}
+        isDismissable={false}
+        showCloseTrigger={false}
+        title={t('auth:changePassword.successTitle')}
+        primaryAction={{
+          label: t('auth:changePassword.goToLogin'),
+          onPress: () => {
+            setSuccessModalOpen(false);
+            authSessionCoordinator.publish('logout');
+            navigate(APP_ROUTE_PATH.AUTH_LOGIN, { replace: true });
+          },
+        }}
+      >
+        <p>{t('auth:changePassword.successDescription')}</p>
+      </AppDisplayDialog>
+    );
+  }
+
   return (
-    <div className={auth.authContainer}>
-      <h1 className={auth.title}>{t('changePassword.title')}</h1>
-      <Form onSubmit={handleSubmit} className={auth.form}>
+    <AppModal
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+      title={t('auth:changePassword.title')}
+      size="md"
+      isDismissable={!loading}
+      actions={
+        <>
+          <AppButton type="button" variant="secondary" isDisabled={loading} onPress={handleClose}>
+            {t('common:actions.cancel')}
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="primary"
+            isDisabled={loading}
+            isPending={loading}
+            aria-busy={loading || undefined}
+            onPress={handleFormSubmit}
+          >
+            {t('auth:changePassword.submit')}
+          </AppButton>
+        </>
+      }
+    >
+      <Form id={CHANGE_PASSWORD_FORM_ID} onSubmit={handleSubmit} className={styles.form}>
         <FormField
-          aria-label={t('changePassword.oldPasswordLabel')}
-          label={t('changePassword.oldPasswordLabel')}
+          aria-label={t('auth:changePassword.oldPasswordLabel')}
+          label={t('auth:changePassword.oldPasswordLabel')}
           name="oldPassword"
           value={formValues.oldPassword}
           onChange={(value) => updateFormValue('oldPassword', value)}
@@ -146,16 +226,16 @@ function ChangePassword() {
           isRequired
         >
           <PasswordInput
-            placeholder={t('changePassword.oldPasswordPlaceholder')}
+            placeholder={t('auth:changePassword.oldPasswordPlaceholder')}
             autoComplete="current-password"
-            showPasswordLabel={t('common.showPassword')}
-            hidePasswordLabel={t('common.hidePassword')}
+            showPasswordLabel={t('auth:common.showPassword')}
+            hidePasswordLabel={t('auth:common.hidePassword')}
           />
         </FormField>
 
         <FormField
-          aria-label={t('changePassword.passwordLabel')}
-          label={t('changePassword.passwordLabel')}
+          aria-label={t('auth:changePassword.passwordLabel')}
+          label={t('auth:changePassword.passwordLabel')}
           name="newPassword"
           value={formValues.newPassword}
           onChange={(value) => updateFormValue('newPassword', value)}
@@ -164,16 +244,16 @@ function ChangePassword() {
           isRequired
         >
           <PasswordInput
-            placeholder={t('changePassword.passwordPlaceholder')}
+            placeholder={t('auth:changePassword.passwordPlaceholder')}
             autoComplete="new-password"
-            showPasswordLabel={t('common.showPassword')}
-            hidePasswordLabel={t('common.hidePassword')}
+            showPasswordLabel={t('auth:common.showPassword')}
+            hidePasswordLabel={t('auth:common.hidePassword')}
           />
         </FormField>
 
         <FormField
-          aria-label={t('changePassword.confirmPasswordLabel')}
-          label={t('changePassword.confirmPasswordLabel')}
+          aria-label={t('auth:changePassword.confirmPasswordLabel')}
+          label={t('auth:changePassword.confirmPasswordLabel')}
           name="confirmPassword"
           value={formValues.confirmPassword}
           onChange={(value) => updateFormValue('confirmPassword', value)}
@@ -182,47 +262,15 @@ function ChangePassword() {
           isRequired
         >
           <PasswordInput
-            placeholder={t('changePassword.confirmPasswordPlaceholder')}
+            placeholder={t('auth:changePassword.confirmPasswordPlaceholder')}
             autoComplete="new-password"
-            showPasswordLabel={t('common.showPassword')}
-            hidePasswordLabel={t('common.hidePassword')}
+            showPasswordLabel={t('auth:common.showPassword')}
+            hidePasswordLabel={t('auth:common.hidePassword')}
           />
         </FormField>
-
-        <div className={auth.formActions}>
-          <AppButton
-            variant="primary"
-            size="lg"
-            type="submit"
-            className={auth.submitButton}
-            isDisabled={loading}
-          >
-            {t('changePassword.submit')}
-          </AppButton>
-          <div className={auth.centerLinks}>
-            <Link to={APP_ROUTE_PATH.AUTH_LOGIN}>{t('changePassword.backToLogin')}</Link>
-          </div>
-        </div>
       </Form>
-      <AppDisplayDialog
-        isOpen={successModalOpen}
-        onOpenChange={setSuccessModalOpen}
-        isDismissable={false}
-        showCloseTrigger={false}
-        title={t('changePassword.successTitle')}
-        primaryAction={{
-          label: t('changePassword.goToLogin'),
-          onPress: () => {
-            setSuccessModalOpen(false);
-            navigate(APP_ROUTE_PATH.AUTH_LOGIN, { replace: true });
-            authSessionCoordinator.publish('logout');
-          },
-        }}
-      >
-        <p>{t('changePassword.successDescription')}</p>
-      </AppDisplayDialog>
-    </div>
+    </AppModal>
   );
 }
 
-export default ChangePassword;
+export default ChangePasswordModal;

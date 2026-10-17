@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { registerPageTour } from '../pageTourRegistry';
+import { registerPageTour } from '../activePageTourStore';
 import type { GuideScopeProps } from './index.type';
 
 /** 页面出口上的薄层：按 tourId 登记当前页的指引，不渲染 Joyride。 */

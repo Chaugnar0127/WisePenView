@@ -54,6 +54,7 @@ interface ChatInputState {
   // 真正切換會話時遞增，讓舊輸入的非同步工作失效；草稿升級保留同一版本。
   sessionVersion: number;
   activeAttachments: LocalAttachmentPayload[];
+  agentOpen: boolean;
   attachmentOpen: boolean;
   availableModels: ChatModel[];
   documentPickerOpen: boolean;
@@ -86,6 +87,7 @@ interface ChatInputActions {
     selected: Array<{ skill: ResourceSkillSummary; sourceAgent: ChatAgentOption | null }>
   ) => void;
   setAttachmentOpen: (open: boolean) => void;
+  setAgentOpen: (open: boolean) => void;
   setAvailableModels: (models: ChatModel[]) => void;
   setDocumentPickerOpen: (open: boolean) => void;
   setIsComposing: (isComposing: boolean) => void;
@@ -117,6 +119,7 @@ interface ChatInputPersistedState {
 const INITIAL_STATE: ChatInputState = {
   sessionVersion: 0,
   activeAttachments: [],
+  agentOpen: false,
   attachmentOpen: false,
   availableModels: [],
   documentPickerOpen: false,
@@ -242,6 +245,7 @@ export function createChatInputStore(): ChatInputStoreApi {
             return { selectedSkills: [...kept, ...additions] };
           }),
 
+        setAgentOpen: (agentOpen) => set({ agentOpen }),
         setAttachmentOpen: (attachmentOpen) => set({ attachmentOpen }),
         setAvailableModels: (availableModels) => set({ availableModels }),
         setDocumentPickerOpen: (documentPickerOpen) => set({ documentPickerOpen }),

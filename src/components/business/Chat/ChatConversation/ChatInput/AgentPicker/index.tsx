@@ -66,8 +66,8 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   const chatService = useChatService();
   const store = useChatInputStoreApi();
   const selectedAgent = useChatInputStore((state) => state.selectedAgent);
-  const { setSelectedAgent } = store.getState();
-  const [open, setOpen] = useState(false);
+  const agentOpen = useChatInputStore((state) => state.agentOpen);
+  const { setAgentOpen, setSelectedAgent } = store.getState();
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const {
     data: personalPage,
@@ -83,8 +83,8 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
         size: AGENT_PAGE_SIZE,
       }),
     {
-      manual: !open,
-      reloadDeps: [open],
+      manual: !agentOpen,
+      reloadDeps: [agentOpen],
       isNoMore: (page) => Boolean(page && (page.total === 0 || page.list.length >= page.total)),
     }
   );
@@ -139,11 +139,11 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
 
   const handleSelect = (agent: ChatAgentOption) => {
     setSelectedAgent(agent);
-    setOpen(false);
+    setAgentOpen(false);
   };
 
   const handleOpenGroupModal = () => {
-    setOpen(false);
+    setAgentOpen(false);
     setGroupModalOpen(true);
   };
 
@@ -174,7 +174,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
 
   return (
     <>
-      <Dropdown isOpen={open} onOpenChange={setOpen}>
+      <Dropdown isOpen={agentOpen} onOpenChange={setAgentOpen}>
         <Dropdown.Trigger
           render={({ disabled, ...triggerProps }) => (
             <GuideAnchor id={GUIDE_TOOL_ID.chatAgent}>

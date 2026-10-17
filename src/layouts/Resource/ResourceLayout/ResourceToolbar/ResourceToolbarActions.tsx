@@ -15,13 +15,13 @@ import {
   ShieldCheck,
   Trash2,
 } from 'lucide-react';
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
-import { GuideAnchor } from '@/components/base/Guide';
+import { GuideAnchor, registerGuideActionHandler } from '@/components/base/Guide';
 import type { EditorResourcePresentation } from '@/components/editors/editor.type';
-import { GUIDE_TOOL_ID } from '@/constants/tour';
+import { GUIDE_ACTION_ID, GUIDE_TOOL_ID } from '@/constants/tour';
 import type {
   ResourceAction,
   ResourceItem,
@@ -67,8 +67,25 @@ function ResourceToolbarMore({
   onOpenPermission: () => void;
 }) {
   const { t } = useTranslation('resource');
+  const [open, setOpen] = useState(false);
   const isMenuPending = Boolean(menu?.isPending);
   const isPending = isMenuPending || operations.isLocating;
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：资源更多菜单挂载或展开状态变化时注册引导动作。
+   * 不可替代原因：引导层直接修改菜单 open 状态，不能依赖对触发按钮的模拟点击。
+   * cleanup：撤销动作处理器。
+   */
+  useEffect(
+    () =>
+      registerGuideActionHandler(GUIDE_ACTION_ID.openResourceMenu, {
+        isOpen: () => open,
+        open: () => setOpen(true),
+        close: () => setOpen(false),
+      }),
+    [open]
+  );
   const handleAction = (key: React.Key) => {
     if (key === 'permission') {
       onOpenPermission();
@@ -119,7 +136,7 @@ function ResourceToolbarMore({
   };
 
   return (
-    <Dropdown>
+    <Dropdown isOpen={open} onOpenChange={setOpen}>
       <Dropdown.Trigger
         isDisabled={isDisabled || isMenuPending}
         render={({ disabled, ...triggerProps }) => (
@@ -223,7 +240,11 @@ function ResourceToolbarMore({
             {menu?.onPrint || menu?.download ? (
               <Dropdown.Section>
                 {menu.onPrint ? (
-                  <Dropdown.Item id="print" textValue={menu.printLabel ?? t('header.print')}>
+                  <Dropdown.Item
+                    id="print"
+                    textValue={menu.printLabel ?? t('header.print')}
+                    data-guide-tool-id={GUIDE_TOOL_ID.notePrintPdf}
+                  >
                     <ResourceToolbarMenuItemContent
                       icon={menu.printIcon ?? Printer}
                       label={menu.printLabel ?? t('header.print')}
@@ -231,7 +252,11 @@ function ResourceToolbarMore({
                   </Dropdown.Item>
                 ) : null}
                 {menu.download ? (
-                  <Dropdown.Item id="download" textValue={menu.download.label}>
+                  <Dropdown.Item
+                    id="download"
+                    textValue={menu.download.label}
+                    data-guide-tool-id={GUIDE_TOOL_ID.noteDownloadMarkdown}
+                  >
                     <ResourceToolbarMenuItemContent icon={Download} label={menu.download.label} />
                   </Dropdown.Item>
                 ) : null}

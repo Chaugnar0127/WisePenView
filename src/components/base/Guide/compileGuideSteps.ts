@@ -114,6 +114,8 @@ export function compileGuideSteps(
   return tour.steps.map((step) => {
     const prepare = step.prepare;
     const restore = step.restore;
+    const spotlightToolIds = step.spotlightToolIds ?? [];
+    const singleSpotlightToolId = spotlightToolIds.length === 1 ? spotlightToolIds[0] : null;
     return {
       id: step.id,
       target: () => findGuideTarget(step.toolId),
@@ -121,17 +123,27 @@ export function compileGuideSteps(
       content: translate(step.contentKey),
       placement: step.placement,
       skipScroll: true,
+      // Joyride 会把默认 tooltip 样式合并进 step.styles，宽度经 data 透传，避免覆盖组件样式。
+      ...(step.tooltipWidth ? { data: { tooltipWidth: step.tooltipWidth } } : {}),
+      ...(singleSpotlightToolId
+        ? { spotlightTarget: () => findGuideTarget(singleSpotlightToolId) }
+        : {}),
+      hideOverlay: true,
       ...(step.offset !== undefined ? { offset: step.offset } : {}),
       floatingOptions: {
         strategy: 'fixed',
-        ...(step.preventFlip
+        ...(step.preventFlip === false
           ? {
-              flipOptions: {
-                padding: VIEWPORT_PADDING,
-                fallbackPlacements: [oppositePlacement(step.placement ?? 'right')],
-              },
+              flipOptions: false,
             }
-          : {}),
+          : step.preventFlip
+            ? {
+                flipOptions: {
+                  padding: VIEWPORT_PADDING,
+                  fallbackPlacements: [oppositePlacement(step.placement ?? 'right')],
+                },
+              }
+            : {}),
         shiftOptions: {
           padding: VIEWPORT_PADDING,
           mainAxis: true,

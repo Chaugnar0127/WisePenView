@@ -1,4 +1,20 @@
 :global {
+  /*
+   * React Aria 的定位浮层会写入内联 z-index: 100000，普通 CSS token 无法覆盖。
+   * 引导期间压到遮罩下一层，单孔和多孔遮罩才能盖住菜单；目标仍由高亮孔露出。
+   */
+  html.guide-pointer-lock .popover,
+  html.guide-pointer-lock .dropdown__popover,
+  html.guide-pointer-lock .select__popover,
+  html.guide-pointer-lock .combo-box__popover,
+  html.guide-pointer-lock .autocomplete__popover,
+  html.guide-pointer-lock .date-picker__popover,
+  html.guide-pointer-lock .date-range-picker__popover,
+  html.guide-pointer-lock .color-picker__popover,
+  html.guide-pointer-lock .react-aria-Popover {
+    z-index: calc(var(--app-z-index-guide) - 1) !important;
+  }
+
   html.guide-pointer-lock body * {
     pointer-events: none !important;
   }
@@ -6,5 +22,12 @@
   html.guide-pointer-lock [data-guide-tooltip],
   html.guide-pointer-lock [data-guide-tooltip] * {
     pointer-events: auto !important;
+  }
+
+  /* 抽屉重新打开时浏览器会恢复上次焦点，HeroUI 菜单项会因此显示焦点描边。 */
+  html.guide-pointer-lock [data-slot='menu-item'][data-focus-visible='true'],
+  html.guide-pointer-lock [data-slot='menu-item']:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
   }
 }

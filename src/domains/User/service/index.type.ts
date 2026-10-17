@@ -1,6 +1,7 @@
 import type { UserInviteRecordList } from '../entity/invite';
 import type { User, UserAccountProfile, UserSearchUser } from '../entity/user';
 import type { UserTaskCheckInResult, UserTaskStatus } from '../entity/userTask';
+import type { TourCode, UserTourStatus } from '../entity/userTour';
 import type { DegreeLevel, FeedbackType } from '../enum';
 
 /** UserService 接口：供依赖注入使用 */
@@ -28,6 +29,8 @@ export interface IUserService {
   submitFeedback(params: SubmitFeedbackRequest): Promise<void>;
   listTaskStatus(): Promise<UserTaskStatus[]>;
   dailyCheckIn(): Promise<UserTaskCheckInResult>;
+  listTourStatus(): Promise<UserTourStatus[]>;
+  completeTour(tourCode: TourCode): Promise<void>;
 }
 
 /** 确认邮箱验证请求参数 */

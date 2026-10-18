@@ -7,15 +7,17 @@ const cwd = fileURLToPath(new URL('..', import.meta.url));
 const eslint = new ESLint({ cwd });
 const filePaths = [
   'src/components/editors/skill/__file_length_check.ts',
-  ...['Resource', 'Tag', 'Image', 'Document'].map(
+  ...['Resource', 'Tag', 'Image', 'Document', 'Auth', 'User', 'Group', 'Wallet'].map(
     (domain) => `src/domains/${domain}/__file_length_check.ts`
   ),
 ];
+let scenarioCount = 0;
 
 for (const filePath of filePaths) {
   for (const lineCount of [400, 401, 600, 601]) {
     for (const newline of ['\n', '\r\n']) {
       for (const trailingNewline of [false, true]) {
+        scenarioCount += 1;
         const lines = Array.from({ length: lineCount }, (_, index) =>
           index % 3 === 0 ? '// 注释也计入文件长度。' : index % 3 === 1 ? '' : 'void 0;'
         );
@@ -40,4 +42,4 @@ for (const filePath of filePaths) {
   }
 }
 
-console.log('文件长度规则在 5 个目录的 80 个边界场景检查通过');
+console.log(`文件长度规则在 ${filePaths.length} 个目录的 ${scenarioCount} 个边界场景检查通过`);

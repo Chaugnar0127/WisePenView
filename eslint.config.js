@@ -452,7 +452,7 @@ export default defineConfig([
   {
     files: [
       'src/components/editors/skill/**/*.{ts,tsx,js,jsx}',
-      'src/domains/{Resource,Tag,Image,Document}/**/*.{ts,tsx,js,jsx}',
+      'src/domains/{Resource,Tag,Image,Document,Auth,User,Group,Wallet}/**/*.{ts,tsx,js,jsx}',
     ],
     ignores: [
       '**/{fixtures,__fixtures__,snapshots,__snapshots__,generated,__generated__}/**',

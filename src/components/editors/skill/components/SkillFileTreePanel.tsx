@@ -107,7 +107,9 @@ function SkillFileTreePanel({
           />
         ) : null}
       </div>
-      <SkillSaveQueueDock items={saveQueueItems} onRetry={onRetrySave} />
+      {saveQueueItems.length > 0 ? (
+        <SkillSaveQueueDock items={saveQueueItems} onRetry={onRetrySave} />
+      ) : null}
     </section>
   );
 }

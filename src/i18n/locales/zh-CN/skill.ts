@@ -34,7 +34,6 @@ const zhCNSkill = {
     descriptionPlaceholder: '说明这个 Skill 适合处理什么任务',
     publishBlocked: '补全 name 和 description 后，才允许发布 Skill。',
     dirty: '配置修改尚未更新',
-    saved: '配置已更新',
     reset: '重置',
     update: '更新配置',
     badge: {

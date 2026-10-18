@@ -32,6 +32,11 @@ function SkillConfigPanel({
   const nameMissing = name.trim().length === 0;
   const descriptionMissing = description.trim().length === 0;
   const hasMissingConfig = nameMissing || descriptionMissing;
+  const footerStatus = hasMissingConfig
+    ? t('config.publishBlocked')
+    : !isLoading && isDirty
+      ? t('config.dirty')
+      : null;
 
   return (
     <>
@@ -77,13 +82,7 @@ function SkillConfigPanel({
           </div>
 
           <footer className={styles.configFooter}>
-            <span className={styles.configFooterText}>
-              {hasMissingConfig
-                ? t('config.publishBlocked')
-                : isDirty
-                  ? t('config.dirty')
-                  : t('config.saved')}
-            </span>
+            {footerStatus ? <span className={styles.configFooterText}>{footerStatus}</span> : null}
             {canEdit ? (
               <span className={styles.configFooterActions}>
                 <AppButton variant="secondary" isDisabled={!isDirty || isLoading} onPress={onReset}>
@@ -95,7 +94,7 @@ function SkillConfigPanel({
                   aria-busy={isLoading || undefined}
                   onPress={onSave}
                 >
-                  {t('config.update')}
+                  {isLoading ? t('saveStatus.saving') : t('config.update')}
                 </AppButton>
               </span>
             ) : null}

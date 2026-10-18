@@ -96,6 +96,7 @@ try {
     resourceId: 'mapper-resource',
     resourceName: '映射验证',
     ownerId: 'owner-1',
+    ownerInfo: {},
     resourceType: 'note',
     tagBinds: [
       { groupId: 'group-1', primaryTagId: 'tag-group', tags: { 'tag-group': { tagName: '小组' } } },
@@ -111,6 +112,10 @@ try {
     ],
     specifiedUsersGrantedActions: [{ userId: 'user-1', grantedActions: ['VIEW'] }],
   };
+  assert.throws(
+    () => resourceMap.mapResourceItemFromApi({ ...rawResource, resourceId: '' }),
+    /Resource 响应契约无效/
+  );
   assert.equal(resourceMap.mapResourceItemFromApi(rawResource).mainTagId, 'tag-personal');
   assert.equal(
     resourceMap.mapResourceItemFromApi(rawResource, { groupId: 'group-1' }).mainTagId,

@@ -1,3 +1,4 @@
+import { assertApiPage, invalidApiResponse, isRecord } from '@/apis/runtimeContract';
 import { normalizeUserDisplayBaseFromApi } from '@/domains/User/mapper/userEnum.mapper';
 import { normalizeId } from '@/utils/normalize/normalizeId';
 import { normalizeNonNegativeNumber } from '@/utils/normalize/normalizeNumber';
@@ -128,7 +129,47 @@ export const mapMoveResourcesInGroupRequest = (
 });
 
 export const mapResourcePlacementCountFromApi = (data: ResourcePlacementApiResponse): number =>
-  data.resourceCount;
+  typeof data?.resourceCount === 'number' &&
+  Number.isFinite(data.resourceCount) &&
+  data.resourceCount >= 0
+    ? data.resourceCount
+    : invalidApiResponse('资源挂载数量契约无效');
+
+const isResourceItemResponse = (value: unknown): value is ResourceItemApiResponse => {
+  if (
+    !isRecord(value) ||
+    typeof value.resourceId !== 'string' ||
+    !value.resourceId ||
+    typeof value.resourceName !== 'string' ||
+    !isRecord(value.ownerInfo)
+  )
+    return false;
+  if (value.tagBinds != null && (!Array.isArray(value.tagBinds) || !value.tagBinds.every(isRecord)))
+    return false;
+  if (
+    value.currentActions != null &&
+    (!Array.isArray(value.currentActions) ||
+      !value.currentActions.every((item) => typeof item === 'string' || typeof item === 'number'))
+  )
+    return false;
+  if (
+    value.overrideGrantedActions != null &&
+    (!Array.isArray(value.overrideGrantedActions) ||
+      !value.overrideGrantedActions.every(
+        (item) => isRecord(item) && typeof item.groupId === 'string'
+      ))
+  )
+    return false;
+  if (
+    value.specifiedUsersGrantedActions != null &&
+    (!Array.isArray(value.specifiedUsersGrantedActions) ||
+      !value.specifiedUsersGrantedActions.every(
+        (item) => isRecord(item) && typeof item.userId === 'string'
+      ))
+  )
+    return false;
+  return true;
+};
 
 const resolveCurrentTagBind = (
   item: ResourceItem,
@@ -204,6 +245,7 @@ export const mapResourceItemFromApi = (
   raw: ResourceItemApiResponse,
   context: MapResourceItemContext = {}
 ): ResourceItem => {
+  if (!isResourceItemResponse(raw)) invalidApiResponse('Resource 响应契约无效');
   const interactionInfo = raw.resourceInteractionInfo;
   const item: ResourceItem = {
     resourceId: raw.resourceId,
@@ -242,6 +284,7 @@ export const mapResourceListPageFromApi = (
   data: ResourceListPageApiResponse,
   context: MapResourceItemContext = {}
 ): ResourceListPage => {
+  data = assertApiPage(data, isResourceItemResponse, 'Resource 分页响应契约无效');
   const list = data.list.map((item) => mapResourceItemFromApi(item, context));
 
   return {
@@ -261,7 +304,17 @@ const mapSearchHitFromApi = (raw: GlobalSearchApiResponse['list'][number]): Sear
 });
 
 export const mapSearchResultPageFromApi = (data: GlobalSearchApiResponse): SearchResultPage => ({
-  list: data.list.map(mapSearchHitFromApi),
+  list: assertApiPage(
+    data,
+    (value): value is GlobalSearchApiResponse['list'][number] =>
+      isRecord(value) &&
+      typeof value.resourceId === 'string' &&
+      typeof value.resourceType === 'string' &&
+      typeof value.resourceName === 'string' &&
+      (value.highlightContent === null || typeof value.highlightContent === 'string') &&
+      typeof value.updateTime === 'string',
+    '搜索结果分页契约无效'
+  ).list.map(mapSearchHitFromApi),
   total: data.total,
   page: data.page,
   size: data.size,

@@ -25,6 +25,8 @@ pnpm install
 cp .env.development.example .env.development
 ```
 
+本地前端如需连接正式 API，可在临时 Vite 配置的 `server.proxy` 中增加 `/__production_api` 规则：目标设为 `https://api.wisepen.oriole.cn`，开启 `changeOrigin`、将 `cookieDomainRewrite` 设为空字符串，并移除转发路径中的 `/__production_api` 前缀。启动时将 `VITE_API_BASE_URL` 与 `VITE_API_BASE_URL_INTRANET` 都设为 `http://127.0.0.1:5173/__production_api`，再以 `production` 模式运行 `pnpm dev --config <临时配置文件>`。此代理仅供本机调试，不是仓库内建配置。
+
 Mock 模式使用 `.env.mock`，生产构建使用 `.env.production`。
 
 ### 3 启动本地开发

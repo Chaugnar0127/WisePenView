@@ -32,7 +32,6 @@ const enUSSkill = {
     descriptionPlaceholder: 'Describe the tasks this Skill handles',
     publishBlocked: 'Enter a name and description before publishing the Skill.',
     dirty: 'Configuration changes have not been applied',
-    saved: 'Configuration is up to date',
     reset: 'Reset',
     update: 'Update configuration',
     badge: { required: 'Required', unsaved: 'Unsaved', complete: 'Complete' },

@@ -4,7 +4,7 @@
 
 ## 范围
 
-本文档维护图床代理上传、存储场景与图片地址的使用约束。头像／封面等业务实体是否保存成功，由对应 User／Group 流程负责；[Document](../Document/BUSINESS.md) 的 MD5、秒传与文档处理队列不属于图床流程。
+本文档维护图床代理上传、存储场景与图片地址的使用约束。头像保存由 [User](../User/BUSINESS.md) 流程负责，小组封面保存由 [Group](../Group/BUSINESS.md) 流程负责；[Document](../Document/BUSINESS.md) 的 MD5、秒传与文档处理队列不属于图床流程。
 
 ## 上传与业务场景
 

@@ -1,7 +1,5 @@
 import { type EventSourceMessage, EventSourceParserStream } from 'eventsource-parser/stream';
 
-import { invalidApiResponse, isRecord } from '@/apis/runtimeContract';
-
 const CHAT_SSE_MAX_EVENT_SIZE = 8 * 1024 * 1024;
 
 type BackendToolApprovalRequestEvent = {
@@ -23,73 +21,9 @@ type BackendToolExecutionDeniedEvent = {
   toolCallId: string;
 };
 
-const hasString = (event: Record<string, unknown>, key: string): boolean =>
-  typeof event[key] === 'string' && Boolean(event[key]);
-
-function validateKnownEvent(event: Record<string, unknown>): void {
-  const valid = (() => {
-    switch (event.type) {
-      case 'start':
-        return event.messageId === undefined || hasString(event, 'messageId');
-      case 'abort':
-        return event.reason === undefined || hasString(event, 'reason');
-      case 'error':
-        return typeof event.errorText === 'string';
-      case 'text-start':
-      case 'text-end':
-      case 'reasoning-start':
-      case 'reasoning-end':
-        return hasString(event, 'id');
-      case 'text-delta':
-      case 'reasoning-delta':
-        return hasString(event, 'id') && typeof event.delta === 'string';
-      case 'tool-input-start':
-        return hasString(event, 'toolCallId') && hasString(event, 'toolName');
-      case 'tool-input-delta':
-        return hasString(event, 'toolCallId') && typeof event.inputTextDelta === 'string';
-      case 'tool-input-available':
-        return hasString(event, 'toolCallId') && hasString(event, 'toolName') && 'input' in event;
-      case 'tool-input-error':
-        return (
-          hasString(event, 'toolCallId') &&
-          hasString(event, 'toolName') &&
-          'input' in event &&
-          typeof event.errorText === 'string'
-        );
-      case 'tool-output-available':
-        return hasString(event, 'toolCallId') && 'output' in event;
-      case 'source-url':
-        return hasString(event, 'sourceId') && hasString(event, 'url');
-      case 'source-document':
-        return (
-          hasString(event, 'sourceId') &&
-          hasString(event, 'mediaType') &&
-          typeof event.title === 'string'
-        );
-      case 'file':
-        return hasString(event, 'url') && hasString(event, 'mediaType');
-      case 'message-metadata':
-        return 'messageMetadata' in event;
-      case 'tool-approval-request':
-        return hasString(event, 'approvalId') && hasString(event, 'toolCallId');
-      case 'data-tool-approval-request':
-        return (
-          hasString(event, 'approvalId') &&
-          hasString(event, 'toolCallId') &&
-          hasString(event, 'toolName') &&
-          'input' in event
-        );
-      case 'tool-output-error':
-      case 'data-tool-execution-error':
-        return hasString(event, 'toolCallId') && typeof event.errorText === 'string';
-      case 'tool-output-denied':
-      case 'data-tool-execution-denied':
-        return hasString(event, 'toolCallId');
-      default:
-        return true;
-    }
-  })();
-  if (!valid) invalidApiResponse(`Chat SSE ${event.type} 事件契约无效`);
+function getRecord(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== 'object' || value == null || Array.isArray(value)) return null;
+  return Object.fromEntries(Object.entries(value));
 }
 
 function isToolApprovalRequestEvent(
@@ -130,13 +64,10 @@ export function normalizeChatSseData(data: string): string[] {
   try {
     parsed = JSON.parse(data);
   } catch {
-    return invalidApiResponse('Chat SSE JSON 无效');
+    return [data];
   }
-  if (!isRecord(parsed) || !hasString(parsed, 'type')) {
-    return invalidApiResponse('Chat SSE 事件类型无效');
-  }
-  const event = parsed;
-  validateKnownEvent(event);
+  const event = getRecord(parsed);
+  if (!event) return [data];
 
   if (isToolApprovalRequestEvent(event)) {
     return [
@@ -196,7 +127,7 @@ export function normalizeChatSseResponse(response: Response): Response {
     .pipeThrough(new TextDecoderStream())
     .pipeThrough(
       new EventSourceParserStream({
-        onError: () => invalidApiResponse('Chat SSE parser 契约无效'),
+        onError: 'terminate',
         maxBufferSize: CHAT_SSE_MAX_EVENT_SIZE,
       })
     )

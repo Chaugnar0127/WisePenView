@@ -1,11 +1,3 @@
-import {
-  assertApiArray,
-  assertApiPage,
-  assertApiRecord,
-  invalidApiResponse,
-  isApiId,
-  isRecord,
-} from '@/apis/runtimeContract';
 import type {
   User,
   UserAccountProfile,
@@ -73,13 +65,6 @@ type CachedUserSafe = Pick<
 >;
 
 const mapAccountProfileFromApi = (data: GetUserInfoApiResponse): UserAccountProfile => {
-  assertApiRecord(data, '用户资料响应契约无效');
-  if (
-    !isRecord(data.userInfo) ||
-    !isRecord(data.userProfile) ||
-    (typeof data.userId !== 'string' && typeof data.userId !== 'number')
-  )
-    invalidApiResponse('用户资料响应契约无效');
   const { userInfo, userProfile } = data;
   return {
     id: normalizeId(data.userId),
@@ -145,16 +130,8 @@ const mapSearchUserFromApi = (data: UserSearchUserApiResponse): UserSearchUser =
   };
 };
 
-const isSearchUserApiResponse = (value: unknown): value is UserSearchUserApiResponse =>
-  isRecord(value) &&
-  isApiId(value.userId) &&
-  typeof value.username === 'string' &&
-  value.username.trim().length > 0;
-
-const mapSearchUsersFromApi = (data: UserSearchUserApiResponse[]): UserSearchUser[] => {
-  assertApiArray(data, isSearchUserApiResponse, '用户搜索响应契约无效');
-  return data.map(mapSearchUserFromApi);
-};
+const mapSearchUsersFromApi = (data: UserSearchUserApiResponse[]): UserSearchUser[] =>
+  data.map(mapSearchUserFromApi);
 
 const mapSendEmailVerifyRequest = (
   params: SendEmailVerifyRequest
@@ -204,16 +181,13 @@ const mapInviteRecordFromApi = (data: UserInviteRecordApiResponse): UserInviteRe
 
 const mapListInviteRecordsFromApi = (
   data: ListUserInviteRecordsApiResponse
-): UserInviteRecordList => {
-  const page = assertApiPage(data, isRecord, '用户邀请分页响应契约无效');
-  return {
-    records: page.list.map(mapInviteRecordFromApi),
-    total: page.total,
-    page: page.page,
-    size: page.size,
-    totalPage: page.totalPage,
-  };
-};
+): UserInviteRecordList => ({
+  records: data.list.map(mapInviteRecordFromApi),
+  total: data.total,
+  page: data.page,
+  size: data.size,
+  totalPage: data.totalPage,
+});
 
 const hasFeedbackType = (types: FeedbackType[], type: FeedbackType): boolean =>
   types.includes(type);
@@ -255,80 +229,32 @@ const mapTaskPeriodicStatusFromApi = (
   };
 };
 
-function assertTaskRecord(data: unknown): asserts data is UserTaskStatusApiResponse {
-  if (
-    !isRecord(data) ||
-    typeof data.taskCode !== 'string' ||
-    typeof data.taskType !== 'string' ||
-    typeof data.enabled !== 'boolean' ||
-    typeof data.canComplete !== 'boolean'
-  )
-    invalidApiResponse('用户任务状态契约无效');
-  const row = data as UserTaskStatusApiResponse;
-  if (row.rewardPreview != null && !isRecord(row.rewardPreview))
-    invalidApiResponse('用户任务奖励契约无效');
-  if (row.once != null && (!isRecord(row.once) || typeof row.once.completed !== 'boolean'))
-    invalidApiResponse('用户任务单次状态契约无效');
-  if (
-    row.periodic != null &&
-    (!isRecord(row.periodic) ||
-      typeof row.periodic.completedTimes !== 'number' ||
-      typeof row.periodic.maxTimes !== 'number')
-  )
-    invalidApiResponse('用户任务周期状态契约无效');
-}
-
-const mapTaskStatusFromApi = (data: UserTaskStatusApiResponse): UserTaskStatus => {
-  assertTaskRecord(data);
-  return {
-    taskCode: data.taskCode,
-    taskType: data.taskType,
-    enabled: data.enabled,
-    canComplete: data.canComplete,
-    rewardPreview: mapTaskRewardPreviewFromApi(data.rewardPreview),
-    once: data.once
-      ? { completed: data.once.completed, completeTime: data.once.completeTime ?? undefined }
-      : undefined,
-    periodic: mapTaskPeriodicStatusFromApi(data.periodic),
-  };
-};
-
-const mapTaskStatusesFromApi = (data: UserTaskStatusApiResponse[]): UserTaskStatus[] => {
-  assertApiArray(
-    data,
-    (value): value is UserTaskStatusApiResponse => {
-      try {
-        assertTaskRecord(value);
-        return true;
-      } catch {
-        return false;
+const mapTaskStatusFromApi = (data: UserTaskStatusApiResponse): UserTaskStatus => ({
+  taskCode: data.taskCode,
+  taskType: data.taskType,
+  enabled: data.enabled,
+  canComplete: data.canComplete,
+  rewardPreview: mapTaskRewardPreviewFromApi(data.rewardPreview),
+  once: data.once
+    ? {
+        completed: data.once.completed,
+        completeTime: data.once.completeTime ?? undefined,
       }
-    },
-    '用户任务状态列表契约无效'
-  );
-  return data.map(mapTaskStatusFromApi);
-};
+    : undefined,
+  periodic: mapTaskPeriodicStatusFromApi(data.periodic),
+});
 
-const mapTaskCheckInFromApi = (data: UserTaskCheckInApiResponse): UserTaskCheckInResult => {
-  if (
-    !isRecord(data) ||
-    typeof data.rewardType !== 'string' ||
-    typeof data.rewardAmount !== 'number' ||
-    typeof data.hitGuarantee !== 'boolean' ||
-    typeof data.cycleProgress !== 'number' ||
-    typeof data.cycleCount !== 'number' ||
-    typeof data.checkedInToday !== 'boolean'
-  )
-    invalidApiResponse('用户签到响应契约无效');
-  return {
-    rewardType: data.rewardType,
-    rewardAmount: data.rewardAmount,
-    hitGuarantee: data.hitGuarantee,
-    cycleProgress: data.cycleProgress,
-    cycleCount: data.cycleCount,
-    checkedInToday: data.checkedInToday,
-  };
-};
+const mapTaskStatusesFromApi = (data: UserTaskStatusApiResponse[]): UserTaskStatus[] =>
+  data.map(mapTaskStatusFromApi);
+
+const mapTaskCheckInFromApi = (data: UserTaskCheckInApiResponse): UserTaskCheckInResult => ({
+  rewardType: data.rewardType,
+  rewardAmount: data.rewardAmount,
+  hitGuarantee: data.hitGuarantee,
+  cycleProgress: data.cycleProgress,
+  cycleCount: data.cycleCount,
+  checkedInToday: data.checkedInToday,
+});
 
 const mapTourStatusesFromApi = (data: UserTourStatusApiResponse[]): UserTourStatus[] =>
   data.map(({ tourCode, completed }) => ({

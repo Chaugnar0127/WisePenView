@@ -1,4 +1,3 @@
-import { assertApiRecord, invalidApiResponse, isRecord } from '@/apis/runtimeContract';
 import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 
 import type {
@@ -29,16 +28,6 @@ function mapRecognitionCredentialFromApi(
   response: IssueRecognitionCredentialApiResponse,
   params: IssueRecognitionCredentialRequest
 ): SpeechRecognitionCredential {
-  assertApiRecord(response, '语音凭据响应契约无效');
-  if (
-    typeof response.provider !== 'string' ||
-    typeof response.expires_at !== 'string' ||
-    !isRecord(response.credential) ||
-    typeof response.credential.url !== 'string' ||
-    !isRecord(response.credential.common) ||
-    typeof response.credential.common.app_id !== 'string'
-  )
-    invalidApiResponse('语音凭据响应契约无效');
   if (response.provider !== 'IFLYTEK') {
     throw createClientError(FRONTEND_CLIENT_ERROR.SPEECH_PROVIDER_UNSUPPORTED, {
       provider: response.provider,

@@ -165,6 +165,7 @@ function setSessionAgent(req: SetSessionAgentApiRequest): Promise<SetSessionAgen
     '/chat/session/setSessionAgent',
     {
       agent_id: req.agent_id,
+      agent_version: req.agent_version,
     },
     {
       params: { session_id: req.session_id },

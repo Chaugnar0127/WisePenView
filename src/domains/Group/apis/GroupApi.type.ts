@@ -93,7 +93,7 @@ export interface GroupMemberBaseInfoApiResponse {
 
 export interface GroupMemberApiResponse {
   role: GroupRoleApiValue;
-  joinTime: string | number;
+  joinTime: string;
   tokenLimit: JavaLongApiValue;
   tokenUsed: JavaLongApiValue;
   groupId: string | number;
@@ -130,7 +130,7 @@ export interface GetMyGroupMemberInfoApiRequest {
 
 export interface GetMyGroupMemberInfoApiResponse {
   role?: GroupRoleApiValue;
-  joinTime?: string | number;
+  joinTime?: string;
   tokenUsed?: JavaLongApiValue;
   tokenLimit?: JavaLongApiValue;
   groupId?: string | number;

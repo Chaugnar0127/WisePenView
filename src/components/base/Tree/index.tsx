@@ -319,6 +319,14 @@ function Tree({
             draggable={canDragNode(node)}
             role="treeitem"
             tabIndex={canSelect || clickExpands ? 0 : undefined}
+            onClick={(event) => {
+              if (isInteractiveTarget(event.target)) return;
+              if (clickExpands && !canSelect) {
+                toggleExpand(node, !expanded);
+                return;
+              }
+              toggleSelect(node);
+            }}
             onKeyDown={(event) => {
               if (event.target !== event.currentTarget) return;
               if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -405,14 +413,6 @@ function Tree({
             <div
               className={clsx(styles.content, 'wisepen-tree__content')}
               data-selectable={canSelect}
-              onClick={(event) => {
-                if (isInteractiveTarget(event.target)) return;
-                if (clickExpands && !canSelect) {
-                  toggleExpand(node, !expanded);
-                  return;
-                }
-                toggleSelect(node);
-              }}
               onDoubleClick={(event) => {
                 if (isInteractiveTarget(event.target)) return;
                 if (expandAction !== 'doubleClick' || !expandable) return;

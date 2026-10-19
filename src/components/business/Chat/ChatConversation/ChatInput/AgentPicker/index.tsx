@@ -90,8 +90,15 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   );
   const showSkeleton = personalPage == null && loadingPersonal;
   const personalAgents = personalPage?.list ?? [];
+  // 保持列表顺序；选中项只补充来源信息，不在点击后移到列表前面。
   const displayAgents = mergeAgentOptions(
-    [buildDefaultPersonalAgent(), selectedAgent, ...personalAgents],
+    [
+      buildDefaultPersonalAgent(),
+      ...personalAgents.map((agent) =>
+        agent.agentId === selectedAgent.agentId ? selectedAgent : agent
+      ),
+      selectedAgent,
+    ],
     injectedAgents
   );
   const hasMorePersonalAgents = Boolean(personalPage) && !noMorePersonal;

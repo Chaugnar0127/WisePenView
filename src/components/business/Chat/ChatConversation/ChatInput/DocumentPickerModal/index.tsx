@@ -66,6 +66,8 @@ function DocumentPickerContent() {
               <DriveNavigator
                 scopeMode="all"
                 selectableTypes={['resource', 'link']}
+                // 目录仅用于浏览和展开，不参与选中；关闭置灰可避免目录被标记为 disabled 后无法展开。
+                dimUnselectableNodes={false}
                 multiple
                 onChange={handleSelectionChange}
               />

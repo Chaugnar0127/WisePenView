@@ -17,4 +17,3 @@ export {
   type ThemeMode,
 } from './mode/constants';
 export { ThemeApplier } from './provider/ThemeApplier';
-export { useReadingMode } from './readingMode/useReadingMode';

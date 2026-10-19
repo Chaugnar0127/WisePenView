@@ -121,10 +121,6 @@ const zhCNProfile = {
     languageAria: '选择界面语言',
     mode: '明暗模式',
     colorScheme: '主题配色（Base / Accent）',
-    readingMode: {
-      title: '阅读模式',
-      description: '调整界面配色，使其更适合长时间阅读与专注工作',
-    },
     modeOption: {
       light: { label: '浅色', description: '始终使用浅色界面' },
       dark: { label: '深色', description: '始终使用深色界面' },

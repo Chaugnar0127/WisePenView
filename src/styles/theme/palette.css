@@ -10,8 +10,6 @@
 }
 
 :root {
-  --palette-accent-surface-neutral-mix: 0%;
-  --palette-accent-foreground-neutral-mix: 0%;
   --palette-neutral-1: var(--slate-1);
   --palette-neutral-2: var(--slate-2);
   --palette-neutral-3: var(--slate-3);
@@ -28,71 +26,19 @@
   --palette-neutral-a5: var(--slate-a5);
   --palette-neutral-a6: var(--slate-a6);
   --palette-neutral-a7: var(--slate-a7);
-  --palette-accent-1: color-mix(
-    in oklab,
-    var(--wisepen-aqua-1) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-1) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-2: color-mix(
-    in oklab,
-    var(--wisepen-aqua-2) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-2) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-3: color-mix(
-    in oklab,
-    var(--wisepen-aqua-3) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-4: color-mix(
-    in oklab,
-    var(--wisepen-aqua-4) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-4) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-5: color-mix(
-    in oklab,
-    var(--wisepen-aqua-5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-a5: color-mix(
-    in oklab,
-    var(--wisepen-aqua-a5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-a5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-6: color-mix(
-    in oklab,
-    var(--wisepen-aqua-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-7: color-mix(
-    in oklab,
-    var(--wisepen-aqua-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-8: color-mix(
-    in oklab,
-    var(--wisepen-aqua-8) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-8) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-9: color-mix(
-    in oklab,
-    var(--wisepen-aqua-9) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-9) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-10: color-mix(
-    in oklab,
-    var(--wisepen-aqua-10) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-10) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-11: color-mix(
-    in oklab,
-    var(--wisepen-aqua-11) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-11) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-12: color-mix(
-    in oklab,
-    var(--wisepen-aqua-12) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-12) var(--palette-accent-foreground-neutral-mix)
-  );
+  --palette-accent-1: var(--wisepen-aqua-1);
+  --palette-accent-2: var(--wisepen-aqua-2);
+  --palette-accent-3: var(--wisepen-aqua-3);
+  --palette-accent-4: var(--wisepen-aqua-4);
+  --palette-accent-5: var(--wisepen-aqua-5);
+  --palette-accent-a5: var(--wisepen-aqua-a5);
+  --palette-accent-6: var(--wisepen-aqua-6);
+  --palette-accent-7: var(--wisepen-aqua-7);
+  --palette-accent-8: var(--wisepen-aqua-8);
+  --palette-accent-9: var(--wisepen-aqua-9);
+  --palette-accent-10: var(--wisepen-aqua-10);
+  --palette-accent-11: var(--wisepen-aqua-11);
+  --palette-accent-12: var(--wisepen-aqua-12);
   --palette-accent-contrast: var(--wisepen-aqua-contrast);
   --resource-icon-theme: var(--wisepen-aqua-11);
 }
@@ -114,78 +60,24 @@ html[data-color-scheme='aqua'] {
   --palette-neutral-a5: var(--slate-a5);
   --palette-neutral-a6: var(--slate-a6);
   --palette-neutral-a7: var(--slate-a7);
-  --palette-accent-1: color-mix(
-    in oklab,
-    var(--wisepen-aqua-1) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-1) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-2: color-mix(
-    in oklab,
-    var(--wisepen-aqua-2) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-2) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-3: color-mix(
-    in oklab,
-    var(--wisepen-aqua-3) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-4: color-mix(
-    in oklab,
-    var(--wisepen-aqua-4) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-4) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-5: color-mix(
-    in oklab,
-    var(--wisepen-aqua-5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-a5: color-mix(
-    in oklab,
-    var(--wisepen-aqua-a5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-a5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-6: color-mix(
-    in oklab,
-    var(--wisepen-aqua-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-7: color-mix(
-    in oklab,
-    var(--wisepen-aqua-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-8: color-mix(
-    in oklab,
-    var(--wisepen-aqua-8) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-8) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-9: color-mix(
-    in oklab,
-    var(--wisepen-aqua-9) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-9) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-10: color-mix(
-    in oklab,
-    var(--wisepen-aqua-10) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-10) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-11: color-mix(
-    in oklab,
-    var(--wisepen-aqua-11) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-11) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-12: color-mix(
-    in oklab,
-    var(--wisepen-aqua-12) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-12) var(--palette-accent-foreground-neutral-mix)
-  );
+  --palette-accent-1: var(--wisepen-aqua-1);
+  --palette-accent-2: var(--wisepen-aqua-2);
+  --palette-accent-3: var(--wisepen-aqua-3);
+  --palette-accent-4: var(--wisepen-aqua-4);
+  --palette-accent-5: var(--wisepen-aqua-5);
+  --palette-accent-a5: var(--wisepen-aqua-a5);
+  --palette-accent-6: var(--wisepen-aqua-6);
+  --palette-accent-7: var(--wisepen-aqua-7);
+  --palette-accent-8: var(--wisepen-aqua-8);
+  --palette-accent-9: var(--wisepen-aqua-9);
+  --palette-accent-10: var(--wisepen-aqua-10);
+  --palette-accent-11: var(--wisepen-aqua-11);
+  --palette-accent-12: var(--wisepen-aqua-12);
   --palette-accent-contrast: var(--wisepen-aqua-contrast);
   --resource-icon-theme: var(--wisepen-aqua-11);
 }
 
 html[data-color-scheme='mist'] {
-  --palette-accent-surface-neutral-mix: 0%;
-  --palette-accent-foreground-neutral-mix: 0%;
   --palette-neutral-1: var(--slate-1);
   --palette-neutral-2: var(--slate-2);
   --palette-neutral-3: var(--slate-3);
@@ -202,71 +94,19 @@ html[data-color-scheme='mist'] {
   --palette-neutral-a5: var(--slate-a5);
   --palette-neutral-a6: var(--slate-a6);
   --palette-neutral-a7: var(--slate-a7);
-  --palette-accent-1: color-mix(
-    in oklab,
-    var(--wisepen-mist-1) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-1) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-2: color-mix(
-    in oklab,
-    var(--wisepen-mist-2) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-2) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-3: color-mix(
-    in oklab,
-    var(--wisepen-mist-3) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-4: color-mix(
-    in oklab,
-    var(--wisepen-mist-4) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-4) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-5: color-mix(
-    in oklab,
-    var(--wisepen-mist-5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-a5: color-mix(
-    in oklab,
-    var(--wisepen-mist-a5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-a5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-6: color-mix(
-    in oklab,
-    var(--wisepen-mist-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-7: color-mix(
-    in oklab,
-    var(--wisepen-mist-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-8: color-mix(
-    in oklab,
-    var(--wisepen-mist-8) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-8) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-9: color-mix(
-    in oklab,
-    var(--wisepen-mist-9) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-9) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-10: color-mix(
-    in oklab,
-    var(--wisepen-mist-10) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-10) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-11: color-mix(
-    in oklab,
-    var(--wisepen-mist-11) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-11) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-12: color-mix(
-    in oklab,
-    var(--wisepen-mist-12) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-12) var(--palette-accent-foreground-neutral-mix)
-  );
+  --palette-accent-1: var(--wisepen-mist-1);
+  --palette-accent-2: var(--wisepen-mist-2);
+  --palette-accent-3: var(--wisepen-mist-3);
+  --palette-accent-4: var(--wisepen-mist-4);
+  --palette-accent-5: var(--wisepen-mist-5);
+  --palette-accent-a5: var(--wisepen-mist-a5);
+  --palette-accent-6: var(--wisepen-mist-6);
+  --palette-accent-7: var(--wisepen-mist-7);
+  --palette-accent-8: var(--wisepen-mist-8);
+  --palette-accent-9: var(--wisepen-mist-9);
+  --palette-accent-10: var(--wisepen-mist-10);
+  --palette-accent-11: var(--wisepen-mist-11);
+  --palette-accent-12: var(--wisepen-mist-12);
   --palette-accent-contrast: var(--wisepen-mist-contrast);
   --resource-icon-theme: var(--wisepen-mist-11);
 }
@@ -288,71 +128,19 @@ html[data-color-scheme='floral'] {
   --palette-neutral-a5: var(--mauve-a5);
   --palette-neutral-a6: var(--mauve-a6);
   --palette-neutral-a7: var(--mauve-a7);
-  --palette-accent-1: color-mix(
-    in oklab,
-    var(--wisepen-floral-1) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-1) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-2: color-mix(
-    in oklab,
-    var(--wisepen-floral-2) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-2) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-3: color-mix(
-    in oklab,
-    var(--wisepen-floral-3) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-4: color-mix(
-    in oklab,
-    var(--wisepen-floral-4) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-4) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-5: color-mix(
-    in oklab,
-    var(--wisepen-floral-5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-a5: color-mix(
-    in oklab,
-    var(--wisepen-floral-a5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-a5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-6: color-mix(
-    in oklab,
-    var(--wisepen-floral-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-7: color-mix(
-    in oklab,
-    var(--wisepen-floral-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-8: color-mix(
-    in oklab,
-    var(--wisepen-floral-8) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-8) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-9: color-mix(
-    in oklab,
-    var(--wisepen-floral-9) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-9) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-10: color-mix(
-    in oklab,
-    var(--wisepen-floral-10) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-10) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-11: color-mix(
-    in oklab,
-    var(--wisepen-floral-11) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-11) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-12: color-mix(
-    in oklab,
-    var(--wisepen-floral-12) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-12) var(--palette-accent-foreground-neutral-mix)
-  );
+  --palette-accent-1: var(--wisepen-floral-1);
+  --palette-accent-2: var(--wisepen-floral-2);
+  --palette-accent-3: var(--wisepen-floral-3);
+  --palette-accent-4: var(--wisepen-floral-4);
+  --palette-accent-5: var(--wisepen-floral-5);
+  --palette-accent-a5: var(--wisepen-floral-a5);
+  --palette-accent-6: var(--wisepen-floral-6);
+  --palette-accent-7: var(--wisepen-floral-7);
+  --palette-accent-8: var(--wisepen-floral-8);
+  --palette-accent-9: var(--wisepen-floral-9);
+  --palette-accent-10: var(--wisepen-floral-10);
+  --palette-accent-11: var(--wisepen-floral-11);
+  --palette-accent-12: var(--wisepen-floral-12);
   --palette-accent-contrast: var(--wisepen-floral-contrast);
   --resource-icon-theme: var(--wisepen-floral-11);
 }
@@ -374,71 +162,19 @@ html[data-color-scheme='sunset'] {
   --palette-neutral-a5: var(--sand-a5);
   --palette-neutral-a6: var(--sand-a6);
   --palette-neutral-a7: var(--sand-a7);
-  --palette-accent-1: color-mix(
-    in oklab,
-    var(--wisepen-sunset-1) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-1) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-2: color-mix(
-    in oklab,
-    var(--wisepen-sunset-2) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-2) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-3: color-mix(
-    in oklab,
-    var(--wisepen-sunset-3) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-4: color-mix(
-    in oklab,
-    var(--wisepen-sunset-4) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-4) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-5: color-mix(
-    in oklab,
-    var(--wisepen-sunset-5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-a5: color-mix(
-    in oklab,
-    var(--wisepen-sunset-a5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-a5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-6: color-mix(
-    in oklab,
-    var(--wisepen-sunset-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-7: color-mix(
-    in oklab,
-    var(--wisepen-sunset-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-8: color-mix(
-    in oklab,
-    var(--wisepen-sunset-8) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-8) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-9: color-mix(
-    in oklab,
-    var(--wisepen-sunset-9) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-9) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-10: color-mix(
-    in oklab,
-    var(--wisepen-sunset-10) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-10) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-11: color-mix(
-    in oklab,
-    var(--wisepen-sunset-11) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-11) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-12: color-mix(
-    in oklab,
-    var(--wisepen-sunset-12) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-12) var(--palette-accent-foreground-neutral-mix)
-  );
+  --palette-accent-1: var(--wisepen-sunset-1);
+  --palette-accent-2: var(--wisepen-sunset-2);
+  --palette-accent-3: var(--wisepen-sunset-3);
+  --palette-accent-4: var(--wisepen-sunset-4);
+  --palette-accent-5: var(--wisepen-sunset-5);
+  --palette-accent-a5: var(--wisepen-sunset-a5);
+  --palette-accent-6: var(--wisepen-sunset-6);
+  --palette-accent-7: var(--wisepen-sunset-7);
+  --palette-accent-8: var(--wisepen-sunset-8);
+  --palette-accent-9: var(--wisepen-sunset-9);
+  --palette-accent-10: var(--wisepen-sunset-10);
+  --palette-accent-11: var(--wisepen-sunset-11);
+  --palette-accent-12: var(--wisepen-sunset-12);
   --palette-accent-contrast: var(--wisepen-sunset-contrast);
   --resource-icon-theme: var(--wisepen-sunset-11);
 }
@@ -460,71 +196,19 @@ html[data-color-scheme='emerald'] {
   --palette-neutral-a5: var(--sage-a5);
   --palette-neutral-a6: var(--sage-a6);
   --palette-neutral-a7: var(--sage-a7);
-  --palette-accent-1: color-mix(
-    in oklab,
-    var(--wisepen-emerald-1) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-1) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-2: color-mix(
-    in oklab,
-    var(--wisepen-emerald-2) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-2) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-3: color-mix(
-    in oklab,
-    var(--wisepen-emerald-3) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-4: color-mix(
-    in oklab,
-    var(--wisepen-emerald-4) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-4) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-5: color-mix(
-    in oklab,
-    var(--wisepen-emerald-5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-a5: color-mix(
-    in oklab,
-    var(--wisepen-emerald-a5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-a5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-6: color-mix(
-    in oklab,
-    var(--wisepen-emerald-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-7: color-mix(
-    in oklab,
-    var(--wisepen-emerald-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-8: color-mix(
-    in oklab,
-    var(--wisepen-emerald-8) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-8) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-9: color-mix(
-    in oklab,
-    var(--wisepen-emerald-9) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-9) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-10: color-mix(
-    in oklab,
-    var(--wisepen-emerald-10) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-10) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-11: color-mix(
-    in oklab,
-    var(--wisepen-emerald-11) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-11) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-12: color-mix(
-    in oklab,
-    var(--wisepen-emerald-12) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-12) var(--palette-accent-foreground-neutral-mix)
-  );
+  --palette-accent-1: var(--wisepen-emerald-1);
+  --palette-accent-2: var(--wisepen-emerald-2);
+  --palette-accent-3: var(--wisepen-emerald-3);
+  --palette-accent-4: var(--wisepen-emerald-4);
+  --palette-accent-5: var(--wisepen-emerald-5);
+  --palette-accent-a5: var(--wisepen-emerald-a5);
+  --palette-accent-6: var(--wisepen-emerald-6);
+  --palette-accent-7: var(--wisepen-emerald-7);
+  --palette-accent-8: var(--wisepen-emerald-8);
+  --palette-accent-9: var(--wisepen-emerald-9);
+  --palette-accent-10: var(--wisepen-emerald-10);
+  --palette-accent-11: var(--wisepen-emerald-11);
+  --palette-accent-12: var(--wisepen-emerald-12);
   --palette-accent-contrast: var(--wisepen-emerald-contrast);
   --resource-icon-theme: var(--wisepen-emerald-11);
 }
@@ -546,71 +230,19 @@ html[data-color-scheme='lavender'] {
   --palette-neutral-a5: var(--mauve-a5);
   --palette-neutral-a6: var(--mauve-a6);
   --palette-neutral-a7: var(--mauve-a7);
-  --palette-accent-1: color-mix(
-    in oklab,
-    var(--wisepen-lavender-1) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-1) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-2: color-mix(
-    in oklab,
-    var(--wisepen-lavender-2) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-2) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-3: color-mix(
-    in oklab,
-    var(--wisepen-lavender-3) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-4: color-mix(
-    in oklab,
-    var(--wisepen-lavender-4) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-4) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-5: color-mix(
-    in oklab,
-    var(--wisepen-lavender-5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-a5: color-mix(
-    in oklab,
-    var(--wisepen-lavender-a5) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-a5) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-6: color-mix(
-    in oklab,
-    var(--wisepen-lavender-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --palette-accent-7: color-mix(
-    in oklab,
-    var(--wisepen-lavender-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-8: color-mix(
-    in oklab,
-    var(--wisepen-lavender-8) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-8) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-9: color-mix(
-    in oklab,
-    var(--wisepen-lavender-9) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-9) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-10: color-mix(
-    in oklab,
-    var(--wisepen-lavender-10) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-10) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-11: color-mix(
-    in oklab,
-    var(--wisepen-lavender-11) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-11) var(--palette-accent-foreground-neutral-mix)
-  );
-  --palette-accent-12: color-mix(
-    in oklab,
-    var(--wisepen-lavender-12) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-12) var(--palette-accent-foreground-neutral-mix)
-  );
+  --palette-accent-1: var(--wisepen-lavender-1);
+  --palette-accent-2: var(--wisepen-lavender-2);
+  --palette-accent-3: var(--wisepen-lavender-3);
+  --palette-accent-4: var(--wisepen-lavender-4);
+  --palette-accent-5: var(--wisepen-lavender-5);
+  --palette-accent-a5: var(--wisepen-lavender-a5);
+  --palette-accent-6: var(--wisepen-lavender-6);
+  --palette-accent-7: var(--wisepen-lavender-7);
+  --palette-accent-8: var(--wisepen-lavender-8);
+  --palette-accent-9: var(--wisepen-lavender-9);
+  --palette-accent-10: var(--wisepen-lavender-10);
+  --palette-accent-11: var(--wisepen-lavender-11);
+  --palette-accent-12: var(--wisepen-lavender-12);
   --palette-accent-contrast: var(--wisepen-lavender-contrast);
   --resource-icon-theme: var(--wisepen-lavender-11);
 }
@@ -774,52 +406,17 @@ html[data-color-scheme='lavender'] {
   /*
    * AI Diff
    */
-  --diff-added: color-mix(
-    in oklab,
-    color-mix(in oklab, var(--green-3) 70%, var(--green-2) 30%)
-      calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --diff-added-border: color-mix(
-    in oklab,
-    var(--green-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
+  --diff-added: color-mix(in oklab, var(--green-3) 70%, var(--green-2) 30%);
+  --diff-added-border: var(--green-7);
   --diff-added-fg: var(--palette-neutral-12);
-  --diff-added-selected: color-mix(
-    in oklab,
-    var(--green-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --diff-removed: color-mix(
-    in oklab,
-    color-mix(in oklab, var(--ruby-3) 70%, var(--ruby-2) 30%)
-      calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --diff-removed-border: color-mix(
-    in oklab,
-    var(--ruby-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
+  --diff-added-selected: var(--green-6);
+  --diff-removed: color-mix(in oklab, var(--ruby-3) 70%, var(--ruby-2) 30%);
+  --diff-removed-border: var(--ruby-7);
   /* 删除正文用中性灰，红只保留底与左边线 */
   --diff-removed-fg: var(--muted);
-  --diff-removed-selected: color-mix(
-    in oklab,
-    var(--ruby-6) calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-6) var(--palette-accent-surface-neutral-mix)
-  );
-  --diff-modified: color-mix(
-    in oklab,
-    color-mix(in oklab, var(--blue-3) 70%, var(--blue-2) 30%)
-      calc(100% - var(--palette-accent-surface-neutral-mix)),
-    var(--palette-neutral-3) var(--palette-accent-surface-neutral-mix)
-  );
-  --diff-modified-border: color-mix(
-    in oklab,
-    var(--blue-7) calc(100% - var(--palette-accent-foreground-neutral-mix)),
-    var(--palette-neutral-7) var(--palette-accent-foreground-neutral-mix)
-  );
+  --diff-removed-selected: var(--ruby-6);
+  --diff-modified: color-mix(in oklab, var(--blue-3) 70%, var(--blue-2) 30%);
+  --diff-modified-border: var(--blue-7);
   --diff-row-selected: var(--palette-neutral-3);
 
   --scrollbar: var(--scrollbar-thumb);

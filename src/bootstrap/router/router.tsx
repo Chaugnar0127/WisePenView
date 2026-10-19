@@ -366,11 +366,7 @@ const router = createBrowserRouter([
     errorElement: <AppError />,
     children: [
       {
-        element: (
-          <AppAuthProvider mode="authenticated">
-            <AdminLayout />
-          </AppAuthProvider>
-        ),
+        element: <AdminLayout />,
         errorElement: <RouteError />,
         children: [
           { index: true, element: <Navigate to={APP_ROUTE_PATH.ADMIN_USERS} replace /> },

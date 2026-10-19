@@ -1,10 +1,3 @@
-import {
-  assertApiRecord,
-  invalidApiResponse,
-  optionalApiNumber,
-  optionalApiString,
-} from '@/apis/runtimeContract';
-
 import type { ImageUploadApiRequest, ImageUploadApiResponse } from '../apis/ImageApi.type';
 import type { ImageUploadRequest, ImageUploadResult } from '../service/index.type';
 import { buildImagePublicUrl } from '../service/index.type';
@@ -20,19 +13,10 @@ const mapImageUploadRequest = (params: ImageUploadRequest): ImageUploadApiReques
   return formData;
 };
 
-const mapImageUploadFromApi = (record: ImageUploadApiResponse): ImageUploadResult => {
-  assertApiRecord(record, '图片上传响应契约无效');
-  if (typeof record.domain !== 'string' || typeof record.objectKey !== 'string')
-    invalidApiResponse('图片上传响应契约无效');
-  const mapped = {
-    domain: record.domain,
-    objectKey: record.objectKey,
-    fileId: optionalApiNumber(record.fileId),
-    md5: optionalApiString(record.md5),
-    size: optionalApiNumber(record.size),
-  };
-  return { record: mapped, publicUrl: buildImagePublicUrl(mapped) };
-};
+const mapImageUploadFromApi = (record: ImageUploadApiResponse): ImageUploadResult => ({
+  record,
+  publicUrl: buildImagePublicUrl(record),
+});
 
 export const ImageServicesMap = {
   mapImageUploadRequest,

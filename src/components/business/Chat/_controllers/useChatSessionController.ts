@@ -51,7 +51,8 @@ export function useChatSessionController({ resourceChat }: UseChatSessionControl
     { manual: true }
   );
   const { runAsync: runSetSessionAgent } = useApi(
-    (params: { sessionId: string; agentId?: string | null }) => chatService.setSessionAgent(params),
+    (params: { sessionId: string; agentId?: string | null; agentVersion?: number | null }) =>
+      chatService.setSessionAgent(params),
     { manual: true }
   );
 
@@ -104,11 +105,14 @@ export function useChatSessionController({ resourceChat }: UseChatSessionControl
           targetSession != null &&
           (agentParams.agentId == null
             ? targetSession.agentId == null
-            : targetSession.agentId === agentParams.agentId);
+            : targetSession.agentId === agentParams.agentId &&
+              (agentParams.agentVersion == null ||
+                targetSession.agentVersion === agentParams.agentVersion));
         if (!sessionAgentMatched) {
           await runSetSessionAgent({
             sessionId: targetSessionId,
             agentId: agentParams.agentId,
+            agentVersion: agentParams.agentVersion,
           });
         }
       }

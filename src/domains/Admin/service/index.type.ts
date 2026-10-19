@@ -34,19 +34,7 @@ export interface GetAdminUserInfoRequest {
 }
 
 export interface GetAdminUserInfoResponse {
-  userProfile: {
-    userId: string;
-    sex?: number;
-    university?: string;
-    college?: string;
-    major?: string;
-    className?: string;
-    enrollmentYear?: string;
-    degreeLevel?: number;
-    academicTitle?: string;
-    createTime?: string;
-    updateTime?: string;
-  };
+  userProfile: Record<string, unknown>;
 }
 
 export interface ChangeAdminUserInfoRequest {

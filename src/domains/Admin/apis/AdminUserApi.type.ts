@@ -1,4 +1,4 @@
-import type { Nullable, PageApiRequest, PageR } from '@/apis/api.type';
+import type { PageApiRequest, PageR } from '@/apis/api.type';
 import type {
   UserDegreeLevelApiValue,
   UserIdentityTypeApiValue,
@@ -18,14 +18,14 @@ export interface AdminUserApiModel {
   email?: string;
   mobile?: string;
   verificationMode?: UserVerificationMode;
-  userStatus?: UserStatusApiValue;
+  status?: UserStatusApiValue;
   createTime?: string;
   updateTime?: string;
 }
 
 export interface FetchAdminUserListApiRequest extends PageApiRequest {
   keyword: string;
-  userStatus?: string;
+  status?: string;
   identityType?: string;
 }
 
@@ -36,17 +36,17 @@ export interface GetAdminUserInfoApiRequest {
 }
 
 export interface GetAdminUserInfoApiResponse {
-  userId: string | number;
-  sex?: Nullable<UserSexApiValue>;
-  university?: Nullable<string>;
-  college?: Nullable<string>;
-  major?: Nullable<string>;
-  className?: Nullable<string>;
-  enrollmentYear?: Nullable<number>;
-  degreeLevel?: Nullable<UserDegreeLevelApiValue>;
-  academicTitle?: Nullable<string>;
-  createTime?: Nullable<string>;
-  updateTime?: Nullable<string>;
+  sex?: UserSexApiValue;
+  university?: string;
+  college?: string;
+  major?: string;
+  className?: string;
+  enrollmentYear?: number;
+  degreeLevel?: UserDegreeLevelApiValue;
+  academicTitle?: string;
+  userId?: string | number;
+  createTime?: string;
+  updateTime?: string;
 }
 
 export interface ChangeAdminUserInfoApiRequest {
@@ -54,16 +54,16 @@ export interface ChangeAdminUserInfoApiRequest {
   nickname?: string;
   realName?: string;
   avatar?: string;
-  email?: Nullable<string>;
-  mobile?: Nullable<string>;
-  userStatus?: string;
+  email?: string | null;
+  mobile?: string | null;
+  status?: string;
   identityType?: string;
 }
 
 export interface ChangeAdminUserProfileApiRequest {
   userId: string;
   sex?: string;
-  university?: Nullable<string>;
+  university?: string | null;
   college?: string;
   major?: string;
   className?: string;

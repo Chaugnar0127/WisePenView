@@ -330,15 +330,14 @@ function DriveNavigator({
       })
     );
     if (matchedKeys.length === 0) return;
-    setSelectedKeys((current) => {
-      const next = multiple
+    // 懒加载只恢复初始选中态，不触发外层的选择或关闭动作。
+    setSelectedKeys((current) =>
+      multiple
         ? [...current, ...matchedKeys.filter((key) => !current.includes(key))]
         : current.length > 0
           ? current
-          : [matchedKeys[0]!];
-      emitSelectionChange(next);
-      return next;
-    });
+          : [matchedKeys[0]!]
+    );
   }
 
   const loadRootNode = async (option: DriveNavigatorScopeOption): Promise<DriveNode> => {
@@ -448,7 +447,6 @@ function DriveNavigator({
         const initialKeys = normalizeSelectableKeys(initialSelectedIds ?? []);
         const nextSelected = multiple ? initialKeys : initialKeys[0] ? [initialKeys[0]] : [];
         setSelectedKeys(nextSelected);
-        emitSelectionChange(nextSelected);
       },
       onErrorEffect: () => {
         setTreeData([]);

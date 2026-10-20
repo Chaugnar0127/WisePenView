@@ -27,6 +27,7 @@
 | Note domain            | `src/domains/Note`              | [`src/domains/Note/BUSINESS.md`](src/domains/Note/BUSINESS.md)                           |
 | Note editor workflow   | `src/components/editors/note`   | [`src/components/editors/note/BUSINESS.md`](src/components/editors/note/BUSINESS.md)     |
 | Draw.io workflow       | `src/components/editors/drawio` | [`src/components/editors/drawio/BUSINESS.md`](src/components/editors/drawio/BUSINESS.md) |
+| Speech                 | `src/domains/Speech`            | [`src/domains/Speech/BUSINESS.md`](src/domains/Speech/BUSINESS.md)                       |
 
 其他业务域在完成知识盘点、确定唯一 owner 后，再加入本索引；不要为尚未确认的模块创建空文档。
 

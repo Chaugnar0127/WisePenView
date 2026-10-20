@@ -8,6 +8,8 @@
 
 Draw.io 的版本选取、储存任务与退出由 [Draw.io workflow](../../components/editors/drawio/BUSINESS.md) 拥有。
 
+Note 专用批注的 session、mapper 与 Yjs 锚点桥接统一由 [Note editor](../../components/editors/note/BUSINESS.md) 拥有，不在 domain 重复定义。
+
 ## 资源建立与标题
 
 - 新建请求只传送标题、可选的资源类型，以及由 `pathTagId` 映射的 `mountTargetTagId`。型别仍有 `initial_content`／`source`，但目前 mapper 不传送，不能当成已支援正文初始化或来源派生。依据：[mapCreateNoteRequest](mapper/NoteServices.map.ts)、[CreateNoteRequest](service/index.type.ts)。

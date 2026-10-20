@@ -32,6 +32,8 @@
 | Favorites workflow         | `src/views/app/drive/_components/FavoritesTab`                               | [`src/views/app/drive/_components/FavoritesTab/BUSINESS.md`](src/views/app/drive/_components/FavoritesTab/BUSINESS.md)                                                             |
 | Shared favorites workflow  | `src/components/business/Resource`                                           | [`src/components/business/Resource/BUSINESS.md`](src/components/business/Resource/BUSINESS.md)                                                                                     |
 | Resource comments workflow | `src/layouts/Resource/ResourceLayout/ResourceSidePanel/ResourceCommentPanel` | [`src/layouts/Resource/ResourceLayout/ResourceSidePanel/ResourceCommentPanel/BUSINESS.md`](src/layouts/Resource/ResourceLayout/ResourceSidePanel/ResourceCommentPanel/BUSINESS.md) |
+| InlineComment domain       | `src/domains/InlineComment`                                                  | [`src/domains/InlineComment/BUSINESS.md`](src/domains/InlineComment/BUSINESS.md)                                                                                                   |
+| Inline comments workflow   | `src/components/business/InlineComment`                                      | [`src/components/business/InlineComment/BUSINESS.md`](src/components/business/InlineComment/BUSINESS.md)                                                                           |
 
 其他业务域在完成知识盘点、确定唯一 owner 后，再加入本索引；不要为尚未确认的模块创建空文档。
 

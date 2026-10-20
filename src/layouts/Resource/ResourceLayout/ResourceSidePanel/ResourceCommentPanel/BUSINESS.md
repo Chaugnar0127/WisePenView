@@ -6,6 +6,8 @@
 
 本文件拥有一般根评论、回复、点赞、删除显示及 composer 的互动。资料语义由 [Interact](../../../../../domains/Interact/BUSINESS.md) 拥有；收藏只使用 [共享收藏流程](../../../../../components/business/Resource/BUSINESS.md)，不与锚点批注混用。
 
+锚点批注的互动另见 [共享批注面板](../../../../../components/business/InlineComment/BUSINESS.md)。
+
 ## 呈现与动作
 
 - 根评论可按时间或赞数排序，切换资源／排序会清空旧清单；回复展开时才载入，以根评论 ID 分页，回复任一项时送该项 commentId 为 replyTo。提交回复后展开并刷新回复与根清单。依据：[ResourceCommentPanel](index.tsx)、[ResourceCommentThread](ResourceCommentThread.tsx)。

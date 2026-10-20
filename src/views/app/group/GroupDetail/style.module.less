@@ -25,11 +25,7 @@
 .tabContent {
   flex: 1;
   min-height: 0;
-}
-
-.descriptionPage .tabContent {
-  flex: 1;
-  min-height: 0;
+  /* 小组详情外层固定占满视口，非文件页需要让 Tab 内容自行滚动，避免内容被裁切 */
   overflow-x: hidden;
   overflow-y: auto;
   .appSubtleScrollbar();
@@ -59,6 +55,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .fixedPage .fileTabPane {

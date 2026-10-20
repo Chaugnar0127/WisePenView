@@ -11,7 +11,7 @@
 - 当前允许 pdf、doc、docx、ppt、pptx、xls、xlsx，扩展名按小写解析；文件上限为 100 MiB，等于上限允许，大于上限拒绝。格式与容量在计算 MD5 和初始化请求前校验。依据：[允许格式](service/index.type.ts)、[assertDocumentUploadAllowed](service/DocumentServices.impl.ts)。
 - 上传顺序是校验、计算 MD5、初始化上传、必要时 PUT 至 OSS。`pathTagId` 映射到初始化请求的 `mountTargetTagId`，不能在上传后另猜目标文件夹。依据：[uploadDocument](service/DocumentServices.impl.ts)、[mapUploadDocToApi](mapper/DocumentServices.map.ts)。
 - 初始化成功即调用 `onUploadInitialized`，让调用方关联后端 documentId。秒传直接返回 documentId，不执行 OSS PUT 或上传进度回调；非秒传必须具备有效 putUrl 与 callbackHeader 才可上传。依据：[uploadDocument](service/DocumentServices.impl.ts)、[UploadDocumentParams](service/index.type.ts)。
-- `uploadDocument` 返回只证明秒传命中或文件传输完成，不证明解析、资源注册完成；只能由后端状态 READY 判断可用。当前上传队列在传输后继续同步处理状态。依据：[文档处理枚举](enum/index.ts)、[上传后状态确认](../../components/business/Drive/common/useDriveDocumentUpload.ts)。
+- `uploadDocument` 返回只表示前端完成秒传分支或档案传输，不证明解析、资源注册完成；目前上传队列在传输后继续同步处理状态，收到 READY 才走完成回呼。这是前端判定，不是对正式后端持久化或可用性的独立验证。依据：[DOCUMENT_PROCESS](enum/index.ts)、[useDriveDocumentUpload](../../components/business/Drive/common/useDriveDocumentUpload.ts) 的 `settleQueuedUpload`。
 
 ## 状态与允许操作
 
@@ -29,4 +29,4 @@
 ## 详情与权限
 
 - 完整详情需要 documentVersionInfo，缺失时 mapper 抛出明确错误；资源权限概览只从 resourceInfo 构造，不依赖文件版本或预览元数据。不可为了读取权限而强制调用完整详情映射。依据：[mapGetDocInfoFromApi、mapDocPermissionOverviewFromApi](mapper/DocumentServices.map.ts)。
-- 文档复制由后端校验 FORK 权限；不能把本地文件复制或重新挂载等同于后端 fork。依据：[forkDocument](service/DocumentServices.impl.ts)、[ForkDocumentRequest](service/index.type.ts)。
+- 文档复制透过独立 `forkDocument` 请求传送资源 ID、新名称与可选版本，不能把本地档案复制或重新挂载等同于后端 fork。service 型别注解将 FORK 校验交给后端，但本仓前端来源不能证明正式后端已实施该校验。依据：[forkDocument](service/DocumentServices.impl.ts)、[ForkDocumentRequest](service/index.type.ts)、[DocumentApi](apis/DocumentApi.ts)。

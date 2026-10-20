@@ -9,7 +9,7 @@
 ## 资源与位置
 
 - 一个资源可以有多个 `tagBinds`。指定小组时，`currentTags` 与 `mainTagId` 优先取该小组的绑定；个人视角优先取 `p_` 开头的绑定，找不到匹配绑定时保留首个绑定。`primaryTagId` 优先于 tags 的首个 key，不能由展示层重新猜测当前位置。依据：[mapResourceItemFromApi](mapper/resource.mapper.ts)。
-- 空字符串 `resourceType` 与空数组 `tagIds` 必须从列表请求中省略，否则会触发后端筛选；标签查询逻辑默认 OR。`includeMyInteraction: false` 是有效输入，不能因布尔值为 false 而省略。小组查询由 service 注入 `groupId`。依据：[列表映射](mapper/resource.mapper.ts)、[ResourceServices](service/ResourceServices.impl.ts)。
+- 列表 mapper 省略空字串 `resourceType` 与空阵列 `tagIds`，不把空值当成筛选参数；标签查询逻辑预设 OR。`includeMyInteraction: false` 是有效输入，不能因布林值为 false 而省略。小组查询由 service 注入 `groupId`。依据：[mapListResourceItemsRequest](mapper/resource.mapper.ts)、[ResourceServices](service/ResourceServices.impl.ts)。
 - 个人路径标签、普通标签与小组挂载是不同操作：`setPersonalResourcesPathTag` 设置个人位置，`replacePersonalNormalTags` 替换普通标签，`mountResourcesToGroup` 建立小组挂载。小组移动／卸载必须保留 `resourceSourceTagMap` 的来源位置；不能用个人移动接口代替。依据：[位置请求契约](service/index.type.ts)、[ResourcePlacementApi](apis/ResourcePlacementApi.ts)。
 - `movePersonalResourcesToTrash`、`unmountResourcesToGroup` 与 `removeResources` 分别对应个人回收站、小组卸载和资源删除接口，调用方必须根据意图选择，不能把所有删除按钮都映射为删除资源。依据：[ResourceServices](service/ResourceServices.impl.ts)。
 - 重命名只在后端请求成功后更新资源名称缓存。缓存属于 session，不充当永久资源数据；会话清理时必须重置。依据：[renameResource](service/ResourceServices.impl.ts)、[resourceDisplayNameCache](session/resourceDisplayNameCache.ts)。
@@ -20,7 +20,7 @@
 - 权限动作存在隐含关系，例如 EDIT 包含 VIEW 与 DISCOVER。配置面板还会按资源类型过滤动作；不能把 note、drawio、文档和 AI 资产视为完全相同的权限集合。后端请求发送枚举名称，不能发送前端数字位。依据：[权限动作与类型过滤](enum/index.ts)、[权限请求映射](mapper/resourcePermission.mapper.ts)。
 - 权限更新必须保留三类值：`undefined` 表示不提供该配置，顶层 `null` 表示清空该组配置，空对象与空动作数组保持原样传递；不能统一转成“空值”。小组覆盖项的 `null` 用于恢复标签继承，`[]` 保留为显式空动作。依据：[mapChangeResourceActionPermissionRequest](mapper/resourcePermission.mapper.ts)、[API 请求类型](apis/ResourceApi.type.ts)。
 - 从主体列表保存时，标签主体发送该小组的 `null` 覆盖项；owner 等只读主体与个人群组跳过。没有指定用户主体时发送 `specifiedUsersGrantedActions: null`，避免旧的指定用户配置残留。依据：[mapChangeResourceActionPermissionRequestFromSubjects](mapper/resourcePermission.mapper.ts)。
-- 权限补全是附加查询。小组资料或继承动作读取失败时，保留原主体与已有展示字段；没有补全结果不代表没有权限。已有资源覆盖与标签动作在当前资源的可支持动作集合内相等时，显示为标签继承。依据：[ResourcePermissionServices](service/ResourcePermissionServices.impl.ts)、[权限补全归并](mapper/resourcePermissionHydration.mapper.ts)。
+- 权限补全是附加查询。小组资料或继承动作读取失败时，保留原主体与已有展示字段；没有补全结果不代表没有权限。已有资源覆盖与标签动作在当前资源的可支持动作集合内相等时，显示为标签继承。依据：[createResourcePermissionServices](service/ResourcePermissionServices.impl.ts)、[权限补全归并](mapper/resourcePermissionHydration.mapper.ts)。
 
 ## 特殊判断与禁止事项
 

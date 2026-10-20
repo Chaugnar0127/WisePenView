@@ -4,39 +4,18 @@
 
 ## 范围
 
-本文档涵盖 Drive domain 的节点模型、scope、tag／resource 组合、权限与节点生命周期。TableDrive 的画面互动流程另见 `src/components/business/Drive/TableDrive` 的代码与后续流程文档。
+本文件拥有 Drive 的节点、scope、分页与操作意图。标签策略由 [Tag](../Tag/BUSINESS.md)、资源位置与权限由 [Resource](../Resource/BUSINESS.md) 拥有；画面组合仍由 [TableDrive](../../components/business/Drive/TableDrive/index.tsx) 负责。
 
-## 核心规则
+## 节点与 scope
 
-- Drive 有 personal 与 group 两种 scope；group scope 必须带有效 `groupId`，root identity 由 scope 决定。
-- root、folder、resource、link 是不同节点语义；loading node 是 UI 分页占位，不属于 domain service 的持久化节点。
-- folder 主要由 tag tree 映射；resource 与 link 由资源及其所在 tag／parent 映射。节点 ID 编码必须保留足以反解 scope 与 parent 的信息。标签树过滤规则以 [Tag](../Tag/BUSINESS.md) 为准，资源绑定与位置操作以 [Resource](../Resource/BUSINESS.md) 为准。
-- `.Trash` 与 `.Shared` 是系统文件夹语义，不当作普通用户文件夹处理。
-- 个人 root 由 personal root、shared root 与普通标签节点组合；Drive 对原始标签树的节点分类由 `model/driveNode.ts` 维护，不能直接替换成普通 Tag 视图的过滤结果。
+- scope 有 personal／group，个人相容 group ID 经 Tag 正规化后归入 personal；group scope 带 groupId 与相应 rootId。不可仅凭 folder／resource ID 反推完整 scope：root ID 带群组，folder ID 只带 tagId，resource／link ID 带 resourceId 与 parentTagId。依据：[DriveNodeScope](entity/drive.ts)、[buildDriveNodeScope](model/driveNode.ts)、[decodeNodeId](model/driveNode.ts)。
+- root、folder、resource、link 是不同语义；personal root 有真实 root tag，group root 为虚拟容器。个人或主挂载位置映射为 resource，小组其他挂载位置映射为 link；loading 仅为 UI 占位，不属于 domain 持久节点。依据：[DriveNode](entity/drive.ts)、[mapResourceItemToChildNode](model/driveNode.ts)、[toDriveTableRow](../../components/business/Drive/TableDrive/tableConfig.ts)。
+- Drive 使用原始标签树；个人 root 的子资料夹取 `.Shared` 与 `/` 的 children，隐藏 `.Trash` 及其他点号前缀标签，`.Shared` 例外保留并优先排序。不能替换成 Tag 普通可见树。依据：[getDirectFolderTags](service/DriveServices.impl.ts)、[isVisibleFolderTag](service/DriveServices.impl.ts)、[orderDriveFolderNodes](model/driveNode.ts)、[Tag](../Tag/BUSINESS.md)。
+- `.Trash`／`.Shared` 在 model 映射为 systemType，修改操作依 systemType 拒绝，而不是每个 view 自行按翻译名称判定。依据：[resolveSystemFolderType](model/driveNode.ts)、[assertNoSystemFolder](service/DriveServices.impl.ts)、[renameNode](service/DriveServices.impl.ts)。
 
-## 权限与生命周期
+## 操作与分页
 
-- Drive 操作需遵守节点的 scope 与类型限制；标签策略的唯一来源是 [Tag](../Tag/BUSINESS.md)，资源权限主体与继承的唯一来源是 [Resource](../Resource/BUSINESS.md)。
-- Drive 将节点意图映射为个人回收站或小组移除等命令；这些资源操作的区别见 [Resource](../Resource/BUSINESS.md)，不要在 Drive 另建一套资源位置语义。
-- rename、move、mount、unmount 与 permission 更新成功后，调用方必须刷新受影响的 Drive view。
-- cursor 只对创建它的 parent 与 page scope 有效；非法或跨 parent 使用必须回传 validation error。
-
-## 特殊判断与禁止事项
-
-- 不在 view 重新实现 node ID、scope、system folder 或可见 tag 判断；统一使用 `src/domains/Drive/model` 与 service。
-- 不把 loading node、翻译文案或选取 UI 状态写入 domain 持久化模型。
-- 不以节点名称单独判定所有系统文件夹；系统类型与既有兼容名称都必须按 model 规则处理。
-
-## 历史决策
-
-| 决策                                                    | 原因与证据                                       | 来源                                                      |
-| ------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
-| 以 `DriveNodeScope` 区分 personal／group                | 避免跨 scope 重用 root、tag 与 resource identity | `src/domains/Drive/entity/drive.ts`、`model/driveNode.ts` |
-| Drive service 透过注入的 Resource／Tag service 组合节点 | 保持跨 domain 依赖可测试且不直接依赖实现         | `src/domains/Drive/service/DriveServices.impl.ts`         |
-
-## 相关代码
-
-- `src/domains/Drive/entity/drive.ts`
-- `src/domains/Drive/model/driveNode.ts`
-- `src/domains/Drive/service/DriveServices.impl.ts`
-- `src/components/business/Drive/TableDrive`
+- 批次操作先去重并移除已选资料夹的后代，同一操作必须同 scope；移动不可指向自己或后代，小组同一资源多挂载的移动会拒绝。这些前端限制不代替 Resource／Tag 的后端授权。依据：[normalizeActionNodes](service/DriveServices.impl.ts)、[assertActionScope](service/DriveServices.impl.ts)、[assertValidMoveTarget](service/DriveServices.impl.ts)、[assertSingleMountPerResource](service/DriveServices.impl.ts)。
+- 个人回收站、小组移除与回收站永久删除是不同命令，依 scope 与选取位置呼叫 Resource／Tag；同一资源的小组卸载可能分轮送出。请求不构成跨资源／标签交易。依据：[moveNodesToTrash](service/DriveServices.impl.ts)、[removeNodesFromGroup](service/DriveServices.impl.ts)、[deleteTrashedNodes](service/DriveServices.impl.ts)、[Resource](../Resource/BUSINESS.md)。
+- service 操作不更新画面资料；TableDrive 在成功回呼刷新相关清单，其他 consumer 也需处理刷新，而不是把成功结果当完整新树。依据：[createDriveServices](service/DriveServices.impl.ts)、[useTableDriveActionsController](../../components/business/Drive/TableDrive/controllers/useTableDriveActionsController.tsx)。
+- cursor 编码 parentId、page 与 pageSize；目前验证可解析结构、整数栏位及 parentId 相同，不绑定资源筛选条件，也不承诺验证所有页码范围。资料夹只在无 cursor 时载入，小组虚拟 root 不直接载资源。依据：[decodeResourceCursor](service/DriveServices.impl.ts)、[loadNodeChildren](service/DriveServices.impl.ts)。

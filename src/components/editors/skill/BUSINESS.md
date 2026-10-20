@@ -1,43 +1,21 @@
-# Skill Editor Workflow 业务知识
+# Skill 编辑工作流程业务知识
 
 > Canonical owner：`src/components/editors/skill`
 
 ## 范围
 
-本文档只涵盖 Skill 编辑器的工作区状态、文件树互动、保存队列、local draft cache、版本浏览与离开守卫。Skill 的版本与 asset 业务规则以 [`src/domains/Skill/BUSINESS.md`](../../../domains/Skill/BUSINESS.md) 为准。
+本文件拥有 Skill 工作区、文件树、保存伫列、本地草稿及离开流程；版本、owner 编辑资格与 asset 服务契约只由 [Skill domain](../../../domains/Skill/BUSINESS.md) 定义。
 
-## 核心流程
+## 工作区与本地恢复
 
-- Skill 的版本、文件、配置和预览状态不进入 URL，由编辑器工作区维护。依据：[编辑器入口](index.tsx)、[导航流程](controllers/useSkillNavigationController.ts)。
-- 工作区以 account、resource 与 draft version 组合识别；切换 resource 或版本时，旧工作区草稿不可回写新工作区。
-- 文件树、Config 与版本浏览是不同 UI 状态，但保存 snapshot 必须使用当次 revision，避免新编辑被旧请求标记为已保存。
-- local draft cache 是 best-effort 恢复能力；读取、写入或清理失败不得阻断目前编辑流程。
-- save queue 展示文件／Config 的准备、上传、成功与失败；重试只针对失败 snapshot，不重新推导已更改内容。
-- 有未保存更改时离开、切换版本或切换资源必须进入 pending intent；确认后才执行原本意图，取消则保留工作区。
+- 版本、档案、Config、预览状态由工作区维护，不进 URL。工作区 key 包含 account、resource 与 draft version；key 改变会初始化状态，IDB 的旧读取在 cleanup 后不套用。这不是所有非同步 consumer 都有跨工作区隔离的保证。依据：[SkillEditorContent](index.tsx)、[useSkillWorkspaceDraftController](controllers/useSkillWorkspaceDraftController.ts)、[useSkillWorkspaceCacheController](controllers/useSkillWorkspaceCacheController.ts)。
+- IDB key 以 account／resource 隔离，snapshot 另校验 schemaVersion 与 draftVersion；v1 无法证明帐号归属的快照在升级时丢弃。TTL 为 24 小时，容量上限估计为 8 MiB；本地恢复是 best-effort，不是远端保存。依据：[createSkillDraftCacheKey](utils/skillDraftCache.ts)、[openSkillDraftDb](utils/skillDraftCache.ts)、[isMatchingCache](controllers/useSkillWorkspaceCacheController.ts)。
+- cache controller 在恢复完成后以 500ms 防抖写入有修改的草稿，pending intent 不写入快照；清理会让旧写入 token 失效，读写／清理失败不阻断目前编辑。不要省略 account 或只靠 resourceId 恢复。依据：[useSkillWorkspaceCacheController](controllers/useSkillWorkspaceCacheController.ts)。
 
-## 状态与边界
+## 保存与版本互动
 
-- `useSkillWorkspaceDraftController` 拥有 reducer、选取、文件／Config draft、save snapshot 与工作区意图。
-- cache controller 只拥有 IndexedDB load、debounced write、失效 token、clear 与 cleanup，不拥有 UI 选取或 save queue。
-- file actions controller 拥有文件树添加、删除、移动与远端内容载入；save controller 拥有请求队列与错误结果。
-- editor 顶层只负责组合 controllers、传递语义化 callback 与排列画面，不重新实现任何一个 controller 的状态机。
-
-## 特殊判断与禁止事项
-
-- 不把 account 省略在 draft cache key；resourceId 单独不足以隔离不同账号。
-- 不以 `useEffect` 取代用户事件；外部 IndexedDB lifecycle 的必要 effect 必须保留 `@wisepen-manual-effect` 说明与 cleanup。
-- 不让 pending intent 直接调用另一个 controller 的内部 setter；由顶层在确认后调用公开意图方法。
-
-## 历史决策
-
-| 决策                                            | 原因与证据                           | 来源                                                                                |
-| ----------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
-| 草稿 cache 按 account 与 resource／version 隔离 | 避免跨账号、跨版本恢复错误内容       | `src/components/editors/skill/utils/skillDraftCache.ts`、`models/workspaceDraft.ts` |
-| cache persistence 与 workspace reducer 分离     | 两者更改原因、cleanup 与测试边界不同 | 第一轮架构试点决策                                                                  |
-
-## 相关代码
-
-- `src/components/editors/skill/index.tsx`
-- `src/components/editors/skill/controllers`
-- `src/components/editors/skill/models/workspaceDraft.ts`
-- `src/components/editors/skill/utils/skillDraftCache.ts`
+- 档案与 Config 分别建立 revision snapshot；旧保存结果只清除相同 revision 的 draft，新编辑保留。多档保存可部分成功，成功者更新基线，失败者仍需处理。依据：[applySavedSkillFiles](models/workspaceDraft.ts)、[applyConfigSave](controllers/useSkillWorkspaceDraftController.ts)。
+- 伫列显示 pending／preparing／uploading／failed，成功任务移除；再次保存使用当前待存 snapshot，不保证重送先前失败的原始内容。同类别并行保存会等待既有 Promise；saveAll 先档案后 Config，不是原子保存。依据：[useSkillSaveController](controllers/useSkillSaveController.ts)。
+- 发布需 owner、有根 SKILL.md 且 Config 完整；保存中不发布或切换版本。有修改的发布、切换版本、取消编辑进入 pending intent；储存后仍 dirty 不继续，取消意图保留草稿，舍弃后按原意图执行。依据：[useSkillNavigationController](controllers/useSkillNavigationController.ts)。
+- 离开／切换资源透过 runtime 的退出协商，不是 navigation controller 的 pending intent；Save 等保存与状态提交，Discard 丢弃工作区并清本地 cache。未完成档案移动／删除也列入 pendingWork，不承诺正式 OSS 持久化。依据：[SkillEditorContent](index.tsx)、[prepareDraftExit](../_runtime/draftExit.ts)。
+- 远端档案读取带目前 viewingVersion；档案树的建立／删除／移动由 file actions 编排，透过公开 callback 更新工作区，asset 的候选清理及身份规则不在此重订。依据：[useSkillFileActionsController](controllers/useSkillFileActionsController.ts)、[Skill domain](../../../domains/Skill/BUSINESS.md)。

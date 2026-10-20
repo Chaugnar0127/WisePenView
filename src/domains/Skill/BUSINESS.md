@@ -4,38 +4,20 @@
 
 ## 范围
 
-本文档涵盖 Skill domain 的版本、owner、asset 与 service／API 边界。编辑器工作区的 UI 状态与离开流程另见 `src/components/editors/skill/BUSINESS.md`。
+本文件拥有 Skill 的版本与 asset 服务契约；工作区、保存伫列与退出互动由 [Skill editor](../../components/editors/skill/BUSINESS.md) 拥有，资源权限由 [Resource](../Resource/BUSINESS.md) 拥有。
 
-## 核心规则
+## 版本与编辑资格
 
-- Skill 有 draft version 与 published version；owner 可编辑 draft，非 owner 预设读取 published version。
-- 编辑权限由 owner 与目前载入版本共同决定；只有 `isOwner` 且目前版本等于 draft version 时可写入。
-- asset 的 `path`、`name`、`objectKey` 与 asset identity 必须保持可追踪；服务层负责将 API／OSS 回应映射成稳定的前端 asset 结果。
-- 覆盖保存不得因候选上传失败删除最后一次成功内容；失败清理只能针对本次候选对象。
-- 读取指定版本的文件时，版本参数必须沿着 service 到 asset client 传递，不能由 view 自行 fallback 到其他版本。
+- mapper 以 Skill version 作已发布版本，draftVersion 为该版本加一。owner 预设载入 draft，非 owner 载入 published；前端只有 isOwner 且目前版本等于 draftVersion 才可写。这不是后端授权或版本不可变性的证据。依据：[mapSkillDetail](mapper/SkillServices.map.ts)、[useSkillResourceController](../../components/editors/skill/controllers/useSkillResourceController.ts)、[canEditSkill](../../components/editors/skill/model.ts)。
+- 指定版本的 bundle 与正文读取是不同步骤，正文的 targetVersion 必须传至 STS client 的 scope，不能自行 fallback 到其他版本。STS client 以 resourceId 及 targetVersion／published 分开快取。依据：[getSkillVersionFiles](service/SkillServices.impl.ts)、[readAssetContent](service/SkillServices.impl.ts)、[createSkillServices](service/SkillServices.impl.ts)。
 
-## 权限与生命周期
+## Asset 身分与保存
 
-- 创建、fork、更新基本数据、上传、移动、删除与发布是不同的 service 能力；UI 不直接组合 API request。
-- draft asset 更改先经过 service 的 upload／move 契约，再由 workspace 更新本地 persisted baseline。
-- service 只抛出 `WisePenError`／client error，不负责 toast、modal 或路由。
+- path、name、assetId 与 objectKey 是不同资讯；mapper 可为缺 ID 的显示节点合成 ID，但不代表该值可当作后端 asset identity。上传结果以 clientId 关联输入，再提供 ticket assetId／objectKey 或 error。依据：[assetToFileNode](mapper/SkillServices.map.ts)、[uploadAssets](service/SkillServices.impl.ts)。
+- upload 初始化分批取得 ticket，再依 ticket PUT；失败时只以该 ticket assetId 做 best-effort 删除，不是无条件删除呼叫方全部资产。前端无法单独证明复盖时 ticket ID／物件与先前成功内容必然分离，不能承诺最后成功内容一定保全。依据：[uploadAssets](service/SkillServices.impl.ts)。
+- move 先读取或使用 caller 提供的内容，上传新位置，确认结果的 ID／objectKey 齐全后才删旧资产；失败尝试清理本次成功建立的候选。这不是后端原子 move，清理或删除也可能失败。依据：[moveAssets](service/SkillServices.impl.ts)。
+- 批次 upload 会把各项错误放在结果中，并非遇到任何失败都只抛出单一错误；其他 API 请求可直接拒绝。workspace 必须检查结果再更新 persisted baseline，不能把 Promise resolve 当全档成功。依据：[uploadAssets](service/SkillServices.impl.ts)、[useSkillSaveController](../../components/editors/skill/controllers/useSkillSaveController.ts)。
 
-## 特殊判断与禁止事项
+## 服务边界
 
-- 不把 OSS presigned URL、STS token 或 raw API response 暴露给 view。
-- 不以文件名称或 view 的暂存 ID 取代后端 asset identity。
-- 不在 Skill view 复制版本、owner 或 asset upload 的业务判断；这些规则由 domain service／mapper 拥有。
-
-## 历史决策
-
-| 决策                                             | 原因与证据                                               | 来源                                              |
-| ------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------------- |
-| Skill service 透过 OSS client manager 读写 asset | 将 STS client、版本 scope 与 object access 集中在 domain | `src/domains/Skill/service/SkillServices.impl.ts` |
-| 覆盖上传失败只取消候选 object                    | 保留既有成功正文，避免共用 asset identity 被错误删除     | `fix/skill-upload-preservation` PR／回归脚本      |
-
-## 相关代码
-
-- `src/domains/Skill/entity/skill.ts`
-- `src/domains/Skill/service/SkillServices.impl.ts`
-- `src/domains/Skill/mapper/SkillServices.map.ts`
-- `src/components/editors/skill`
+- 建立、fork、更新基本资料、上传、移动、删除与发布是不同服务能力；view 取得正文或 Blob，不取得 STS 凭证。OSS client 与 token 由 domain 管理；这不等于正式 OSS 的权限、保留期限与覆盖行为已验证。依据：[createSkillServices](service/SkillServices.impl.ts)、[ISkillService](service/index.type.ts)。

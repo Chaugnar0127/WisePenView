@@ -2,7 +2,6 @@ export const STORAGE_KEYS = {
   language: 'wisepen:language',
   authSessionEvent: 'wisepen:auth-session-event',
   authContinuationActive: 'wisepen:auth-continuation:active',
-  readingMode: 'wisepen-reading-mode',
   colorScheme: 'heroui-color-scheme',
 } as const;
 

@@ -24,6 +24,8 @@
 | Message domain         | `src/domains/Message`          | [`src/domains/Message/BUSINESS.md`](src/domains/Message/BUSINESS.md)                   |
 | Notifications workflow | `src/views/app/notifications`  | [`src/views/app/notifications/BUSINESS.md`](src/views/app/notifications/BUSINESS.md)   |
 | Skill editor workflow  | `src/components/editors/skill` | [`src/components/editors/skill/BUSINESS.md`](src/components/editors/skill/BUSINESS.md) |
+| Note domain            | `src/domains/Note`             | [`src/domains/Note/BUSINESS.md`](src/domains/Note/BUSINESS.md)                         |
+| Note editor workflow   | `src/components/editors/note`  | [`src/components/editors/note/BUSINESS.md`](src/components/editors/note/BUSINESS.md)   |
 
 其他业务域在完成知识盘点、确定唯一 owner 后，再加入本索引；不要为尚未确认的模块创建空文档。
 

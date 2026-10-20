@@ -1,12 +1,4 @@
-import {
-  Heading,
-  Paragraph,
-  Separator,
-  Switch,
-  Tabs,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@heroui/react';
+import { Heading, Separator, Tabs, ToggleButton, ToggleButtonGroup } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 
 import PageHeader from '@/components/base/PageHeader';
@@ -21,7 +13,6 @@ import {
   type ThemeMode,
   useAppTheme,
   useColorScheme,
-  useReadingMode,
 } from '@/theme';
 
 import layout from '../style.module.less';
@@ -124,38 +115,6 @@ function ColorSchemeSection({ value, onChange }: ColorSchemeSectionProps) {
   );
 }
 
-function ReadingModeSection() {
-  const { t } = useTranslation('profile');
-  const { isReadingMode, setReadingMode } = useReadingMode();
-
-  return (
-    <section className={styles.section}>
-      <div className={styles.switchRow}>
-        <div className={styles.switchCopy}>
-          <Heading level={3} className={layout.sectionTitle}>
-            {t('appearance.readingMode.title')}
-          </Heading>
-          <Paragraph size="sm" color="muted" className={styles.switchDescription}>
-            {t('appearance.readingMode.description')}
-          </Paragraph>
-        </div>
-        <Switch
-          size="md"
-          aria-label={t('appearance.readingMode.title')}
-          isSelected={isReadingMode}
-          onChange={setReadingMode}
-        >
-          <Switch.Content className={styles.switchContent}>
-            <Switch.Control>
-              <Switch.Thumb />
-            </Switch.Control>
-          </Switch.Content>
-        </Switch>
-      </div>
-    </section>
-  );
-}
-
 type SchemeOptionProps = {
   option: ColorSchemeOption;
 };
@@ -195,8 +154,6 @@ function Appearance() {
         <ThemeModeSection value={theme} onChange={setTheme} />
         <Separator className={styles.divider} />
         <ColorSchemeSection value={colorScheme} onChange={setColorScheme} />
-        <Separator className={styles.divider} />
-        <ReadingModeSection />
       </div>
     </>
   );

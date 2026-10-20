@@ -24,6 +24,8 @@
 
 PR CI 固定执行 commitlint、格式检查、lint、文件长度规则、editor runtime、build、mock contract、API response contract、z-index 层级、圆角 token、note link 协议和 whitespace 检查。`Code Quality & Build Gate` 是 GitHub branch protection 的稳定检查名，修改 job 名称前必须同步仓库设置。
 
+本地可用 `pnpm verify:ci` 并行执行与 CI 相同的格式、lint、契约检查、类型检查和构建步骤。
+
 ## 运行态记录
 
 运行 mock 或浏览器时记录：日期、浏览器版本、窗口尺寸、操作步骤、预期结果、实际结果和控制台错误。没有启动服务时，不要声称完成页面行为验证。

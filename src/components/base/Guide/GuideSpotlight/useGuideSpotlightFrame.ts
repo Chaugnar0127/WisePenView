@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import type { GuideSpotlightPadding, GuideToolId } from '@/constants/tour';
 
@@ -6,7 +6,8 @@ import { findGuideTarget } from '../findGuideTarget';
 import type { GuideSpotlightFrame } from './index.type';
 
 const DEFAULT_SPOTLIGHT_PADDING = 12;
-
+/** 亚像素抖动不触发重绘，真实位移仍会在下一帧跟上。 */
+const FRAME_EPSILON = 0.1;
 type SpotlightInsets = Required<GuideSpotlightPadding>;
 
 function normalizePadding(padding?: GuideSpotlightPadding): SpotlightInsets {
@@ -85,6 +86,27 @@ function readFrame(toolIds: readonly GuideToolId[], padding: SpotlightInsets): G
   return { width: window.innerWidth, height: window.innerHeight, rects };
 }
 
+function isSameNumber(left: number, right: number): boolean {
+  return Math.abs(left - right) <= FRAME_EPSILON;
+}
+
+function isSameFrame(left: GuideSpotlightFrame, right: GuideSpotlightFrame): boolean {
+  return (
+    left === right ||
+    (isSameNumber(left.width, right.width) &&
+      isSameNumber(left.height, right.height) &&
+      left.rects.length === right.rects.length &&
+      left.rects.every(
+        (rect, index) =>
+          isSameNumber(rect.left, right.rects[index].left) &&
+          isSameNumber(rect.top, right.rects[index].top) &&
+          isSameNumber(rect.width, right.rects[index].width) &&
+          isSameNumber(rect.height, right.rects[index].height) &&
+          isSameNumber(rect.radius, right.rects[index].radius)
+      ))
+  );
+}
+
 /** 跟踪多个高亮目标在视口中的位置，供聚光遮罩绘制高亮孔。 */
 export function useGuideSpotlightFrame(
   toolIds: readonly GuideToolId[],
@@ -92,31 +114,33 @@ export function useGuideSpotlightFrame(
 ): GuideSpotlightFrame {
   const { top, right, bottom, left } = normalizePadding(padding);
   const [frame, setFrame] = useState(() => readFrame(toolIds, { top, right, bottom, left }));
+  const frameRef = useRef(frame);
 
   useLayoutEffect(() => {
+    let frameId = 0;
     const insets = { top, right, bottom, left };
-    const update = () => setFrame(readFrame(toolIds, insets));
-    update();
 
-    // 弹出层用 transform 做缩放动画，ResizeObserver 不会收到 transform 变化，需在动画期间补测位置。
-    const settleTimers = [50, 100, 160, 240, 360, 520].map((delay) =>
-      window.setTimeout(update, delay)
-    );
-    const observer =
-      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => update());
-    for (const id of toolIds) {
-      const element = findGuideTarget(id);
-      if (element) observer?.observe(element);
-    }
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
-    return () => {
-      for (const timer of settleTimers) window.clearTimeout(timer);
-      observer?.disconnect();
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update, true);
+    /**
+     * 只监听 resize / scroll / 目标尺寸不够：响应式布局会在事件之后提交新的 DOM，
+     * 目标也可能只改变位置而不改变尺寸。逐帧读取实际矩形，窗口复原或动画结束后都能收回原位。
+     */
+    const update = () => {
+      const next = readFrame(toolIds, insets);
+      if (isSameFrame(frameRef.current, next)) return;
+      frameRef.current = next;
+      setFrame(next);
     };
-  }, [toolIds, top, right, bottom, left]);
+    const loop = () => {
+      update();
+      frameId = window.requestAnimationFrame(loop);
+    };
+
+    update();
+    frameId = window.requestAnimationFrame(loop);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [bottom, left, right, toolIds, top]);
 
   return frame;
 }

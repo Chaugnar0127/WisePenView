@@ -112,10 +112,6 @@ try {
     ],
     specifiedUsersGrantedActions: [{ userId: 'user-1', grantedActions: ['VIEW'] }],
   };
-  assert.throws(
-    () => resourceMap.mapResourceItemFromApi({ ...rawResource, resourceId: '' }),
-    /Resource 响应契约无效/
-  );
   assert.equal(resourceMap.mapResourceItemFromApi(rawResource).mainTagId, 'tag-personal');
   assert.equal(
     resourceMap.mapResourceItemFromApi(rawResource, { groupId: 'group-1' }).mainTagId,

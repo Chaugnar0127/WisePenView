@@ -40,9 +40,31 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      # Commit 规范检查 (此 Action 内部兼容 pnpm)
-      - name: Validate PR Commits
-        uses: wagoid/commitlint-github-action@v6
+      # 直接复用已安装的 commitlint，避免 Action 额外拉取镜像；PR 与 main push 都会校验。
+      - name: Validate Commits
+        env:
+          BEFORE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          AFTER_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          ZERO_SHA="0000000000000000000000000000000000000000"
+          if [ -z "${BEFORE_SHA}" ] || [ "${BEFORE_SHA}" = "${ZERO_SHA}" ]; then
+            BEFORE_SHA="$(git rev-parse --verify --quiet "${AFTER_SHA}^" || true)"
+          fi
+          if [ -n "${BEFORE_SHA}" ]; then
+            pnpm exec commitlint --from "${BEFORE_SHA}" --to "${AFTER_SHA}" --verbose
+          else
+            pnpm exec commitlint --to "${AFTER_SHA}" --verbose
+          fi
+
+      # 恢复 ESLint 文件级缓存；缓存键只跟随依赖与配置，源码变化由内容哈希失效。
+      - name: Restore ESLint cache
+        uses: actions/cache@v4
+        with:
+          path: .eslintcache
+          key: eslint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.nvmrc') }}-${{ github.sha }}
+          restore-keys: |
+            eslint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.nvmrc') }}-
 
       - name: Check whitespace errors
         env:
@@ -50,37 +72,10 @@ jobs:
           AFTER_SHA: ${{ github.sha }}
         run: git diff --check "${BEFORE_SHA}...${AFTER_SHA}"
 
-      - name: Format Check
-        run: pnpm format:check
-
-      # 使用 pnpm 执行脚本
-      - name: Lint Code
-        run: pnpm lint
-
-      - name: Check file length rules
-        run: pnpm check:file-length
-
-      - name: Check editor runtime
-        run: pnpm check:editor-runtime
-
-      - name: Check mock contract
-        run: pnpm check:mock
-
-      - name: Check API response contract
-        run: pnpm check:api-contract
-
-      - name: Check z-index layers
-        run: pnpm check:z-index
-
-      - name: Check radius tokens
-        run: pnpm check:radius
-
-      - name: Check note link protocol
-        run: pnpm check:note-link
-
-      # 构建编译（build 脚本已包含 solution-style TypeScript 检查）
-      - name: Type Check & Build
-        run: pnpm build
+      # 各检查互不依赖，并行执行以缩短关键路径；
+      # 类型检查与 Vite 构建拆开，避免串行等待。
+      - name: Static Checks, Type Check & Build
+        run: pnpm verify:ci
 
       - name: Verify Build Artifact
         run: test -s dist/index.html

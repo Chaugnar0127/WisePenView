@@ -90,8 +90,15 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   );
   const showSkeleton = personalPage == null && loadingPersonal;
   const personalAgents = personalPage?.list ?? [];
+  // 保持列表顺序；选中项只补充来源信息，不在点击后移到列表前面。
   const displayAgents = mergeAgentOptions(
-    [buildDefaultPersonalAgent(), selectedAgent, ...personalAgents],
+    [
+      buildDefaultPersonalAgent(),
+      ...personalAgents.map((agent) =>
+        agent.agentId === selectedAgent.agentId ? selectedAgent : agent
+      ),
+      selectedAgent,
+    ],
     injectedAgents
   );
   const hasMorePersonalAgents = Boolean(personalPage) && !noMorePersonal;
@@ -150,6 +157,10 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   const getAgentLabel = (agent: ChatAgentOption): string =>
     agent.isDefault ? t('input.agentPicker.defaultAgent') : agent.label;
 
+  const agentTooltip = selectedAgent.isDefault
+    ? t('input.agentPicker.selectAgentTooltip')
+    : getAgentLabel(selectedAgent);
+
   const renderAgentIcon = (agent: ChatAgentOption, size: number) =>
     agent.isDefault ? (
       <BotOff size={size} aria-hidden="true" />
@@ -183,7 +194,7 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
                 isDisabled={disabled}
                 icon={renderAgentIcon(selectedAgent, 17)}
                 label={t('input.agentPicker.trigger')}
-                tooltip={{ content: getAgentLabel(selectedAgent) }}
+                tooltip={{ content: agentTooltip }}
               />
             </GuideAnchor>
           )}

@@ -34,6 +34,8 @@
 | Resource comments workflow | `src/layouts/Resource/ResourceLayout/ResourceSidePanel/ResourceCommentPanel` | [`src/layouts/Resource/ResourceLayout/ResourceSidePanel/ResourceCommentPanel/BUSINESS.md`](src/layouts/Resource/ResourceLayout/ResourceSidePanel/ResourceCommentPanel/BUSINESS.md) |
 | InlineComment domain       | `src/domains/InlineComment`                                                  | [`src/domains/InlineComment/BUSINESS.md`](src/domains/InlineComment/BUSINESS.md)                                                                                                   |
 | Inline comments workflow   | `src/components/business/InlineComment`                                      | [`src/components/business/InlineComment/BUSINESS.md`](src/components/business/InlineComment/BUSINESS.md)                                                                           |
+| Admin domain               | `src/domains/Admin`                                                          | [`src/domains/Admin/BUSINESS.md`](src/domains/Admin/BUSINESS.md)                                                                                                                   |
+| Admin workflow             | `src/views/admin`                                                            | [`src/views/admin/BUSINESS.md`](src/views/admin/BUSINESS.md)                                                                                                                       |
 
 其他业务域在完成知识盘点、确定唯一 owner 后，再加入本索引；不要为尚未确认的模块创建空文档。
 

@@ -15,4 +15,4 @@
 ## 流水筛选与金额
 
 - `listTransactions()` 无 `groupId` 时查个人流水，有值时查对应小组流水；默认 page 为 1、size 为 20。`transactionTypes` 与 `businessType` 可选；mapper 仅发送已知交易类型与业务类型，空的有效类型集合不生成类型筛选参数。依据：[WalletServicesMap](mapper/WalletServices.map.ts)、[WalletApi](apis/WalletApi.ts)。
-- 映射后的 `SPEND` 与 `TRANSFER_OUT` 为负数；其他已知类型按绝对值显示为正数。未知类型映射为 `ONLY_RECORD_META`、金额为 0，不能把未识别记录当作消费或收入。依据：[交易映射](mapper/WalletServices.map.ts)、[Wallet entity](entity/wallet.ts)。
+- 已知的 `ONLY_RECORD_META` 金额固定为 0；未知类型先映射为 `ONLY_RECORD_META`，金额同样为 0，不能将这两类记录当作消费或收入。`SPEND` 与 `TRANSFER_OUT` 按绝对值取负，其余已知类型取绝对值。依据：[mapTransactionTypeToKind、normalizeTransactionAmount](mapper/WalletServices.map.ts)、[WALLET_TRANSACTION_KIND](entity/wallet.ts)。

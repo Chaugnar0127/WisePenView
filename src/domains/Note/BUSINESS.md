@@ -6,6 +6,8 @@
 
 本文件拥有 NOTE／DRAWIO 共用资源服务、协同 session 与正文 signature 的语义。文字笔记的私有使用者流程由 [Note editor workflow](../../components/editors/note/BUSINESS.md) 拥有；资源名称、位置与共用权限由 [Resource](../Resource/BUSINESS.md) 拥有。
 
+Draw.io 的版本选取、储存任务与退出由 [Draw.io workflow](../../components/editors/drawio/BUSINESS.md) 拥有。
+
 ## 资源建立与标题
 
 - 新建请求只传送标题、可选的资源类型，以及由 `pathTagId` 映射的 `mountTargetTagId`。型别仍有 `initial_content`／`source`，但目前 mapper 不传送，不能当成已支援正文初始化或来源派生。依据：[mapCreateNoteRequest](mapper/NoteServices.map.ts)、[CreateNoteRequest](service/index.type.ts)。

@@ -4,19 +4,26 @@
 
 ## 业务域索引
 
-| 业务域／流程          | 代码根目录                     | 唯一知识文档                                                                           |
-| --------------------- | ------------------------------ | -------------------------------------------------------------------------------------- |
-| Drive                 | `src/domains/Drive`            | [`src/domains/Drive/BUSINESS.md`](src/domains/Drive/BUSINESS.md)                       |
-| Resource              | `src/domains/Resource`         | [`src/domains/Resource/BUSINESS.md`](src/domains/Resource/BUSINESS.md)                 |
-| Tag                   | `src/domains/Tag`              | [`src/domains/Tag/BUSINESS.md`](src/domains/Tag/BUSINESS.md)                           |
-| Image                 | `src/domains/Image`            | [`src/domains/Image/BUSINESS.md`](src/domains/Image/BUSINESS.md)                       |
-| Document              | `src/domains/Document`         | [`src/domains/Document/BUSINESS.md`](src/domains/Document/BUSINESS.md)                 |
-| Skill domain          | `src/domains/Skill`            | [`src/domains/Skill/BUSINESS.md`](src/domains/Skill/BUSINESS.md)                       |
-| Auth                  | `src/domains/Auth`             | [`src/domains/Auth/BUSINESS.md`](src/domains/Auth/BUSINESS.md)                         |
-| User                  | `src/domains/User`             | [`src/domains/User/BUSINESS.md`](src/domains/User/BUSINESS.md)                         |
-| Group                 | `src/domains/Group`            | [`src/domains/Group/BUSINESS.md`](src/domains/Group/BUSINESS.md)                       |
-| Wallet                | `src/domains/Wallet`           | [`src/domains/Wallet/BUSINESS.md`](src/domains/Wallet/BUSINESS.md)                     |
-| Skill editor workflow | `src/components/editors/skill` | [`src/components/editors/skill/BUSINESS.md`](src/components/editors/skill/BUSINESS.md) |
+| 业务域／流程           | 代码根目录                     | 唯一知识文档                                                                           |
+| ---------------------- | ------------------------------ | -------------------------------------------------------------------------------------- |
+| Drive                  | `src/domains/Drive`            | [`src/domains/Drive/BUSINESS.md`](src/domains/Drive/BUSINESS.md)                       |
+| Resource               | `src/domains/Resource`         | [`src/domains/Resource/BUSINESS.md`](src/domains/Resource/BUSINESS.md)                 |
+| Tag                    | `src/domains/Tag`              | [`src/domains/Tag/BUSINESS.md`](src/domains/Tag/BUSINESS.md)                           |
+| Image                  | `src/domains/Image`            | [`src/domains/Image/BUSINESS.md`](src/domains/Image/BUSINESS.md)                       |
+| Document               | `src/domains/Document`         | [`src/domains/Document/BUSINESS.md`](src/domains/Document/BUSINESS.md)                 |
+| Skill domain           | `src/domains/Skill`            | [`src/domains/Skill/BUSINESS.md`](src/domains/Skill/BUSINESS.md)                       |
+| Auth                   | `src/domains/Auth`             | [`src/domains/Auth/BUSINESS.md`](src/domains/Auth/BUSINESS.md)                         |
+| User                   | `src/domains/User`             | [`src/domains/User/BUSINESS.md`](src/domains/User/BUSINESS.md)                         |
+| Group                  | `src/domains/Group`            | [`src/domains/Group/BUSINESS.md`](src/domains/Group/BUSINESS.md)                       |
+| Wallet                 | `src/domains/Wallet`           | [`src/domains/Wallet/BUSINESS.md`](src/domains/Wallet/BUSINESS.md)                     |
+| Chat domain            | `src/domains/Chat`             | [`src/domains/Chat/BUSINESS.md`](src/domains/Chat/BUSINESS.md)                         |
+| Chat workflow          | `src/components/business/Chat` | [`src/components/business/Chat/BUSINESS.md`](src/components/business/Chat/BUSINESS.md) |
+| Agent domain           | `src/domains/Agent`            | [`src/domains/Agent/BUSINESS.md`](src/domains/Agent/BUSINESS.md)                       |
+| Agent editor workflow  | `src/components/editors/agent` | [`src/components/editors/agent/BUSINESS.md`](src/components/editors/agent/BUSINESS.md) |
+| Course                 | `src/domains/Course`           | [`src/domains/Course/BUSINESS.md`](src/domains/Course/BUSINESS.md)                     |
+| Message domain         | `src/domains/Message`          | [`src/domains/Message/BUSINESS.md`](src/domains/Message/BUSINESS.md)                   |
+| Notifications workflow | `src/views/app/notifications`  | [`src/views/app/notifications/BUSINESS.md`](src/views/app/notifications/BUSINESS.md)   |
+| Skill editor workflow  | `src/components/editors/skill` | [`src/components/editors/skill/BUSINESS.md`](src/components/editors/skill/BUSINESS.md) |
 
 其他业务域在完成知识盘点、确定唯一 owner 后，再加入本索引；不要为尚未确认的模块创建空文档。
 

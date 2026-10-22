@@ -4,6 +4,7 @@ import {
   Download,
   Ellipsis,
   ExternalLink,
+  FileText,
   FolderInput,
   Link2,
   type LucideIcon,
@@ -127,6 +128,10 @@ function ResourceToolbarMore({
       menu?.download?.onAction();
       return;
     }
+    if (key === 'download-docx') {
+      menu?.downloadDocx?.onAction();
+      return;
+    }
     if (key === 'search') {
       menu?.onSearch?.();
       return;
@@ -237,7 +242,7 @@ function ResourceToolbarMore({
                 ))}
               </Dropdown.Section>
             ) : null}
-            {menu?.onPrint || menu?.download ? (
+            {menu?.onPrint || menu?.download || menu?.downloadDocx ? (
               <Dropdown.Section>
                 {menu.onPrint ? (
                   <Dropdown.Item
@@ -258,6 +263,18 @@ function ResourceToolbarMore({
                     data-guide-tool-id={GUIDE_TOOL_ID.noteDownloadMarkdown}
                   >
                     <ResourceToolbarMenuItemContent icon={Download} label={menu.download.label} />
+                  </Dropdown.Item>
+                ) : null}
+                {menu.downloadDocx ? (
+                  <Dropdown.Item
+                    id="download-docx"
+                    textValue={menu.downloadDocx.label}
+                    data-guide-tool-id={GUIDE_TOOL_ID.noteDownloadDocx}
+                  >
+                    <ResourceToolbarMenuItemContent
+                      icon={FileText}
+                      label={menu.downloadDocx.label}
+                    />
                   </Dropdown.Item>
                 ) : null}
               </Dropdown.Section>

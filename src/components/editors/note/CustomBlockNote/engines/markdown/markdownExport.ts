@@ -16,7 +16,8 @@ import { readAiContentFromEditorState } from '../aiDiff/extension';
 function projectInlineContent(
   content: unknown,
   registry: NotePluginRegistry,
-  aiDiffDisplayMode: AiDiffDisplayMode
+  aiDiffDisplayMode: AiDiffDisplayMode,
+  applyMarkdownProjection: boolean
 ): { content: unknown; changed: boolean } {
   if (!Array.isArray(content)) return { content, changed: false };
 
@@ -34,9 +35,10 @@ function projectInlineContent(
         reason: `Note inline type 缺少 owner：${type || 'unknown'}`,
       });
     }
-    const next = owner.markdownExport
-      ? owner.markdownExport.project(inline, { aiDiffDisplayMode })
-      : inline;
+    const next =
+      applyMarkdownProjection && owner.markdownExport
+        ? owner.markdownExport.project(inline, { aiDiffDisplayMode })
+        : inline;
     if (next === null) {
       changed = true;
       continue;
@@ -51,7 +53,8 @@ function projectBlock(
   block: unknown,
   registry: NotePluginRegistry,
   aiDiffDisplayMode: AiDiffDisplayMode,
-  aiContentByBlockId: ReadonlyMap<string, unknown>
+  aiContentByBlockId: ReadonlyMap<string, unknown>,
+  applyMarkdownProjection: boolean
 ): Record<string, unknown> | null {
   if (!isRecord(block)) return null;
   const type = typeof block.type === 'string' ? block.type : '';
@@ -80,10 +83,23 @@ function projectBlock(
       ? aiProjection.aiBlock
       : block;
 
-  const inlineProjection = projectInlineContent(snapshot.content, registry, aiDiffDisplayMode);
+  const inlineProjection = projectInlineContent(
+    snapshot.content,
+    registry,
+    aiDiffDisplayMode,
+    applyMarkdownProjection
+  );
   const children = Array.isArray(snapshot.children)
     ? snapshot.children
-        .map((child) => projectBlock(child, registry, aiDiffDisplayMode, aiContentByBlockId))
+        .map((child) =>
+          projectBlock(
+            child,
+            registry,
+            aiDiffDisplayMode,
+            aiContentByBlockId,
+            applyMarkdownProjection
+          )
+        )
         .filter((child): child is Record<string, unknown> => child !== null)
     : snapshot.children;
   const projected = {
@@ -91,9 +107,10 @@ function projectBlock(
     ...(snapshot.content !== undefined ? { content: inlineProjection.content } : {}),
     ...(snapshot.children !== undefined ? { children } : {}),
   };
-  const ownedProjection = owner.markdownExport
-    ? owner.markdownExport.project(projected, { aiDiffDisplayMode })
-    : projected;
+  const ownedProjection =
+    applyMarkdownProjection && owner.markdownExport
+      ? owner.markdownExport.project(projected, { aiDiffDisplayMode })
+      : projected;
   if (ownedProjection === null) return null;
 
   const originalContent = Array.isArray(snapshot.content) ? snapshot.content : null;
@@ -116,7 +133,19 @@ export function projectNoteBlocksForMarkdown(
   aiContentByBlockId: ReadonlyMap<string, unknown> = new Map()
 ): unknown[] {
   return blocks
-    .map((block) => projectBlock(block, registry, aiDiffDisplayMode, aiContentByBlockId))
+    .map((block) => projectBlock(block, registry, aiDiffDisplayMode, aiContentByBlockId, true))
+    .filter((block): block is Record<string, unknown> => block !== null);
+}
+
+/** Word 等结构化导出只应用 AI Diff 投影，不消费 Markdown 特有的降级规则。 */
+export function projectNoteBlocksForStructuredExport(
+  blocks: readonly unknown[],
+  registry: NotePluginRegistry,
+  aiDiffDisplayMode: AiDiffDisplayMode = AI_DIFF_DISPLAY_MODE.OLD_ONLY,
+  aiContentByBlockId: ReadonlyMap<string, unknown> = new Map()
+): unknown[] {
+  return blocks
+    .map((block) => projectBlock(block, registry, aiDiffDisplayMode, aiContentByBlockId, false))
     .filter((block): block is Record<string, unknown> => block !== null);
 }
 

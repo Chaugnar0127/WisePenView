@@ -7,10 +7,12 @@ import App from './bootstrap/App';
 import './styles/global/index.css';
 import './styles/global/scrollbar.less';
 import './styles/global/app-shell.css';
+import { installOtelErrorReporter } from '@/telemetry/errorReporter';
 import { syncViewportLayoutScale } from '@/utils/browser/layoutScale';
 import { reportError } from './utils/error';
 import RootErrorFallback from './views/app/error/RootErrorFallback';
 
+installOtelErrorReporter();
 syncViewportLayoutScale();
 
 const root = createRoot(document.getElementById('root')!, {

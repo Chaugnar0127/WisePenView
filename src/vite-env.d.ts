@@ -17,6 +17,8 @@ interface ImportMetaEnv {
   readonly VITE_INTRANET_PING_PATH?: string;
   // 校内地址探测超时（毫秒）
   readonly VITE_NETWORK_PROBE_TIMEOUT?: string;
+  // 可选：OTLP HTTP 入口，未配置时禁用前端 OTel
+  readonly VITE_OTEL_ENDPOINT?: string;
 }
 
 interface ImportMeta {

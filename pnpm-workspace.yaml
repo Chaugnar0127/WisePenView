@@ -5,6 +5,7 @@ allowBuilds:
   '@parcel/watcher': true
   electron-winstaller: false
   esbuild: true
+  protobufjs: false
 
 minimumReleaseAge: 1440
 

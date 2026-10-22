@@ -10,4 +10,5 @@ export const publicAppConfig = createPublicAppConfig({
   VITE_DRAWIO_EMBED_URL: import.meta.env.VITE_DRAWIO_EMBED_URL,
   VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL: import.meta.env
     .VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL,
+  VITE_OTEL_ENDPOINT: import.meta.env.VITE_OTEL_ENDPOINT,
 });

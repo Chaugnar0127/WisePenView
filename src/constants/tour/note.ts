@@ -41,7 +41,11 @@ export const noteTour: GuideTourConfig = {
       {
         offset: 20,
         preventFlip: false,
-        spotlightToolIds: [GUIDE_TOOL_ID.notePrintPdf, GUIDE_TOOL_ID.noteDownloadMarkdown],
+        spotlightToolIds: [
+          GUIDE_TOOL_ID.notePrintPdf,
+          GUIDE_TOOL_ID.noteDownloadMarkdown,
+          GUIDE_TOOL_ID.noteDownloadDocx,
+        ],
       }
     ),
     step(

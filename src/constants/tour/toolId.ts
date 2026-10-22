@@ -72,6 +72,8 @@ export const GUIDE_TOOL_ID = {
   notePrintPdf: 'note-print-pdf',
   /** 下载 Markdown 菜单项 */
   noteDownloadMarkdown: 'note-download-markdown',
+  /** 下载 Word 菜单项 */
+  noteDownloadDocx: 'note-download-docx',
   /** 右侧 AI 对话面板 */
   noteAiPanel: 'note-ai-panel',
   /** 笔记右侧对话开关 */

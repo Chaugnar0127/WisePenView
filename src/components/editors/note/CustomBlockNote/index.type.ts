@@ -28,8 +28,16 @@ export interface NoteBodyEditorHandle {
   scrollToAnchor: (anchor: NoteEditorAnchor) => boolean;
   /** 导出 PDF（桌面端直接保存到本地，浏览器端通过系统打印对话框另存） */
   exportPdf: (options?: { title?: string; defaultFileName?: string }) => Promise<void>;
+  /** 导出 Word 文档（AIDiff 按仅旧文本投影） */
+  exportDocx: (options?: { title?: string }) => Promise<NoteDocxArtifact>;
   /** 导出正文 Markdown artifact（AIDiff 按仅旧文本投影） */
   exportMarkdown: () => NoteMarkdownArtifact;
+}
+
+interface NoteDocxArtifact {
+  blob: Blob;
+  mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  extension: 'docx';
 }
 
 interface NoteMarkdownArtifact {

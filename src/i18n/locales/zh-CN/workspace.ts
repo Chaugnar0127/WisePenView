@@ -33,6 +33,19 @@ const zhCNWorkspace = {
     emptyConfig: 'ONLYOFFICE 编辑器配置为空',
     starting: '正在启动 ONLYOFFICE 编辑器...',
   },
+  html: {
+    pageFallbackName: 'HTML 页面',
+    cannotOpen: '无法打开 HTML 页面',
+    loadingInfo: '正在加载页面信息...',
+    emptyInfo: '页面信息为空，请稍后重试',
+    notGenerated: '页面内容尚未生成',
+    notGeneratedHint: '生成完成后可在此预览页面。',
+    generationFailed: '页面生成失败',
+    contentFailed: '页面内容加载失败',
+    loadingContent: '正在加载页面内容...',
+    frameTitle: '{{name}} 页面预览',
+    retry: '重试',
+  },
   drawio: {
     leave: {
       title: '图表有未保存的修改',

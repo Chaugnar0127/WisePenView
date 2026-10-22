@@ -18,6 +18,7 @@ import { createCourseServices } from '@/domains/Course/service/CourseServices.im
 import { createDocumentServices } from '@/domains/Document/service/DocumentServices.impl';
 import { createDriveServices } from '@/domains/Drive/service/DriveServices.impl';
 import { createGroupServices } from '@/domains/Group/service/GroupServices.impl';
+import { createHtmlPageServices } from '@/domains/HtmlPage/service/HtmlPageServices.impl';
 import { createImageServices } from '@/domains/Image/service/ImageServices.impl';
 import { createInlineCommentServices } from '@/domains/InlineComment/service/InlineCommentServices.impl';
 import { createInteractServices } from '@/domains/Interact/service/InteractServices.impl';
@@ -39,6 +40,7 @@ const agentService = createAgentServices();
 const authService = createAuthServices();
 const documentService = createDocumentServices();
 const groupService = createGroupServices();
+const htmlPageService = createHtmlPageServices();
 const imageService = createImageServices();
 const inlineCommentService = createInlineCommentServices();
 const interactService = createInteractServices();
@@ -75,6 +77,7 @@ const resourcePermissionService = createResourcePermissionServices({
   agentService,
   documentService,
   groupService,
+  htmlPageService,
   noteService,
   skillService,
   tagService,
@@ -89,6 +92,7 @@ const servicesValue: ServicesContextValue = {
   documentService: documentService,
   driveService: driveService,
   groupService: groupService,
+  htmlPageService: htmlPageService,
   imageService: imageService,
   inlineCommentService: inlineCommentService,
   interactService: interactService,

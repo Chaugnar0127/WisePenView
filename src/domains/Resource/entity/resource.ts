@@ -19,7 +19,8 @@ export type ResourceIconType =
   | 'note'
   | 'drawio'
   | 'skill'
-  | 'agent';
+  | 'agent'
+  | 'html';
 
 export interface ResourceTagInfo {
   tagName?: string;

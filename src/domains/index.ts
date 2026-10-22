@@ -12,6 +12,7 @@ export {
   useDocumentService,
   useDriveService,
   useGroupService,
+  useHtmlPageService,
   useImageService,
   useInlineCommentService,
   useInteractService,
@@ -25,6 +26,8 @@ export {
   useUserService,
   useWalletService,
 } from './_registry';
+export type { HtmlPageDisplayInfo, HtmlPageVersionInfo, IHtmlPageService } from './HtmlPage';
+export { isHtmlPageReady } from './HtmlPage';
 export type { IMessageService, UserMessage } from './Message';
 export type { FeedbackType, SubmitFeedbackRequest } from './User';
 export { FEEDBACK_TYPE } from './User';

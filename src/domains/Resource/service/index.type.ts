@@ -130,7 +130,8 @@ export interface UpdateResourcePermissionSubjectsRequest {
   subjects: ResourcePermissionSubject[];
 }
 
-export type ResourcePermissionResourceType = 'note' | 'drawio' | 'file' | 'skill' | 'agent';
+export type ResourcePermissionResourceType =
+  'note' | 'drawio' | 'file' | 'skill' | 'agent' | 'html';
 
 export interface GetResourcePermissionOverviewRequest {
   resourceId: string;

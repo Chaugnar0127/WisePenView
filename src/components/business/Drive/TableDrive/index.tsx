@@ -19,7 +19,11 @@ import { GUIDE_ACTION_ID, GUIDE_TOOL_ID } from '@/constants/tour';
 import type { ResourceViewer } from '@/domains/Resource/model/resourceTarget';
 
 import { buildDriveBreadcrumbItems } from '../common/driveBreadcrumb';
-import { resolveCurrentFolderTagId, resolveDriveScope } from '../common/driveComponentModel';
+import {
+  resolveCurrentFolderTagId,
+  resolveDriveFolderVariant,
+  resolveDriveScope,
+} from '../common/driveComponentModel';
 import { useOpenDriveNode } from '../common/useOpenDriveNode';
 import {
   useTableDriveActionsController,
@@ -197,7 +201,7 @@ function TableDrive({
         interaction.clearSelectedRow();
       }
     },
-    hiddenKeys: interaction.sharedRowKeys,
+    hiddenKeys: interaction.systemRowKeys,
   };
 
   const handleRowSelect = (row: DriveTableRow) => {
@@ -360,11 +364,7 @@ function TableDrive({
                           ? row.node.resourceIconType
                           : undefined
                       }
-                      folderVariant={
-                        row.node.type === 'folder' && row.node.systemType === 'shared'
-                          ? 'shared'
-                          : undefined
-                      }
+                      folderVariant={resolveDriveFolderVariant(row.node)}
                     />
                   )}
                   renderNameContent={renderNameContent}

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import EntryIcon from '@/components/business/Icons/EntryIcon';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
 
-import type { DriveViewNode } from '../common/driveComponentModel';
+import { type DriveViewNode, resolveDriveFolderVariant } from '../common/driveComponentModel';
 import styles from './style.module.less';
 
 interface DriveNavigatorNodeTitleProps {
@@ -23,6 +23,7 @@ function getNodeDisplayName(
   if (node.type === 'root') return node.name || t('node.drive');
   if (node.type === 'folder') {
     if (node.systemType === 'shared') return t('node.shared');
+    if (node.systemType === 'page') return t('node.page');
     if (!node.parentId) return t('node.drive');
     return node.name || t('node.unnamedFolder');
   }
@@ -61,9 +62,7 @@ function DriveNavigatorNodeTitle({ node, displayName, onLoadMore }: DriveNavigat
       <span className={styles.nodeIcon} aria-hidden="true">
         <EntryIcon
           entryType={node.type}
-          folderVariant={
-            node.type === 'folder' && node.systemType === 'shared' ? 'shared' : undefined
-          }
+          folderVariant={resolveDriveFolderVariant(node)}
           resourceType={resourceType}
           resourceIconType={resourceIconType}
           size={14}

@@ -4,7 +4,15 @@ on:
   push:
     branches: ['main']
   pull_request:
-    branches: ['main']
+    branches:
+      [
+        'main',
+        'refactor/scss-native-css',
+        'refactor/scss-shared-base',
+        'refactor/scss-table-boundary',
+        'refactor/scss-business',
+        'refactor/scss-editors',
+      ]
 
 permissions:
   contents: read

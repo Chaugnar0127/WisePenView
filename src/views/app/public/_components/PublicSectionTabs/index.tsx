@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 
-import styles from './style.module.less';
+import styles from './style.module.scss';
 
 export type PublicSectionKey = 'groups' | 'courses';
 

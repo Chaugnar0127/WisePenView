@@ -72,6 +72,7 @@ export interface EditorResourcePresentation {
     printLabel?: string;
     printIcon?: LucideIcon;
     download?: { label: string; onAction(): void };
+    downloadDocx?: { label: string; onAction(): void };
     isPending?: boolean;
     onSearch?: () => void;
     showInlineCommentHistory?: boolean;

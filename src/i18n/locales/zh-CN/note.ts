@@ -61,7 +61,9 @@ const zhCNNote = {
   export: {
     editorNotReady: '编辑器未就绪',
     markdownStarted: 'Markdown 下载已开始',
+    docxStarted: 'Word 下载已开始',
     downloadMarkdown: '下载为 Markdown',
+    downloadDocx: '下载为 Word',
     downloadPdf: '下载 PDF',
     printPdf: '打印 PDF',
     printDocumentTitle: '笔记',

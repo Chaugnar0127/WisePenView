@@ -6,7 +6,7 @@ import i18n from '@/i18n';
 import type { CustomBlockNoteEditor } from '../../registry/noteEditorComposition';
 import type { NotePluginRegistry } from '../../registry/types';
 import { readAiContentFromEditorState } from '../aiDiff/extension';
-import { projectNoteBlocksForStructuredExport } from '../markdown/markdownExport';
+import { projectNoteBlocksForExport } from '../export/noteExportProjection';
 import { NOTE_DOCX_NUMBERING, renderNoteDocxBlocks } from './noteDocxBlocks';
 
 export interface NoteDocxExportOptions {
@@ -59,7 +59,7 @@ export async function exportNoteDocx(
   options: NoteDocxExportOptions = {}
 ): Promise<Blob> {
   const title = options.title?.trim() || i18n.t('export.printDocumentTitle', { ns: 'note' });
-  const blocks = projectNoteBlocksForStructuredExport(
+  const blocks = projectNoteBlocksForExport(
     editor.document,
     registry,
     AI_DIFF_DISPLAY_MODE.OLD_ONLY,

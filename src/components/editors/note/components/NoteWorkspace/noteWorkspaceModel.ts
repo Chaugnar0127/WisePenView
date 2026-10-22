@@ -15,8 +15,14 @@ export function downloadTextArtifact(params: {
   mimeType: string;
   fileName: string;
 }): void {
-  const blob = new Blob([params.content], { type: params.mimeType });
-  const url = URL.createObjectURL(blob);
+  downloadBlobArtifact({
+    blob: new Blob([params.content], { type: params.mimeType }),
+    fileName: params.fileName,
+  });
+}
+
+export function downloadBlobArtifact(params: { blob: Blob; fileName: string }): void {
+  const url = URL.createObjectURL(params.blob);
   const anchor = document.createElement('a');
   anchor.href = url;
   anchor.download = params.fileName;

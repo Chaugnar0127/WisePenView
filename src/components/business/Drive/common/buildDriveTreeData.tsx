@@ -69,9 +69,11 @@ function resolveNodeState(node: DriveNode, options: BuildDriveTreeDataOptions) {
   const selectable = isDriveNodeSelectable(node, options);
   const disabledByRule =
     options.disabledNodeIds.has(node.id) || options.isNodeDisabled?.(node) === true;
+  const expandable = node.type === 'root' || node.type === 'folder';
 
   return {
-    disabled: disabledByRule || (options.dimUnselectableNodes !== false && !selectable),
+    disabled:
+      disabledByRule || (options.dimUnselectableNodes !== false && !selectable && !expandable),
     selectable,
   };
 }

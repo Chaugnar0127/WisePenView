@@ -81,8 +81,8 @@ export const SkillApi: typeof SkillApiContract = {
       assetUploadTickets: initMockVersionAssets(target, assets, `mock-skill/${resourceId}`),
     };
   },
-  cancelUploadSkillAssets: async ({ resourceId, draftVersion, objectKeys }) => {
-    cancelMockVersionUploads(bundle(resourceId, draftVersion), objectKeys);
+  cancelUploadSkillAssets: async ({ resourceId, draftVersion, uploads }) => {
+    cancelMockVersionUploads(bundle(resourceId, draftVersion), uploads);
   },
   deleteSkillAssets: async ({ resourceId, draftVersion, assetIds }) => {
     const target = bundle(resourceId, draftVersion);

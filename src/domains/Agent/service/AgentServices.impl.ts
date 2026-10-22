@@ -72,7 +72,7 @@ export const createAgentServices = (): IAgentService => ({
         await AgentApi.cancelUploadAgentAssets({
           resourceId,
           draftVersion,
-          objectKeys: [ticket.objectKey],
+          uploads: [{ assetId: ticket.assetId, objectKey: ticket.objectKey }],
         }).catch(() => undefined);
       }
       throw error;

@@ -73,8 +73,8 @@ export const AgentApi: typeof AgentApiContract = {
       assetUploadTickets: initMockVersionAssets(target, assets, `mock-agent/${resourceId}`),
     };
   },
-  cancelUploadAgentAssets: async ({ resourceId, draftVersion, objectKeys }) => {
-    cancelMockVersionUploads(bundle(resourceId, draftVersion), objectKeys);
+  cancelUploadAgentAssets: async ({ resourceId, draftVersion, uploads }) => {
+    cancelMockVersionUploads(bundle(resourceId, draftVersion), uploads);
   },
   deleteAgentAssets: async ({ resourceId, draftVersion, assetIds }) => {
     const target = bundle(resourceId, draftVersion);

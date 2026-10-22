@@ -282,12 +282,12 @@ export const createSkillServices = (deps: SkillServicesDeps): ISkillService => {
               objectKey: ticket.objectKey,
             };
           } catch (error) {
-            if (ticket?.objectKey) {
+            if (ticket?.assetId && ticket.objectKey) {
               // 覆盖上传沿用 assetId，失败只能取消本次候选对象，不能删除原文件。
               await SkillApi.cancelUploadSkillAssets({
                 resourceId,
                 draftVersion,
-                objectKeys: [ticket.objectKey],
+                uploads: [{ assetId: ticket.assetId, objectKey: ticket.objectKey }],
               }).catch(() => undefined);
             }
             return {

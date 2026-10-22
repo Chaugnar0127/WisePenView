@@ -11,6 +11,12 @@ export interface VersionAssetApiInfo<AssetResourceType extends string = string> 
   assetResourceType?: AssetResourceType;
   uploadStatus?: AssetUploadStatusApiValue;
   size?: JavaLongApiValue;
+  pendingUpload?: {
+    objectKey?: string;
+    assetResourceType?: AssetResourceType;
+    expectedSize?: JavaLongApiValue;
+    createTime?: number;
+  } | null;
 }
 
 export interface VersionBundleApiResponse<AssetResourceType extends string = string> {
@@ -54,5 +60,5 @@ export interface InitUploadAssetsApiResponse {
 export interface CancelUploadAssetsApiRequest {
   resourceId: string;
   draftVersion: number;
-  objectKeys: string[];
+  uploads: { assetId: string; objectKey: string }[];
 }

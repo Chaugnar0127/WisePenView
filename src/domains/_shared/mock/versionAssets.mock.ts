@@ -1,16 +1,11 @@
 import { WisePenError } from '@/utils/error';
 
 import type {
+  CancelUploadAssetsApiRequest,
   InitUploadAssetApiItem,
-  VersionAssetApiInfo,
   VersionBundleApiResponse,
 } from '../apis/versionAssetApi.type';
 import { mockObjects, mockUploadCallbacks } from './ossClient.mock';
-
-const pendingUploads = new Map<
-  string,
-  { target: VersionBundleApiResponse; asset: VersionAssetApiInfo }
->();
 
 export function initMockVersionAssets(
   target: VersionBundleApiResponse,
@@ -18,53 +13,75 @@ export function initMockVersionAssets(
   prefix: string
 ) {
   return assets.map((request) => {
-    const sameFile = (asset: VersionAssetApiInfo) =>
-      asset.path === request.path && asset.name === request.name;
-    const previous = [...pendingUploads].find(
-      ([, upload]) => upload.target === target && sameFile(upload.asset)
+    target.assets ??= [];
+    let asset = target.assets.find(
+      (item) => item.path === request.path && item.name === request.name
     );
-    const existing = target.assets?.find(sameFile) ?? previous?.[1].asset;
-    if (previous) cancelMockVersionUploads(target, [previous[0]]);
-    const assetId = existing?.id ?? `mock-asset-${crypto.randomUUID()}`;
+    if (!asset) {
+      asset = { id: `mock-asset-${crypto.randomUUID()}`, path: request.path, name: request.name };
+      target.assets.push(asset);
+    }
+    if (asset.pendingUpload?.objectKey) {
+      mockUploadCallbacks.delete(asset.pendingUpload.objectKey);
+    }
     const objectKey = `${prefix}/${crypto.randomUUID()}`;
-    const asset: VersionAssetApiInfo = {
-      ...request,
-      id: assetId,
+    asset.pendingUpload = {
       objectKey,
-      size: request.expectedSize?.toString(),
-      uploadStatus: 'AVAILABLE',
+      assetResourceType: request.assetResourceType,
+      expectedSize: request.expectedSize?.toString(),
+      createTime: Date.now(),
     };
-    pendingUploads.set(objectKey, { target, asset });
+    asset.uploadStatus = 'UPLOADING';
     mockUploadCallbacks.set(objectKey, () => {
-      target.assets = [...(target.assets ?? []).filter((item) => !sameFile(item)), asset];
-      pendingUploads.delete(objectKey);
       mockUploadCallbacks.delete(objectKey);
+      // 取消、删除或同名重试后，迟到回调不能提交旧候选。
+      if (!target.assets?.includes(asset) || asset.pendingUpload?.objectKey !== objectKey) return;
+      asset.objectKey = objectKey;
+      asset.assetResourceType = request.assetResourceType;
+      asset.size = mockObjects.get(objectKey)?.size.toString();
+      asset.uploadStatus = 'AVAILABLE';
+      delete asset.pendingUpload;
     });
-    return { assetId, objectKey, putUrl: objectKey, callbackHeader: 'mock' };
+    return { assetId: asset.id, objectKey, putUrl: objectKey, callbackHeader: 'mock' };
   });
 }
 
-export function cancelMockVersionUploads(target: VersionBundleApiResponse, objectKeys: string[]) {
-  for (const key of objectKeys) {
-    if (pendingUploads.get(key)?.target !== target) continue;
-    pendingUploads.delete(key);
-    mockUploadCallbacks.delete(key);
-    mockObjects.delete(key);
+export function cancelMockVersionUploads(
+  target: VersionBundleApiResponse,
+  uploads: CancelUploadAssetsApiRequest['uploads']
+) {
+  for (const { assetId, objectKey } of uploads) {
+    const asset = target.assets?.find(
+      (item) => item.id === assetId && item.pendingUpload?.objectKey === objectKey
+    );
+    if (!asset) continue;
+    if (asset.objectKey) {
+      delete asset.pendingUpload;
+      asset.uploadStatus = 'AVAILABLE';
+    } else {
+      target.assets = target.assets?.filter((item) => item !== asset);
+    }
+    mockUploadCallbacks.delete(objectKey);
+    mockObjects.delete(objectKey);
   }
 }
 
 export function deleteMockVersionAssets(target: VersionBundleApiResponse, assetIds: string[]) {
+  for (const asset of target.assets ?? []) {
+    if (assetIds.includes(asset.id ?? '') && asset.pendingUpload?.objectKey) {
+      mockUploadCallbacks.delete(asset.pendingUpload.objectKey);
+      mockObjects.delete(asset.pendingUpload.objectKey);
+    }
+  }
   target.assets = target.assets?.filter((asset) => !assetIds.includes(asset.id ?? ''));
-  cancelMockVersionUploads(
-    target,
-    [...pendingUploads]
-      .filter(([, upload]) => upload.target === target && assetIds.includes(upload.asset.id ?? ''))
-      .map(([key]) => key)
-  );
 }
 
 export function assertMockVersionUploadsComplete(target: VersionBundleApiResponse) {
-  if ([...pendingUploads.values()].some((upload) => upload.target === target)) {
+  if (
+    target.assets?.some(
+      (asset) => !asset.objectKey || asset.uploadStatus !== 'AVAILABLE' || asset.pendingUpload
+    )
+  ) {
     // 与后端 AIResourceError.AI_RESOURCE_ASSET_NOT_READY 保持一致。
     throw new WisePenError({ code: 9321, source: 'api', serverMsg: 'AI资源的Asset未就绪' });
   }

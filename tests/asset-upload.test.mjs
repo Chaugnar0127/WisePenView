@@ -10,6 +10,7 @@ const state = {
   failedBody: undefined,
   failCancel: false,
   flash: false,
+  omitTicketField: undefined,
   putError: undefined,
   bodies: [],
 };
@@ -20,6 +21,7 @@ function reset() {
   state.failedBody = undefined;
   state.failCancel = false;
   state.flash = false;
+  state.omitTicketField = undefined;
   state.putError = undefined;
   state.bodies.length = 0;
 }
@@ -27,14 +29,18 @@ function reset() {
 const api = {
   async initUploadSkillAssets({ assets }) {
     return {
-      assetUploadTickets: assets.map((asset, index) => ({
-        assetId: `existing-${index}`,
-        objectKey: `candidate-${index}`,
-        name: asset.name,
-        path: asset.path,
-        ...(!state.flash && { putUrl: `candidate-${index}`, callbackHeader: 'test' }),
-        flashUploaded: state.flash,
-      })),
+      assetUploadTickets: assets.map((asset, index) => {
+        const ticket = {
+          assetId: `existing-${index}`,
+          objectKey: `candidate-${index}`,
+          name: asset.name,
+          path: asset.path,
+          ...(!state.flash && { putUrl: `candidate-${index}`, callbackHeader: 'test' }),
+          flashUploaded: state.flash,
+        };
+        delete ticket[state.omitTicketField];
+        return ticket;
+      }),
     };
   },
   async cancelUploadSkillAssets(request) {
@@ -102,7 +108,11 @@ test('Skill PUT failure cancels only the candidate and keeps the original error'
     assert.equal(result.clientId, 'editor');
     assert.equal(result.error, putError);
     assert.deepEqual(state.canceled, [
-      { resourceId: 'skill-1', draftVersion: 2, objectKeys: ['candidate-0'] },
+      {
+        resourceId: 'skill-1',
+        draftVersion: 2,
+        uploads: [{ assetId: 'existing-0', objectKey: 'candidate-0' }],
+      },
     ]);
     assert.deepEqual(state.deleted, []);
   }
@@ -146,35 +156,76 @@ test('partial Skill move failure does not delete source files or successful targ
   );
 
   assert.deepEqual(state.canceled, [
-    { resourceId: 'skill-1', draftVersion: 2, objectKeys: ['candidate-1'] },
+    {
+      resourceId: 'skill-1',
+      draftVersion: 2,
+      uploads: [{ assetId: 'existing-1', objectKey: 'candidate-1' }],
+    },
   ]);
   assert.deepEqual(state.deleted, []);
 });
 
 test('Agent PUT failure cancels the candidate without deleting the existing asset', async () => {
-  reset();
-  const putError = new Error('PUT failed');
-  state.failedBody = 'new agent body';
-  state.failCancel = true;
-  state.putError = putError;
+  for (const failCancel of [false, true]) {
+    reset();
+    const putError = new Error('PUT failed');
+    state.failedBody = 'new agent body';
+    state.failCancel = failCancel;
+    state.putError = putError;
 
-  await assert.rejects(
-    agent.uploadAsset('agent-1', 3, {
-      file: new File([state.failedBody], 'AGENTS.md'),
-    }),
-    (error) => error === putError
-  );
+    await assert.rejects(
+      agent.uploadAsset('agent-1', 3, {
+        file: new File([state.failedBody], 'AGENTS.md'),
+      }),
+      (error) => error === putError
+    );
 
-  assert.deepEqual(state.canceled, [
-    { resourceId: 'agent-1', draftVersion: 3, objectKeys: ['candidate-0'] },
-  ]);
-  assert.deepEqual(state.deleted, []);
+    assert.deepEqual(state.canceled, [
+      {
+        resourceId: 'agent-1',
+        draftVersion: 3,
+        uploads: [{ assetId: 'existing-0', objectKey: 'candidate-0' }],
+      },
+    ]);
+    assert.deepEqual(state.deleted, []);
+  }
+});
+
+test('Agent successful and flash uploads do not cancel or delete assets', async () => {
+  for (const flash of [false, true]) {
+    reset();
+    state.flash = flash;
+    await agent.uploadAsset('agent-1', 3, { file: new File(['new body'], 'AGENTS.md') });
+    assert.deepEqual(state.bodies, flash ? [] : ['new body']);
+    assert.deepEqual(state.canceled, []);
+    assert.deepEqual(state.deleted, []);
+  }
+});
+
+test('incomplete tickets never send a cancellation without both upload identifiers', async () => {
+  for (const omitTicketField of ['assetId', 'objectKey']) {
+    reset();
+    state.omitTicketField = omitTicketField;
+    state.failedBody = 'new body';
+    state.putError = new Error('PUT failed');
+    const [result] = await skill.uploadAssets('skill-1', 2, [
+      { name: 'SKILL.md', path: '/', content: state.failedBody },
+    ]);
+    assert.ok(result.error);
+    await assert.rejects(
+      agent.uploadAsset('agent-1', 3, { file: new File([state.failedBody], 'AGENTS.md') })
+    );
+    assert.deepEqual(state.canceled, []);
+    assert.deepEqual(state.deleted, []);
+  }
 });
 
 const mock = await loadSourceModule(
   `
-  export { assertMockVersionUploadsComplete, cancelMockVersionUploads, initMockVersionAssets } from './src/domains/_shared/mock/versionAssets.mock.ts';
-  export { mockObjects, putOssPresignedUrl } from './src/domains/_shared/mock/ossClient.mock.ts';
+  export { assertMockVersionUploadsComplete, cancelMockVersionUploads, deleteMockVersionAssets, initMockVersionAssets } from './src/domains/_shared/mock/versionAssets.mock.ts';
+  export { mockObjects, mockUploadCallbacks, putOssPresignedUrl } from './src/domains/_shared/mock/ossClient.mock.ts';
+  export { SkillApi } from './src/domains/Skill/mock/SkillApi.mock.ts';
+  export { AgentApi } from './src/domains/Agent/mock/AgentApi.mock.ts';
 `,
   {
     '@/utils/error': `export class WisePenError extends Error {
@@ -185,28 +236,166 @@ const mock = await loadSourceModule(
   }
 );
 
-test('mock overwrite preserves the old body on cancel and commits only a successful retry', async () => {
-  mock.mockObjects.clear();
-  const target = {
+function existingBundle() {
+  return {
     status: 'DRAFT',
-    assets: [{ id: 'existing', path: '/', name: 'SKILL.md', objectKey: 'old' }],
+    assets: [
+      {
+        id: 'existing',
+        path: '/',
+        name: 'SKILL.md',
+        objectKey: 'old',
+        assetResourceType: 'MD',
+        size: '8',
+        uploadStatus: 'AVAILABLE',
+      },
+    ],
   };
+}
+
+const requests = [{ path: '/', name: 'SKILL.md', assetResourceType: 'TEXT', expectedSize: 1 }];
+const uploadRef = (ticket) => ({ assetId: ticket.assetId, objectKey: ticket.objectKey });
+
+test('mock overwrite preserves the old body on cancel and commits only a successful retry', async () => {
+  const target = existingBundle();
   mock.mockObjects.set('old', new Blob(['old body']));
-  const requests = [{ path: '/', name: 'SKILL.md', assetResourceType: 'MD', expectedSize: 8 }];
 
   const [failed] = mock.initMockVersionAssets(target, requests, 'skill');
   assert.equal(failed.assetId, 'existing');
   assert.equal(target.assets[0].objectKey, 'old');
+  assert.equal(target.assets[0].assetResourceType, 'MD');
+  assert.equal(target.assets[0].size, '8');
+  assert.equal(target.assets[0].uploadStatus, 'UPLOADING');
+  assert.equal(target.assets[0].pendingUpload.objectKey, failed.objectKey);
+  assert.equal(target.assets[0].pendingUpload.assetResourceType, 'TEXT');
+  assert.equal(target.assets[0].pendingUpload.expectedSize, '1');
+  assert.equal(typeof target.assets[0].pendingUpload.createTime, 'number');
   assert.throws(() => mock.assertMockVersionUploadsComplete(target));
-  mock.cancelMockVersionUploads(target, [failed.objectKey]);
+  mock.cancelMockVersionUploads(target, [uploadRef(failed)]);
+  mock.cancelMockVersionUploads(target, [uploadRef(failed)]);
+  assert.deepEqual(target, existingBundle());
   assert.equal(await mock.mockObjects.get('old').text(), 'old body');
   mock.assertMockVersionUploadsComplete(target);
 
   const [retry] = mock.initMockVersionAssets(target, requests, 'skill');
   await mock.putOssPresignedUrl({ putUrl: retry.putUrl, body: new Blob(['new body']) });
-  mock.cancelMockVersionUploads(target, [retry.objectKey]);
+  mock.cancelMockVersionUploads(target, [uploadRef(retry)]);
   assert.equal(target.assets.length, 1);
   assert.equal(target.assets[0].id, 'existing');
+  assert.equal(target.assets[0].objectKey, retry.objectKey);
+  assert.equal(target.assets[0].assetResourceType, 'TEXT');
+  assert.equal(target.assets[0].size, '8');
+  assert.equal(target.assets[0].uploadStatus, 'AVAILABLE');
+  assert.equal(target.assets[0].pendingUpload, undefined);
   assert.equal(await mock.mockObjects.get(target.assets[0].objectKey).text(), 'new body');
   mock.assertMockVersionUploadsComplete(target);
 });
+
+test('mock cancellation requires matching asset ID, candidate key and version bundle', () => {
+  const target = existingBundle();
+  const [ticket] = mock.initMockVersionAssets(target, requests, 'skill');
+  const before = globalThis.structuredClone(target);
+  mock.cancelMockVersionUploads(target, [
+    { assetId: 'another-asset', objectKey: ticket.objectKey },
+  ]);
+  mock.cancelMockVersionUploads(target, [{ assetId: ticket.assetId, objectKey: 'another-key' }]);
+  mock.cancelMockVersionUploads(existingBundle(), [uploadRef(ticket)]);
+  assert.deepEqual(target, before);
+  assert.throws(() => mock.assertMockVersionUploadsComplete(target));
+  mock.cancelMockVersionUploads(target, [uploadRef(ticket)]);
+  mock.assertMockVersionUploadsComplete(target);
+});
+
+test('a new mock upload is a visible placeholder and cancel prevents a late callback revival', async () => {
+  const target = { status: 'DRAFT', assets: [] };
+  const [ticket] = mock.initMockVersionAssets(target, requests, 'skill');
+  assert.equal(target.assets.length, 1);
+  assert.equal(target.assets[0].id, ticket.assetId);
+  assert.equal(target.assets[0].objectKey, undefined);
+  assert.equal(target.assets[0].uploadStatus, 'UPLOADING');
+  assert.equal(target.assets[0].pendingUpload.objectKey, ticket.objectKey);
+  const callback = mock.mockUploadCallbacks.get(ticket.objectKey);
+  mock.cancelMockVersionUploads(target, [uploadRef(ticket)]);
+  assert.deepEqual(target.assets, []);
+  assert.equal(mock.mockUploadCallbacks.has(ticket.objectKey), false);
+  await mock.putOssPresignedUrl({ putUrl: ticket.putUrl, body: new Blob(['late body']) });
+  callback();
+  assert.deepEqual(target.assets, []);
+  mock.assertMockVersionUploadsComplete(target);
+});
+
+test('a stale mock cancellation or callback cannot replace a newer retry', async () => {
+  const target = existingBundle();
+  const [first] = mock.initMockVersionAssets(target, requests, 'skill');
+  const firstCallback = mock.mockUploadCallbacks.get(first.objectKey);
+  const [retry] = mock.initMockVersionAssets(target, requests, 'skill');
+  assert.equal(retry.assetId, first.assetId);
+  assert.notEqual(retry.objectKey, first.objectKey);
+  mock.cancelMockVersionUploads(target, [uploadRef(first)]);
+  await mock.putOssPresignedUrl({ putUrl: first.putUrl, body: new Blob(['stale body']) });
+  firstCallback();
+  assert.equal(target.assets[0].objectKey, 'old');
+  assert.equal(target.assets[0].pendingUpload.objectKey, retry.objectKey);
+  assert.throws(() => mock.assertMockVersionUploadsComplete(target));
+  await mock.putOssPresignedUrl({ putUrl: retry.putUrl, body: new Blob(['retry body']) });
+  firstCallback();
+  mock.cancelMockVersionUploads(target, [uploadRef(first), uploadRef(retry)]);
+  assert.equal(target.assets[0].objectKey, retry.objectKey);
+  assert.equal(await mock.mockObjects.get(retry.objectKey).text(), 'retry body');
+  mock.assertMockVersionUploadsComplete(target);
+});
+
+test('mock completion and cancellation affect only the matching file in a batch', async () => {
+  const target = existingBundle();
+  const [first, second] = mock.initMockVersionAssets(
+    target,
+    [...requests, { ...requests[0], name: 'second.txt' }],
+    'skill'
+  );
+  await mock.putOssPresignedUrl({ putUrl: first.putUrl, body: new Blob(['first body']) });
+  assert.throws(() => mock.assertMockVersionUploadsComplete(target));
+  mock.cancelMockVersionUploads(target, [uploadRef(second)]);
+  assert.equal(target.assets.length, 1);
+  assert.equal(target.assets[0].objectKey, first.objectKey);
+  mock.assertMockVersionUploadsComplete(target);
+});
+
+test('deleting a mock asset also removes its pending upload without late revival', async () => {
+  const target = existingBundle();
+  const [ticket] = mock.initMockVersionAssets(target, requests, 'skill');
+  const callback = mock.mockUploadCallbacks.get(ticket.objectKey);
+  mock.deleteMockVersionAssets(target, [ticket.assetId]);
+  assert.deepEqual(target.assets, []);
+  assert.equal(mock.mockUploadCallbacks.has(ticket.objectKey), false);
+  await mock.putOssPresignedUrl({ putUrl: ticket.putUrl, body: new Blob(['late body']) });
+  callback();
+  assert.deepEqual(target.assets, []);
+  mock.assertMockVersionUploadsComplete(target);
+});
+
+for (const domain of ['Skill', 'Agent']) {
+  test(`${domain} mock API accepts the landed cancellation payload`, async () => {
+    const api = mock[`${domain}Api`];
+    const resourceId = await api[`create${domain}`]({ title: 'Upload contract test' });
+    const [ticket] = (
+      await api[`initUpload${domain}Assets`]({
+        resourceId,
+        draftVersion: 1,
+        assets: [{ ...requests[0], name: 'new.txt' }],
+      })
+    ).assetUploadTickets;
+    await api[`cancelUpload${domain}Assets`]({
+      resourceId,
+      draftVersion: 1,
+      uploads: [uploadRef(ticket)],
+    });
+    const bundle =
+      domain === 'Skill'
+        ? await api.getSkillVersionBundleInfo({ resourceId, version: 1 })
+        : await api.getAgentVersionBundleInfo(resourceId, 1);
+    assert.equal(
+      bundle.assets.some((asset) => asset.id === ticket.assetId),
+      false
+    );
+  });
+}

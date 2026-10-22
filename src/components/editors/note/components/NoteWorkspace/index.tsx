@@ -234,6 +234,10 @@ function NoteWorkspace({ resourceId, noteInfoDisplay, onRefreshNoteInfo }: NoteW
             label: t('export.downloadMarkdown'),
             onAction: actions.downloadMarkdown,
           },
+          downloadDocx: {
+            label: t('export.downloadDocx'),
+            onAction: actions.downloadDocx,
+          },
           isPending: actions.exportPending,
         },
       },

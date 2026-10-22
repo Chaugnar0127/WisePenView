@@ -10,10 +10,10 @@ import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { isRecord } from '@/utils/type/typeGuards';
 
 import type { NotePluginRegistry } from '../../registry/types';
-import { resolveNoteAiDiffBlock } from '../aiDiff/contentState';
 import { readAiContentFromEditorState } from '../aiDiff/extension';
+import { projectNoteBlocksForExport } from '../export/noteExportProjection';
 
-function projectInlineContent(
+function projectMarkdownInlineContent(
   content: unknown,
   registry: NotePluginRegistry,
   aiDiffDisplayMode: AiDiffDisplayMode
@@ -47,11 +47,10 @@ function projectInlineContent(
   return { content: projected, changed };
 }
 
-function projectBlock(
+function projectMarkdownBlock(
   block: unknown,
   registry: NotePluginRegistry,
-  aiDiffDisplayMode: AiDiffDisplayMode,
-  aiContentByBlockId: ReadonlyMap<string, unknown>
+  aiDiffDisplayMode: AiDiffDisplayMode
 ): Record<string, unknown> | null {
   if (!isRecord(block)) return null;
   const type = typeof block.type === 'string' ? block.type : '';
@@ -62,41 +61,23 @@ function projectBlock(
     });
   }
 
-  const blockId = typeof block.id === 'string' ? block.id : '';
-  const aiContent = aiContentByBlockId.get(blockId);
-  const aiProjection =
-    aiContentByBlockId.has(blockId) && owner.aiDiff
-      ? resolveNoteAiDiffBlock(block, aiContent, owner.aiDiff, registry)
-      : null;
-  if (
-    aiProjection &&
-    ((aiDiffDisplayMode === AI_DIFF_DISPLAY_MODE.NEW_ONLY && aiProjection.aiContentEmpty) ||
-      (aiDiffDisplayMode !== AI_DIFF_DISPLAY_MODE.NEW_ONLY && aiProjection.currentEmpty))
-  ) {
-    return null;
-  }
-  const snapshot =
-    aiProjection && aiDiffDisplayMode === AI_DIFF_DISPLAY_MODE.NEW_ONLY
-      ? aiProjection.aiBlock
-      : block;
-
-  const inlineProjection = projectInlineContent(snapshot.content, registry, aiDiffDisplayMode);
-  const children = Array.isArray(snapshot.children)
-    ? snapshot.children
-        .map((child) => projectBlock(child, registry, aiDiffDisplayMode, aiContentByBlockId))
+  const inlineProjection = projectMarkdownInlineContent(block.content, registry, aiDiffDisplayMode);
+  const children = Array.isArray(block.children)
+    ? block.children
+        .map((child) => projectMarkdownBlock(child, registry, aiDiffDisplayMode))
         .filter((child): child is Record<string, unknown> => child !== null)
-    : snapshot.children;
+    : block.children;
   const projected = {
-    ...snapshot,
-    ...(snapshot.content !== undefined ? { content: inlineProjection.content } : {}),
-    ...(snapshot.children !== undefined ? { children } : {}),
+    ...block,
+    ...(block.content !== undefined ? { content: inlineProjection.content } : {}),
+    ...(block.children !== undefined ? { children } : {}),
   };
   const ownedProjection = owner.markdownExport
     ? owner.markdownExport.project(projected, { aiDiffDisplayMode })
     : projected;
   if (ownedProjection === null) return null;
 
-  const originalContent = Array.isArray(snapshot.content) ? snapshot.content : null;
+  const originalContent = Array.isArray(block.content) ? block.content : null;
   const projectedContent = Array.isArray(ownedProjection.content) ? ownedProjection.content : null;
   if (
     inlineProjection.changed &&
@@ -115,8 +96,14 @@ export function projectNoteBlocksForMarkdown(
   aiDiffDisplayMode: AiDiffDisplayMode = AI_DIFF_DISPLAY_MODE.OLD_ONLY,
   aiContentByBlockId: ReadonlyMap<string, unknown> = new Map()
 ): unknown[] {
-  return blocks
-    .map((block) => projectBlock(block, registry, aiDiffDisplayMode, aiContentByBlockId))
+  const exported = projectNoteBlocksForExport(
+    blocks,
+    registry,
+    aiDiffDisplayMode,
+    aiContentByBlockId
+  );
+  return exported
+    .map((block) => projectMarkdownBlock(block, registry, aiDiffDisplayMode))
     .filter((block): block is Record<string, unknown> => block !== null);
 }
 

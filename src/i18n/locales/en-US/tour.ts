@@ -98,7 +98,7 @@ const enUSTour = {
     export: {
       title: 'Export your note',
       content:
-        'If you want to save the note as a file on your computer, export it as a PDF or Markdown from here.',
+        'If you want to save the note as a file on your computer, export it as PDF, Markdown, or Word from here.',
     },
     chat: {
       title: 'Edit with AI by your side',

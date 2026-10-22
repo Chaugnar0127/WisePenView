@@ -37,6 +37,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
+      // CI 不需要 gzip 体积报告，跳过逐 chunk 压缩统计以缩短构建时间。
+      reportCompressedSize: !process.env.CI,
       // PDF、BlockNote 和代码高亮均已按路由/语言按需加载，允许其运行时 chunk 保持较大体积。
       chunkSizeWarningLimit: 2500,
     },

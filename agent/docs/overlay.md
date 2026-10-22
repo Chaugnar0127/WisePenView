@@ -23,6 +23,10 @@
 - Select 的 trigger 是收起状态下用户看到的字段控件，展开后的面板是独立浮层外壳，面板内部选项按浮层内选中项处理。ComboBox、Autocomplete trigger 遵循相同拆分。
 - HeroUI 对 dialog 的默认圆角由 `src/styles/global/heroui-overrides.css` 统一覆盖，不要在组件或业务侧重新启用；`size="full"` 保持直角以便贴合窗口边缘，`size="cover"` 保留外壳圆角。
 
+### 层级
+
+浮层层级统一取 `--app-z-index-*`：Popover、Dropdown、Select 展开面板外壳用 `--app-z-index-popover`，Tooltip 用 `--app-z-index-tooltip`，Modal 外壳与遮罩用 `--app-z-index-modal`，Toast 用 `--app-z-index-toast`。业务代码不得自行为浮层写数字层级，完整层级表见 `agent/docs/component-style.md` 第七节。
+
 Overlay 组件按复用范围分开放：
 
 - `src/components/base/Modal`、`src/components/base/Popover`：底层原子层，统一 HeroUI 浮层的挂载时机与延迟渲染。

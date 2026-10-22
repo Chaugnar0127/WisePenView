@@ -12,12 +12,9 @@ import { useAuthService } from '@/domains';
 import type { NewPasswordRequest } from '@/domains/Auth';
 import { useApi } from '@/hooks/useApi';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
-import {
-  type FieldErrors,
-  hasFieldErrors,
-  runFieldValidation,
-} from '@/utils/validation/formValidation';
+import { type FieldErrors, hasFieldErrors } from '@/utils/validation/formValidation';
 
+import { validateConfirmPasswordField, validatePasswordField } from '../_common/passwordValidation';
 import auth from '../_common/style.module.less';
 
 type NewPasswordFormValues = Pick<NewPasswordRequest, 'newPassword'> & {
@@ -55,41 +52,73 @@ function NewPassword() {
     }
   );
 
+  const isFieldEmpty = (field: NewPasswordField, values: NewPasswordFormValues): boolean => {
+    switch (field) {
+      case 'newPassword':
+        return values.newPassword.length === 0;
+      case 'confirmPassword':
+        return values.confirmPassword.length === 0;
+      default:
+        return false;
+    }
+  };
+
+  const validateField = (
+    field: NewPasswordField,
+    values: NewPasswordFormValues,
+    options: { withRequired?: boolean } = {}
+  ): string | undefined => {
+    if (!options.withRequired && isFieldEmpty(field, values)) return undefined;
+
+    switch (field) {
+      case 'newPassword':
+        return validatePasswordField(
+          values.newPassword,
+          {
+            required: t('newPassword.passwordRequired'),
+            minLength: t('newPassword.passwordMinLength'),
+            containsLetter: t('newPassword.passwordContainsLetter'),
+            containsNumber: t('newPassword.passwordContainsNumber'),
+          },
+          options
+        );
+      case 'confirmPassword':
+        return validateConfirmPasswordField(
+          values.confirmPassword,
+          values.newPassword,
+          {
+            required: t('newPassword.confirmPasswordRequired'),
+            mismatch: t('newPassword.confirmPasswordMismatch'),
+          },
+          options
+        );
+      default:
+        return undefined;
+    }
+  };
+
   const updateFormValue = (field: NewPasswordField, value: string) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
-    setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+    const nextValues = { ...formValues, [field]: value };
+    setFormValues(nextValues);
+    const fieldsToValidate: NewPasswordField[] =
+      field === 'newPassword' ? ['newPassword', 'confirmPassword'] : [field];
+    setFormErrors((prev) => {
+      const nextErrors = { ...prev };
+      fieldsToValidate.forEach((key) => {
+        nextErrors[key] = validateField(key, nextValues);
+      });
+      return nextErrors;
+    });
+  };
+
+  const handleFieldBlur = (field: NewPasswordField) => {
+    setFormErrors((prev) => ({ ...prev, [field]: validateField(field, formValues) }));
   };
 
   const validateForm = () => {
     const nextErrors: FieldErrors<NewPasswordField> = {
-      newPassword: runFieldValidation([
-        {
-          test: () => formValues.newPassword.length > 0,
-          message: t('newPassword.passwordRequired'),
-        },
-        {
-          test: () => formValues.newPassword.length >= 9,
-          message: t('newPassword.passwordMinLength'),
-        },
-        {
-          test: () => /[a-zA-Z]/.test(formValues.newPassword),
-          message: t('newPassword.passwordContainsLetter'),
-        },
-        {
-          test: () => /[0-9]/.test(formValues.newPassword),
-          message: t('newPassword.passwordContainsNumber'),
-        },
-      ]),
-      confirmPassword: runFieldValidation([
-        {
-          test: () => formValues.confirmPassword.length > 0,
-          message: t('newPassword.confirmPasswordRequired'),
-        },
-        {
-          test: () => formValues.confirmPassword === formValues.newPassword,
-          message: t('newPassword.confirmPasswordMismatch'),
-        },
-      ]),
+      newPassword: validateField('newPassword', formValues, { withRequired: true }),
+      confirmPassword: validateField('confirmPassword', formValues, { withRequired: true }),
     };
     setFormErrors(nextErrors);
     return !hasFieldErrors(nextErrors);
@@ -120,7 +149,7 @@ function NewPassword() {
           name="newPassword"
           value={formValues.newPassword}
           onChange={(value) => updateFormValue('newPassword', value)}
-          description={t('common.passwordRules')}
+          onBlur={() => handleFieldBlur('newPassword')}
           errorMessage={formErrors.newPassword}
           isRequired
         >
@@ -138,6 +167,7 @@ function NewPassword() {
           name="confirmPassword"
           value={formValues.confirmPassword}
           onChange={(value) => updateFormValue('confirmPassword', value)}
+          onBlur={() => handleFieldBlur('confirmPassword')}
           errorMessage={formErrors.confirmPassword}
           isRequired
         >

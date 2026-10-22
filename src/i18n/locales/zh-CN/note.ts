@@ -12,16 +12,19 @@ const zhCNNote = {
     imageUploadLeaveTitle: '图片仍在上传',
     imageUploadLeaveDescription: '请等待 {{count}} 张图片上传完成后再离开此笔记。',
     imageUploadContinue: '继续上传',
+    anchorNotFound: '无法定位到原文，可能已被删除或移动',
   },
   title: {
     untitled: '未命名笔记',
     placeholder: '请输入标题',
+    field: '笔记标题',
   },
   info: {
     authors: '作者：{{names}}',
     noAuthors: '作者：暂无',
     empty: '暂无',
     lastEdited: '上次编辑',
+    bar: '笔记信息',
   },
   save: {
     saving: '保存中...',
@@ -58,7 +61,9 @@ const zhCNNote = {
   export: {
     editorNotReady: '编辑器未就绪',
     markdownStarted: 'Markdown 下载已开始',
+    docxStarted: 'Word 下载已开始',
     downloadMarkdown: '下载为 Markdown',
+    downloadDocx: '下载为 Word',
     downloadPdf: '下载 PDF',
     printPdf: '打印 PDF',
     printDocumentTitle: '笔记',

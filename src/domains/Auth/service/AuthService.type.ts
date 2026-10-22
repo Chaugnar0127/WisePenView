@@ -22,3 +22,9 @@ export interface NewPasswordRequest {
   newPassword: string;
   token: string;
 }
+
+/** 修改密码请求参数 */
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}

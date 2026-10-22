@@ -19,7 +19,7 @@ const enUSChat = {
       'The selected context belongs to another resource. Remove it and select it again from the current resource.',
   },
   input: {
-    placeholder: 'Type a message...',
+    placeholder: 'What can I help you with today?',
     loginRequired: 'Sign in to use chat',
     disclaimer: 'AI-generated content may be inaccurate. Please verify important information.',
     removeContext: 'Remove context',
@@ -61,6 +61,7 @@ const enUSChat = {
       trigger: 'Select an Agent',
       currentDraft: 'Current draft',
       defaultAgent: 'No Agent',
+      selectAgentTooltip: 'Select an Agent',
       loadingAria: 'Loading agents',
       selectFromGroup: 'Select from group',
       groupModalTitle: 'Select Agent from group',
@@ -70,7 +71,7 @@ const enUSChat = {
     },
     skillMenu: {
       title: 'Skills',
-      configure: 'Configure Agent',
+      configure: 'Configure',
       selectSkill: 'Select Skills',
       otherTitle: 'Other Skills',
       selectedOtherAria: 'Selected other Skills',

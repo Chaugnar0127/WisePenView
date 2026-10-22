@@ -1,4 +1,5 @@
 import { createAiDiffEditorExtension } from '../engines/aiDiff/extension';
+import { anchorHighlightEditorExtension } from '../engines/anchorHighlight/extension';
 import { searchEditorExtension } from '../engines/search/extension';
 import { codeBlockPlugin } from '../plugins/CodeBlockPlugin';
 import { createDefaultContentPlugin } from '../plugins/DefaultContentPlugin';
@@ -42,7 +43,12 @@ const noteEditorServices = {
 
 export const notePluginRegistry = createNotePluginRegistry({
   root: notePluginTree,
-  editorExtensions: [aiDiffEditorExtension, emojiEditorExtension, searchEditorExtension],
+  editorExtensions: [
+    aiDiffEditorExtension,
+    anchorHighlightEditorExtension,
+    emojiEditorExtension,
+    searchEditorExtension,
+  ],
   services: noteEditorServices,
 });
 

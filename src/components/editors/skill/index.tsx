@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- 编辑器顶层只编排资源、草稿、保存与文件操作 Controller，保持跨流程组合点集中可见。 */
 import { toast } from '@heroui/react';
 import { Pencil, Save, Settings, Upload } from 'lucide-react';
 import { useRef } from 'react';
@@ -130,7 +131,7 @@ function SkillEditorContent() {
       toast.warning(t('toast.moveInProgress'));
       return;
     }
-    save.handleSaveCurrentFile();
+    save.handleSaveAll();
   };
   const {
     onEditorMount: handleMarkdownEditorMount,
@@ -214,13 +215,7 @@ function SkillEditorContent() {
         ownerId: resource.skill?.ownerId,
         onPermissionSuccess: resource.refreshSkill,
         titleMeta: headerSaveStatusText ? (
-          <span
-            className={`${styles.toolbarSaveStatus} ${
-              save.savePhase === 'dirty' || save.savePhase === 'failed'
-                ? styles.toolbarSaveStatusDirty
-                : ''
-            }`}
-          >
+          <span className={`${styles.toolbarSaveStatus} ${styles.toolbarSaveStatusDirty}`}>
             {headerSaveStatusText}
           </span>
         ) : undefined,
@@ -250,7 +245,7 @@ function SkillEditorContent() {
                     }
                   >
                     <Save size={16} />
-                    <span>{t('header.save')}</span>
+                    <span>{save.isSaving ? t('saveStatus.saving') : t('header.save')}</span>
                   </AppButton>
                 ) : null}
                 <VersionDropdown

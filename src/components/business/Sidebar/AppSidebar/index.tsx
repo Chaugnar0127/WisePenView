@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { GUIDE_TOOL_ID } from '@/constants/tour';
+
 import UserProfile from '../_common/footer/UserProfile';
 import HeaderNav from '../_common/header/HeaderNav';
 import SidebarHeader from '../_common/header/SidebarHeader';
@@ -41,6 +43,7 @@ function AppSidebar({
             ariaLabel={t('navigation.appAria')}
             activeKey={selectedKey}
             collapsed={railLayout}
+            guideToolId={GUIDE_TOOL_ID.sidebarNavigation}
             items={headerNavItems}
             labelsHidden={labelsHidden}
             showIndicator

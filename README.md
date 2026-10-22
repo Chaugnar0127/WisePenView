@@ -25,6 +25,8 @@ pnpm install
 cp .env.development.example .env.development
 ```
 
+本地前端如需连接正式 API，可在临时 Vite 配置的 `server.proxy` 中增加 `/__production_api` 规则：目标设为 `https://api.wisepen.oriole.cn`，开启 `changeOrigin`、将 `cookieDomainRewrite` 设为空字符串，并移除转发路径中的 `/__production_api` 前缀。启动时将 `VITE_API_BASE_URL` 与 `VITE_API_BASE_URL_INTRANET` 都设为 `http://127.0.0.1:5173/__production_api`，再以 `production` 模式运行 `pnpm dev --config <临时配置文件>`。此代理仅供本机调试，不是仓库内建配置。
+
 Mock 模式使用 `.env.mock`，生产构建使用 `.env.production`。
 
 ### 3 启动本地开发
@@ -47,6 +49,9 @@ pnpm mock
 
 生产模式额外需要校内 API、探测路径和超时；开发与 mock 模式不会启动内外网探测。浏览器网络监听与轮询由
 `App` 挂载时启动、卸载时停止，HTTP 层只发布会话失效事件，未授权提示与登录跳转由 `App` 统一处理。
+
+前端 OTel 最小试点默认关闭；在对应 `.env.*` 或构建环境中设置 `VITE_OTEL_ENDPOINT`（同源
+`/otel` 或绝对 OTLP HTTP 地址）后启用 trace/log 上报。未配置时不会注册 provider，也不会产生上报请求。
 
 Mock 與正式環境共用 service、mapper、快取和 registry，只在 `@domain-apis` 替換 API 與 OSS I/O。模擬資料存於記憶體，重新整理後重置；API 契約變更時需同步更新 mock API。
 

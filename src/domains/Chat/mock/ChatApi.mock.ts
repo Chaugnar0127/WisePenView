@@ -18,6 +18,19 @@ const MOCK_HISTORY_SIZE = 260;
 const MOCK_HISTORY_INTERVAL_MS = 45 * 1000;
 const MOCK_HISTORY_BASE_TS = Date.parse('2026-03-01T08:00:00.000Z');
 
+/**
+ * 原文引用链接（`wisepen://note/<noteId>#p_<blockId>`）的 mock 覆盖。
+ *
+ * 四个链接分别对应：打开并定位、跨笔记定位、失效块（应提示失败）、非 note 协议（应回落纯文本）。
+ * 可用的 blockId 来自 `src/components/editors/note/mock/notePreview.ts` 的 mock 笔记正文。
+ */
+const MOCK_NOTE_REFERENCE_LINES = [
+  '- 参考原文：[顺序表实现](wisepen://note/mock-note-2#p_linear-list-array)',
+  '- 参考原文：[课程导学正文](wisepen://note/mock-note-1#p_course-intro-body)',
+  '- 已失效的引用：[旧段落](wisepen://note/mock-note-2#p_missing-block)',
+  '- 暂不支持的协议：[技能链接](wisepen://skill/mock-skill-1)',
+];
+
 let mockSessionSerial = 3;
 let mockSessions: ChatSessionApiModel[] = [
   {
@@ -54,9 +67,13 @@ const buildMockHistoryMessages = (sessionId: string, total: number): MessageResp
     ).toISOString();
 
     const role: MessageResponse['role'] = isUser ? 'user' : 'assistant';
-    const text = isUser
+    const baseText = isUser
       ? `【${sessionId}】第 ${round} 轮：请解释一下这个需求，并给出步骤。`
       : `【${sessionId}】第 ${round} 轮回复：已整理需求背景、约束条件与执行步骤。`;
+    const text =
+      !isUser && messageNo === total
+        ? `${baseText}\n\n原文引用示例：\n${MOCK_NOTE_REFERENCE_LINES.join('\n')}`
+        : baseText;
 
     const metadata: Record<string, unknown> = {
       createdAt,

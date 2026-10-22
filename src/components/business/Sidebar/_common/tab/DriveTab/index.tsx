@@ -168,6 +168,8 @@ function DriveTab() {
         renderableTypes: SIDEBAR_RENDERABLE_TYPES,
         selectableTypes: SIDEBAR_SELECTABLE_TYPES,
         disabledNodeIds: SIDEBAR_DISABLED_NODE_IDS,
+        // 侧边栏的目录只用于浏览和展开，不参与选中；关闭置灰可避免目录被标记为 disabled 后无法展开。
+        dimUnselectableNodes: false,
         interactiveLoadingNodes: true,
         getTreeKey: (node) => node.id,
         renderTitle: (node) => (

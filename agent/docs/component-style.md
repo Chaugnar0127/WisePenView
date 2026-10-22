@@ -97,7 +97,37 @@ ComponentName/
 - 唯一例外是第三方 iframe 等外部契约：drawio 通过 `src/components/editors/drawio/hooks/useDrawioTheme.ts` 按对方变量名透传主题，必须在代码旁注明原因；项目自有样式即使位于第三方适配目录内也不适用该例外。
 - `pnpm check:radius` 在 CI 拦截上述两类写法：扫描 `src/**` 的 `.less`/`.css`（`src/styles/**` 是 token 与基础设施层，除外），只放行 `0`、百分比整圆和 `--app-radius-*`。
 
-## 七、组件库使用
+## 七、层级（z-index）
+
+z-index 按“基准 → 基础刻度 → 应用语义”单向定义，三层变量集中在 `src/styles/theme/z-index.css`，其他 token 文件不再定义 z-index。
+
+基准（`--z-index-base`）和基础刻度（`--z-index-1` 到 `--z-index-1200`）只是顺序轴上的位置，不表达业务含义，组件与业务样式不得直接引用；组件与业务样式只使用应用语义层级，缺少匹配语义时先在应用语义层补 token。
+
+| 语义       | Token                                                                                          | 当前值          | 使用范围                                         |
+| ---------- | ---------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------ |
+| 基准层     | `--app-z-index-base`                                                                           | 0               | 文档流内容本体、被其他层覆盖的底层               |
+| 相邻层     | `--app-z-index-raised` / `--app-z-index-elevated`                                              | 1 / 2           | 同一容器内的勾选标记、悬停覆盖                   |
+| 吸顶层     | `--app-z-index-sticky` / `--app-z-index-sticky-raised` / `--app-z-index-sticky-header`         | 3 / 4 / 5       | 表格吸顶、分组吸顶表头                           |
+| 浮起层     | `--app-z-index-floating`                                                                       | 10              | 脱离内容流但仍属于同一容器的浮层                 |
+| 局部浮层   | `--app-z-index-local-overlay`                                                                  | 20              | 依附内容定位的浮层，例如块内工具栏               |
+| 编辑器块内 | `--app-z-index-editor-block-overlay` / `--app-z-index-editor-block-overlay-raised`             | 25 / 30         | 表格选择高亮，以及需要盖住块内容与高亮的插入手柄 |
+| 停靠层     | `--app-z-index-dock`                                                                           | 30              | 附着在窗口边缘的常驻浮层，例如编辑器待保存提示   |
+| 命令层     | `--app-z-index-command`                                                                        | 50              | 全局搜索 command palette                         |
+| 编辑器浮层 | `--app-z-index-editor-menu` / `--app-z-index-editor-toolbar` / `--app-z-index-editor-floating` | 180 / 220 / 450 | 编辑器菜单、格式工具栏、行内浮层                 |
+| 轻浮层     | `--app-z-index-popover` / `--app-z-index-tooltip`                                              | 400 / 500       | Popover、Dropdown、Select 外壳与提示气泡         |
+| 阻断层     | `--app-z-index-modal`                                                                          | 1000            | Modal、AlertDialog                               |
+| 通知层     | `--app-z-index-toast`                                                                          | 1100            | Toast                                            |
+| 引导层     | `--app-z-index-guide`                                                                          | 1200            | 新手引导遮罩与气泡，需盖过页面内所有常规浮层     |
+
+规则：
+
+- 组件与业务样式只写 `z-index: var(--app-z-index-*)`；同一容器内需要插层时写 `calc(var(--app-z-index-*) + 1)`，不改动 token 数值。
+- 不写回退数值，例如 `var(--app-z-index-editor-toolbar, 220)`；数值只在 `src/styles/theme/z-index.css` 维护一处。
+- 内联样式仅在定位计算需要时出现，`zIndex` 必须引用 token，不写数字字面量。
+- 新增层级先选择语义 token；语义缺失时在 `src/styles/theme/z-index.css` 的应用语义层补一个，再让组件引用，并同步更新本节表格。
+- `pnpm check:z-index` 在 CI 拦截上述写法：扫描 `src/**` 的 `.less` / `.css` / `.ts` / `.tsx`（`src/styles/**` 是 token 与基础设施层，除外），样式文件只放行 `auto` 与 `--app-z-index-*`。
+
+## 八、组件库使用
 
 - 图标按钮优先使用已有图标库，例如 `lucide-react`。
 - 有明确图标语义时，不要用文字按钮代替图标按钮。
@@ -112,10 +142,11 @@ ComponentName/
 - 只有同一工具栏内的紧密图标按钮、强关联分段操作或显式 toggle 场景使用 `ButtonGroup` / `ToggleButtonGroup`。
 - 禁止用 `gap: 8px`、`marginLeft`、`marginRight` 等硬编码手动控制按钮间距；弹窗 footer 间距使用 `var(--space-sm, 12px)`。
 
-## 八、检查清单
+## 九、检查清单
 
 - [ ] 样式使用 Less + CSS Modules。
 - [ ] 没有非必要内联样式。
 - [ ] 交互控件使用 HeroUI 或项目已有封装。
 - [ ] 文本和控件在常见宽度下不会重叠或溢出。
+- [ ] 层级使用应用语义 token，没有数字 z-index 和回退数值。
 - [ ] 没有无意义装饰和卡片套卡片。

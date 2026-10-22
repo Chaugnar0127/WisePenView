@@ -3,7 +3,9 @@ import { ChevronsLeft, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
 import type { NoteOutlineItem } from '@/components/editors/note/CustomBlockNote/index.type';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 
 import styles from './style.module.less';
 
@@ -35,60 +37,66 @@ function NoteOutline({ items, activeId, onNavigate, title, open, onOpenChange }:
     return (
       <div className={styles.collapsedPanel}>
         <div className={styles.collapsedContent} aria-label={t('outline.expand')}>
-          <AppIconButton
-            icon={<Menu size={20} aria-hidden="true" />}
-            label={t('outline.expand')}
-            className={styles.toggleButton}
-            onClick={() => onOpenChange(true)}
-          />
+          <GuideAnchor id={GUIDE_TOOL_ID.noteOutline}>
+            <AppIconButton
+              icon={<Menu size={20} aria-hidden="true" />}
+              label={t('outline.expand')}
+              className={styles.toggleButton}
+              onClick={() => onOpenChange(true)}
+            />
+          </GuideAnchor>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={styles.panel}>
+    <div className={styles.panel} data-guide-tool-id={GUIDE_TOOL_ID.noteOutlinePanel}>
       <aside className={styles.aside} aria-label={t('outline.sidebar')}>
         <div className={styles.header}>
           <span className={styles.title}>{t('outline.title')}</span>
-          <AppIconButton
-            icon={<ChevronsLeft size={20} aria-hidden="true" />}
-            label={t('outline.collapse')}
-            className={styles.toggleButton}
-            onClick={() => onOpenChange(false)}
-          />
+          <GuideAnchor id={GUIDE_TOOL_ID.noteOutline}>
+            <AppIconButton
+              icon={<ChevronsLeft size={20} aria-hidden="true" />}
+              label={t('outline.collapse')}
+              className={styles.toggleButton}
+              onClick={() => onOpenChange(false)}
+            />
+          </GuideAnchor>
         </div>
         <div className={styles.scrollArea}>
-          <div className={styles.root} aria-label={t('outline.document')}>
-            <div className={styles.list} role="list">
-              {displayItems.length === 0 ? (
-                <div className={styles.empty}>{t('outline.empty')}</div>
-              ) : (
-                displayItems.map((it) => {
-                  const text = normalizeText(it.text) || t('outline.untitled');
-                  const isActive = activeId === it.id;
-                  return (
-                    <button
-                      key={it.id}
-                      type="button"
-                      role="listitem"
-                      className={clsx(
-                        styles.item,
-                        resolveLevelClass(it.level),
-                        it.level === 0 && styles.titleItem,
-                        isActive && styles.active
-                      )}
-                      aria-current={isActive ? 'true' : undefined}
-                      title={text}
-                      onClick={() => onNavigate(it.id)}
-                    >
-                      {text}
-                    </button>
-                  );
-                })
-              )}
+          <GuideAnchor id={GUIDE_TOOL_ID.noteOutlineOpen} layout="area">
+            <div className={styles.root} aria-label={t('outline.document')}>
+              <div className={styles.list} role="list">
+                {displayItems.length === 0 ? (
+                  <div className={styles.empty}>{t('outline.empty')}</div>
+                ) : (
+                  displayItems.map((it) => {
+                    const text = normalizeText(it.text) || t('outline.untitled');
+                    const isActive = activeId === it.id;
+                    return (
+                      <button
+                        key={it.id}
+                        type="button"
+                        role="listitem"
+                        className={clsx(
+                          styles.item,
+                          resolveLevelClass(it.level),
+                          it.level === 0 && styles.titleItem,
+                          isActive && styles.active
+                        )}
+                        aria-current={isActive ? 'true' : undefined}
+                        title={text}
+                        onClick={() => onNavigate(it.id)}
+                      >
+                        {text}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </div>
-          </div>
+          </GuideAnchor>
         </div>
       </aside>
     </div>

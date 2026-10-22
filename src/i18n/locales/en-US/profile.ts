@@ -3,6 +3,7 @@ const enUSProfile = {
     title: 'Account',
     subtitle: 'Manage account information',
     sectionTitle: 'Account details',
+    changePassword: 'Change password',
     username: 'Username',
     campusNo: 'Campus ID',
     email: 'Email',
@@ -130,10 +131,6 @@ const enUSProfile = {
     languageAria: 'Select interface language',
     mode: 'Color mode',
     colorScheme: 'Theme colors (Base / Accent)',
-    readingMode: {
-      title: 'Reading mode',
-      description: 'Tune the interface colors for long reading sessions and focused work',
-    },
     modeOption: {
       light: { label: 'Light', description: 'Always use the light interface' },
       dark: { label: 'Dark', description: 'Always use the dark interface' },
@@ -195,7 +192,9 @@ const enUSProfile = {
       verified: 'Verified',
       EDU_EMAIL: 'Email verified',
       FDU_UIS_SYS: 'UIS verified',
+      CAMPUS_IDENTITY_PROVIDER: 'Campus identity verified',
     },
+    verificationProvider: { FUDAN_UIS: 'Fudan UIS' },
   },
   verification: {
     banner:

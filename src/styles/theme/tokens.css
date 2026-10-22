@@ -10,6 +10,7 @@
   --scrollbar-width: thin;
   --scrollbar-size: 8px;
   /* 圆角变量集中在 theme/radius.css，按基准、基础刻度、应用语义三层组织。 */
+  /* z-index 层级集中在 theme/z-index.css，按基准、基础刻度、应用语义三层组织。 */
 }
 
 /* WisePen 桌面端排版：正文 14px、辅助文本 12px，重点层级使用 16px 以上字号。 */
@@ -68,7 +69,7 @@
   --layout-note-with-side-panel-min-width: 864px;
   --layout-workspace-inner-chat-min-width: 1064px;
   --layout-resize-handle-reserve: 24px;
-  --layout-note-outline-open-width: 320px;
+  --layout-note-outline-open-width: 215px;
   --layout-note-outline-collapsed-width: 40px;
   --layout-chat-panel-max-width: 1020px;
   --layout-model-selector-max-width: 240px;
@@ -138,24 +139,6 @@
   /* 延迟显示 Tooltip，减少鼠标经密集图标区时的视觉干扰。 */
   --tooltip-delay: 400ms;
   --tooltip-close-delay: 100ms;
-  /* Overlay 层级统一由主题维护，避免业务样式各自猜数字造成互相遮挡。 */
-  --app-z-index-base: 0;
-  --app-z-index-raised: 1;
-  --app-z-index-elevated: 2;
-  --app-z-index-sticky: 3;
-  --app-z-index-sticky-raised: 4;
-  --app-z-index-sticky-header: 5;
-  --app-z-index-floating: 10;
-  --app-z-index-local-overlay: 20;
-  --app-z-index-dock: 30;
-  --app-z-index-command: 50;
-  --app-z-index-editor-menu: 180;
-  --app-z-index-editor-toolbar: 220;
-  --app-z-index-popover: 400;
-  --app-z-index-editor-floating: 450;
-  --app-z-index-tooltip: 500;
-  --app-z-index-modal: 1000;
-  --app-z-index-toast: 1100;
   --table-drive-layout-max-height: calc(100dvh - var(--layout-drive-chrome-height, 240px));
   --shadow-sm: 0 1px 2px 0 color-mix(in srgb, var(--black) 3%, transparent);
   --shadow-none: none;

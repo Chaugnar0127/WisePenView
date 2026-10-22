@@ -210,7 +210,15 @@ function resolveResourceUrl(
   linkMode: MarkdownLinkMode,
   resourceResolver?: MarkdownResourceResolver
 ): string | null {
-  const defaultUrl = kind === 'link' ? resolveLinkUrl(value, linkMode) : transformUrl(value);
+  if (kind === 'link') {
+    // 链接先交给调用方解析：业务协议可以在默认白名单之外声明自己受信的地址，
+    // 只有返回 undefined 时才回落到默认协议白名单。
+    const resolvedUrl = resourceResolver?.resolveUrl?.(value, kind);
+    if (resolvedUrl !== undefined) return resolvedUrl;
+    return resolveLinkUrl(value, linkMode);
+  }
+
+  const defaultUrl = transformUrl(value);
   if (!defaultUrl) return null;
 
   const resolvedUrl = resourceResolver?.resolveUrl?.(defaultUrl, kind);
@@ -232,15 +240,19 @@ function MarkdownLink({
   const href = resolveResourceUrl(url, 'link', linkMode, resourceResolver);
   if (!href) return <>{children}</>;
 
+  /** 中键等辅助点击与主键一致：命中业务链接时同样交给调用方处理，不做默认导航。 */
+  const handleLinkActivate = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (resourceResolver?.onLinkClick?.(url)) event.preventDefault();
+  };
+
   return (
     <a
       href={href}
       title={title}
       target={href.startsWith('blob:') ? '_blank' : undefined}
       rel={href.startsWith('blob:') ? 'noreferrer' : undefined}
-      onClick={(event) => {
-        if (resourceResolver?.onLinkClick?.(url)) event.preventDefault();
-      }}
+      onClick={handleLinkActivate}
+      onAuxClick={handleLinkActivate}
     >
       {children}
     </a>

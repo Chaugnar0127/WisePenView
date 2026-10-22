@@ -15,13 +15,15 @@ import {
   ShieldUser,
   UserPlus,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import AppAvatar from '@/components/base/Avatar';
 import { AppButton } from '@/components/base/Button';
+import { GuideAnchor, registerGuideActionHandler } from '@/components/base/Guide';
 import AppDisplayDialog from '@/components/business/AppDisplayDialog';
+import { GUIDE_ACTION_ID, GUIDE_TOOL_ID } from '@/constants/tour';
 import { useAuthService, useUserService } from '@/domains';
 import type { User } from '@/domains/User';
 import { IDENTITY } from '@/domains/User';
@@ -51,7 +53,24 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const authService = useAuthService();
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：账号菜单挂载或展开状态变化时注册引导动作。
+   * 不可替代原因：引导层直接修改菜单 open 状态，不依赖对账号按钮的模拟点击。
+   * cleanup：撤销动作处理器。
+   */
+  useEffect(
+    () =>
+      registerGuideActionHandler(GUIDE_ACTION_ID.openAccountMenu, {
+        isOpen: () => accountMenuOpen,
+        open: () => setAccountMenuOpen(true),
+        close: () => setAccountMenuOpen(false),
+      }),
+    [accountMenuOpen]
+  );
 
   useMount(() => {
     if (!appAuth.isAuthenticated) return;
@@ -167,82 +186,84 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
   );
 
   const userMenu = (
-    <Dropdown.Popover placement="top left" className={styles.profileMenuPopover}>
-      <Dropdown.Menu aria-label={t('userMenu.aria')} onAction={handleMenuAction}>
-        {menuMode === 'admin' ? (
-          <>
-            <Dropdown.Item id="back-app" textValue={t('userMenu.backToApp')}>
-              <Home size={16} />
-              <Label>{t('userMenu.backToApp')}</Label>
-            </Dropdown.Item>
-            <Dropdown.Item id="about" textValue={t('userMenu.about')}>
-              <Info size={16} />
-              <Label>{t('userMenu.about')}</Label>
-            </Dropdown.Item>
-            <Dropdown.Item id="logout" textValue={t('userMenu.logout')} variant="danger">
-              <LogOut size={16} />
-              <Label>{t('userMenu.logout')}</Label>
-            </Dropdown.Item>
-          </>
-        ) : (
-          <>
-            {/* 账户：余额、邀请与账号资料，使用频率最高 */}
-            <Dropdown.Section id="section-account">
-              <Dropdown.Item id="usage" textValue={t('userMenu.usage')}>
-                <ChartPie size={16} />
-                <Label>{t('userMenu.usage')}</Label>
-              </Dropdown.Item>
-              <Dropdown.Item id="invite" textValue={t('userMenu.invite')}>
-                <UserPlus size={16} />
-                <Label>{t('userMenu.invite')}</Label>
-              </Dropdown.Item>
-              <Dropdown.Item id="account" textValue={t('userMenu.account')}>
-                <ShieldUser size={16} />
-                <Label>{t('userMenu.account')}</Label>
-              </Dropdown.Item>
-            </Dropdown.Section>
-            <Separator />
-            {/* 偏好：外观与 AI 服务配置 */}
-            <Dropdown.Section id="section-preferences">
-              <Dropdown.Item id="appearance" textValue={t('userMenu.appearance')}>
-                <Palette size={16} />
-                <Label>{t('userMenu.appearance')}</Label>
-              </Dropdown.Item>
-              <Dropdown.Item id="ai" textValue={t('userMenu.ai')}>
-                <KeyRound size={16} />
-                <Label>{t('userMenu.ai')}</Label>
-              </Dropdown.Item>
-            </Dropdown.Section>
-            <Separator />
-            {/* 帮助与信息 */}
-            <Dropdown.Section id="section-support">
-              <Dropdown.Item id="feedback" textValue={t('userMenu.feedback')}>
-                <MessageSquare size={16} />
-                <Label>{t('userMenu.feedback')}</Label>
+    <GuideAnchor id={GUIDE_TOOL_ID.sidebarAccountOpen} asChild>
+      <Dropdown.Popover placement="top left" className={styles.profileMenuPopover}>
+        <Dropdown.Menu aria-label={t('userMenu.aria')} onAction={handleMenuAction}>
+          {menuMode === 'admin' ? (
+            <>
+              <Dropdown.Item id="back-app" textValue={t('userMenu.backToApp')}>
+                <Home size={16} />
+                <Label>{t('userMenu.backToApp')}</Label>
               </Dropdown.Item>
               <Dropdown.Item id="about" textValue={t('userMenu.about')}>
                 <Info size={16} />
                 <Label>{t('userMenu.about')}</Label>
               </Dropdown.Item>
-            </Dropdown.Section>
-            <Separator />
-            {/* 身份与退出：进入管理与退出登录同为身份相关操作 */}
-            <Dropdown.Section id="section-identity">
-              {isAdmin && (
-                <Dropdown.Item id="enter-admin" textValue={t('userMenu.enterAdmin')}>
-                  <Shield size={16} />
-                  <Label>{t('userMenu.enterAdmin')}</Label>
-                </Dropdown.Item>
-              )}
               <Dropdown.Item id="logout" textValue={t('userMenu.logout')} variant="danger">
                 <LogOut size={16} />
                 <Label>{t('userMenu.logout')}</Label>
               </Dropdown.Item>
-            </Dropdown.Section>
-          </>
-        )}
-      </Dropdown.Menu>
-    </Dropdown.Popover>
+            </>
+          ) : (
+            <>
+              {/* 账户：余额、邀请与账号资料，使用频率最高 */}
+              <Dropdown.Section id="section-account">
+                <Dropdown.Item id="usage" textValue={t('userMenu.usage')}>
+                  <ChartPie size={16} />
+                  <Label>{t('userMenu.usage')}</Label>
+                </Dropdown.Item>
+                <Dropdown.Item id="invite" textValue={t('userMenu.invite')}>
+                  <UserPlus size={16} />
+                  <Label>{t('userMenu.invite')}</Label>
+                </Dropdown.Item>
+                <Dropdown.Item id="account" textValue={t('userMenu.account')}>
+                  <ShieldUser size={16} />
+                  <Label>{t('userMenu.account')}</Label>
+                </Dropdown.Item>
+              </Dropdown.Section>
+              <Separator />
+              {/* 偏好：外观与 AI 服务配置 */}
+              <Dropdown.Section id="section-preferences">
+                <Dropdown.Item id="appearance" textValue={t('userMenu.appearance')}>
+                  <Palette size={16} />
+                  <Label>{t('userMenu.appearance')}</Label>
+                </Dropdown.Item>
+                <Dropdown.Item id="ai" textValue={t('userMenu.ai')}>
+                  <KeyRound size={16} />
+                  <Label>{t('userMenu.ai')}</Label>
+                </Dropdown.Item>
+              </Dropdown.Section>
+              <Separator />
+              {/* 帮助与信息 */}
+              <Dropdown.Section id="section-support">
+                <Dropdown.Item id="feedback" textValue={t('userMenu.feedback')}>
+                  <MessageSquare size={16} />
+                  <Label>{t('userMenu.feedback')}</Label>
+                </Dropdown.Item>
+                <Dropdown.Item id="about" textValue={t('userMenu.about')}>
+                  <Info size={16} />
+                  <Label>{t('userMenu.about')}</Label>
+                </Dropdown.Item>
+              </Dropdown.Section>
+              <Separator />
+              {/* 身份与退出：进入管理与退出登录同为身份相关操作 */}
+              <Dropdown.Section id="section-identity">
+                {isAdmin && (
+                  <Dropdown.Item id="enter-admin" textValue={t('userMenu.enterAdmin')}>
+                    <Shield size={16} />
+                    <Label>{t('userMenu.enterAdmin')}</Label>
+                  </Dropdown.Item>
+                )}
+                <Dropdown.Item id="logout" textValue={t('userMenu.logout')} variant="danger">
+                  <LogOut size={16} />
+                  <Label>{t('userMenu.logout')}</Label>
+                </Dropdown.Item>
+              </Dropdown.Section>
+            </>
+          )}
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </GuideAnchor>
   );
 
   return (
@@ -256,15 +277,17 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
         )}
       >
         {collapsed ? (
-          <Dropdown>
+          <Dropdown isOpen={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
             <Tooltip>
               <span className={styles.avatarTooltipTrigger}>
-                <Dropdown.Trigger
-                  aria-label={t('userMenu.openAria')}
-                  className={styles.avatarTrigger}
-                >
-                  {userAvatar}
-                </Dropdown.Trigger>
+                <GuideAnchor id={GUIDE_TOOL_ID.sidebarAccount}>
+                  <Dropdown.Trigger
+                    aria-label={t('userMenu.openAria')}
+                    className={styles.avatarTrigger}
+                  >
+                    {userAvatar}
+                  </Dropdown.Trigger>
+                </GuideAnchor>
               </span>
               <Tooltip.Content placement="right">{displayName}</Tooltip.Content>
             </Tooltip>
@@ -278,13 +301,15 @@ function UserProfile({ collapsed, labelsHidden = false, menuMode = 'app' }: User
               <span className={styles.tag}>{identityLabel}</span>
             </div>
             <UserCheckIn />
-            <Dropdown>
-              <Dropdown.Trigger
-                aria-label={t('userMenu.openSettingsAria')}
-                className={styles.menuTrigger}
-              >
-                <Settings size={16} aria-hidden="true" />
-              </Dropdown.Trigger>
+            <Dropdown isOpen={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
+              <GuideAnchor id={GUIDE_TOOL_ID.sidebarAccount}>
+                <Dropdown.Trigger
+                  aria-label={t('userMenu.openSettingsAria')}
+                  className={styles.menuTrigger}
+                >
+                  <Settings size={16} aria-hidden="true" />
+                </Dropdown.Trigger>
+              </GuideAnchor>
               {userMenu}
             </Dropdown>
           </>

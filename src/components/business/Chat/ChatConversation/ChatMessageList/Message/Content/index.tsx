@@ -1,4 +1,5 @@
 import Markdown from '@/components/base/Markdown';
+import { useNoteLinkResolver } from '@/components/business/Chat/_controllers/useNoteLinkResolver';
 
 import styles from './style.module.less';
 
@@ -9,7 +10,17 @@ interface MessageContentProps {
 }
 
 function MessageContent({ content, markdown = false, streaming = false }: MessageContentProps) {
-  if (markdown) return <Markdown content={content} streaming={streaming} linkMode="external" />;
+  const noteLinkResolver = useNoteLinkResolver();
+  if (markdown) {
+    return (
+      <Markdown
+        content={content}
+        streaming={streaming}
+        linkMode="external"
+        resourceResolver={noteLinkResolver}
+      />
+    );
+  }
   return <div className={styles.plainText}>{content}</div>;
 }
 

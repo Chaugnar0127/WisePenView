@@ -7,8 +7,10 @@ import { useTranslation } from 'react-i18next';
 
 import AppModal from '@/components/base/AppModal';
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
 import type { DriveSelectionItem } from '@/components/business/Drive/common/driveComponentModel';
 import DriveNavigator from '@/components/business/Drive/DriveNavigator';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useChatService } from '@/domains';
 import { buildDefaultPersonalAgent, type ChatAgentOption, type PageResult } from '@/domains/Chat';
 
@@ -64,8 +66,8 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
   const chatService = useChatService();
   const store = useChatInputStoreApi();
   const selectedAgent = useChatInputStore((state) => state.selectedAgent);
-  const { setSelectedAgent } = store.getState();
-  const [open, setOpen] = useState(false);
+  const agentOpen = useChatInputStore((state) => state.agentOpen);
+  const { setAgentOpen, setSelectedAgent } = store.getState();
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const {
     data: personalPage,
@@ -81,15 +83,22 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
         size: AGENT_PAGE_SIZE,
       }),
     {
-      manual: !open,
-      reloadDeps: [open],
+      manual: !agentOpen,
+      reloadDeps: [agentOpen],
       isNoMore: (page) => Boolean(page && (page.total === 0 || page.list.length >= page.total)),
     }
   );
   const showSkeleton = personalPage == null && loadingPersonal;
   const personalAgents = personalPage?.list ?? [];
+  // 保持列表顺序；选中项只补充来源信息，不在点击后移到列表前面。
   const displayAgents = mergeAgentOptions(
-    [buildDefaultPersonalAgent(), selectedAgent, ...personalAgents],
+    [
+      buildDefaultPersonalAgent(),
+      ...personalAgents.map((agent) =>
+        agent.agentId === selectedAgent.agentId ? selectedAgent : agent
+      ),
+      selectedAgent,
+    ],
     injectedAgents
   );
   const hasMorePersonalAgents = Boolean(personalPage) && !noMorePersonal;
@@ -137,16 +146,20 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
 
   const handleSelect = (agent: ChatAgentOption) => {
     setSelectedAgent(agent);
-    setOpen(false);
+    setAgentOpen(false);
   };
 
   const handleOpenGroupModal = () => {
-    setOpen(false);
+    setAgentOpen(false);
     setGroupModalOpen(true);
   };
 
   const getAgentLabel = (agent: ChatAgentOption): string =>
     agent.isDefault ? t('input.agentPicker.defaultAgent') : agent.label;
+
+  const agentTooltip = selectedAgent.isDefault
+    ? t('input.agentPicker.selectAgentTooltip')
+    : getAgentLabel(selectedAgent);
 
   const renderAgentIcon = (agent: ChatAgentOption, size: number) =>
     agent.isDefault ? (
@@ -172,75 +185,82 @@ function AgentPicker({ injectedAgents, preferredAgent }: AgentPickerProps) {
 
   return (
     <>
-      <Dropdown isOpen={open} onOpenChange={setOpen}>
+      <Dropdown isOpen={agentOpen} onOpenChange={setAgentOpen}>
         <Dropdown.Trigger
           render={({ disabled, ...triggerProps }) => (
-            <AppIconButton
-              {...triggerProps}
-              isDisabled={disabled}
-              icon={renderAgentIcon(selectedAgent, 17)}
-              label={t('input.agentPicker.trigger')}
-              tooltip={{ content: getAgentLabel(selectedAgent) }}
-            />
+            <GuideAnchor id={GUIDE_TOOL_ID.chatAgent}>
+              <AppIconButton
+                {...triggerProps}
+                isDisabled={disabled}
+                icon={renderAgentIcon(selectedAgent, 17)}
+                label={t('input.agentPicker.trigger')}
+                tooltip={{ content: agentTooltip }}
+              />
+            </GuideAnchor>
           )}
         />
-        <Dropdown.Popover className={styles.popoverPanelAgent} placement="top">
-          {showSkeleton ? (
-            skeleton
-          ) : (
-            <Dropdown.Menu aria-label={t('input.agentPicker.trigger')} onAction={handleMenuAction}>
-              <Dropdown.Section selectionMode="single" selectedKeys={[selectedAgent.agentId]}>
-                <Header>{t('input.agentPicker.title')}</Header>
-                {displayAgents.map((agent) => {
-                  const description =
-                    agent.source === 'CURRENT_DRAFT'
-                      ? t('input.agentPicker.currentDraft')
-                      : agent.agentType === 'GROUP' && agent.groupName
-                        ? agent.groupName
-                        : null;
-                  return (
+        <GuideAnchor id={GUIDE_TOOL_ID.chatAgentOpen} asChild>
+          <Dropdown.Popover className={styles.popoverPanelAgent} placement="top">
+            {showSkeleton ? (
+              skeleton
+            ) : (
+              <Dropdown.Menu
+                aria-label={t('input.agentPicker.trigger')}
+                onAction={handleMenuAction}
+              >
+                <Dropdown.Section selectionMode="single" selectedKeys={[selectedAgent.agentId]}>
+                  <Header>{t('input.agentPicker.title')}</Header>
+                  {displayAgents.map((agent) => {
+                    const description =
+                      agent.source === 'CURRENT_DRAFT'
+                        ? t('input.agentPicker.currentDraft')
+                        : agent.agentType === 'GROUP' && agent.groupName
+                          ? agent.groupName
+                          : null;
+                    return (
+                      <Dropdown.Item
+                        key={agent.agentId}
+                        id={agent.agentId}
+                        textValue={getAgentLabel(agent)}
+                      >
+                        {renderAgentIcon(agent, 14)}
+                        <span className={styles.listItemText}>
+                          <Label>{getAgentLabel(agent)}</Label>
+                          {description ? <Description>{description}</Description> : null}
+                        </span>
+                        <Dropdown.ItemIndicator />
+                      </Dropdown.Item>
+                    );
+                  })}
+                </Dropdown.Section>
+                {hasMorePersonalAgents ? <Separator /> : null}
+                {hasMorePersonalAgents ? (
+                  <Dropdown.Section>
                     <Dropdown.Item
-                      key={agent.agentId}
-                      id={agent.agentId}
-                      textValue={getAgentLabel(agent)}
+                      id={LOAD_MORE_PERSONAL_ACTION}
+                      textValue={t('session.loadMore')}
+                      isDisabled={loadingMorePersonal}
+                      shouldCloseOnSelect={false}
                     >
-                      {renderAgentIcon(agent, 14)}
-                      <span className={styles.listItemText}>
-                        <Label>{getAgentLabel(agent)}</Label>
-                        {description ? <Description>{description}</Description> : null}
-                      </span>
-                      <Dropdown.ItemIndicator />
+                      <ChevronDown size={14} aria-hidden="true" />
+                      <Label>{t('session.loadMore')}</Label>
                     </Dropdown.Item>
-                  );
-                })}
-              </Dropdown.Section>
-              {hasMorePersonalAgents ? <Separator /> : null}
-              {hasMorePersonalAgents ? (
+                  </Dropdown.Section>
+                ) : null}
+                <Separator />
                 <Dropdown.Section>
                   <Dropdown.Item
-                    id={LOAD_MORE_PERSONAL_ACTION}
-                    textValue={t('session.loadMore')}
-                    isDisabled={loadingMorePersonal}
-                    shouldCloseOnSelect={false}
+                    id={SELECT_FROM_GROUP_ACTION}
+                    textValue={t('input.agentPicker.selectFromGroup')}
                   >
-                    <ChevronDown size={14} aria-hidden="true" />
-                    <Label>{t('session.loadMore')}</Label>
+                    <Folder size={14} color="var(--resource-icon-folder)" aria-hidden="true" />
+                    <Label>{t('input.agentPicker.selectFromGroup')}</Label>
                   </Dropdown.Item>
                 </Dropdown.Section>
-              ) : null}
-              <Separator />
-              <Dropdown.Section>
-                <Dropdown.Item
-                  id={SELECT_FROM_GROUP_ACTION}
-                  textValue={t('input.agentPicker.selectFromGroup')}
-                >
-                  <Folder size={14} color="var(--resource-icon-folder)" aria-hidden="true" />
-                  <Label>{t('input.agentPicker.selectFromGroup')}</Label>
-                </Dropdown.Item>
-              </Dropdown.Section>
-            </Dropdown.Menu>
-          )}
-        </Dropdown.Popover>
+              </Dropdown.Menu>
+            )}
+          </Dropdown.Popover>
+        </GuideAnchor>
       </Dropdown>
       <GroupAgentPickerModal
         open={groupModalOpen}

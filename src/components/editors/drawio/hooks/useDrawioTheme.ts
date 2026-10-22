@@ -104,7 +104,7 @@ export function useDrawioTheme(
     const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class', 'data-theme', 'data-color-scheme', 'data-reading-mode', 'style'],
+      attributeFilter: ['class', 'data-theme', 'data-color-scheme', 'style'],
     });
     window.addEventListener('message', handleMessage);
     syncTheme();

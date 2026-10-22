@@ -5,4 +5,5 @@ export const AuthApi: typeof AuthApiContract = {
   register: async () => undefined,
   forgotPasswordEmail: async () => undefined,
   forgotPasswordReset: async () => undefined,
+  changePassword: async () => undefined,
 };

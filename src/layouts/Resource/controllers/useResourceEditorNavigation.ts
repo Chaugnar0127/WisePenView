@@ -4,6 +4,18 @@ import { useBeforeUnload, useBlocker } from 'react-router-dom';
 
 import type { createEditorHost } from '@/components/editors/_runtime/editorHost';
 import type { EditorExitReason } from '@/components/editors/editor.type';
+import { CHAT_SESSION_QUERY_KEY } from '@/utils/navigation/chatRoute';
+
+/**
+ * 去掉内嵌聊天会话参数后再比较查询串。
+ * 会话切换（chat 参数变化）只是面板内状态，不改变资源位置，
+ * 否则首次发送消息创建会话的导航会被离开守卫截停，导致首次发送被丢弃。
+ */
+const stripChatSessionParam = (search: string): string => {
+  const params = new URLSearchParams(search);
+  params.delete(CHAT_SESSION_QUERY_KEY);
+  return params.toString();
+};
 
 export function useResourceEditorNavigation(
   host: ReturnType<typeof createEditorHost>,
@@ -16,10 +28,13 @@ export function useResourceEditorNavigation(
     }: {
       currentLocation: { pathname: string; search: string };
       nextLocation: { pathname: string; search: string };
-    }) =>
-      Boolean(host.getSnapshot()) &&
-      (currentLocation.pathname !== nextLocation.pathname ||
-        currentLocation.search !== nextLocation.search)
+    }) => {
+      if (!host.getSnapshot()) return false;
+      if (currentLocation.pathname !== nextLocation.pathname) return true;
+      return (
+        stripChatSessionParam(currentLocation.search) !== stripChatSessionParam(nextLocation.search)
+      );
+    }
   );
   const blocker = useBlocker(shouldBlock);
   useBeforeUnload(

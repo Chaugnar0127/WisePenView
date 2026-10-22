@@ -108,7 +108,7 @@
     --bn-shadow-light: var(--surface-shadow);
     --bn-border: 1px solid var(--border-light);
     --bn-border-radius: var(--app-radius-menu-item);
-    --bn-ui-base-z-index: var(--app-z-index-editor-menu, 180);
+    --bn-ui-base-z-index: var(--app-z-index-editor-menu);
     --prosemirror-highlight: var(--foreground);
     --prosemirror-highlight-bg: var(--surface);
 
@@ -178,7 +178,7 @@
   :global(.ProseMirror td > *),
   :global(.ProseMirror th > *) {
     position: relative;
-    z-index: calc(var(--note-table-selection-layer, 25) + 1);
+    z-index: calc(var(--app-z-index-editor-block-overlay) + 1);
   }
 
   :global(.ProseMirror .column-resize-handle) {
@@ -449,7 +449,7 @@
   :global(
     .bn-editor .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
   ) {
-    z-index: var(--app-z-index-editor-toolbar, 220);
+    z-index: var(--app-z-index-editor-toolbar);
   }
 
   :global(
@@ -457,7 +457,7 @@
       .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
       > div.wise-code-block-toolbarWrapper
   ) {
-    z-index: calc(var(--app-z-index-editor-toolbar, 220) + 1);
+    z-index: calc(var(--app-z-index-editor-toolbar) + 1);
   }
 
   :global(.bn-editor .bn-block-content[data-content-type='codeBlock'] .wise-code-block-toolbar) {
@@ -574,7 +574,7 @@
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    z-index: calc(var(--app-z-index-editor-toolbar, 220) + 2);
+    z-index: calc(var(--app-z-index-editor-toolbar) + 2);
     box-sizing: border-box;
     width: 220px;
     padding: var(--space-2xs-plus);
@@ -939,7 +939,7 @@
   .bn-drag-preview
     .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
 ) {
-  z-index: var(--app-z-index-editor-toolbar, 220);
+  z-index: var(--app-z-index-editor-toolbar);
 }
 
 :global(
@@ -947,7 +947,7 @@
     .bn-block-content[data-content-type='codeBlock']:has(.wise-code-block-toolbarOpen)
     > div.wise-code-block-toolbarWrapper
 ) {
-  z-index: calc(var(--app-z-index-editor-toolbar, 220) + 1);
+  z-index: calc(var(--app-z-index-editor-toolbar) + 1);
 }
 
 :global(
@@ -1068,7 +1068,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: calc(var(--app-z-index-editor-toolbar, 220) + 2);
+  z-index: calc(var(--app-z-index-editor-toolbar) + 2);
   box-sizing: border-box;
   width: 220px;
   padding: var(--space-2xs-plus);

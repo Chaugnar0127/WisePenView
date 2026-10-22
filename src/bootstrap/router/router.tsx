@@ -149,7 +149,14 @@ const router = createBrowserRouter([
             element: <AppLayout />,
             errorElement: <RouteError />,
             children: [
-              { path: 'chat/:sessionId?', element: <ChatPage />, handle: chatRouteHandle },
+              {
+                path: 'chat',
+                handle: chatRouteHandle,
+                children: [
+                  { index: true, element: <ChatPage /> },
+                  { path: ':sessionId', element: <ChatPage /> },
+                ],
+              },
               {
                 element: <AppScrollablePageLayout />,
                 children: [

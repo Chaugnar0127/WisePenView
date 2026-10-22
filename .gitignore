@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 .pnpm-store/
+.eslintcache
 node_modules
 dist
 dist-ssr
@@ -21,6 +22,7 @@ release
 .env.*.local
 
 # Editor directories and files
+.delta/
 .cursor/
 .vscode/*
 *.code-workspace

@@ -1,0 +1,111 @@
+.tooltip {
+  --guide-action-radius: var(--app-radius-button);
+
+  width: min(20rem, calc(100vw - var(--space-lg) * 2));
+  max-height: calc(100dvh - var(--space-lg) * 2);
+  overflow: auto;
+  padding: var(--space-md);
+  pointer-events: auto;
+  color: var(--foreground);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--app-radius-popover);
+  box-shadow: var(--shadow-lg);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-heading-5);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-md);
+}
+
+.content {
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.skip,
+.back,
+.primary {
+  flex-shrink: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  border-radius: var(--guide-action-radius);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  white-space: nowrap;
+  cursor: var(--cursor-interactive);
+  appearance: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+.arrow {
+  display: block;
+  overflow: visible;
+}
+
+.arrowFill {
+  fill: var(--surface);
+}
+
+.arrowStroke {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: var(--border-width);
+  stroke-linejoin: round;
+}
+
+.top {
+  margin-top: -2px;
+}
+
+.left {
+  margin-left: -2px;
+}
+
+.skip,
+.back {
+  padding: var(--space-2xs) var(--space-xs);
+  color: var(--muted);
+  background: transparent;
+}
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs) var(--space-sm);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.enterIcon {
+  flex-shrink: 0;
+  opacity: 0.8;
+}

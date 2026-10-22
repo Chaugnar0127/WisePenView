@@ -4,6 +4,8 @@ import { useEventListener } from 'ahooks';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { GuideAnchor } from '@/components/base/Guide';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { AI_DIFF_DISPLAY_MODE, type AiDiffDisplayMode } from '@/domains/Note';
 import { useAppTheme } from '@/theme';
 
@@ -160,48 +162,50 @@ export function NoteEditorSurface({
     access.readOnly || access.blockLocalDocWrites || review.hasContent || findActive;
 
   return (
-    <div
-      className={styles.editorShell}
-      onKeyDownCapture={runtimeCoordinator.collaboration.onKeyDownCapture}
-    >
-      <AiDiffBulkActions
-        doc={doc}
-        editor={editor}
-        registry={notePluginRegistry}
-        undoManager={runtimeCoordinator.collaboration.undoManager}
-        visible={runtimeCoordinator.aiDiff.showBulkActions}
-        portalContainer={aiBulkActionsPortalContainer}
-      />
-      <NoteFindBar
-        runtimeCoordinator={runtimeCoordinator}
-        portalContainer={findBarPortalContainer}
-      />
-      <NoteAiDiffControls portalContainer={aiDiffControlsPortalContainer} />
-      <NoteEditorReadOnlyProvider value={bodyReadOnly}>
-        <BlockNoteView
-          className="bodyBlockNoteView"
+    <GuideAnchor id={GUIDE_TOOL_ID.noteBody} layout="fill">
+      <div
+        className={styles.editorShell}
+        onKeyDownCapture={runtimeCoordinator.collaboration.onKeyDownCapture}
+      >
+        <AiDiffBulkActions
+          doc={doc}
           editor={editor}
-          theme={resolvedTheme}
-          formattingToolbar={false}
-          slashMenu={false}
-          emojiPicker={false}
-          sideMenu={false}
-          tableHandles={false}
-          editable={!bodyReadOnly}
-          onSelectionChange={runtimeCoordinator.handleSelectionChange}
-        >
-          <NoteToolbar
-            onAskAi={runtimeCoordinator.document.handleAskAi}
-            onAddComment={runtimeCoordinator.inlineComments.handleCreate}
-            onOpenFind={runtimeCoordinator.editorHandle.openFind}
-            isFindModeActive={findActive}
-          />
-          <NoteEmojiPickerPopover />
-          <NoteSlashMenu editor={editor} plugins={notePluginRegistry.contentPlugins} />
-          <NoteSideMenu plugins={notePluginRegistry.contentPlugins} />
-          <NoteTableHandles />
-        </BlockNoteView>
-      </NoteEditorReadOnlyProvider>
-    </div>
+          registry={notePluginRegistry}
+          undoManager={runtimeCoordinator.collaboration.undoManager}
+          visible={runtimeCoordinator.aiDiff.showBulkActions}
+          portalContainer={aiBulkActionsPortalContainer}
+        />
+        <NoteFindBar
+          runtimeCoordinator={runtimeCoordinator}
+          portalContainer={findBarPortalContainer}
+        />
+        <NoteAiDiffControls portalContainer={aiDiffControlsPortalContainer} />
+        <NoteEditorReadOnlyProvider value={bodyReadOnly}>
+          <BlockNoteView
+            className="bodyBlockNoteView"
+            editor={editor}
+            theme={resolvedTheme}
+            formattingToolbar={false}
+            slashMenu={false}
+            emojiPicker={false}
+            sideMenu={false}
+            tableHandles={false}
+            editable={!bodyReadOnly}
+            onSelectionChange={runtimeCoordinator.handleSelectionChange}
+          >
+            <NoteToolbar
+              onAskAi={runtimeCoordinator.document.handleAskAi}
+              onAddComment={runtimeCoordinator.inlineComments.handleCreate}
+              onOpenFind={runtimeCoordinator.editorHandle.openFind}
+              isFindModeActive={findActive}
+            />
+            <NoteEmojiPickerPopover />
+            <NoteSlashMenu editor={editor} plugins={notePluginRegistry.contentPlugins} />
+            <NoteSideMenu plugins={notePluginRegistry.contentPlugins} />
+            <NoteTableHandles />
+          </BlockNoteView>
+        </NoteEditorReadOnlyProvider>
+      </div>
+    </GuideAnchor>
   );
 }

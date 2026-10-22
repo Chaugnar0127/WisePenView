@@ -9,7 +9,9 @@ import { useDebounceFn, useLatest, useMemoizedFn, useMount, useUnmount } from 'a
 import { type KeyboardEvent, type Ref, useEffect, useImperativeHandle, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { GuideAnchor } from '@/components/base/Guide';
 import { useNewNoteStore } from '@/components/editors/note/_store/useNewNoteStore';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useNoteService } from '@/domains';
 import { useAppTheme } from '@/theme';
 import { parseErrorMessage } from '@/utils/error';
@@ -308,20 +310,27 @@ function NoteTitle({
   };
 
   return (
-    <div ref={wrapperRef} className={styles.wrapper} onKeyDownCapture={handleKeyDown}>
-      <BlockNoteView
-        editor={editor}
-        theme={resolvedTheme}
-        sideMenu={false}
-        slashMenu={false}
-        formattingToolbar={false}
-        linkToolbar={false}
-        filePanel={false}
-        tableHandles={false}
-        emojiPicker={false}
-        editable={!readOnly}
-      />
-    </div>
+    <GuideAnchor id={GUIDE_TOOL_ID.noteTitle} layout="area">
+      <div
+        ref={wrapperRef}
+        className={styles.wrapper}
+        aria-label={t('title.field')}
+        onKeyDownCapture={handleKeyDown}
+      >
+        <BlockNoteView
+          editor={editor}
+          theme={resolvedTheme}
+          sideMenu={false}
+          slashMenu={false}
+          formattingToolbar={false}
+          linkToolbar={false}
+          filePanel={false}
+          tableHandles={false}
+          emojiPicker={false}
+          editable={!readOnly}
+        />
+      </div>
+    </GuideAnchor>
   );
 }
 

@@ -1,4 +1,5 @@
 import type {
+  ChangePasswordRequest,
   LoginRequest,
   NewPasswordRequest,
   RegisterRequest,
@@ -11,5 +12,6 @@ export interface IAuthService {
   register(params: RegisterRequest): Promise<void>;
   resetPassword(params: ResetPasswordRequest): Promise<void>;
   newPassword(params: NewPasswordRequest): Promise<void>;
+  changePassword(params: ChangePasswordRequest): Promise<void>;
   logout(): Promise<void>;
 }

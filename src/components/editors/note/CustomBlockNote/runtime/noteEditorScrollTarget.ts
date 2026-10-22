@@ -30,13 +30,13 @@ export function getPreferredScrollBehavior(): ScrollBehavior {
 export function scrollNoteEditorTargetIntoView(
   target: HTMLElement,
   options: { block?: ScrollLogicalPosition; ignoreScrollableWithin?: HTMLElement } = {}
-): void {
+): Promise<void> {
   const behavior = getPreferredScrollBehavior();
   const block = options.block ?? 'center';
   const scrollContainer = findScrollableAncestor(target, options);
   if (!scrollContainer) {
     target.scrollIntoView({ behavior, block, inline: 'nearest' });
-    return;
+    return waitForScrollEnd(document, behavior);
   }
 
   const containerRect = scrollContainer.getBoundingClientRect();
@@ -45,16 +45,52 @@ export function scrollNoteEditorTargetIntoView(
   if (block === 'nearest') {
     const targetBottom = targetTop + targetRect.height;
     if (targetTop < scrollContainer.scrollTop) {
-      scrollContainer.scrollTo({ top: Math.max(0, targetTop), behavior });
+      const destination = Math.max(0, targetTop);
+      if (Math.abs(destination - scrollContainer.scrollTop) < 1) return Promise.resolve();
+      const scrollEnd = waitForScrollEnd(scrollContainer, behavior);
+      scrollContainer.scrollTo({ top: destination, behavior });
+      return scrollEnd;
     } else if (targetBottom > scrollContainer.scrollTop + scrollContainer.clientHeight) {
+      const destination = Math.max(0, targetBottom - scrollContainer.clientHeight);
+      if (Math.abs(destination - scrollContainer.scrollTop) < 1) return Promise.resolve();
+      const scrollEnd = waitForScrollEnd(scrollContainer, behavior);
       scrollContainer.scrollTo({
-        top: Math.max(0, targetBottom - scrollContainer.clientHeight),
+        top: destination,
         behavior,
       });
+      return scrollEnd;
     }
-    return;
+    return Promise.resolve();
   }
 
   const scrollTop = Math.max(0, targetTop - (scrollContainer.clientHeight - targetRect.height) / 2);
+  if (Math.abs(scrollTop - scrollContainer.scrollTop) < 1) return Promise.resolve();
+  const scrollEnd = waitForScrollEnd(scrollContainer, behavior);
   scrollContainer.scrollTo({ top: scrollTop, behavior });
+  return scrollEnd;
+}
+
+function waitForScrollEnd(target: Document | HTMLElement, behavior: ScrollBehavior): Promise<void> {
+  if (behavior === 'auto') return Promise.resolve();
+
+  return new Promise((resolve) => {
+    let quietTimer: number | null = null;
+    const maxTimer = window.setTimeout(finish, 1_500);
+    target.addEventListener('scroll', handleScroll);
+
+    function finish() {
+      window.clearTimeout(maxTimer);
+      if (quietTimer !== null) window.clearTimeout(quietTimer);
+      target.removeEventListener('scroll', handleScroll);
+      target.removeEventListener('scrollend', finish);
+      resolve();
+    }
+
+    function handleScroll() {
+      if (quietTimer !== null) window.clearTimeout(quietTimer);
+      quietTimer = window.setTimeout(finish, 120);
+    }
+
+    target.addEventListener('scrollend', finish, { once: true });
+  });
 }

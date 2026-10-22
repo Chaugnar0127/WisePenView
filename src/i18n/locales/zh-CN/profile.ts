@@ -3,6 +3,7 @@ const zhCNProfile = {
     title: '账号管理',
     subtitle: '管理账号信息',
     sectionTitle: '账号',
+    changePassword: '修改密码',
     username: '用户名',
     campusNo: '学工号',
     email: '邮箱',
@@ -120,10 +121,6 @@ const zhCNProfile = {
     languageAria: '选择界面语言',
     mode: '明暗模式',
     colorScheme: '主题配色（Base / Accent）',
-    readingMode: {
-      title: '阅读模式',
-      description: '调整界面配色，使其更适合长时间阅读与专注工作',
-    },
     modeOption: {
       light: { label: '浅色', description: '始终使用浅色界面' },
       dark: { label: '深色', description: '始终使用深色界面' },
@@ -176,7 +173,13 @@ const zhCNProfile = {
     avatarHint: '支持 JPG、PNG、GIF、WebP，单张不超过 {{maxSize}}。',
     avatarUpload: '点击或拖拽头像图片到此区域',
     status: { unverified: '未认证', banned: '封禁' },
-    verification: { verified: '已认证', EDU_EMAIL: '邮箱认证', FDU_UIS_SYS: 'UIS 认证' },
+    verification: {
+      verified: '已认证',
+      EDU_EMAIL: '邮箱认证',
+      FDU_UIS_SYS: 'UIS 认证',
+      CAMPUS_IDENTITY_PROVIDER: '校园身份认证',
+    },
+    verificationProvider: { FUDAN_UIS: '复旦 UIS' },
   },
   verification: {
     banner: '请通过邮箱验证或复旦 UIS 认证完成账号验证，否则部分功能可能无法正常使用。',

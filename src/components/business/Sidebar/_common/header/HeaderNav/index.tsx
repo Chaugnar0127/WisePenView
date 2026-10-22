@@ -2,6 +2,7 @@ import { ListBox, ListBoxItem, ListBoxSection, Separator, Tooltip } from '@herou
 import { clsx } from 'clsx';
 import { type ComponentPropsWithRef, useLayoutEffect, useRef } from 'react';
 
+import { GuideAnchor } from '@/components/base/Guide';
 import { mergeRefs } from '@/utils/react/mergeRefs';
 
 import type { HeaderNavItem, HeaderNavProps, HeaderNavSection } from './index.type';
@@ -13,6 +14,7 @@ function HeaderNav({
   ariaLabel,
   activeKey,
   collapsed = false,
+  guideToolId,
   items,
   sections,
   showIndicator = false,
@@ -89,6 +91,7 @@ function HeaderNav({
         aria-label={item.name}
         aria-current={isActive ? 'page' : undefined}
         data-nav-active={isActive ? 'true' : undefined}
+        data-guide-tool-id={item.toolId}
         isDisabled={item.isDisabled}
         className={clsx(
           styles.menuItem,
@@ -109,6 +112,7 @@ function HeaderNav({
                       render={({ ref: tooltipRef, ...tooltipProps }) => (
                         <div
                           {...tooltipProps}
+                          data-guide-tool-id={item.toolId}
                           tabIndex={itemProps.tabIndex}
                           ref={mergeRefs(itemRef, tooltipRef)}
                         />
@@ -141,6 +145,16 @@ function HeaderNav({
     </ListBoxSection>
   );
 
+  const menu = (
+    <ListBox
+      aria-label={ariaLabel}
+      selectionMode="none"
+      className={clsx(styles.headerMenu, collapsed && styles.headerMenuCollapsed)}
+    >
+      {shouldRenderSections ? navSections.map(renderSection) : navItems.map(renderItem)}
+    </ListBox>
+  );
+
   return (
     <div ref={containerRef} className={styles.navContainer}>
       {showIndicator ? (
@@ -149,13 +163,13 @@ function HeaderNav({
           className={clsx(styles.indicator, collapsed && styles.indicatorCollapsed)}
         />
       ) : null}
-      <ListBox
-        aria-label={ariaLabel}
-        selectionMode="none"
-        className={clsx(styles.headerMenu, collapsed && styles.headerMenuCollapsed)}
-      >
-        {shouldRenderSections ? navSections.map(renderSection) : navItems.map(renderItem)}
-      </ListBox>
+      {guideToolId ? (
+        <GuideAnchor id={guideToolId} layout="area">
+          {menu}
+        </GuideAnchor>
+      ) : (
+        menu
+      )}
       <Separator
         aria-hidden="true"
         className={clsx(styles.divider, labelsHidden && styles.dividerHidden)}

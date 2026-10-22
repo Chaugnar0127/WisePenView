@@ -1,9 +1,12 @@
 import { useKeyPress } from 'ahooks';
-import { useState, useSyncExternalStore } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
+import { createGuideActions, GuideHost } from '@/components/base/Guide';
 import CommandPalette from '@/components/business/CommandPalette';
+import { GUIDE_SHELL_TOUR_ID } from '@/constants/tour';
 import { useAppAuth } from '@/layouts/App/_context';
+import { chatDockActions } from '@/layouts/ChatDockLayout';
 
 import { type AppNavigationContextValue, AppNavigationProvider } from './_context';
 
@@ -23,6 +26,13 @@ function AppNavigationLayout() {
   const appAuth = useAppAuth();
   const historySnapshot = useSyncExternalStore(subscribeHistory, getHistorySnapshot, () => 0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  /**
+   * @wisepen-manual-memo
+   * 为什么：动作适配器内部保存待关闭菜单，布局每次渲染都重建会丢掉上一步的清理状态。
+   * 收益：整个登录会话复用同一份 Guide 动作实例。
+   * 失效条件：注入的 openChat 来源变化时需要重新创建。
+   */
+  const appGuideActions = useMemo(() => createGuideActions({ openChat: chatDockActions.open }), []);
 
   useKeyPress(
     ['ctrl.k', 'meta.k'],
@@ -69,7 +79,10 @@ function AppNavigationLayout() {
     <AppNavigationProvider value={value}>
       <Outlet />
       {appAuth.isAuthenticated ? (
-        <CommandPalette isOpen={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+        <>
+          <GuideHost shellTourId={GUIDE_SHELL_TOUR_ID} actions={appGuideActions} />
+          <CommandPalette isOpen={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+        </>
       ) : null}
     </AppNavigationProvider>
   );

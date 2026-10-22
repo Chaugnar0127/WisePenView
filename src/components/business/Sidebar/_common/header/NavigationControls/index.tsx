@@ -2,7 +2,9 @@ import { ArrowLeft, ArrowRight, PanelLeftClose, PanelLeftOpen } from 'lucide-rea
 import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
 import { SIDEBAR_TOGGLE_BUTTON_PROPS } from '@/constants/sidebarToggle';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { COLOR_SCHEME_ICON_SRC, useColorScheme } from '@/theme';
 
 import type { NavigationControlsProps } from './index.type';
@@ -39,13 +41,15 @@ function NavigationControls({
 
   return (
     <div className={styles.root}>
-      <AppIconButton
-        className={sidebarCollapsed ? styles.collapsedToggleButton : undefined}
-        icon={toggleIcon}
-        label={sidebarLabel}
-        onPress={onToggleSidebar}
-        {...SIDEBAR_TOGGLE_BUTTON_PROPS}
-      />
+      <GuideAnchor id={GUIDE_TOOL_ID.sidebarCollapse}>
+        <AppIconButton
+          className={sidebarCollapsed ? styles.collapsedToggleButton : undefined}
+          icon={toggleIcon}
+          label={sidebarLabel}
+          onPress={onToggleSidebar}
+          {...SIDEBAR_TOGGLE_BUTTON_PROPS}
+        />
+      </GuideAnchor>
       {showHistory ? (
         <>
           <AppIconButton

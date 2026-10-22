@@ -5,6 +5,7 @@ export type UserIdentityTypeApiValue = NumericEnumApiValue<1 | 2 | 3>;
 export type UserStatusApiValue = 'NORMAL' | 'UNIDENTIFIED' | 'BANNED';
 export type UserSexApiValue = 'MALE' | 'FEMALE' | 'UNKNOWN';
 export type UserDegreeLevelApiValue = 'UNKNOWN' | 'UNDERGRADUATE' | 'MASTER' | 'DOCTOR';
+export type UserVerificationProviderApiValue = 'FUDAN_UIS';
 
 export interface UserDisplayBaseApiResponse {
   nickname?: string | null;
@@ -27,6 +28,7 @@ interface GetUserInfoApiResponseUserInfo {
   email: string | null;
   mobile: string | null;
   verificationMode: UserVerificationMode | null;
+  verificationProviderCode: UserVerificationProviderApiValue | null;
   userStatus: UserStatusApiValue;
 }
 

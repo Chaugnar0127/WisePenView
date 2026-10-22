@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor } from '@/components/base/Guide';
 import { resolveEditorKind } from '@/components/editors';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import {
   isOfficeResourceType,
   RESOURCE_KIND,
@@ -68,18 +70,20 @@ export default function ResourceWorkspacePresentation({
     <ResourceLayout
       {...workspace}
       headerTrailingActions={
-        <AppIconButton
-          icon={
-            collapsed ? (
-              <PanelRightOpen size={18} aria-hidden="true" />
-            ) : (
-              <PanelRightClose size={18} aria-hidden="true" />
-            )
-          }
-          label={collapsed ? tChat('panel.expand') : tChat('panel.collapse')}
-          size="sm"
-          onPress={toggle}
-        />
+        <GuideAnchor id={GUIDE_TOOL_ID.noteChat}>
+          <AppIconButton
+            icon={
+              collapsed ? (
+                <PanelRightOpen size={18} aria-hidden="true" />
+              ) : (
+                <PanelRightClose size={18} aria-hidden="true" />
+              )
+            }
+            label={collapsed ? tChat('panel.expand') : tChat('panel.collapse')}
+            size="sm"
+            onPress={toggle}
+          />
+        </GuideAnchor>
       }
     >
       {chat ? <ResourceChatBinding resourceId={target.resourceId} {...chat} /> : null}

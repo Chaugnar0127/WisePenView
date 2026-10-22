@@ -359,7 +359,7 @@ function TableRailFormattingToolbar({
       focusManagerProps={{ disabled: true }}
       elementProps={{
         // GenericPopover 只读取 style.zIndex，并据此生成最终的内联层级。
-        style: { zIndex: 'var(--app-z-index-editor-toolbar, 220)' },
+        style: { zIndex: 'var(--app-z-index-editor-toolbar)' },
       }}
     >
       {show ? <CustomFormattingToolbar {...toolbarProps} /> : null}

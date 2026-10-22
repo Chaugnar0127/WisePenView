@@ -16,6 +16,8 @@ import { IMAGE_UPLOAD_MAX_SIZE_LABEL } from '@/utils/image/uploadLimit';
 
 import type { AccountHeaderProps } from './index.type';
 import styles from './style.module.less';
+import { resolveVerificationLabelKey } from './verificationLabel';
+
 function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {
   const { t } = useTranslation(['profile', 'shell', 'common']);
   const userService = useUserService();
@@ -101,9 +103,9 @@ function AccountHeader({ user, onUserInfoReload }: AccountHeaderProps) {
     user?.userInfo?.identityType != null ? IDENTITY.getKey(user.userInfo.identityType) : undefined;
   const identityLabel = identityKey ? t(`role.${identityKey}`, { ns: 'shell' }) : '';
   const verificationMode = user?.userInfo?.verificationMode ?? null;
-  const verifiedText = verificationMode
-    ? t(`header.verification.${verificationMode}`)
-    : t('header.verification.verified');
+  const verifiedText = t(
+    resolveVerificationLabelKey(verificationMode, user?.userInfo?.verificationProviderCode ?? null)
+  );
   const statusText =
     user?.userInfo?.status === USER_STATUS.UNVERIFIED
       ? t('header.status.unverified')

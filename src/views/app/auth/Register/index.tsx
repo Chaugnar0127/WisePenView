@@ -24,6 +24,7 @@ import {
 import ServiceAgreement from '@/views/app/auth/_components/ServiceAgreement/index';
 
 import AuthIconField from '../_common/AuthIconField';
+import { validateConfirmPasswordField, validatePasswordField } from '../_common/passwordValidation';
 import auth from '../_common/style.module.less';
 
 const USERNAME_MIN_LENGTH = 4;
@@ -148,29 +149,26 @@ function Register() {
         ]);
       }
       case 'password':
-        return runFieldValidation([
-          { test: () => values.password.length > 0, message: t('register.passwordRequired') },
-          { test: () => values.password.length >= 9, message: t('register.passwordMinLength') },
+        return validatePasswordField(
+          values.password,
           {
-            test: () => /[a-zA-Z]/.test(values.password),
-            message: t('register.passwordContainsLetter'),
+            required: t('register.passwordRequired'),
+            minLength: t('register.passwordMinLength'),
+            containsLetter: t('register.passwordContainsLetter'),
+            containsNumber: t('register.passwordContainsNumber'),
           },
-          {
-            test: () => /[0-9]/.test(values.password),
-            message: t('register.passwordContainsNumber'),
-          },
-        ]);
+          options
+        );
       case 'confirmPassword':
-        return runFieldValidation([
+        return validateConfirmPasswordField(
+          values.confirmPassword,
+          values.password,
           {
-            test: () => values.confirmPassword.length > 0,
-            message: t('register.confirmPasswordRequired'),
+            required: t('register.confirmPasswordRequired'),
+            mismatch: t('register.confirmPasswordMismatch'),
           },
-          {
-            test: () => values.confirmPassword === values.password,
-            message: t('register.confirmPasswordMismatch'),
-          },
-        ]);
+          options
+        );
       case 'inviteCode':
         return runFieldValidation([
           {

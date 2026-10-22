@@ -6,14 +6,16 @@ import {
   pointerWithin,
 } from '@dnd-kit/core';
 import { PanelRightClose, PanelRightOpen, Trash2 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppBreadcrumb from '@/components/base/AppBreadcrumb';
 import { AppButton } from '@/components/base/Button';
 import AppIconButton from '@/components/base/Button/AppIconButton';
+import { GuideAnchor, registerGuideActionHandler } from '@/components/base/Guide';
 import { FolderTable } from '@/components/base/Table';
 import EntryIcon from '@/components/business/Icons/EntryIcon';
+import { GUIDE_ACTION_ID, GUIDE_TOOL_ID } from '@/constants/tour';
 import type { ResourceViewer } from '@/domains/Resource/model/resourceTarget';
 
 import { buildDriveBreadcrumbItems } from '../common/driveBreadcrumb';
@@ -103,6 +105,23 @@ function TableDrive({
 
   // 初始化交互控制器
   const interaction = useTableDriveInteractionController({ dataSource: navigation.dataSource, t });
+  const { isDetailPanelCollapsed, setIsDetailPanelCollapsed } = interaction;
+
+  /**
+   * @wisepen-manual-effect
+   * 执行时机：详情栏折叠状态变化时注册引导动作。
+   * 不可替代原因：引导层直接调用详情栏状态 setter，不依赖按钮模拟点击。
+   * cleanup：撤销动作处理器。
+   */
+  useEffect(
+    () =>
+      registerGuideActionHandler(GUIDE_ACTION_ID.openDetails, {
+        isOpen: () => !isDetailPanelCollapsed,
+        open: () => setIsDetailPanelCollapsed(false),
+        close: () => setIsDetailPanelCollapsed(true),
+      }),
+    [isDetailPanelCollapsed, setIsDetailPanelCollapsed]
+  );
 
   // 封装一个通用的节点操作成功回调，清理选中状态并刷新列表
   const handleNodeActionSuccess = () => {
@@ -222,19 +241,21 @@ function TableDrive({
     const items = buildDriveBreadcrumbItems(navigation.pathNodes, resolvedScope.scope);
     return (
       <>
-        <AppBreadcrumb
-          items={items}
-          ariaLabel={t('aria.folderPath', { ns: 'table' })}
-          renderItem={(content, item) => (
-            <ExternalFileDroppableBreadcrumb
-              nodeId={item.key}
-              isActive={externalDnd.activeBreadcrumbNodeId === item.key}
-              handlers={externalDnd.breadcrumbDragHandlers}
-            >
-              {dnd.renderBreadcrumbItem(content, item)}
-            </ExternalFileDroppableBreadcrumb>
-          )}
-        />
+        <GuideAnchor id={GUIDE_TOOL_ID.drivePath} layout="area">
+          <AppBreadcrumb
+            items={items}
+            ariaLabel={t('aria.folderPath', { ns: 'table' })}
+            renderItem={(content, item) => (
+              <ExternalFileDroppableBreadcrumb
+                nodeId={item.key}
+                isActive={externalDnd.activeBreadcrumbNodeId === item.key}
+                handlers={externalDnd.breadcrumbDragHandlers}
+              >
+                {dnd.renderBreadcrumbItem(content, item)}
+              </ExternalFileDroppableBreadcrumb>
+            )}
+          />
+        </GuideAnchor>
         {breadcrumbExtra}
       </>
     );
@@ -253,21 +274,25 @@ function TableDrive({
           {t('table.addFromPersonal')}
         </AppButton>
       ) : null}
-      <AppIconButton
-        icon={
-          interaction.isDetailPanelCollapsed ? (
-            <PanelRightOpen size={16} aria-hidden="true" />
-          ) : (
-            <PanelRightClose size={16} aria-hidden="true" />
-          )
-        }
-        label={
-          interaction.isDetailPanelCollapsed ? t('table.expandDetails') : t('table.collapseDetails')
-        }
-        size="sm"
-        className={styles.detailPanelToggle}
-        onPress={() => interaction.setIsDetailPanelCollapsed((collapsed) => !collapsed)}
-      />
+      <GuideAnchor id={GUIDE_TOOL_ID.driveDetails}>
+        <AppIconButton
+          icon={
+            interaction.isDetailPanelCollapsed ? (
+              <PanelRightOpen size={16} aria-hidden="true" />
+            ) : (
+              <PanelRightClose size={16} aria-hidden="true" />
+            )
+          }
+          label={
+            interaction.isDetailPanelCollapsed
+              ? t('table.expandDetails')
+              : t('table.collapseDetails')
+          }
+          size="sm"
+          className={styles.detailPanelToggle}
+          onPress={() => interaction.setIsDetailPanelCollapsed((collapsed) => !collapsed)}
+        />
+      </GuideAnchor>
     </div>
   );
 
@@ -311,63 +336,67 @@ function TableDrive({
         <div className={styles.driveFrame}>
           <div className={styles.driveBody}>
             <div className={styles.tablePanel}>
-              <FolderTable<DriveTableRow>
-                ariaLabel={t('table.aria')}
-                items={interaction.rows}
-                columns={columns}
-                loading={navigation.loading}
-                breadcrumb={breadcrumb}
-                toolbar={toolbar}
-                expandedRowKeys={navigation.expandedRowKeys}
-                onExpandedChange={navigation.handleExpandedChange}
-                selectedRowKey={interaction.selectedRow?.id}
-                onRowSelect={handleRowSelect}
-                onRowActivate={handleActivateNode}
-                renderEntryIcon={(row) => (
-                  <EntryIcon
-                    entryType={row.node.type === 'resource' ? 'resource' : row.node.type}
-                    resourceType={row.node.type === 'resource' ? row.node.resourceType : undefined}
-                    resourceIconType={
-                      row.node.type === 'resource' || row.node.type === 'link'
-                        ? row.node.resourceIconType
-                        : undefined
-                    }
-                    folderVariant={
-                      row.node.type === 'folder' && row.node.systemType === 'shared'
-                        ? 'shared'
-                        : undefined
-                    }
-                  />
-                )}
-                renderNameContent={renderNameContent}
-                renderRow={dnd.renderRow}
-                bodyDragHandlers={externalDnd.bodyDragHandlers}
-                bodyOverlay={
-                  externalDnd.isBackgroundDropActive ? (
-                    <div className={styles.fileDropOverlay} aria-hidden="true">
-                      {t('table.dropToUpload')}
-                    </div>
-                  ) : null
-                }
-                loadMore={{
-                  loading: navigation.loadingMore,
-                  hasMore: navigation.hasMore,
-                  onLoadMore: navigation.loadMore,
-                }}
-                totalCount={navigation.totalCount}
-                summary={t('table.summary', { count: navigation.totalCount })}
-                className={styles.table}
-                emptyText={trash.emptyText}
-                emptyDescription={trash.emptyDescription}
-                emptyIcon={trash.isTrashView ? <Trash2 size={20} aria-hidden /> : undefined}
-                sortDescriptor={interaction.sortDescriptor}
-                onSortChange={interaction.handleSortChange}
-                isPinnedFirst={isDrivePinnedFirstRow}
-                rowActions={resolveRowActions}
-                isEditMode={isEditMode}
-                checkboxSelection={checkboxSelection}
-                selectionFooter={selectionFooter}
-              />
+              <GuideAnchor id={GUIDE_TOOL_ID.driveFiles} layout="fill">
+                <FolderTable<DriveTableRow>
+                  ariaLabel={t('table.aria')}
+                  items={interaction.rows}
+                  columns={columns}
+                  loading={navigation.loading}
+                  breadcrumb={breadcrumb}
+                  toolbar={toolbar}
+                  expandedRowKeys={navigation.expandedRowKeys}
+                  onExpandedChange={navigation.handleExpandedChange}
+                  selectedRowKey={interaction.selectedRow?.id}
+                  onRowSelect={handleRowSelect}
+                  onRowActivate={handleActivateNode}
+                  renderEntryIcon={(row) => (
+                    <EntryIcon
+                      entryType={row.node.type === 'resource' ? 'resource' : row.node.type}
+                      resourceType={
+                        row.node.type === 'resource' ? row.node.resourceType : undefined
+                      }
+                      resourceIconType={
+                        row.node.type === 'resource' || row.node.type === 'link'
+                          ? row.node.resourceIconType
+                          : undefined
+                      }
+                      folderVariant={
+                        row.node.type === 'folder' && row.node.systemType === 'shared'
+                          ? 'shared'
+                          : undefined
+                      }
+                    />
+                  )}
+                  renderNameContent={renderNameContent}
+                  renderRow={dnd.renderRow}
+                  bodyDragHandlers={externalDnd.bodyDragHandlers}
+                  bodyOverlay={
+                    externalDnd.isBackgroundDropActive ? (
+                      <div className={styles.fileDropOverlay} aria-hidden="true">
+                        {t('table.dropToUpload')}
+                      </div>
+                    ) : null
+                  }
+                  loadMore={{
+                    loading: navigation.loadingMore,
+                    hasMore: navigation.hasMore,
+                    onLoadMore: navigation.loadMore,
+                  }}
+                  totalCount={navigation.totalCount}
+                  summary={t('table.summary', { count: navigation.totalCount })}
+                  className={styles.table}
+                  emptyText={trash.emptyText}
+                  emptyDescription={trash.emptyDescription}
+                  emptyIcon={trash.isTrashView ? <Trash2 size={20} aria-hidden /> : undefined}
+                  sortDescriptor={interaction.sortDescriptor}
+                  onSortChange={interaction.handleSortChange}
+                  isPinnedFirst={isDrivePinnedFirstRow}
+                  rowActions={resolveRowActions}
+                  isEditMode={isEditMode}
+                  checkboxSelection={checkboxSelection}
+                  selectionFooter={selectionFooter}
+                />
+              </GuideAnchor>
             </div>
             <aside
               className={styles.detailPanel}
@@ -375,12 +404,14 @@ function TableDrive({
               aria-label={t('table.detailsAsideAria')}
             >
               {!interaction.isDetailPanelCollapsed ? (
-                <DriveDetailPanel
-                  key={interaction.selectedRow?.id ?? (isEditMode ? 'edit-mode' : 'empty')}
-                  selectedRow={interaction.selectedRow}
-                  isEditMode={isEditMode}
-                  selectedCount={interaction.selectedActionTargets.length}
-                />
+                <GuideAnchor id={GUIDE_TOOL_ID.driveDetailsOpen} layout="fill">
+                  <DriveDetailPanel
+                    key={interaction.selectedRow?.id ?? (isEditMode ? 'edit-mode' : 'empty')}
+                    selectedRow={interaction.selectedRow}
+                    isEditMode={isEditMode}
+                    selectedCount={interaction.selectedActionTargets.length}
+                  />
+                </GuideAnchor>
               ) : null}
             </aside>
           </div>

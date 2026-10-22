@@ -9,6 +9,7 @@ export interface PublicAppEnv {
   VITE_X_DEVELOPER?: string;
   VITE_DRAWIO_EMBED_URL?: string;
   VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL?: string;
+  VITE_OTEL_ENDPOINT?: string;
 }
 
 export interface PublicAppConfig {
@@ -25,6 +26,9 @@ export interface PublicAppConfig {
   };
   drawio: {
     embedUrl: string;
+  };
+  observability: {
+    otelEndpoint?: string;
   };
   developerHeader: string;
 }
@@ -93,8 +97,32 @@ const parseProbeTimeout = (value: string | undefined): number => {
   return timeout;
 };
 
+const parseOptionalOtelEndpoint = (value: string | undefined): string | undefined => {
+  const normalized = value?.trim();
+  if (!normalized) return undefined;
+
+  const withoutTrailingSlash = normalized.length > 1 ? normalized.replace(/\/+$/, '') : normalized;
+  if (withoutTrailingSlash.startsWith('/') && !withoutTrailingSlash.startsWith('//')) {
+    return withoutTrailingSlash;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(withoutTrailingSlash);
+  } catch {
+    throw new PublicConfigError('[config] VITE_OTEL_ENDPOINT 必须是绝对 URL 或站内路径。');
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new PublicConfigError('[config] VITE_OTEL_ENDPOINT 只支持 http 或 https URL。');
+  }
+  return withoutTrailingSlash;
+};
+
 export function createPublicAppConfig(env: PublicAppEnv): PublicAppConfig {
   const mode = normalizeMode(env.MODE);
+  const observability = {
+    otelEndpoint: parseOptionalOtelEndpoint(env.VITE_OTEL_ENDPOINT),
+  };
   const baseUrl = parsePublicUrl('VITE_API_BASE_URL', env.VITE_API_BASE_URL, {
     allowTrailingSlash: false,
   });
@@ -119,6 +147,7 @@ export function createPublicAppConfig(env: PublicAppEnv): PublicAppConfig {
       },
       office: { documentServerUrl },
       drawio: { embedUrl: drawioEmbedUrl },
+      observability,
       developerHeader: env.VITE_X_DEVELOPER?.trim() ?? '',
     };
   }
@@ -138,6 +167,7 @@ export function createPublicAppConfig(env: PublicAppEnv): PublicAppConfig {
     },
     office: { documentServerUrl },
     drawio: { embedUrl: drawioEmbedUrl },
+    observability,
     developerHeader: '',
   };
 }

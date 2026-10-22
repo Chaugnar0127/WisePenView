@@ -1,6 +1,8 @@
+import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { AppButton } from '@/components/base/Button';
 import { Spin } from '@/components/base/Feedback';
 import PageHeader from '@/components/base/PageHeader';
 import { useUserService } from '@/domains';
@@ -12,6 +14,7 @@ import {
   AccountForm,
   AccountHeader,
   AccountVerification,
+  ChangePasswordModal,
   SettingsList,
 } from '../_components/Account';
 import type { ProfileFieldKey } from '../profile.config';
@@ -29,6 +32,7 @@ function Account() {
   const { t } = useTranslation(['profile', 'common']);
   const userService = useUserService();
   const [user, setUser] = useState<UserAccountProfile | null>(null);
+  const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
   const emptyLabel = t('form.emptyValue');
 
   const { loading, runAsync: reloadUserInfo } = useApi(() => userService.getFullUserInfo(), {
@@ -68,7 +72,13 @@ function Account() {
 
         <div className={styles.panels}>
           <section className={styles.panel}>
-            <h3 className={styles.sectionTitle}>{t('account.sectionTitle')}</h3>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>{t('account.sectionTitle')}</h3>
+              <AppButton variant="danger-soft" onPress={() => setChangePasswordModalOpen(true)}>
+                <Lock size={16} aria-hidden="true" />
+                {t('account.changePassword')}
+              </AppButton>
+            </div>
             <SettingsList items={accountItems} />
           </section>
 
@@ -85,6 +95,10 @@ function Account() {
           ) : null}
         </div>
       </Spin>
+      <ChangePasswordModal
+        isOpen={changePasswordModalOpen}
+        onOpenChange={setChangePasswordModalOpen}
+      />
     </>
   );
 }

@@ -23,8 +23,14 @@ export interface NewPasswordApiRequest {
   newPassword: string;
 }
 
+export interface ChangePasswordApiRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
 export type LoginApiResponse = string | undefined;
 export type LogoutApiResponse = void;
 export type RegisterApiResponse = string | undefined;
 export type ResetPasswordApiResponse = void;
 export type NewPasswordApiResponse = void;
+export type ChangePasswordApiResponse = void;

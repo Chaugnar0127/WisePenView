@@ -10,6 +10,7 @@ import { CourseProvider } from '@/layouts/Course/_context';
 import { parseErrorMessage } from '@/utils/error';
 import { APP_ROUTE_PATH } from '@/utils/navigation/appRoute';
 
+import CourseTourScope from './CourseTourScope';
 import styles from './style.module.less';
 
 function CourseRoute() {
@@ -55,6 +56,7 @@ function CourseRoute() {
 
   return (
     <CourseProvider value={{ course: data, refreshCourse: refresh }}>
+      <CourseTourScope />
       <Outlet />
     </CourseProvider>
   );

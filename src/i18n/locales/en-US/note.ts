@@ -14,13 +14,15 @@ const enUSNote = {
     imageUploadLeaveDescription:
       'Wait for {{count}} image upload to finish before leaving this note.',
     imageUploadContinue: 'Continue uploading',
+    anchorNotFound: 'Unable to locate the referenced text. It may have been deleted or moved.',
   },
-  title: { untitled: 'Untitled note', placeholder: 'Enter a title' },
+  title: { untitled: 'Untitled note', placeholder: 'Enter a title', field: 'Note title' },
   info: {
     authors: 'Authors: {{names}}',
     noAuthors: 'Authors: None',
     empty: 'None',
     lastEdited: 'Last edited',
+    bar: 'Note details',
   },
   save: {
     saving: 'Saving...',
@@ -57,7 +59,9 @@ const enUSNote = {
   export: {
     editorNotReady: 'The editor is not ready',
     markdownStarted: 'Markdown download started',
+    docxStarted: 'Word download started',
     downloadMarkdown: 'Download as Markdown',
+    downloadDocx: 'Download as Word',
     downloadPdf: 'Download PDF',
     printPdf: 'Print PDF',
     printDocumentTitle: 'Note',

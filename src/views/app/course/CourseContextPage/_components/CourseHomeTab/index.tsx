@@ -5,6 +5,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { AppButton } from '@/components/base/Button';
 import { Spin } from '@/components/base/Feedback';
+import { GuideAnchor } from '@/components/base/Guide';
+import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useCourseService } from '@/domains';
 import { COURSE_ROLE } from '@/domains/Course';
 import { useApi } from '@/hooks/useApi';
@@ -63,20 +65,22 @@ function CourseHomeTab() {
               </p>
             </div>
           </div>
-          <AppButton
-            variant="primary"
-            onPress={() =>
-              navigate(
-                buildChatSessionLocation(
-                  { pathname: buildCourseLearningPath(course.courseId) },
-                  getChatSessionId(location)
+          <GuideAnchor id={GUIDE_TOOL_ID.courseEnterLearning}>
+            <AppButton
+              variant="primary"
+              onPress={() =>
+                navigate(
+                  buildChatSessionLocation(
+                    { pathname: buildCourseLearningPath(course.courseId) },
+                    getChatSessionId(location)
+                  )
                 )
-              )
-            }
-          >
-            {canEditOutline ? t('home.enterEditing') : t('home.enterLearning')}
-            <ArrowRight size={16} aria-hidden />
-          </AppButton>
+              }
+            >
+              {canEditOutline ? t('home.enterEditing') : t('home.enterLearning')}
+              <ArrowRight size={16} aria-hidden />
+            </AppButton>
+          </GuideAnchor>
         </section>
       </div>
 

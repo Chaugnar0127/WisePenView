@@ -24,7 +24,7 @@ import type { NoteScrollTargetResolver } from './useNoteEditorScroll';
 
 type NoteEditorCommands = Pick<
   NoteBodyEditorHandle,
-  'focus' | 'openFind' | 'exportPdf' | 'exportMarkdown'
+  'focus' | 'openFind' | 'exportPdf' | 'exportDocx' | 'exportMarkdown'
 > & {
   find: {
     clearFind: () => void;
@@ -207,6 +207,15 @@ export function useNoteEditorCommands(
       mimeType: 'text/markdown;charset=utf-8',
       extension: 'md',
     }),
+    exportDocx: async (options) => {
+      // Word 依赖体积较大，只有用户触发导出时才加载。
+      const { exportNoteDocx } = await import('../engines/docx/noteDocxExport');
+      return {
+        blob: await exportNoteDocx(editor, notePluginRegistry, options),
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        extension: 'docx',
+      };
+    },
     openFind: (initialQuery) => {
       dispatch({ type: 'FIND_OPEN', initialQuery });
       if (initialQuery) findMatches(initialQuery);

@@ -59,7 +59,9 @@ const enUSNote = {
   export: {
     editorNotReady: 'The editor is not ready',
     markdownStarted: 'Markdown download started',
+    docxStarted: 'Word download started',
     downloadMarkdown: 'Download as Markdown',
+    downloadDocx: 'Download as Word',
     downloadPdf: 'Download PDF',
     printPdf: 'Print PDF',
     printDocumentTitle: 'Note',

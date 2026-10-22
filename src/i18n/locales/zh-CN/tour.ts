@@ -83,7 +83,7 @@ const zhCNTour = {
     },
     export: {
       title: '导出笔记',
-      content: '把笔记保存导出为 PDF 或 Markdown格式',
+      content: '把笔记保存导出为 PDF、Markdown 或 Word 格式',
     },
     chat: {
       title: 'AI 文档协作',

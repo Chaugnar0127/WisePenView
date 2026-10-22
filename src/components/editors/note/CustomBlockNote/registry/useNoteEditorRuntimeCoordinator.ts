@@ -98,6 +98,7 @@ export function useNoteEditorRuntimeCoordinator(props: NoteEditorRuntimeProps) {
     !readOnly && !blockLocalDocWrites && collaborationBinding.ready
   );
   const editorHandle = {
+    exportDocx: commands.exportDocx,
     exportMarkdown: commands.exportMarkdown,
     exportPdf: commands.exportPdf,
     focus: commands.focus,

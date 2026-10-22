@@ -14,7 +14,11 @@ import {
   createNoteSelectionChatContext,
 } from '../../NoteChatProtocol';
 import type { NoteTitleHandle } from '../NoteTitle';
-import { downloadTextArtifact, sanitizeDownloadFileName } from './noteWorkspaceModel';
+import {
+  downloadBlobArtifact,
+  downloadTextArtifact,
+  sanitizeDownloadFileName,
+} from './noteWorkspaceModel';
 
 interface UseNoteActionsControllerOptions {
   bodyEditorRef: RefObject<NoteBodyEditorHandle | null>;
@@ -111,6 +115,28 @@ export function useNoteActionsController({
     }
   });
 
+  const handleDownloadDocx = useMemoizedFn(async () => {
+    const bodyApi = bodyEditorRef.current;
+    if (!bodyApi) {
+      toast.info(t('export.editorNotReady'));
+      return;
+    }
+    try {
+      setExportPending(true);
+      const title = titleEditorRef.current?.getPlainTitle() ?? fallbackNoteTitle ?? untitledTitle;
+      const artifact = await bodyApi.exportDocx({ title });
+      downloadBlobArtifact({
+        blob: artifact.blob,
+        fileName: `${sanitizeDownloadFileName(title, untitledTitle)}.${artifact.extension}`,
+      });
+      toast.success(t('export.docxStarted'));
+    } catch (err) {
+      toast.danger(parseErrorMessage(err));
+    } finally {
+      setExportPending(false);
+    }
+  });
+
   const noteChatStateProvider = createNoteChatStateProvider({
     resourceId,
     syncStatus: status,
@@ -132,6 +158,7 @@ export function useNoteActionsController({
     exportPending,
     printPdf: handlePrintPdf,
     downloadMarkdown: handleDownloadMarkdown,
+    downloadDocx: handleDownloadDocx,
     chatProvider: noteChatStateProvider,
     askAi: handleAskAi,
   };

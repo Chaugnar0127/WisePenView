@@ -23,6 +23,7 @@ pipeline {
         string(name: 'VITE_NETWORK_PROBE_TIMEOUT', defaultValue: '1000', description: '校内 API 探测超时，单位毫秒')
         string(name: 'VITE_DRAWIO_EMBED_URL', defaultValue: 'https://drawio.wisepen.oriole.cn/index.html', description: 'DrawIO 嵌入地址')
         string(name: 'VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL', defaultValue: 'https://office.wisepen.oriole.cn', description: 'ONLYOFFICE Document Server 前端访问地址')
+        string(name: 'VITE_OTEL_ENDPOINT', defaultValue: '', description: '前端 OTLP HTTP 入口，留空则关闭遥测')
 
         string(name: 'OSS_ENDPOINT', defaultValue: '', description: '阿里云 OSS Endpoint，例如 oss-cn-shanghai.aliyuncs.com')
         string(name: 'OSS_BUCKET', defaultValue: '', description: '阿里云 OSS Bucket 名称')
@@ -118,6 +119,7 @@ VITE_INTRANET_PING_PATH=${VITE_INTRANET_PING_PATH}
 VITE_NETWORK_PROBE_TIMEOUT=${VITE_NETWORK_PROBE_TIMEOUT}
 VITE_DRAWIO_EMBED_URL=${VITE_DRAWIO_EMBED_URL}
 VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL=${VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL}
+VITE_OTEL_ENDPOINT=${VITE_OTEL_ENDPOINT}
 VITE_X_DEVELOPER=
 EOF
 

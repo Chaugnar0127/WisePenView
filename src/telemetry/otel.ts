@@ -8,6 +8,8 @@ import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xm
 import { publicAppConfig } from '@/config/runtimeConfig';
 import { createUuid } from '@/utils/random/createUuid';
 
+import { applyXhrApiAttributes } from './xhrApiTelemetry';
+
 const SERVICE_NAME = 'wisepen-web';
 const OTEL_SESSION_KEY = 'wisepen.otel.session';
 
@@ -52,6 +54,7 @@ if (isTelemetryEnabled && endpoint) {
   const apiBaseUrls = [publicAppConfig.api.baseUrl, publicAppConfig.api.intranetBaseUrl].filter(
     (value): value is string => Boolean(value)
   );
+  const apiOrigins = new Set(apiBaseUrls.map((baseUrl) => new URL(baseUrl).origin));
   const apiTracePropagationPatterns = buildTracePropagationPatterns(apiBaseUrls);
   const telemetryUrlPattern = buildTelemetryUrlPattern(exportBaseUrl);
 
@@ -78,6 +81,7 @@ if (isTelemetryEnabled && endpoint) {
           propagateTraceHeaderCorsUrls: apiTracePropagationPatterns,
         }),
         new XMLHttpRequestInstrumentation({
+          applyCustomAttributesOnSpan: (span, xhr) => applyXhrApiAttributes(span, xhr, apiOrigins),
           ignoreUrls: [telemetryUrlPattern],
           propagateTraceHeaderCorsUrls: apiTracePropagationPatterns,
         }),

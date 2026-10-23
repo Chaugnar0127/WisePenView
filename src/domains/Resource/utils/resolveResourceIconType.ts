@@ -5,6 +5,8 @@ const RESOURCE_TYPE_ICON_TYPE_MAP: Record<string, ResourceIconType> = {
   drawio: 'drawio',
   skill: 'skill',
   agent: 'agent',
+  html: 'html',
+  single_html_page: 'html',
   pdf: 'pdf',
   doc: 'doc',
   docx: 'doc',

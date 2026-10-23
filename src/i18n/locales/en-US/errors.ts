@@ -109,6 +109,8 @@ const enUSErrors = {
     '201': 'Assignment not found.',
     '202':
       'The selection contains multiple mounts of the same resource. Handle them one at a time.',
+    '204': 'Pages folder was not found.',
+    '205': 'Notes folder was not found.',
     '999': 'Operation failed. Please try again later.',
     '1000': 'System error.',
     '1001': 'Request error.',

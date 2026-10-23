@@ -7,6 +7,7 @@ export { AuthApi } from '@/domains/Auth/mock/AuthApi.mock';
 export { ChatApi, ChatCompletionApi, ChatSessionApi } from '@/domains/Chat/mock/ChatApi.mock';
 export { DocumentApi } from '@/domains/Document/mock/DocumentApi.mock';
 export { GroupApi, GroupMemberApi, GroupResConfigApi } from '@/domains/Group/mock/GroupApi.mock';
+export { HtmlPageApi } from '@/domains/HtmlPage/mock/HtmlPageApi.mock';
 export { ImageApi } from '@/domains/Image/mock/ImageApi.mock';
 export { InlineCommentApi } from '@/domains/InlineComment/mock/InlineCommentApi.mock';
 export { CommentApi } from '@/domains/Interact/mock/CommentApi.mock';

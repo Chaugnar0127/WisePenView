@@ -18,7 +18,7 @@ import { useApi } from '@/hooks/useApi';
 import {
   type DriveViewNode,
   isDriveActionTarget,
-  isDriveSharedFolderNode,
+  isDriveSystemFolderNode,
 } from '../../common/driveComponentModel';
 import type { DriveTableRow } from '../index.type';
 import { DriveDndRow, DriveDroppableBreadcrumb } from '../parts/DriveDnd';
@@ -33,14 +33,14 @@ interface UseTableDriveDndControllerParams {
 
 /** 判断表格行是否允许作为拖拽源。 */
 function isDriveDragSource(row: DriveTableRow): boolean {
-  return isDriveActionTarget(row.node) && !isDriveSharedFolderNode(row.node);
+  return isDriveActionTarget(row.node) && !isDriveSystemFolderNode(row.node);
 }
 
 /** 判断节点是否允许作为移动目标。 */
 function isDriveMoveTarget(
   node: DriveViewNode
 ): node is Extract<DriveNode, { type: 'root' | 'folder' }> {
-  return (node.type === 'folder' || node.type === 'root') && !isDriveSharedFolderNode(node);
+  return (node.type === 'folder' || node.type === 'root') && !isDriveSystemFolderNode(node);
 }
 
 /** 合并表格行和当前路径节点，构建拖拽目标查询索引。 */

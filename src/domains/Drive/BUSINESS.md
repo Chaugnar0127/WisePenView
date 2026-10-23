@@ -10,8 +10,8 @@
 
 - scope 有 personal／group，个人相容 group ID 经 Tag 正规化后归入 personal；group scope 带 groupId 与相应 rootId。不可仅凭 folder／resource ID 反推完整 scope：root ID 带群组，folder ID 只带 tagId，resource／link ID 带 resourceId 与 parentTagId。依据：[DriveNodeScope](entity/drive.ts)、[buildDriveNodeScope](model/driveNode.ts)、[decodeNodeId](model/driveNode.ts)。
 - root、folder、resource、link 是不同语义；personal root 有真实 root tag，group root 为虚拟容器。个人或主挂载位置映射为 resource，小组其他挂载位置映射为 link；loading 仅为 UI 占位，不属于 domain 持久节点。依据：[DriveNode](entity/drive.ts)、[mapResourceItemToChildNode](model/driveNode.ts)、[toDriveTableRow](../../components/business/Drive/TableDrive/tableConfig.ts)。
-- Drive 使用原始标签树；个人 root 的子资料夹取 `.Shared` 与 `/` 的 children，隐藏 `.Trash` 及其他点号前缀标签，`.Shared` 例外保留并优先排序。不能替换成 Tag 普通可见树。依据：[getDirectFolderTags](service/DriveServices.impl.ts)、[isVisibleFolderTag](service/DriveServices.impl.ts)、[orderDriveFolderNodes](model/driveNode.ts)、[Tag](../Tag/BUSINESS.md)。
-- `.Trash`／`.Shared` 在 model 映射为 systemType，修改操作依 systemType 拒绝，而不是每个 view 自行按翻译名称判定。依据：[resolveSystemFolderType](model/driveNode.ts)、[assertNoSystemFolder](service/DriveServices.impl.ts)、[renameNode](service/DriveServices.impl.ts)。
+- Drive 使用原始标签树；个人 root 的子资料夹取 `.Shared`、`.Note`、`.Page` 与 `/` 的 children，隐藏 `.Trash` 及其他点号前缀标签，`.Shared`、`.Note` 与 `.Page` 例外保留并按该顺序优先排列。不能替换成 Tag 普通可见树。依据：[getDirectFolderTags](service/DriveServices.impl.ts)、[isVisibleFolderTag](service/DriveServices.impl.ts)、[orderDriveFolderNodes](model/driveNode.ts)、[Tag](../Tag/BUSINESS.md)。
+- `.Trash`／`.Shared`／`.Note`／`.Page` 在 model 映射为 systemType，修改、拖放与新建入口依 systemType 拒绝，而不是每个 view 自行按翻译名称判定。`.Note` 与 `.Page` 分别用于承载默认创建笔记和 AI HTML 页面。依据：[resolveSystemFolderType](model/driveNode.ts)、[assertNoSystemFolder](service/DriveServices.impl.ts)、[renameNode](service/DriveServices.impl.ts)。
 
 ## 操作与分页
 

@@ -1,6 +1,7 @@
 import type { IAgentService } from '@/domains/Agent';
 import type { IDocumentService } from '@/domains/Document';
 import type { GroupBaseInfo, IGroupService } from '@/domains/Group';
+import type { IHtmlPageService } from '@/domains/HtmlPage';
 import type { INoteService } from '@/domains/Note';
 import type { ISkillService } from '@/domains/Skill';
 import type { ITagService } from '@/domains/Tag';
@@ -19,6 +20,7 @@ interface ResourcePermissionServicesDeps {
   agentService: Pick<IAgentService, 'getAgentPermissionOverview'>;
   documentService: Pick<IDocumentService, 'getDocPermissionOverview'>;
   groupService: Pick<IGroupService, 'fetchGroupBaseInfo'>;
+  htmlPageService: Pick<IHtmlPageService, 'getHtmlPagePermissionOverview'>;
   noteService: Pick<INoteService, 'getNotePermissionOverview'>;
   skillService: Pick<ISkillService, 'getSkillPermissionOverview'>;
   tagService: Pick<ITagService, 'getTagGrantedActions'>;
@@ -85,6 +87,8 @@ const loadResourcePermissionOverview = (
       return deps.skillService.getSkillPermissionOverview(params.resourceId);
     case 'agent':
       return deps.agentService.getAgentPermissionOverview(params.resourceId);
+    case 'html':
+      return deps.htmlPageService.getHtmlPagePermissionOverview(params.resourceId);
   }
 };
 

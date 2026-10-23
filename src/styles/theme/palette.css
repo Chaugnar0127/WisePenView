@@ -339,6 +339,7 @@ html[data-color-scheme='lavender'] {
   --resource-icon-root: var(--resource-icon-theme);
   --resource-icon-note: var(--resource-icon-theme);
   --resource-icon-agent: var(--resource-icon-theme);
+  --resource-icon-html: var(--resource-icon-theme);
   --resource-icon-drawio: var(--teal-11);
   --resource-icon-skill: var(--iris-11);
   --resource-icon-pdf: var(--red-11);
@@ -503,6 +504,7 @@ html[data-color-scheme] :is(.light, .dark):not(html):not(:root) {
   --resource-icon-root: inherit;
   --resource-icon-note: inherit;
   --resource-icon-agent: inherit;
+  --resource-icon-html: inherit;
   --resource-icon-drawio: inherit;
   --resource-icon-skill: inherit;
   --resource-icon-pdf: inherit;

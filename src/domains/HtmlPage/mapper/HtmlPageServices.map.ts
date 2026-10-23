@@ -1,0 +1,45 @@
+import type { ResourcePermissionOverview } from '@/domains/Resource';
+import { ResourceServicesMap } from '@/domains/Resource/mapper/ResourceServices.map';
+import { formatTimestampToDateTime } from '@/utils/format/formatTime';
+import { normalizeNonNegativeNumber } from '@/utils/normalize/normalizeNumber';
+
+import type {
+  SingleHtmlPageInfoApiResponse,
+  SingleHtmlPageVersionInfoApiResponse,
+} from '../apis/HtmlPageApi.type';
+import type { HtmlPageDisplayInfo, HtmlPageVersionInfo } from '../service/index.type';
+
+const mapVersionInfoFromApi = (
+  data: SingleHtmlPageVersionInfoApiResponse,
+  fallbackVersion: number
+): HtmlPageVersionInfo => ({
+  version: normalizeNonNegativeNumber(data.version) ?? fallbackVersion,
+  status: data.singleHtmlPageStatus ?? 'FAILED',
+  size: normalizeNonNegativeNumber(data.size),
+  updateTime: data.updateTime ?? undefined,
+  lastEditedAtText: formatTimestampToDateTime(data.updateTime),
+});
+
+export const mapHtmlPageInfoFromApi = (
+  data: SingleHtmlPageInfoApiResponse
+): HtmlPageDisplayInfo => {
+  const currentVersion = normalizeNonNegativeNumber(data.currentVersion) ?? 0;
+  return {
+    resourceInfo: ResourceServicesMap.mapResourceItemFromApi(data.resourceInfo),
+    currentVersion,
+    versionInfo: data.versionInfo
+      ? mapVersionInfoFromApi(data.versionInfo, currentVersion)
+      : undefined,
+  };
+};
+
+export const mapHtmlPagePermissionOverviewFromApi = (
+  data: SingleHtmlPageInfoApiResponse,
+  resourceId: string
+): ResourcePermissionOverview =>
+  ResourceServicesMap.mapResourcePermissionOverviewFromApi(data.resourceInfo, resourceId);
+
+export const HtmlPageServicesMap = {
+  mapHtmlPageInfoFromApi,
+  mapHtmlPagePermissionOverviewFromApi,
+};

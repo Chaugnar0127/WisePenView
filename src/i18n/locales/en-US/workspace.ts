@@ -33,6 +33,19 @@ const enUSWorkspace = {
     emptyConfig: 'ONLYOFFICE editor configuration is unavailable',
     starting: 'Starting ONLYOFFICE editor...',
   },
+  html: {
+    pageFallbackName: 'HTML page',
+    cannotOpen: 'Cannot open HTML page',
+    loadingInfo: 'Loading page information...',
+    emptyInfo: 'Page information is unavailable. Please try again later.',
+    notGenerated: 'Page content has not been generated',
+    notGeneratedHint: 'The page preview will appear here when generation is complete.',
+    generationFailed: 'Page generation failed',
+    contentFailed: 'Page content failed to load',
+    loadingContent: 'Loading page content...',
+    frameTitle: '{{name}} page preview',
+    retry: 'Retry',
+  },
   drawio: {
     leave: {
       title: 'Unsaved diagram changes',

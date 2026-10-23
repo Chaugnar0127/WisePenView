@@ -2,7 +2,7 @@ import type { ResourceAccessRole, ResourceAction, ResourceIconType } from '@/dom
 import type { AccessControlScope, TagResourceAction } from '@/domains/Tag';
 import type { UserDisplayBase } from '@/domains/User';
 
-export type DriveSystemFolderType = 'trash' | 'shared' | 'page';
+export type DriveSystemFolderType = 'trash' | 'shared' | 'note' | 'page';
 
 export type DriveNodeScope =
   | {

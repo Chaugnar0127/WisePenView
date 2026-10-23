@@ -15,6 +15,7 @@ const zhCNDrive = {
     drive: '云盘',
     trash: '回收站',
     shared: '共享',
+    note: '笔记',
     page: '页面',
     folder: '文件夹',
     resource: '资源',

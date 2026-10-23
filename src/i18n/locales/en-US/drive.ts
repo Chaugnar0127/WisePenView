@@ -15,6 +15,7 @@ const enUSDrive = {
     drive: 'Personal Drive',
     trash: 'Trash',
     shared: 'Shared',
+    note: 'Notes',
     page: 'Pages',
     folder: 'Folder',
     resource: 'Resource',

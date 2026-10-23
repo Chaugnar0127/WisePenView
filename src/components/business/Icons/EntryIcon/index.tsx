@@ -1,5 +1,6 @@
 import {
   Bot,
+  CodeXml,
   File,
   FileCode,
   FileSpreadsheet,
@@ -11,6 +12,7 @@ import {
   Link,
   LoaderCircle,
   NotebookPen,
+  PanelsTopLeft,
   Presentation,
   Share2,
   Video,
@@ -28,6 +30,7 @@ const COLOR_NOTE = 'var(--resource-icon-note)';
 const COLOR_DRAWIO = 'var(--resource-icon-drawio)';
 const COLOR_SKILL = 'var(--resource-icon-skill)';
 const COLOR_AGENT = 'var(--resource-icon-agent)';
+const COLOR_HTML = 'var(--resource-icon-html)';
 const COLOR_DOC = 'var(--resource-icon-doc)';
 const COLOR_PDF = 'var(--resource-icon-pdf)';
 const COLOR_PPT = 'var(--resource-icon-ppt)';
@@ -56,6 +59,8 @@ function renderResourceIcon(
       return <Wrench size={size} color={color ?? COLOR_SKILL} />;
     case 'agent':
       return <Bot size={size} color={color ?? COLOR_AGENT} />;
+    case 'html':
+      return <CodeXml size={size} color={color ?? COLOR_HTML} />;
     case 'pdf':
       return <FileText size={size} color={color ?? COLOR_PDF} />;
     case 'doc':
@@ -88,6 +93,12 @@ function EntryIcon({
     case 'root':
       return <HardDrive size={size} color={color ?? COLOR_ROOT} />;
     case 'folder':
+      if (folderVariant === 'page') {
+        return <PanelsTopLeft size={size} color={color ?? COLOR_FOLDER} />;
+      }
+      if (folderVariant === 'note') {
+        return <NotebookPen size={size} color={color ?? COLOR_NOTE} />;
+      }
       if (folderVariant === 'shared') {
         return <Share2 size={size} color={color ?? COLOR_FOLDER} />;
       }

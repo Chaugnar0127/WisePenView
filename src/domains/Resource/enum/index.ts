@@ -113,6 +113,7 @@ export const RESOURCE_PERMISSION_ACTION_ORDER = RESOURCE_ACTION.options.map(
 
 const NOTE_LIKE_RESOURCE_TYPES = new Set(['note', 'drawio']);
 const AI_ASSET_RESOURCE_TYPES = new Set(['skill', 'agent']);
+const HTML_RESOURCE_TYPES = new Set(['html', 'single_html_page']);
 
 export const getResourceActionImpliedMask = (action: ResourceAction): number =>
   RESOURCE_ACTION_IMPLIED_MASK[action] ?? action;
@@ -177,6 +178,14 @@ export const getSupportedResourcePermissionActions = (resourceType?: string): Re
   if (normalizedType === 'drawio') {
     unsupportedActions.add(RESOURCE_ACTION.COMMENT);
     unsupportedActions.add(RESOURCE_ACTION.INLINE_COMMENT);
+  }
+
+  if (HTML_RESOURCE_TYPES.has(normalizedType ?? '')) {
+    unsupportedActions.add(RESOURCE_ACTION.INLINE_COMMENT);
+    unsupportedActions.add(RESOURCE_ACTION.DOWNLOAD_WATERMARK);
+    unsupportedActions.add(RESOURCE_ACTION.DOWNLOAD_ORIGINAL);
+    unsupportedActions.add(RESOURCE_ACTION.FORK);
+    unsupportedActions.add(RESOURCE_ACTION.COMMENT);
   }
 
   if (!AI_ASSET_RESOURCE_TYPES.has(normalizedType ?? '')) {

@@ -5,6 +5,8 @@ on:
     branches: ['main']
   pull_request:
     branches: ['main']
+  # 发布工作流会为自动补丁版本 PR 显式派发同一套检查。
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -70,7 +72,17 @@ jobs:
         env:
           BEFORE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           AFTER_SHA: ${{ github.sha }}
-        run: git diff --check "${BEFORE_SHA}...${AFTER_SHA}"
+        run: |
+          set -euo pipefail
+          ZERO_SHA="0000000000000000000000000000000000000000"
+          if [ -z "${BEFORE_SHA}" ] || [ "${BEFORE_SHA}" = "${ZERO_SHA}" ]; then
+            BEFORE_SHA="$(git rev-parse --verify --quiet "${AFTER_SHA}^" || true)"
+          fi
+          if [ -n "${BEFORE_SHA}" ]; then
+            git diff --check "${BEFORE_SHA}...${AFTER_SHA}"
+          else
+            git show --check --format= "${AFTER_SHA}"
+          fi
 
       # 各检查互不依赖，并行执行以缩短关键路径；
       # 类型检查与 Vite 构建拆开，避免串行等待。

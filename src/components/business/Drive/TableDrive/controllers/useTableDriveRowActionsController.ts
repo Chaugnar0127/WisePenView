@@ -9,11 +9,7 @@ import {
   type ResourceViewer,
 } from '@/domains/Resource/model/resourceTarget';
 
-import {
-  type DriveActionTarget,
-  isDriveActionTarget,
-  isDriveSystemFolderNode,
-} from '../../common/driveComponentModel';
+import { type DriveActionTarget, isDriveActionTarget } from '../../common/driveComponentModel';
 import type { DriveTableRow } from '../index.type';
 
 interface UseTableDriveRowActionsControllerParams {
@@ -51,7 +47,7 @@ export function useTableDriveRowActionsController({
     if (isEditMode || !isDriveActionTarget(row.node)) return [];
 
     const actionTarget = row.node;
-    if (actionTarget.type === 'folder' && actionTarget.systemType === 'shared') return [];
+    if (actionTarget.type === 'folder' && actionTarget.systemType) return [];
 
     const openAction: FolderTableRowAction<DriveTableRow> =
       actionTarget.type === 'folder'
@@ -67,7 +63,6 @@ export function useTableDriveRowActionsController({
           };
 
     const actions: FolderTableRowAction<DriveTableRow>[] = [openAction];
-    if (actionTarget.type === 'folder' && actionTarget.systemType === 'page') return actions;
 
     const resourceKind =
       actionTarget.type === 'resource' || actionTarget.type === 'link'
@@ -117,8 +112,6 @@ export function useTableDriveRowActionsController({
         });
       }
     }
-
-    if (isDriveSystemFolderNode(actionTarget)) return actions;
 
     if (actionTarget.type !== 'link') {
       actions.push({

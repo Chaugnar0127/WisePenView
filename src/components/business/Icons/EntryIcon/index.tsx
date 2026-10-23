@@ -96,6 +96,9 @@ function EntryIcon({
       if (folderVariant === 'page') {
         return <PanelsTopLeft size={size} color={color ?? COLOR_FOLDER} />;
       }
+      if (folderVariant === 'note') {
+        return <NotebookPen size={size} color={color ?? COLOR_NOTE} />;
+      }
       if (folderVariant === 'shared') {
         return <Share2 size={size} color={color ?? COLOR_FOLDER} />;
       }

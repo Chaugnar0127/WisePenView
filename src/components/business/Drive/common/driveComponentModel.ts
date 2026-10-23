@@ -4,7 +4,9 @@ import {
   DRIVE_ROOT_ID,
   type DriveNode,
   type DriveNodeScope,
+  type DriveSystemFolderType,
   type FolderNode,
+  resolveDriveSystemFolderType,
 } from '@/domains/Drive';
 import i18n from '@/i18n';
 
@@ -27,7 +29,14 @@ export type DriveViewNode = DriveNode | DriveLoadingNode;
 
 export type DriveActionTarget = Extract<DriveNode, { type: 'folder' | 'resource' | 'link' }>;
 
-export type DriveFolderVariant = 'shared' | 'page' | undefined;
+export type DriveFolderVariant = Exclude<DriveSystemFolderType, 'trash'> | undefined;
+
+const DRIVE_SYSTEM_FOLDER_LABEL_KEYS = {
+  trash: 'node.trash',
+  shared: 'node.shared',
+  note: 'node.note',
+  page: 'node.page',
+} as const satisfies Record<DriveSystemFolderType, string>;
 
 export interface DriveSelectionItem {
   nodeId: string;
@@ -77,17 +86,11 @@ export const getDriveNodeLabel = (node: DriveViewNode): string => {
   switch (node.type) {
     case 'root':
       return node.name || i18n.t('node.drive', { ns: 'drive' });
-    case 'folder':
-      if (node.systemType === 'trash' || node.name === '.Trash') {
-        return i18n.t('node.trash', { ns: 'drive' });
-      }
-      if (node.systemType === 'shared') {
-        return i18n.t('node.shared', { ns: 'drive' });
-      }
-      if (node.systemType === 'page') {
-        return i18n.t('node.page', { ns: 'drive' });
-      }
+    case 'folder': {
+      const systemType = node.systemType ?? resolveDriveSystemFolderType(node.name);
+      if (systemType) return i18n.t(DRIVE_SYSTEM_FOLDER_LABEL_KEYS[systemType], { ns: 'drive' });
       return node.name || i18n.t('node.unnamedFolder', { ns: 'drive' });
+    }
     case 'resource':
     case 'link':
       return node.title || i18n.t('node.unnamedFile', { ns: 'drive' });
@@ -103,26 +106,19 @@ export const isDriveSystemFolderNode = (
   node: DriveViewNode | null | undefined
 ): node is FolderNode => node?.type === 'folder' && Boolean(node.systemType);
 
-export const isDriveSharedFolderNode = (
-  node: DriveViewNode | null | undefined
-): node is FolderNode => node?.type === 'folder' && node.systemType === 'shared';
-
-export const isDrivePageFolderNode = (node: DriveViewNode | null | undefined): node is FolderNode =>
-  node?.type === 'folder' && node.systemType === 'page';
-
 export const isDriveTrashFolderNode = (
   node: DriveViewNode | null | undefined
-): node is FolderNode =>
-  node?.type === 'folder' && (node.systemType === 'trash' || node.name === '.Trash');
+): node is FolderNode => {
+  if (node?.type !== 'folder') return false;
+  return (node.systemType ?? resolveDriveSystemFolderType(node.name)) === 'trash';
+};
 
 /** 系统目录只在名称与图标上有差异，操作限制统一由 systemType 控制。 */
 export const resolveDriveFolderVariant = (
   node: DriveViewNode | null | undefined
 ): DriveFolderVariant => {
-  if (node?.type !== 'folder') return undefined;
-  if (node.systemType === 'shared') return 'shared';
-  if (node.systemType === 'page') return 'page';
-  return undefined;
+  if (node?.type !== 'folder' || !node.systemType || node.systemType === 'trash') return undefined;
+  return node.systemType;
 };
 
 /** 从当前目录 nodeId 解析可挂载资源的 tagId */

@@ -5,11 +5,7 @@ import { resolveResourceKind, RESOURCE_KIND } from '@/domains/Resource/model/res
 import type { UserDisplayBase } from '@/domains/User';
 import { formatFileSize } from '@/utils/format/formatFileSize';
 
-import {
-  getDriveNodeLabel,
-  isDrivePageFolderNode,
-  isDriveSharedFolderNode,
-} from '../common/driveComponentModel';
+import { getDriveNodeLabel } from '../common/driveComponentModel';
 import type { DriveRow, DriveTableRow } from './index.type';
 
 const getDriveCreatorName = (user?: UserDisplayBase): string => user?.nickname?.trim() || '—';
@@ -39,7 +35,8 @@ export function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTab
       typeLabel = t('node.drive');
       break;
     case 'folder':
-      typeLabel = t('node.folder');
+      typeLabel =
+        node.systemType && node.systemType !== 'trash' ? t('node.system') : t('node.folder');
       break;
     case 'resource':
       typeLabel =
@@ -82,7 +79,9 @@ export function buildDriveTableRowMap(rows: DriveTableRow[]): Map<string, DriveT
 }
 
 export function isDrivePinnedFirstRow(row: DriveTableRow): boolean {
-  return isDriveSharedFolderNode(row.node) || isDrivePageFolderNode(row.node);
+  return (
+    row.node.type === 'folder' && Boolean(row.node.systemType) && row.node.systemType !== 'trash'
+  );
 }
 
 export const buildDriveTableColumns = (

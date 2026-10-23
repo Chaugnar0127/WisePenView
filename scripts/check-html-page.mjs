@@ -75,7 +75,7 @@ test('SINGLE_HTML_PAGE 与 html 扩展名统一归一化到 HTML 资源、查看
   assert.equal(resourceModule.isResourceViewerCompatible('html', 'pdfPreview'), false);
 });
 
-test('.Page 映射为 page 系统目录，并按 .Shared、.Page、普通目录排序', () => {
+test('.Note、.Page 映射为系统目录，并按 .Shared、.Note、.Page、普通目录排序', () => {
   const scope = driveModule.buildDriveNodeScope();
   const mapFolder = (tagId, tagName) =>
     driveModule.mapTagToFolderNode(
@@ -84,17 +84,19 @@ test('.Page 映射为 page 系统目录，并按 .Shared、.Page、普通目录�
       scope
     );
   const shared = mapFolder('shared', '.Shared');
+  const note = mapFolder('note', '.Note');
   const page = mapFolder('page', '.Page');
   const normal = mapFolder('normal', '工作');
 
+  assert.equal(note.systemType, 'note');
   assert.equal(page.systemType, 'page');
   assert.deepEqual(
-    driveModule.orderDriveFolderNodes([normal, page, shared]).map((node) => node.tagId),
-    ['shared', 'page', 'normal']
+    driveModule.orderDriveFolderNodes([normal, page, note, shared]).map((node) => node.tagId),
+    ['shared', 'note', 'page', 'normal']
   );
 });
 
-test('个人云盘根目录展示 .Page，同时继续隐藏 .Note、.Trash 与其他点号目录', async () => {
+test('个人云盘根目录展示 .Shared、.Note、.Page，同时隐藏 .Trash 与其他点号目录', async () => {
   const rootTag = {
     tagId: 'root',
     tagName: '/',
@@ -128,6 +130,7 @@ test('个人云盘根目录展示 .Page，同时继续隐藏 .Note、.Trash 与�
     page.folderNodes.map((node) => ({ tagId: node.tagId, systemType: node.systemType })),
     [
       { tagId: 'shared', systemType: 'shared' },
+      { tagId: 'note', systemType: 'note' },
       { tagId: 'page', systemType: 'page' },
       { tagId: 'work', systemType: undefined },
     ]

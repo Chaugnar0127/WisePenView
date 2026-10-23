@@ -18,7 +18,10 @@ import type {
   DriveActionTarget,
   DriveViewNode,
 } from '@/components/business/Drive/common/driveComponentModel';
-import { resolveDriveFolderVariant } from '@/components/business/Drive/common/driveComponentModel';
+import {
+  getDriveNodeLabel,
+  resolveDriveFolderVariant,
+} from '@/components/business/Drive/common/driveComponentModel';
 import EntryIcon from '@/components/business/Icons/EntryIcon';
 import type { FolderNode, RootNode } from '@/domains/Drive';
 import { useResourceDisplayName } from '@/hooks/useResourceDisplayName';
@@ -47,16 +50,13 @@ function getNodeDisplayName(
   node: DriveViewNode,
   resourceName: string,
   driveName: string,
-  sharedFolder: string,
-  pageFolder: string,
   unnamedFolder: string,
   loadingLabel: string,
   rootDisplayName?: string
 ): string {
   if (node.type === 'root') return rootDisplayName || node.name || driveName;
   if (node.type === 'folder') {
-    if (node.systemType === 'shared') return sharedFolder;
-    if (node.systemType === 'page') return pageFolder;
+    if (node.systemType) return getDriveNodeLabel(node);
     return node.name || unnamedFolder;
   }
   if (node.type === 'resource' || node.type === 'link') return resourceName;
@@ -97,8 +97,6 @@ function SidebarDriveNodeTitle({
     node,
     resourceName,
     t('drive:node.drive'),
-    t('drive:node.shared'),
-    t('drive:node.page'),
     t('drive:node.unnamedFolder'),
     t('drive:node.loading'),
     rootDisplayName

@@ -16,7 +16,7 @@ import { EditorSurfaceProvider, useEditorSurface } from '../_context';
 import { useEditorRuntime } from '../_runtime/useEditorRuntime';
 import type { EditorPresentation, EditorSurfaceProps } from '../editor.type';
 import { buildHtmlDocument } from './htmlDocument';
-import styles from './style.module.less';
+import styles from './style.module.scss';
 
 interface HtmlFrameProps {
   content: string;

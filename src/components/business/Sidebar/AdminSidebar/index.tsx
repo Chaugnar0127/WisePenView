@@ -1,6 +1,6 @@
 import UserProfile from '../_common/footer/UserProfile';
 import SidebarHeader from '../_common/header/SidebarHeader';
-import shellStyles from '../_common/sidebarShell.module.less';
+import shellStyles from '../_common/sidebarShell.module.scss';
 import AdminHeaderNav from './AdminHeaderNav';
 import styles from './style.module.less';
 

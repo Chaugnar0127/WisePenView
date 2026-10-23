@@ -32,7 +32,7 @@ import type {
 import ResourceToolbarOperations, {
   type ResourceToolbarOperationHandlers,
 } from './ResourceToolbarOperations';
-import styles from './style.module.less';
+import styles from './style.module.scss';
 
 interface ResourceToolbarMenuItemContentProps {
   icon: LucideIcon;

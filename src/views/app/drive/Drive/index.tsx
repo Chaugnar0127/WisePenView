@@ -22,7 +22,7 @@ import underlineTabs from '@/views/app/_common/underlineTabs.module.less';
 
 import FavoritesTab from '../_components/FavoritesTab';
 import UploadQueueTab from '../_components/UploadQueueTab';
-import styles from './style.module.less';
+import styles from './style.module.scss';
 
 export type DriveViewMode = 'uploadQueue' | 'tableDrive' | 'favorites' | 'trash';
 

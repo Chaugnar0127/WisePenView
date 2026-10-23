@@ -9,22 +9,26 @@
 
 ## 按变更范围选择
 
-| 变更范围                             | 必需验证                                                       | 条件验证                                                     |
-| ------------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------ |
-| Markdown、模板、普通配置             | `git diff --check`                                             | `pnpm lint`（若影响 JS 配置）                                |
-| `src/**/*.ts(x)`                     | `pnpm lint`、`pnpm typecheck`                                  | `pnpm build`（跨层或构建配置）                               |
-| `src/**/*.{less,css}`、主题 token    | `pnpm lint`、`pnpm check:radius`、`pnpm check:z-index`         | `pnpm build-storybook`（stories 变更）                       |
-| `src/domains/**`、registry、mock     | `pnpm lint`、`pnpm typecheck`、`pnpm check:mock`               | `pnpm build`                                                 |
-| `vite.config.ts`、tsconfig、Electron | `pnpm lint`、`pnpm typecheck`、`pnpm build`                    | 对应打包脚本                                                 |
-| 应用初始化、认证与运行时配置         | `pnpm lint`、`pnpm typecheck`、`pnpm check:mock`、`pnpm build` | `pnpm build --mode mock`、配置错误启动检查、浏览器运行态回归 |
-| Storybook 配置或 stories             | `pnpm lint`、`pnpm typecheck`                                  | `pnpm build-storybook`                                       |
-| UI 交互、路由、浮层                  | 上述静态检查                                                   | 用户明确授权后运行 mock 或浏览器回归                         |
+| 变更范围                               | 必需验证                                                                    | 条件验证                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Markdown、模板、普通配置               | `git diff --check`                                                          | `pnpm lint`（若影响 JS 配置）                                |
+| `src/**/*.ts(x)`                       | `pnpm lint`、`pnpm typecheck`                                               | `pnpm build`（跨层或构建配置）                               |
+| `src/**/*.{less,scss,css}`、主题 token | `pnpm lint`、`pnpm check:radius`、`pnpm check:z-index`、`pnpm check:styles` | `pnpm build-storybook`（stories 变更）                       |
+| `src/domains/**`、registry、mock       | `pnpm lint`、`pnpm typecheck`、`pnpm check:mock`                            | `pnpm build`                                                 |
+| `vite.config.ts`、tsconfig、Electron   | `pnpm lint`、`pnpm typecheck`、`pnpm build`                                 | 对应打包脚本                                                 |
+| 应用初始化、认证与运行时配置           | `pnpm lint`、`pnpm typecheck`、`pnpm check:mock`、`pnpm build`              | `pnpm build --mode mock`、配置错误启动检查、浏览器运行态回归 |
+| Storybook 配置或 stories               | `pnpm lint`、`pnpm typecheck`                                               | `pnpm build-storybook`                                       |
+| UI 交互、路由、浮层                    | 上述静态检查                                                                | 用户明确授权后运行 mock 或浏览器回归                         |
 
 ## CI 契约
 
-PR CI 固定执行 commitlint、格式检查、lint、文件长度规则、editor runtime、build、mock contract、API response contract、z-index 层级、圆角 token、note link 协议和 whitespace 检查。`Code Quality & Build Gate` 是 GitHub branch protection 的稳定检查名，修改 job 名称前必须同步仓库设置。
+PR CI 固定执行 commitlint、格式检查、lint、文件长度规则、editor runtime、build、mock contract、API response contract、z-index 层级、圆角 token、样式契约、note link 协议和 whitespace 检查。`Code Quality & Build Gate` 是 GitHub branch protection 的稳定检查名，修改 job 名称前必须同步仓库设置。
 
 本地可用 `pnpm verify:ci` 并行执行与 CI 相同的格式、lint、契约检查、类型检查和构建步骤。
+
+SCSS 分批迁移期间同时保留 Less 编译器。每批另执行 `pnpm build:app --mode mock`、`pnpm build-storybook` 和 `git diff --check`；逐份比较有序编译 CSS、CSS Modules 导出键及 composition。`check:styles` 先覆盖圆角与 z-index 的有效／违规 SCSS 样例，其他契约随对应样式迁移加入。
+
+依赖 PR 的 base 指向前一个迁移分支；CI 仅为这组具名分支额外触发现有 `Code Quality & Build Gate`，不改变检查内容或权限。
 
 ## 运行态记录
 

@@ -78,14 +78,16 @@ Prettier 格式化。全量 lint、提交钩子与 CI 共用同一份 ESLint 规
 
 ## 版本发布
 
-发布入口是 `package.json` 的 `version`，版本号刷新后由 GitHub Actions 自动发布，不再手工建标签和 Release：
+发布入口是 `package.json` 的 `version`。PR 合并到 `main` 后，由 `.github/workflows/release.yml` 自动处理补丁版本并创建同名 GitHub Release：
 
-1. 在 `main` 上提交版本号变更，例如 `chore: 更新版本号至 1.2.0`。
-2. 推送后由 `.github/workflows/release.yml` 比对本次推送前后的 `package.json` 版本号。
-3. 版本号有变化时，以该提交为基准打标签 `v<version>` 并创建同名 GitHub Release，Release 说明由提交记录生成。
+1. PR 已显式更新版本号时，直接以该版本打标签 `v<version>` 并发布，例如发布 `1.2.0`。
+2. PR 未更新版本号时，工作流自动创建 `chore/release-pr-<PR 号>` 分支和补丁版本 PR，将最后一位版本号加一。
+3. 补丁版本 PR 通过 `Code Quality & Build Gate` 后自动合并，再为该合并提交打标签并发布。
 
-版本号未变化时工作流直接跳过；标签或 Release 已存在时同样跳过，因此重复推送、重跑任务不会产生重复发布。
-需要补发已合并的版本时，可在 Actions 页面手动触发该工作流。
+`main` 受 ruleset 保护，版本提交也必须经过 PR，因此自动版本更新会额外产生一个已合并的版本 PR。重复运行同一发布任务或标签已存在时不会重复发布。
+发布工作流需要仓库启用 “Allow GitHub Actions to create and approve pull requests”，它只创建并合并自动版本 PR，不修改业务代码。
+
+需要补发当前版本时，可在 Actions 页面手动触发该工作流；当前版本标签已存在则跳过。
 
 版本快照只由标签 `v<version>` 承担，不再手工切 `v1.1.x` 版本分支：标签固定在发布提交上不会移动，
 而版本分支需要持续提交和维护才有意义。只有旧版本需要单独发补丁（例如 1.1.2 要在 1.2.0 之后补 1.1.3）时，

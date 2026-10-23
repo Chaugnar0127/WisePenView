@@ -82,12 +82,13 @@ Prettier 格式化。全量 lint、提交钩子与 CI 共用同一份 ESLint 规
 
 1. PR 已显式更新版本号时，直接以该版本打标签 `v<version>` 并发布，例如发布 `1.2.0`。
 2. PR 未更新版本号时，工作流自动创建 `chore/release-pr-<PR 号>` 分支和补丁版本 PR，将最后一位版本号加一。
-3. 补丁版本 PR 通过 `Code Quality & Build Gate` 后自动合并，再为该合并提交打标签并发布。
+3. 补丁版本 PR 通过轻量版 `Code Quality & Build Gate` 后自动合并，再为该合并提交打标签并发布。该门禁只校验 PR 仅修改 `package.json#version` 且补丁号恰好加一，不重复执行普通 PR 的 lint、类型检查和构建。
 
 `main` 受 ruleset 保护，版本提交也必须经过 PR，因此自动版本更新会额外产生一个已合并的版本 PR。重复运行同一发布任务或标签已存在时不会重复发布。
-发布工作流需要仓库启用 “Allow GitHub Actions to create and approve pull requests”，它只创建并合并自动版本 PR，不修改业务代码。
 
-需要补发当前版本时，可在 Actions 页面手动触发该工作流；当前版本标签已存在则跳过。
+自动版本 PR 使用仓库 Secret `RELEASE_TOKEN` 创建，避免 `GITHUB_TOKEN` 创建的 PR 每次都等待人工批准 Actions 工作流。令牌必须是仓库协作者持有的 fine-grained PAT，仅授权 `WisePenView`，并授予 `Contents: Read and write` 与 `Pull requests: Read and write`；配置后无需再启用 “Allow GitHub Actions to create and approve pull requests”。发布工作流只使用该令牌创建版本分支和 PR，合并仍由 CI 与 ruleset 约束。
+
+需要补发当前版本时，可在 Actions 页面手动触发该工作流；当前版本标签已存在则跳过。令牌过期或撤销后，发布任务会在创建版本 PR 前直接失败并给出配置提示。
 
 版本快照只由标签 `v<version>` 承担，不再手工切 `v1.1.x` 版本分支：标签固定在发布提交上不会移动，
 而版本分支需要持续提交和维护才有意义。只有旧版本需要单独发补丁（例如 1.1.2 要在 1.2.0 之后补 1.1.3）时，

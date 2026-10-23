@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import { getApiBaseUrl } from '@/apis/runtime';
 import { AppButton } from '@/components/base/Button';
 import { ResultState, Spin } from '@/components/base/Feedback';
 import EditorPresentationBinding from '@/components/editors/_runtime/EditorPresentationBinding';
@@ -33,8 +34,9 @@ function HtmlFrame({ content, title }: HtmlFrameProps) {
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
+    const assetBaseUrl = getApiBaseUrl();
     const url = URL.createObjectURL(
-      new Blob([buildHtmlDocument(content)], { type: 'text/html;charset=utf-8' })
+      new Blob([buildHtmlDocument(content, assetBaseUrl)], { type: 'text/html;charset=utf-8' })
     );
     iframe.src = url;
     return () => URL.revokeObjectURL(url);

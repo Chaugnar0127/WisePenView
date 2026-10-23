@@ -38,7 +38,7 @@ const resourceModule = await bundleModule(`
     RESOURCE_ACTION,
   } from '@/domains/Resource/enum';
   export { resolveEditorKind } from '@/components/editors/editorKind';
-  export { buildHtmlDocument, HTML_PAGE_CSP } from '@/components/editors/html/htmlDocument';
+  export { buildHtmlDocument, buildHtmlPageCsp } from '@/components/editors/html/htmlDocument';
   export { isHtmlPageReady } from '@/domains/HtmlPage/service/index.type';
 `);
 
@@ -163,17 +163,25 @@ test('仅当前版本大于 0 且对应版本 READY 时请求正文', () => {
 });
 
 test('CSP 文档包装保留原内容，并覆盖 head、html 和 fragment 三种输入', () => {
-  const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${resourceModule.HTML_PAGE_CSP}">`;
+  const assetOrigin = 'https://api.example.com';
+  const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${resourceModule.buildHtmlPageCsp(assetOrigin)}">`;
   const withHead = resourceModule.buildHtmlDocument(
-    '<!doctype html><html><head><title>已有页面</title></head><body><h1>正文</h1></body></html>'
+    '<!doctype html><html><head><title>已有页面</title></head><body><h1>正文</h1></body></html>',
+    assetOrigin
   );
-  const withHtml = resourceModule.buildHtmlDocument('<html><body><p>无 head</p></body></html>');
-  const fragment = resourceModule.buildHtmlDocument('<section>片段内容</section>');
+  const withHtml = resourceModule.buildHtmlDocument(
+    '<html><body><p>无 head</p></body></html>',
+    assetOrigin
+  );
+  const fragment = resourceModule.buildHtmlDocument('<section>片段内容</section>', assetOrigin);
 
   for (const document of [withHead, withHtml, fragment]) {
     assert.equal(document.match(/http-equiv="Content-Security-Policy"/g)?.length, 1);
     assert(document.includes(cspMeta));
     assert(document.includes('<meta charset="utf-8">'));
+    assert(document.includes('<base href="https://api.example.com/">'));
+    assert(document.includes(`style-src 'unsafe-inline' ${assetOrigin}`));
+    assert(document.includes(`base-uri ${assetOrigin}`));
   }
   assert(withHead.includes('<title>已有页面</title>'));
   assert(withHead.includes('<h1>正文</h1>'));

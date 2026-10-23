@@ -2,7 +2,8 @@ name: 自动发布版本
 
 # 触发时机：
 # - PR 合并到 main 后，如果 package.json 已更新则直接发布；否则自动创建补丁版本 PR，
-#   等 Code Quality & Build Gate 通过后合并并发布。main 受 ruleset 保护，版本提交不能直接推送。
+#   等轻量版 Code Quality & Build Gate 通过后合并并发布。main 受 ruleset 保护，版本提交不能直接推送。
+# - 版本 PR 使用 RELEASE_TOKEN 创建，避免 GITHUB_TOKEN 创建的 PR 进入 Actions 人工审批。
 # - 支持手动触发，用于补发当前 package.json 版本。
 on:
   pull_request_target:
@@ -10,9 +11,9 @@ on:
     branches: ['main']
   workflow_dispatch:
 
-# 创建版本分支与 PR、派发 CI、合并 PR、创建标签和 Release 需要写权限
+# 创建版本分支与 PR、读取 CI 状态、合并 PR、创建标签和 Release 所需权限
 permissions:
-  actions: write
+  actions: read
   checks: read
   contents: write
   pull-requests: write
@@ -115,10 +116,16 @@ jobs:
         id: bump
         if: steps.release.outputs.action == 'bump' && steps.release.outputs.skip != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           SOURCE_PR: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
+
+          if [ -z "${RELEASE_TOKEN}" ]; then
+            echo "::error::未配置 RELEASE_TOKEN。请使用有仓库写权限的细粒度令牌，并授予 Contents 与 Pull requests 写权限。"
+            exit 1
+          fi
 
           NEW_VERSION="$(node scripts/bump-patch-version.mjs)"
           # 极端情况下目标标签已存在时继续递增，保证发布幂等
@@ -133,10 +140,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "${BRANCH}"
           git add package.json
-          # 该提交只改版本号，CI 会在版本 PR 上重新执行完整检查
+          # 该提交只改版本号，版本 PR 使用轻量门禁，不重复执行完整构建
           git commit --no-verify -m "${TITLE}" -m "Release-PR: #${SOURCE_PR}"
           HEAD_SHA="$(git rev-parse HEAD)"
-          git push --force origin "HEAD:${BRANCH}"
+          # 使用用户令牌推送，PR 关联的 pull_request 工作流才会自动运行
+          git push --force \
+            "https://x-access-token:${RELEASE_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:${BRANCH}"
 
           PR_NUMBER="$(gh pr list --head "${BRANCH}" --state open --json number --jq '.[0].number // empty')"
           if [ -z "${PR_NUMBER}" ]; then
@@ -145,7 +155,7 @@ jobs:
               --head "${BRANCH}" \
               --title "${TITLE}" \
               --body "由 #${SOURCE_PR} 合并后自动生成的补丁版本更新。")"; then
-              echo "::error::无法创建补丁版本 PR，请确认仓库已启用 Allow GitHub Actions to create and approve pull requests"
+              echo "::error::无法创建补丁版本 PR，请确认 RELEASE_TOKEN 具有 Contents 与 Pull requests 写权限"
               exit 1
             fi
             PR_NUMBER="${PR_URL##*/}"
@@ -171,16 +181,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          # GITHUB_TOKEN 创建的 PR 不会自动触发工作流，显式派发同一套 CI
-          gh workflow run ci.yml --ref "${BRANCH}"
-
           RUN_ID=""
           for _ in $(seq 1 30); do
             RUN_ID="$(gh run list \
               --workflow ci.yml \
               --branch "${BRANCH}" \
               --commit "${HEAD_SHA}" \
-              --event workflow_dispatch \
+              --event pull_request \
               --limit 1 \
               --json databaseId \
               --jq '.[0].databaseId // empty')"
@@ -191,7 +198,7 @@ jobs:
           done
 
           if [ -z "${RUN_ID}" ]; then
-            echo "::error::未找到补丁版本分支的 CI 运行"
+            echo "::error::未找到补丁版本 PR 的 CI 运行，请确认 RELEASE_TOKEN 属于仓库协作者"
             exit 1
           fi
 

@@ -17,6 +17,7 @@ const enUSDrive = {
     shared: 'Shared',
     note: 'Notes',
     page: 'Pages',
+    system: 'System',
     folder: 'Folder',
     resource: 'Resource',
     htmlPage: 'HTML page',

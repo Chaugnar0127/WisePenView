@@ -17,6 +17,7 @@ const zhCNDrive = {
     shared: '共享',
     note: '笔记',
     page: '页面',
+    system: '系统',
     folder: '文件夹',
     resource: '资源',
     htmlPage: 'HTML 页面',

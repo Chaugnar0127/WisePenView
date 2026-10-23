@@ -35,7 +35,8 @@ export function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTab
       typeLabel = t('node.drive');
       break;
     case 'folder':
-      typeLabel = t('node.folder');
+      typeLabel =
+        node.systemType && node.systemType !== 'trash' ? t('node.system') : t('node.folder');
       break;
     case 'resource':
       typeLabel =

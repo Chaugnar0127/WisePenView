@@ -7,6 +7,7 @@ export const RESOURCE_KIND = createEnum([
   { value: 'file', key: 'FILE', label: '文件' },
   { value: 'skill', key: 'SKILL', label: '技能' },
   { value: 'agent', key: 'AGENT', label: '智能体' },
+  { value: 'html', key: 'HTML', label: 'HTML 页面' },
 ] as const);
 
 export type ResourceKind = EnumValue<typeof RESOURCE_KIND>;
@@ -18,6 +19,7 @@ export const RESOURCE_VIEWER = createEnum([
   { value: 'drawio', key: 'DRAWIO', label: 'DrawIO' },
   { value: 'skill', key: 'SKILL', label: '技能' },
   { value: 'agent', key: 'AGENT', label: '智能体' },
+  { value: 'html', key: 'HTML', label: 'HTML 页面' },
 ] as const);
 
 export type ResourceViewer = EnumValue<typeof RESOURCE_VIEWER>;
@@ -63,6 +65,9 @@ export const normalizeResourceKind = (resourceType?: string): ResourceKind | und
   if (normalized === RESOURCE_KIND.FILE) return RESOURCE_KIND.FILE;
   if (normalized === RESOURCE_KIND.SKILL) return RESOURCE_KIND.SKILL;
   if (normalized === RESOURCE_KIND.AGENT) return RESOURCE_KIND.AGENT;
+  if (normalized === RESOURCE_KIND.HTML || normalized === 'single_html_page') {
+    return RESOURCE_KIND.HTML;
+  }
 
   if (isDocumentResourceType(normalized)) return RESOURCE_KIND.FILE;
 
@@ -92,6 +97,9 @@ export const normalizeResourceViewer = (viewer?: string): ResourceViewer | undef
   if (normalized === RESOURCE_VIEWER.DRAWIO) return RESOURCE_VIEWER.DRAWIO;
   if (normalized === RESOURCE_VIEWER.SKILL) return RESOURCE_VIEWER.SKILL;
   if (normalized === RESOURCE_VIEWER.AGENT) return RESOURCE_VIEWER.AGENT;
+  if (normalized === RESOURCE_VIEWER.HTML || normalized === 'single_html_page') {
+    return RESOURCE_VIEWER.HTML;
+  }
 
   if (isOfficeResourceType(normalized)) return RESOURCE_VIEWER.OFFICE;
 
@@ -110,6 +118,7 @@ export const resolveResourceViewer = ({
   if (normalizedType === RESOURCE_KIND.DRAWIO) return RESOURCE_VIEWER.DRAWIO;
   if (normalizedType === RESOURCE_KIND.SKILL) return RESOURCE_VIEWER.SKILL;
   if (normalizedType === RESOURCE_KIND.AGENT) return RESOURCE_VIEWER.AGENT;
+  if (normalizedType === RESOURCE_KIND.HTML) return RESOURCE_VIEWER.HTML;
 
   if (normalizedType !== RESOURCE_KIND.FILE) return undefined;
 
@@ -132,6 +141,7 @@ export const isResourceViewerCompatible = (
   if (resourceType === RESOURCE_KIND.DRAWIO) return viewer === RESOURCE_VIEWER.DRAWIO;
   if (resourceType === RESOURCE_KIND.SKILL) return viewer === RESOURCE_VIEWER.SKILL;
   if (resourceType === RESOURCE_KIND.AGENT) return viewer === RESOURCE_VIEWER.AGENT;
+  if (resourceType === RESOURCE_KIND.HTML) return viewer === RESOURCE_VIEWER.HTML;
   if (resourceType === RESOURCE_KIND.FILE) {
     return viewer === RESOURCE_VIEWER.PDF_PREVIEW || viewer === RESOURCE_VIEWER.OFFICE;
   }

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import EntryIcon from '@/components/business/Icons/EntryIcon';
-import { useDocumentService, useNoteService } from '@/domains';
+import { useDocumentService, useHtmlPageService, useNoteService } from '@/domains';
 import { RESOURCE_ACTION, type ResourceAction, type ResourceItem } from '@/domains/Resource';
 import { resolveResourceKind, RESOURCE_KIND } from '@/domains/Resource/model/resourceTarget';
 import { ACCESS_CONTROL_SCOPE, type AccessControlScope } from '@/domains/Tag';
@@ -11,7 +11,10 @@ import type { UserDisplayBase } from '@/domains/User';
 import { useApi } from '@/hooks/useApi';
 import { formatFileSize } from '@/utils/format/formatFileSize';
 
-import { isDriveActionTarget } from '../../../common/driveComponentModel';
+import {
+  isDriveActionTarget,
+  resolveDriveFolderVariant,
+} from '../../../common/driveComponentModel';
 import { resolveTagPermissionActionPresetKey } from '../../../common/tagPermissionPreset';
 import type { DriveTableRow } from '../../index.type';
 import styles from './style.module.less';
@@ -78,6 +81,7 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
   const { t } = useTranslation(['drive', 'resource', 'common']);
   const noteService = useNoteService();
   const documentService = useDocumentService();
+  const htmlPageService = useHtmlPageService();
 
   const resourceNode =
     selectedRow && (selectedRow.node.type === 'resource' || selectedRow.node.type === 'link')
@@ -91,6 +95,9 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
   const shouldLoadDocumentMeta = Boolean(
     resourceNode?.resourceId && resourceKind === RESOURCE_KIND.FILE && !shouldLoadNoteMeta
   );
+  const shouldLoadHtmlMeta = Boolean(
+    resourceNode?.resourceId && resourceKind === RESOURCE_KIND.HTML
+  );
 
   const { data: noteMeta, loading: loadingNoteMeta } = useApi(
     () => noteService.getNoteInfoDisplay({ resourceId: resourceNode?.resourceId ?? '' }),
@@ -103,6 +110,13 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
     () => documentService.getDocInfo(resourceNode?.resourceId ?? ''),
     {
       ready: shouldLoadDocumentMeta,
+      refreshDeps: [resourceNode?.resourceId],
+    }
+  );
+  const { data: htmlPageInfo, loading: loadingHtmlPageInfo } = useApi(
+    () => htmlPageService.getHtmlPageInfo(resourceNode?.resourceId ?? ''),
+    {
+      ready: shouldLoadHtmlMeta,
       refreshDeps: [resourceNode?.resourceId],
     }
   );
@@ -133,8 +147,11 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
 
   const fallbackResourceInfo = selectedRow ? resolveResourceInfoFromNode(selectedRow) : undefined;
   const detailResourceInfo =
-    noteMeta?.resourceInfo ?? documentMeta?.resourceInfo ?? fallbackResourceInfo;
-  const detailLoading = loadingNoteMeta || loadingDocumentMeta;
+    noteMeta?.resourceInfo ??
+    documentMeta?.resourceInfo ??
+    htmlPageInfo?.resourceInfo ??
+    fallbackResourceInfo;
+  const detailLoading = loadingNoteMeta || loadingDocumentMeta || loadingHtmlPageInfo;
   const actionTarget = isDriveActionTarget(selectedRow.node) ? selectedRow.node : null;
   const shouldShowPermissionMeta = selectedRow.node.scope.type === 'group';
   const getActionLabel = (action: ResourceAction) => {
@@ -166,7 +183,7 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
         value: detailLoading ? (
           <DetailMetaLoading label={t('status.loading', { ns: 'common' })} />
         ) : (
-          noteMeta?.lastEditedAtText || EMPTY_META
+          noteMeta?.lastEditedAtText || htmlPageInfo?.versionInfo?.lastEditedAtText || EMPTY_META
         ),
       },
       {
@@ -191,7 +208,9 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
         value: detailLoading ? (
           <DetailMetaLoading label={t('status.loading', { ns: 'common' })} />
         ) : (
-          formatVersion(noteMeta?.version ?? documentMeta?.docMetaInfo.version)
+          formatVersion(
+            noteMeta?.version ?? documentMeta?.docMetaInfo.version ?? htmlPageInfo?.currentVersion
+          )
         ),
       },
       {
@@ -238,6 +257,7 @@ function DriveDetailPanel({ selectedRow, isEditMode, selectedCount }: DriveDetai
         <span className={styles.detailIcon} aria-hidden="true">
           <EntryIcon
             entryType={selectedRow.node.type === 'resource' ? 'resource' : selectedRow.node.type}
+            folderVariant={resolveDriveFolderVariant(selectedRow.node)}
             resourceType={
               selectedRow.node.type === 'resource' ? selectedRow.node.resourceType : undefined
             }

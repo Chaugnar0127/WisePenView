@@ -16,6 +16,7 @@ import {
   buildDriveRootNode,
   decodeNodeId,
   decodeRootNodeScope,
+  DRIVE_PAGE_TAG_NAME,
   DRIVE_SHARED_TAG_NAME,
   DRIVE_TRASH_TAG_NAME,
   mapResourceItemToChildNode,
@@ -61,6 +62,7 @@ const isVisibleFolderTag = (node: TagTreeNode): boolean => {
   const name = (node.tagName ?? '').trim();
   if (name === DRIVE_TRASH_TAG_NAME) return false;
   if (name === DRIVE_SHARED_TAG_NAME) return true;
+  if (name === DRIVE_PAGE_TAG_NAME) return true;
   return !name.startsWith(HIDDEN_TAG_PREFIX);
 };
 
@@ -149,9 +151,12 @@ export const createDriveServices = (
       if (groupId) return roots.filter(isVisibleFolderTag);
       const personalRoot = roots.find((tag) => tag.tagName === '/');
       const sharedTag = roots.find((tag) => tag.tagName === DRIVE_SHARED_TAG_NAME);
-      return [...(sharedTag ? [sharedTag] : []), ...(personalRoot?.children ?? [])].filter(
-        isVisibleFolderTag
-      );
+      const pageTag = roots.find((tag) => tag.tagName === DRIVE_PAGE_TAG_NAME);
+      return [
+        ...(sharedTag ? [sharedTag] : []),
+        ...(pageTag ? [pageTag] : []),
+        ...(personalRoot?.children ?? []),
+      ].filter(isVisibleFolderTag);
     }
     const tag = tagService.getRawTagById(parent.tagId, groupId);
     return (tag?.children ?? []).filter(isVisibleFolderTag);
@@ -332,9 +337,16 @@ export const createDriveServices = (
     const notFoundCode =
       type === 'trash'
         ? FRONTEND_CLIENT_ERROR.DRIVE_TRASH_TAG_NOT_FOUND
-        : FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND;
+        : type === 'page'
+          ? FRONTEND_CLIENT_ERROR.DRIVE_PAGE_TAG_NOT_FOUND
+          : FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND;
     if (scope.type !== 'personal') throw createClientError(notFoundCode);
-    const systemTagName = type === 'trash' ? DRIVE_TRASH_TAG_NAME : DRIVE_SHARED_TAG_NAME;
+    const systemTagName =
+      type === 'trash'
+        ? DRIVE_TRASH_TAG_NAME
+        : type === 'page'
+          ? DRIVE_PAGE_TAG_NAME
+          : DRIVE_SHARED_TAG_NAME;
     const roots = await tagService.getRawTagTree();
     const queue = [...roots];
     while (queue.length > 0) {

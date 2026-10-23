@@ -67,6 +67,8 @@ export function useTableDriveRowActionsController({
           };
 
     const actions: FolderTableRowAction<DriveTableRow>[] = [openAction];
+    if (actionTarget.type === 'folder' && actionTarget.systemType === 'page') return actions;
+
     const resourceKind =
       actionTarget.type === 'resource' || actionTarget.type === 'link'
         ? resolveResourceKind(actionTarget.resourceType)

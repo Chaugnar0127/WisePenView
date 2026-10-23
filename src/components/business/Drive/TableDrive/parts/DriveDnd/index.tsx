@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 import EntryIcon from '@/components/business/Icons/EntryIcon';
 
+import { resolveDriveFolderVariant } from '../../../common/driveComponentModel';
 import type { DriveTableRow } from '../../index.type';
 import styles from '../../style.module.less';
 
@@ -190,9 +191,7 @@ export function DriveDragOverlay({ row, count }: DriveDragOverlayProps) {
       <span className={styles.dragOverlayIcon}>
         <EntryIcon
           entryType={row.node.type === 'resource' ? 'resource' : row.node.type}
-          folderVariant={
-            row.node.type === 'folder' && row.node.systemType === 'shared' ? 'shared' : undefined
-          }
+          folderVariant={resolveDriveFolderVariant(row.node)}
           resourceType={row.node.type === 'resource' ? row.node.resourceType : undefined}
           resourceIconType={
             row.node.type === 'resource' || row.node.type === 'link'

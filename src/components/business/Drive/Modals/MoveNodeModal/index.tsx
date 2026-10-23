@@ -84,6 +84,7 @@ function MoveNodeModal({
       rootId={effectiveRootId}
       groupId={effectiveGroupId}
       disabledNodeIds={[...disabledTargetIds]}
+      isNodeSelectable={(node) => node.type !== 'folder' || !node.systemType}
       isSubmitting={moving}
       confirmText={t('actions.confirm', { ns: 'common' })}
       cancelText={t('actions.cancel', { ns: 'common' })}

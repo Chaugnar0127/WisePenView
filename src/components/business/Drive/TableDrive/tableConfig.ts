@@ -1,10 +1,15 @@
 import type { TFunction } from 'i18next';
 
 import type { FolderTableColumn } from '@/components/base/Table';
+import { resolveResourceKind, RESOURCE_KIND } from '@/domains/Resource/model/resourceTarget';
 import type { UserDisplayBase } from '@/domains/User';
 import { formatFileSize } from '@/utils/format/formatFileSize';
 
-import { getDriveNodeLabel, isDriveSharedFolderNode } from '../common/driveComponentModel';
+import {
+  getDriveNodeLabel,
+  isDrivePageFolderNode,
+  isDriveSharedFolderNode,
+} from '../common/driveComponentModel';
 import type { DriveRow, DriveTableRow } from './index.type';
 
 const getDriveCreatorName = (user?: UserDisplayBase): string => user?.nickname?.trim() || '—';
@@ -25,6 +30,10 @@ export function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTab
 
   // 根据节点种类生成类型文案。
   let typeLabel: string;
+  const resourceKind =
+    node.type === 'resource' || node.type === 'link'
+      ? resolveResourceKind(node.resourceType)
+      : undefined;
   switch (node.type) {
     case 'root':
       typeLabel = t('node.drive');
@@ -33,10 +42,13 @@ export function toDriveTableRow(node: DriveRow, t: TFunction<'drive'>): DriveTab
       typeLabel = t('node.folder');
       break;
     case 'resource':
-      typeLabel = node.resourceType ?? t('node.resource');
+      typeLabel =
+        resourceKind === RESOURCE_KIND.HTML
+          ? t('node.htmlPage')
+          : (node.resourceType ?? t('node.resource'));
       break;
     case 'link':
-      typeLabel = t('node.link');
+      typeLabel = resourceKind === RESOURCE_KIND.HTML ? t('node.htmlPage') : t('node.link');
       break;
   }
 
@@ -70,7 +82,7 @@ export function buildDriveTableRowMap(rows: DriveTableRow[]): Map<string, DriveT
 }
 
 export function isDrivePinnedFirstRow(row: DriveTableRow): boolean {
-  return isDriveSharedFolderNode(row.node);
+  return isDriveSharedFolderNode(row.node) || isDrivePageFolderNode(row.node);
 }
 
 export const buildDriveTableColumns = (

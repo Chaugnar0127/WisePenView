@@ -27,6 +27,8 @@ export type DriveViewNode = DriveNode | DriveLoadingNode;
 
 export type DriveActionTarget = Extract<DriveNode, { type: 'folder' | 'resource' | 'link' }>;
 
+export type DriveFolderVariant = 'shared' | 'page' | undefined;
+
 export interface DriveSelectionItem {
   nodeId: string;
   kind: DriveItemKind;
@@ -82,6 +84,9 @@ export const getDriveNodeLabel = (node: DriveViewNode): string => {
       if (node.systemType === 'shared') {
         return i18n.t('node.shared', { ns: 'drive' });
       }
+      if (node.systemType === 'page') {
+        return i18n.t('node.page', { ns: 'drive' });
+      }
       return node.name || i18n.t('node.unnamedFolder', { ns: 'drive' });
     case 'resource':
     case 'link':
@@ -102,10 +107,23 @@ export const isDriveSharedFolderNode = (
   node: DriveViewNode | null | undefined
 ): node is FolderNode => node?.type === 'folder' && node.systemType === 'shared';
 
+export const isDrivePageFolderNode = (node: DriveViewNode | null | undefined): node is FolderNode =>
+  node?.type === 'folder' && node.systemType === 'page';
+
 export const isDriveTrashFolderNode = (
   node: DriveViewNode | null | undefined
 ): node is FolderNode =>
   node?.type === 'folder' && (node.systemType === 'trash' || node.name === '.Trash');
+
+/** 系统目录只在名称与图标上有差异，操作限制统一由 systemType 控制。 */
+export const resolveDriveFolderVariant = (
+  node: DriveViewNode | null | undefined
+): DriveFolderVariant => {
+  if (node?.type !== 'folder') return undefined;
+  if (node.systemType === 'shared') return 'shared';
+  if (node.systemType === 'page') return 'page';
+  return undefined;
+};
 
 /** 从当前目录 nodeId 解析可挂载资源的 tagId */
 export const resolveCurrentFolderTagId = (
@@ -114,6 +132,10 @@ export const resolveCurrentFolderTagId = (
 ): string | undefined => {
   const decoded = decodeNodeId(currentNodeId);
   if (decoded.kind === 'folder') {
+    const currentNode = pathNodes.find(
+      (node): node is FolderNode => node.type === 'folder' && node.tagId === decoded.tagId
+    );
+    if (currentNode?.systemType) return undefined;
     return decoded.tagId;
   }
   if (decoded.kind === 'root') {

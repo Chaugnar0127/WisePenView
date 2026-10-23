@@ -5,7 +5,6 @@ import { useRef, useState } from 'react';
 import {
   type DriveActionTarget,
   isDriveActionTarget,
-  isDriveSharedFolderNode,
   isDriveSystemFolderNode,
 } from '../../common/driveComponentModel';
 import type { DriveRow } from '../index.type';
@@ -38,8 +37,8 @@ export function useTableDriveInteractionController({
   });
   const selectedActionTargetKeys = new Set(selectedActionTargets.map((node) => node.id));
   const canMoveSelection = selectedActionTargets.length > 0;
-  const sharedRowKeys = new Set(
-    [...rowMap.values()].filter((row) => isDriveSharedFolderNode(row.node)).map((row) => row.id)
+  const systemRowKeys = new Set(
+    [...rowMap.values()].filter((row) => isDriveSystemFolderNode(row.node)).map((row) => row.id)
   );
 
   const clearChecked = () => setCheckedRowKeys(new Set());
@@ -72,7 +71,7 @@ export function useTableDriveInteractionController({
     setCheckedRowKeys,
     setIsDetailPanelCollapsed,
     setSelectedRowId,
-    sharedRowKeys,
+    systemRowKeys,
     sortDescriptor,
   };
 }

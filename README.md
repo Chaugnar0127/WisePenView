@@ -51,7 +51,8 @@ pnpm mock
 `App` 挂载时启动、卸载时停止，HTTP 层只发布会话失效事件，未授权提示与登录跳转由 `App` 统一处理。
 
 前端 OTel 最小试点默认关闭；在对应 `.env.*` 或构建环境中设置 `VITE_OTEL_ENDPOINT`（同源
-`/otel` 或绝对 OTLP HTTP 地址）后启用 trace/log 上报。未配置时不会注册 provider，也不会产生上报请求。
+`/otel` 或绝对 OTLP HTTP 地址）后启用 trace/log 上报。Jenkins 只提供 `ENABLE_OTEL` 开关，开启后
+入口自动取 `VITE_API_BASE_URL` 下的 `/otel`。未配置时不会注册 provider，也不会产生上报请求。
 
 Mock 與正式環境共用 service、mapper、快取和 registry，只在 `@domain-apis` 替換 API 與 OSS I/O。模擬資料存於記憶體，重新整理後重置；API 契約變更時需同步更新 mock API。
 
@@ -78,14 +79,17 @@ Prettier 格式化。全量 lint、提交钩子与 CI 共用同一份 ESLint 规
 
 ## 版本发布
 
-发布入口是 `package.json` 的 `version`，版本号刷新后由 GitHub Actions 自动发布，不再手工建标签和 Release：
+发布入口是 `package.json` 的 `version`。PR 合并到 `main` 后，由 `.github/workflows/release.yml` 自动处理补丁版本并创建同名 GitHub Release：
 
-1. 在 `main` 上提交版本号变更，例如 `chore: 更新版本号至 1.2.0`。
-2. 推送后由 `.github/workflows/release.yml` 比对本次推送前后的 `package.json` 版本号。
-3. 版本号有变化时，以该提交为基准打标签 `v<version>` 并创建同名 GitHub Release，Release 说明由提交记录生成。
+1. PR 已显式更新版本号时，直接以该版本打标签 `v<version>` 并发布，例如发布 `1.2.0`。
+2. PR 未更新版本号时，工作流自动创建 `chore/release-pr-<PR 号>` 分支和补丁版本 PR，将最后一位版本号加一。
+3. 补丁版本 PR 通过轻量版 `Code Quality & Build Gate` 后自动合并，再为该合并提交打标签并发布。该门禁只校验 PR 仅修改 `package.json#version` 且补丁号恰好加一，不重复执行普通 PR 的 lint、类型检查和构建。
 
-版本号未变化时工作流直接跳过；标签或 Release 已存在时同样跳过，因此重复推送、重跑任务不会产生重复发布。
-需要补发已合并的版本时，可在 Actions 页面手动触发该工作流。
+`main` 受 ruleset 保护，版本提交也必须经过 PR，因此自动版本更新会额外产生一个已合并的版本 PR。重复运行同一发布任务或标签已存在时不会重复发布。
+
+自动版本 PR 使用仓库 Secret `RELEASE_TOKEN` 创建，避免 `GITHUB_TOKEN` 创建的 PR 每次都等待人工批准 Actions 工作流。令牌必须是仓库协作者持有的 fine-grained PAT，仅授权 `WisePenView`，并授予 `Contents: Read and write` 与 `Pull requests: Read and write`；配置后无需再启用 “Allow GitHub Actions to create and approve pull requests”。发布工作流只使用该令牌创建版本分支和 PR，合并仍由 CI 与 ruleset 约束。
+
+需要补发当前版本时，可在 Actions 页面手动触发该工作流；当前版本标签已存在则跳过。令牌过期或撤销后，发布任务会在创建版本 PR 前直接失败并给出配置提示。
 
 版本快照只由标签 `v<version>` 承担，不再手工切 `v1.1.x` 版本分支：标签固定在发布提交上不会移动，
 而版本分支需要持续提交和维护才有意义。只有旧版本需要单独发补丁（例如 1.1.2 要在 1.2.0 之后补 1.1.3）时，

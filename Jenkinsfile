@@ -23,6 +23,7 @@ pipeline {
         string(name: 'VITE_NETWORK_PROBE_TIMEOUT', defaultValue: '1000', description: '校内 API 探测超时，单位毫秒')
         string(name: 'VITE_DRAWIO_EMBED_URL', defaultValue: 'https://drawio.wisepen.oriole.cn/index.html', description: 'DrawIO 嵌入地址')
         string(name: 'VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL', defaultValue: 'https://office.wisepen.oriole.cn', description: 'ONLYOFFICE Document Server 前端访问地址')
+        booleanParam(name: 'ENABLE_OTEL', defaultValue: false, description: '是否启用前端 OTel，入口自动使用 API 地址下的 /otel')
 
         string(name: 'OSS_ENDPOINT', defaultValue: '', description: '阿里云 OSS Endpoint，例如 oss-cn-shanghai.aliyuncs.com')
         string(name: 'OSS_BUCKET', defaultValue: '', description: '阿里云 OSS Bucket 名称')
@@ -110,6 +111,13 @@ pipeline {
                   *) echo "不支持的 BUILD_MODE: ${BUILD_MODE}"; exit 1 ;;
                 esac
 
+                # OTel 入口固定跟随 API 地址，构建时只需要决定是否开启。
+                case "${ENABLE_OTEL}" in
+                  true) VITE_OTEL_ENDPOINT="${VITE_API_BASE_URL%/}/otel" ;;
+                  false) VITE_OTEL_ENDPOINT= ;;
+                  *) echo "ENABLE_OTEL 必须是 true 或 false：${ENABLE_OTEL}"; exit 1 ;;
+                esac
+
                 TARGET_ENV_FILE=".env.${BUILD_MODE}"
                 cat > "${TARGET_ENV_FILE}" <<EOF
 VITE_API_BASE_URL=${VITE_API_BASE_URL}
@@ -118,6 +126,7 @@ VITE_INTRANET_PING_PATH=${VITE_INTRANET_PING_PATH}
 VITE_NETWORK_PROBE_TIMEOUT=${VITE_NETWORK_PROBE_TIMEOUT}
 VITE_DRAWIO_EMBED_URL=${VITE_DRAWIO_EMBED_URL}
 VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL=${VITE_ONLYOFFICE_DOCUMENT_SERVER_PUBLIC_URL}
+VITE_OTEL_ENDPOINT=${VITE_OTEL_ENDPOINT}
 VITE_X_DEVELOPER=
 EOF
 

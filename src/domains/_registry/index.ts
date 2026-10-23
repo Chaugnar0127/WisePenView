@@ -16,6 +16,7 @@ export {
   useDocumentService,
   useDriveService,
   useGroupService,
+  useHtmlPageService,
   useImageService,
   useInlineCommentService,
   useInteractService,

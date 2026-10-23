@@ -8,6 +8,7 @@ export { AuthApi } from '@/domains/Auth/apis/AuthApi';
 export { ChatApi, ChatCompletionApi, ChatSessionApi } from '@/domains/Chat/apis/ChatApi';
 export { DocumentApi } from '@/domains/Document/apis/DocumentApi';
 export { GroupApi, GroupMemberApi, GroupResConfigApi } from '@/domains/Group/apis/GroupApi';
+export { HtmlPageApi } from '@/domains/HtmlPage/apis/HtmlPageApi';
 export { ImageApi } from '@/domains/Image/apis/ImageApi';
 export { InlineCommentApi } from '@/domains/InlineComment/apis/InlineCommentApi';
 export { CommentApi } from '@/domains/Interact/apis/CommentApi';

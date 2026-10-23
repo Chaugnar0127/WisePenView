@@ -149,6 +149,10 @@ export function useTableDriveActionsController({
   const existingFolderNames = currentRows
     .filter((row) => row.node.type === 'folder')
     .map((row) => row.name.trim());
+  const currentContainer = resolveCurrentDriveContainer(currentNodeId, pathNodes);
+  const canCreateFolder = Boolean(
+    currentContainer && (currentContainer.type === 'root' || !currentContainer.systemType)
+  );
   const resourceDriveLocation = mountTagId ? { scope, mountTagId } : undefined;
 
   const {
@@ -392,7 +396,7 @@ export function useTableDriveActionsController({
   const showCreateMenu = Boolean(
     !disabled &&
     !isTrashView &&
-    (toolbarConfig.canCreateFolder ||
+    ((toolbarConfig.canCreateFolder && canCreateFolder) ||
       (canCreateInCurrentFolder &&
         (toolbarConfig.canCreateNote ||
           toolbarConfig.canCreateDrawio ||
@@ -404,7 +408,7 @@ export function useTableDriveActionsController({
   const createMenuItems = (() => {
     if (!showCreateMenu) return [];
     const items: CreateMenuItem[] = [];
-    if (toolbarConfig.canCreateFolder) {
+    if (toolbarConfig.canCreateFolder && canCreateFolder) {
       items.push({ id: 'folder', label: t('create.folder') });
     }
     if (canCreateInCurrentFolder && toolbarConfig.canCreateDrawio) {

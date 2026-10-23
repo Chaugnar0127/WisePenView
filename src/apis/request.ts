@@ -32,6 +32,33 @@ function unwrap<T>(res: unknown): T {
   return res.data as T;
 }
 
+/**
+ * 文本接口可能仍以 HTTP 200 + R envelope 返回业务错误。
+ * 仅当正文确为 envelope 时走统一错误处理，其余内容原样作为领域文本。
+ */
+export function parseTextApiResponse(value: unknown): string {
+  if (typeof value !== 'string') {
+    throw new WisePenError({
+      code: FRONTEND_NETWORK_ERROR.INVALID_RESPONSE,
+      source: 'http',
+      message: 'API 文本响应契约无效',
+    });
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('{')) return value;
+
+  try {
+    const parsed: unknown = JSON.parse(trimmed);
+    if (!isApiResponseEnvelope(parsed)) return value;
+    checkResponse(parsed);
+    return typeof parsed.data === 'string' ? parsed.data : value;
+  } catch (error) {
+    if (error instanceof WisePenError) throw error;
+    return value;
+  }
+}
+
 export async function apiGet<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
   return unwrap<T>(await httpClient.get(url, config));
 }
@@ -42,6 +69,16 @@ export async function apiPost<T>(
   config?: AxiosRequestConfig
 ): Promise<T> {
   return unwrap<T>(await httpClient.post(url, data, config));
+}
+
+/** 读取裸文本响应；仅用于后端明确声明非 R<T> 的接口。 */
+export async function apiGetText(url: string, config?: AxiosRequestConfig): Promise<string> {
+  const response = await httpClient.get<unknown>(url, {
+    responseType: 'text',
+    transformResponse: [(data: unknown) => data],
+    ...config,
+  });
+  return parseTextApiResponse(response);
 }
 
 export async function apiPut<T>(

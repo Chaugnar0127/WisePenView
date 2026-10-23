@@ -13,8 +13,42 @@ import type {
 
 export const DRIVE_ROOT_ID = 'drive-root';
 export const DRIVE_SHARED_TAG_NAME = '.Shared';
+export const DRIVE_NOTE_TAG_NAME = '.Note';
+export const DRIVE_PAGE_TAG_NAME = '.Page';
 export const DRIVE_TRASH_TAG_NAME = '.Trash';
 const DRIVE_GROUP_ROOT_PREFIX = 'drive-root:group:';
+const NON_SYSTEM_FOLDER_ORDER = Number.MAX_SAFE_INTEGER;
+
+export interface DriveSystemFolderDefinition {
+  tagName: string;
+  visible: boolean;
+  order: number;
+}
+
+export const DRIVE_SYSTEM_FOLDER_DEFINITIONS = {
+  shared: { tagName: DRIVE_SHARED_TAG_NAME, visible: true, order: 0 },
+  note: { tagName: DRIVE_NOTE_TAG_NAME, visible: true, order: 1 },
+  page: { tagName: DRIVE_PAGE_TAG_NAME, visible: true, order: 2 },
+  trash: { tagName: DRIVE_TRASH_TAG_NAME, visible: false, order: 3 },
+} as const satisfies Record<DriveSystemFolderType, DriveSystemFolderDefinition>;
+
+const DRIVE_SYSTEM_FOLDER_TYPES = Object.keys(
+  DRIVE_SYSTEM_FOLDER_DEFINITIONS
+) as DriveSystemFolderType[];
+
+export const DRIVE_ROOT_SYSTEM_FOLDER_TYPES: readonly DriveSystemFolderType[] =
+  DRIVE_SYSTEM_FOLDER_TYPES.filter((type) => DRIVE_SYSTEM_FOLDER_DEFINITIONS[type].visible).sort(
+    (left, right) =>
+      DRIVE_SYSTEM_FOLDER_DEFINITIONS[left].order - DRIVE_SYSTEM_FOLDER_DEFINITIONS[right].order
+  );
+
+export const getDriveSystemFolderDefinition = (type: DriveSystemFolderType) =>
+  DRIVE_SYSTEM_FOLDER_DEFINITIONS[type];
+
+export const resolveDriveSystemFolderType = (tagName: string): DriveSystemFolderType | undefined =>
+  DRIVE_SYSTEM_FOLDER_TYPES.find(
+    (type) => DRIVE_SYSTEM_FOLDER_DEFINITIONS[type].tagName === tagName
+  );
 
 type EncodedNodeKind = 'folder' | 'resource' | 'link';
 
@@ -26,17 +60,11 @@ type DecodedNodeId =
   | { kind: 'unknown'; raw: string };
 
 const getFolderName = (tagName: string): string => {
-  if (tagName === '/' || tagName === DRIVE_SHARED_TAG_NAME || tagName === DRIVE_TRASH_TAG_NAME) {
+  if (tagName === '/' || resolveDriveSystemFolderType(tagName)) {
     return '';
   }
   if (tagName.startsWith('/')) return tagName.slice(1);
   return tagName;
-};
-
-const resolveSystemFolderType = (tagName: string): DriveSystemFolderType | undefined => {
-  if (tagName === DRIVE_TRASH_TAG_NAME) return 'trash';
-  if (tagName === DRIVE_SHARED_TAG_NAME) return 'shared';
-  return undefined;
 };
 
 const encodeNodeId = (kind: EncodedNodeKind, ...parts: string[]): string => {
@@ -103,7 +131,7 @@ export const mapTagToFolderNode = (
     name: getFolderName(tag.tagName),
     tagCreator: tag.tagCreator,
     creatorInfo: tag.creatorInfo,
-    systemType: resolveSystemFolderType(tag.tagName),
+    systemType: resolveDriveSystemFolderType(tag.tagName),
     description: tag.tagDesc,
     taggedResourceAclGrantScope: tag.taggedResourceAclGrantScope,
     tagMountPermissionScope: tag.tagMountPermissionScope,
@@ -113,18 +141,11 @@ export const mapTagToFolderNode = (
 };
 
 export const orderDriveFolderNodes = (nodes: FolderNode[]): FolderNode[] => {
-  const sharedNodes: FolderNode[] = [];
-  const remainingNodes: FolderNode[] = [];
-
-  nodes.forEach((node) => {
-    if (node.systemType === 'shared') {
-      sharedNodes.push(node);
-      return;
-    }
-    remainingNodes.push(node);
-  });
-
-  return [...sharedNodes, ...remainingNodes];
+  const getOrder = (node: FolderNode): number =>
+    node.systemType
+      ? DRIVE_SYSTEM_FOLDER_DEFINITIONS[node.systemType].order
+      : NON_SYSTEM_FOLDER_ORDER;
+  return [...nodes].sort((left, right) => getOrder(left) - getOrder(right));
 };
 
 export const mapResourceItemToChildNode = (

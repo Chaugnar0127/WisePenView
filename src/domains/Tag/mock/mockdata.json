@@ -36,8 +36,20 @@
       "isPath": true
     },
     {
+      "tagId": "tag-note",
+      "tagName": ".Note",
+      "parentId": "0",
+      "isPath": true
+    },
+    {
       "tagId": "tag-shared",
       "tagName": ".Shared",
+      "parentId": "0",
+      "isPath": true
+    },
+    {
+      "tagId": "tag-page",
+      "tagName": ".Page",
       "parentId": "0",
       "isPath": true
     },

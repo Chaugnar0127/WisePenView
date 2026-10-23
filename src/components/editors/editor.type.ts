@@ -10,7 +10,7 @@ import type {
 } from '@/domains/Resource';
 import type { ResourceKind, ResourceViewer } from '@/domains/Resource/model/resourceTarget';
 
-export type EditorKind = 'note' | 'pdf' | 'skill' | 'agent' | 'drawio' | 'office';
+export type EditorKind = 'note' | 'pdf' | 'skill' | 'agent' | 'drawio' | 'office' | 'html';
 export interface EditorTarget {
   resourceId: string;
   resourceType: ResourceKind;

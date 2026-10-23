@@ -6,6 +6,7 @@ import type { ICourseService } from '@/domains/Course';
 import type { IDocumentService } from '@/domains/Document';
 import type { IDriveService } from '@/domains/Drive';
 import type { IGroupService } from '@/domains/Group';
+import type { IHtmlPageService } from '@/domains/HtmlPage';
 import type { IImageService } from '@/domains/Image';
 import type { IInlineCommentService } from '@/domains/InlineComment';
 import type { IInteractService } from '@/domains/Interact';
@@ -35,6 +36,7 @@ export const useCourseService = (): ICourseService => useServicesContext().cours
 export const useDocumentService = (): IDocumentService => useServicesContext().documentService;
 export const useDriveService = (): IDriveService => useServicesContext().driveService;
 export const useGroupService = (): IGroupService => useServicesContext().groupService;
+export const useHtmlPageService = (): IHtmlPageService => useServicesContext().htmlPageService;
 export const useImageService = (): IImageService => useServicesContext().imageService;
 export const useInlineCommentService = (): IInlineCommentService =>
   useServicesContext().inlineCommentService;

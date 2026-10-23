@@ -6,6 +6,7 @@ import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
 import { publicAppConfig } from '@/config/runtimeConfig';
+import { createUuid } from '@/utils/random/createUuid';
 
 const SERVICE_NAME = 'wisepen-web';
 const OTEL_SESSION_KEY = 'wisepen.otel.session';
@@ -22,11 +23,11 @@ const readSessionId = (): string => {
   try {
     const current = sessionStorage.getItem(OTEL_SESSION_KEY);
     if (current) return current;
-    const next = crypto.randomUUID();
+    const next = createUuid();
     sessionStorage.setItem(OTEL_SESSION_KEY, next);
     return next;
   } catch {
-    return crypto.randomUUID();
+    return createUuid();
   }
 };
 

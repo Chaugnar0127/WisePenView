@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 
 import type { FolderTableRowAction } from '@/components/base/Table';
 import type { ResourcePermissionModalTarget } from '@/components/business/Drive/Modals';
-import type { DriveSystemFolderType } from '@/domains/Drive';
 import {
   resolveResourceKind,
   RESOURCE_KIND,
@@ -10,14 +9,8 @@ import {
   type ResourceViewer,
 } from '@/domains/Resource/model/resourceTarget';
 
-import {
-  type DriveActionTarget,
-  isDriveActionTarget,
-  isDriveSystemFolderNode,
-} from '../../common/driveComponentModel';
+import { type DriveActionTarget, isDriveActionTarget } from '../../common/driveComponentModel';
 import type { DriveTableRow } from '../index.type';
-
-const SYSTEM_FOLDERS_WITH_ONLY_OPEN_ACTION = new Set<DriveSystemFolderType>(['note', 'page']);
 
 interface UseTableDriveRowActionsControllerParams {
   groupId?: string;
@@ -54,7 +47,7 @@ export function useTableDriveRowActionsController({
     if (isEditMode || !isDriveActionTarget(row.node)) return [];
 
     const actionTarget = row.node;
-    if (actionTarget.type === 'folder' && actionTarget.systemType === 'shared') return [];
+    if (actionTarget.type === 'folder' && actionTarget.systemType) return [];
 
     const openAction: FolderTableRowAction<DriveTableRow> =
       actionTarget.type === 'folder'
@@ -70,13 +63,6 @@ export function useTableDriveRowActionsController({
           };
 
     const actions: FolderTableRowAction<DriveTableRow>[] = [openAction];
-    if (
-      actionTarget.type === 'folder' &&
-      actionTarget.systemType &&
-      SYSTEM_FOLDERS_WITH_ONLY_OPEN_ACTION.has(actionTarget.systemType)
-    ) {
-      return actions;
-    }
 
     const resourceKind =
       actionTarget.type === 'resource' || actionTarget.type === 'link'
@@ -126,8 +112,6 @@ export function useTableDriveRowActionsController({
         });
       }
     }
-
-    if (isDriveSystemFolderNode(actionTarget)) return actions;
 
     if (actionTarget.type !== 'link') {
       actions.push({

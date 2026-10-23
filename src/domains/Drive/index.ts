@@ -17,6 +17,7 @@ export {
   decodeRootNodeScope,
   DRIVE_ROOT_ID,
   mapTagToFolderNode,
+  resolveDriveSystemFolderType,
 } from './model/driveNode';
 export type {
   AddResourcesToGroupParams,

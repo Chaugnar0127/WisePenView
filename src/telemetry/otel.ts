@@ -6,6 +6,7 @@ import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
 import { publicAppConfig } from '@/config/runtimeConfig';
+import { createUuid } from '@/utils/random/createUuid';
 
 const SERVICE_NAME = 'wisepen-web';
 const OTEL_SESSION_KEY = 'wisepen.otel.session';
@@ -18,15 +19,21 @@ const buildTelemetryUrlPattern = (value: string): RegExp => {
   return new RegExp(`${escapeRegExp(normalizedPath)}/v1/(traces|logs)$`);
 };
 
+/** 将显式 API Origin 转为 SDK 所需的锚定正则；字符串配置只接受完整 URL 精确匹配。 */
+const buildTracePropagationPatterns = (baseUrls: readonly string[]): RegExp[] =>
+  Array.from(new Set(baseUrls.map((baseUrl) => new URL(baseUrl).origin))).map(
+    (origin) => new RegExp(`^${escapeRegExp(origin)}(?:/|$)`)
+  );
+
 const readSessionId = (): string => {
   try {
     const current = sessionStorage.getItem(OTEL_SESSION_KEY);
     if (current) return current;
-    const next = crypto.randomUUID();
+    const next = createUuid();
     sessionStorage.setItem(OTEL_SESSION_KEY, next);
     return next;
   } catch {
-    return crypto.randomUUID();
+    return createUuid();
   }
 };
 
@@ -45,6 +52,7 @@ if (isTelemetryEnabled && endpoint) {
   const apiBaseUrls = [publicAppConfig.api.baseUrl, publicAppConfig.api.intranetBaseUrl].filter(
     (value): value is string => Boolean(value)
   );
+  const apiTracePropagationPatterns = buildTracePropagationPatterns(apiBaseUrls);
   const telemetryUrlPattern = buildTelemetryUrlPattern(exportBaseUrl);
 
   try {
@@ -67,11 +75,11 @@ if (isTelemetryEnabled && endpoint) {
       instrumentations: [
         new FetchInstrumentation({
           ignoreUrls: [telemetryUrlPattern],
-          propagateTraceHeaderCorsUrls: apiBaseUrls,
+          propagateTraceHeaderCorsUrls: apiTracePropagationPatterns,
         }),
         new XMLHttpRequestInstrumentation({
           ignoreUrls: [telemetryUrlPattern],
-          propagateTraceHeaderCorsUrls: apiBaseUrls,
+          propagateTraceHeaderCorsUrls: apiTracePropagationPatterns,
         }),
       ],
     });

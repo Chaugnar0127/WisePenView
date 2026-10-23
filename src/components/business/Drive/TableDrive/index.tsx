@@ -19,7 +19,11 @@ import { GUIDE_ACTION_ID, GUIDE_TOOL_ID } from '@/constants/tour';
 import type { ResourceViewer } from '@/domains/Resource/model/resourceTarget';
 
 import { buildDriveBreadcrumbItems } from '../common/driveBreadcrumb';
-import { resolveCurrentFolderTagId, resolveDriveScope } from '../common/driveComponentModel';
+import {
+  resolveCurrentFolderTagId,
+  resolveDriveFolderVariant,
+  resolveDriveScope,
+} from '../common/driveComponentModel';
 import { useOpenDriveNode } from '../common/useOpenDriveNode';
 import {
   useTableDriveActionsController,
@@ -34,7 +38,7 @@ import type { DriveTableRow, TableDriveProps } from './index.type';
 import CreateMenu from './parts/CreateMenu';
 import DriveDetailPanel from './parts/DriveDetailPanel';
 import { DriveDragOverlay, ExternalFileDroppableBreadcrumb } from './parts/DriveDnd';
-import styles from './style.module.less';
+import styles from './style.module.scss';
 import { buildDriveTableColumns, isDrivePinnedFirstRow } from './tableConfig';
 
 const DRIVE_DRAG_OVERLAY_CURSOR_OFFSET = { x: 12, y: 12 };
@@ -197,7 +201,7 @@ function TableDrive({
         interaction.clearSelectedRow();
       }
     },
-    hiddenKeys: interaction.sharedRowKeys,
+    hiddenKeys: interaction.systemRowKeys,
   };
 
   const handleRowSelect = (row: DriveTableRow) => {
@@ -360,11 +364,7 @@ function TableDrive({
                           ? row.node.resourceIconType
                           : undefined
                       }
-                      folderVariant={
-                        row.node.type === 'folder' && row.node.systemType === 'shared'
-                          ? 'shared'
-                          : undefined
-                      }
+                      folderVariant={resolveDriveFolderVariant(row.node)}
                     />
                   )}
                   renderNameContent={renderNameContent}

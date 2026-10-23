@@ -8,12 +8,12 @@ import EntryIcon from '@/components/business/Icons/EntryIcon';
 import { GUIDE_TOOL_ID } from '@/constants/tour';
 
 import { buildDriveBreadcrumbItems } from '../common/driveBreadcrumb';
-import { resolveDriveScope } from '../common/driveComponentModel';
+import { resolveDriveFolderVariant, resolveDriveScope } from '../common/driveComponentModel';
 import { useOpenDriveNode } from '../common/useOpenDriveNode';
 import { useTableDriveNavigationController } from '../TableDrive/controllers';
 import type { DriveTableRow, TableDriveProps } from '../TableDrive/index.type';
 import { isDrivePinnedFirstRow, toDriveTableRow } from '../TableDrive/tableConfig';
-import styles from './style.module.less';
+import styles from './style.module.scss';
 
 function getMobileRowMeta(row: DriveTableRow) {
   if (row.entryType === 'loading') return '';
@@ -67,9 +67,7 @@ function MobileDrive({
       <span className={styles.mobileEntryIcon}>
         <EntryIcon
           entryType={row.node.type === 'resource' ? 'resource' : row.node.type}
-          folderVariant={
-            row.node.type === 'folder' && row.node.systemType === 'shared' ? 'shared' : undefined
-          }
+          folderVariant={resolveDriveFolderVariant(row.node)}
           resourceType={row.node.type === 'resource' ? row.node.resourceType : undefined}
           resourceIconType={
             row.node.type === 'resource' || row.node.type === 'link'
@@ -116,11 +114,7 @@ function MobileDrive({
                   ? row.node.resourceIconType
                   : undefined
               }
-              folderVariant={
-                row.node.type === 'folder' && row.node.systemType === 'shared'
-                  ? 'shared'
-                  : undefined
-              }
+              folderVariant={resolveDriveFolderVariant(row.node)}
             />
           )}
           renderNameContent={renderNameContent}

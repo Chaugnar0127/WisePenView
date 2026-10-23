@@ -4,23 +4,30 @@ import type {
   DriveNode,
   DriveNodeScope,
   DriveResourceNode,
+  DriveSystemFolderType,
   FolderNode,
 } from '@/domains/Drive';
 import type { IResourceService, ResourceItem } from '@/domains/Resource';
 import { RESOURCE_SORT_BY, RESOURCE_SORT_DIR } from '@/domains/Resource';
 import type { ITagService, TagTreeNode } from '@/domains/Tag';
 import { normalizeTagGroupId } from '@/domains/Tag/utils/normalizeTagGroupId';
-import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
+import {
+  createClientError,
+  FRONTEND_CLIENT_ERROR,
+  type FrontendClientErrorCode,
+} from '@/utils/error';
 
 import {
   buildDriveRootNode,
   decodeNodeId,
   decodeRootNodeScope,
-  DRIVE_SHARED_TAG_NAME,
-  DRIVE_TRASH_TAG_NAME,
+  DRIVE_ROOT_SYSTEM_FOLDER_TYPES,
+  DRIVE_SYSTEM_FOLDER_DEFINITIONS,
+  getDriveSystemFolderDefinition,
   mapResourceItemToChildNode,
   mapTagToFolderNode,
   orderDriveFolderNodes,
+  resolveDriveSystemFolderType,
 } from '../model/driveNode';
 import type {
   AddResourcesToGroupParams,
@@ -46,6 +53,13 @@ const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
 const HIDDEN_TAG_PREFIX = '.';
 
+const DRIVE_SYSTEM_FOLDER_NOT_FOUND_CODES = {
+  trash: FRONTEND_CLIENT_ERROR.DRIVE_TRASH_TAG_NOT_FOUND,
+  shared: FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND,
+  note: FRONTEND_CLIENT_ERROR.DRIVE_NOTE_TAG_NOT_FOUND,
+  page: FRONTEND_CLIENT_ERROR.DRIVE_PAGE_TAG_NOT_FOUND,
+} as const satisfies Record<DriveSystemFolderType, FrontendClientErrorCode>;
+
 interface DriveServicesDeps {
   tagService: ITagService;
   resourceService: IResourceService;
@@ -59,8 +73,8 @@ interface ResourceCursor {
 
 const isVisibleFolderTag = (node: TagTreeNode): boolean => {
   const name = (node.tagName ?? '').trim();
-  if (name === DRIVE_TRASH_TAG_NAME) return false;
-  if (name === DRIVE_SHARED_TAG_NAME) return true;
+  const systemType = resolveDriveSystemFolderType(name);
+  if (systemType) return DRIVE_SYSTEM_FOLDER_DEFINITIONS[systemType].visible;
   return !name.startsWith(HIDDEN_TAG_PREFIX);
 };
 
@@ -148,10 +162,12 @@ export const createDriveServices = (
     if (parent.type === 'root') {
       if (groupId) return roots.filter(isVisibleFolderTag);
       const personalRoot = roots.find((tag) => tag.tagName === '/');
-      const sharedTag = roots.find((tag) => tag.tagName === DRIVE_SHARED_TAG_NAME);
-      return [...(sharedTag ? [sharedTag] : []), ...(personalRoot?.children ?? [])].filter(
-        isVisibleFolderTag
-      );
+      const systemTags = DRIVE_ROOT_SYSTEM_FOLDER_TYPES.flatMap((type) => {
+        const { tagName } = getDriveSystemFolderDefinition(type);
+        const tag = roots.find((candidate) => candidate.tagName === tagName);
+        return tag ? [tag] : [];
+      });
+      return [...systemTags, ...(personalRoot?.children ?? [])].filter(isVisibleFolderTag);
     }
     const tag = tagService.getRawTagById(parent.tagId, groupId);
     return (tag?.children ?? []).filter(isVisibleFolderTag);
@@ -329,12 +345,9 @@ export const createDriveServices = (
     scope,
     type,
   }: GetDriveSystemFolderParams) => {
-    const notFoundCode =
-      type === 'trash'
-        ? FRONTEND_CLIENT_ERROR.DRIVE_TRASH_TAG_NOT_FOUND
-        : FRONTEND_CLIENT_ERROR.DRIVE_SHARED_TAG_NOT_FOUND;
+    const notFoundCode = DRIVE_SYSTEM_FOLDER_NOT_FOUND_CODES[type];
     if (scope.type !== 'personal') throw createClientError(notFoundCode);
-    const systemTagName = type === 'trash' ? DRIVE_TRASH_TAG_NAME : DRIVE_SHARED_TAG_NAME;
+    const { tagName: systemTagName } = getDriveSystemFolderDefinition(type);
     const roots = await tagService.getRawTagTree();
     const queue = [...roots];
     while (queue.length > 0) {

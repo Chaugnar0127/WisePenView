@@ -7,14 +7,14 @@ import {
   WORKSPACE_CONTEXT_PANEL_MIN_WIDTH,
 } from '@/constants/layoutScale';
 
-export const WORKSPACE_PANEL_IDS = ['chat', 'inlineComment', 'interact'] as const;
+export const WORKSPACE_PANEL_IDS = ['inlineComment', 'interact', 'chat'] as const;
 
 export type WorkspacePanelId = (typeof WORKSPACE_PANEL_IDS)[number];
 
 export const getWorkspacePanelTargetId = (panelId: WorkspacePanelId): string =>
   `workspace-right-panel-${panelId}`;
 
-export const getWorkspacePanelLabelId = (panelId: WorkspacePanelId): string =>
+export const getWorkspacePanelSlotLabelId = (panelId: WorkspacePanelId): string =>
   `workspace-right-panel-label-${panelId}`;
 
 export interface WorkspacePanelWidthBounds {
@@ -22,12 +22,15 @@ export interface WorkspacePanelWidthBounds {
   maxWidth: number;
 }
 
-export interface WorkspaceRightPanelSpec extends WorkspacePanelWidthBounds {
+export interface WorkspacePanelSlot extends WorkspacePanelWidthBounds {
   id: WorkspacePanelId;
-  label: string;
+  ariaLabel: string;
 }
 
-export const WORKSPACE_PANEL_WIDTH_BOUNDS: Record<WorkspacePanelId, WorkspacePanelWidthBounds> = {
+export const WORKSPACE_PANEL_SLOT_WIDTH_BOUNDS: Record<
+  WorkspacePanelId,
+  WorkspacePanelWidthBounds
+> = {
   chat: {
     minWidth: CHAT_PANEL_MIN_WIDTH,
     maxWidth: CHAT_PANEL_MAX_WIDTH,
@@ -42,13 +45,13 @@ export const WORKSPACE_PANEL_WIDTH_BOUNDS: Record<WorkspacePanelId, WorkspacePan
   },
 };
 
-export function createWorkspacePanelSpecs(
+export function createWorkspacePanelSlots(
   labels: Record<WorkspacePanelId, string>
-): WorkspaceRightPanelSpec[] {
+): WorkspacePanelSlot[] {
   return WORKSPACE_PANEL_IDS.map((panelId) => ({
     id: panelId,
-    label: labels[panelId],
-    ...WORKSPACE_PANEL_WIDTH_BOUNDS[panelId],
+    ariaLabel: labels[panelId],
+    ...WORKSPACE_PANEL_SLOT_WIDTH_BOUNDS[panelId],
   }));
 }
 

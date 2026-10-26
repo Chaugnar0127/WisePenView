@@ -3,13 +3,13 @@ export { useWorkspaceRightPanel } from './controllers/useWorkspaceRightPanel';
 export type { WorkspaceRightPanelLayoutProps } from './index.type';
 export {
   clampWorkspacePanelWidth,
-  createWorkspacePanelSpecs,
+  createWorkspacePanelSlots,
   getWorkspacePanelTargetId,
   WORKSPACE_PANEL_IDS,
-  WORKSPACE_PANEL_WIDTH_BOUNDS,
+  WORKSPACE_PANEL_SLOT_WIDTH_BOUNDS,
   type WorkspacePanelId,
+  type WorkspacePanelSlot,
   type WorkspacePanelWidthBounds,
-  type WorkspaceRightPanelSpec,
 } from './workspacePanelModel';
 export { WorkspacePanelPortal } from './WorkspacePanelPortal';
 export { workspaceRightPanelActions } from './workspaceRightPanelActions';

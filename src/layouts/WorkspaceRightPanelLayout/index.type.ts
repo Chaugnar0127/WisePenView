@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
-import type { WorkspacePanelId, WorkspaceRightPanelSpec } from './workspacePanelModel';
+import type { WorkspacePanelId, WorkspacePanelSlot } from './workspacePanelModel';
 
 export interface WorkspaceRightPanelLayoutProps {
   main: ReactNode;
-  panels: readonly WorkspaceRightPanelSpec[];
+  panelSlots: readonly WorkspacePanelSlot[];
   activePanelId: WorkspacePanelId | null;
   panelWidths: Record<WorkspacePanelId, number>;
   mainMinWidth: number;

@@ -16,7 +16,7 @@ import { ResourceEditorProvider, useResourceEditor } from '@/layouts/Resource/_c
 import { useResourceChatContextStore } from '@/layouts/Resource/_store/useResourceChatContextStore';
 import ResourceLayoutHeader from '@/layouts/Resource/ResourceLayout/ResourceLayoutHeader';
 import {
-  createWorkspacePanelSpecs,
+  createWorkspacePanelSlots,
   useWorkspaceRightPanel,
   WorkspacePanelPortal,
   WorkspaceRightPanelLayout,
@@ -192,7 +192,7 @@ function CourseLearningLayoutContent() {
       </div>
     </section>
   );
-  const panelSpecs = createWorkspacePanelSpecs({
+  const panelSlots = createWorkspacePanelSlots({
     chat: t('learning.chat'),
     inlineComment: tResource('sidePanel.annotation'),
     interact: tResource('sidePanel.interaction'),
@@ -203,7 +203,7 @@ function CourseLearningLayoutContent() {
       <WorkspaceRightPanelLayout
         mainMinWidth={COURSE_LEARNING_MAIN_MIN_WIDTH}
         panelGroupId="course-learning-right-panel"
-        panels={panelSpecs}
+        panelSlots={panelSlots}
         activePanelId={activePanelId}
         panelWidths={panelWidths}
         resizeLabel={t('learning.resizeChat')}

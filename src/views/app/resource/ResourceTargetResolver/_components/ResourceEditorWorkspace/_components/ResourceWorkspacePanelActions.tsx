@@ -1,4 +1,4 @@
-import { Bot, MessageSquareText, MessagesSquare } from 'lucide-react';
+import { Bot, type LucideIcon, MessageSquareText, MessagesSquare } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +8,7 @@ import { GUIDE_TOOL_ID } from '@/constants/tour';
 import {
   getWorkspacePanelTargetId,
   useWorkspaceRightPanel,
+  WORKSPACE_PANEL_IDS,
   type WorkspacePanelId,
 } from '@/layouts/WorkspaceRightPanelLayout';
 
@@ -37,6 +38,33 @@ function ResourceWorkspacePanelActions({
       : t('sidePanel.expandInteraction');
   const unavailableInlineCommentLabel = t('sidePanel.inlineCommentUnavailable');
   const unavailableInteractLabel = t('sidePanel.interactUnavailable');
+  const triggerMeta: Record<
+    WorkspacePanelId,
+    {
+      icon: LucideIcon;
+      label: string;
+      unavailableLabel?: string;
+      disabled: boolean;
+    }
+  > = {
+    inlineComment: {
+      icon: MessageSquareText,
+      label: inlineCommentLabel,
+      unavailableLabel: unavailableInlineCommentLabel,
+      disabled: !inlineCommentAvailable,
+    },
+    interact: {
+      icon: MessagesSquare,
+      label: interactLabel,
+      unavailableLabel: unavailableInteractLabel,
+      disabled: !interactAvailable,
+    },
+    chat: {
+      icon: Bot,
+      label: chatLabel,
+      disabled: false,
+    },
+  };
 
   /**
    * @wisepen-manual-effect
@@ -59,51 +87,35 @@ function ResourceWorkspacePanelActions({
 
   return (
     <>
-      <AppIconButton
-        ref={(node) => {
-          triggerRefs.current.inlineComment = node;
-        }}
-        icon={<MessageSquareText size={18} aria-hidden="true" />}
-        label={inlineCommentAvailable ? inlineCommentLabel : unavailableInlineCommentLabel}
-        size="sm"
-        isActive={activePanelId === 'inlineComment'}
-        isDisabled={!inlineCommentAvailable}
-        aria-controls={getWorkspacePanelTargetId('inlineComment')}
-        aria-expanded={activePanelId === 'inlineComment'}
-        tooltip={{
-          content: inlineCommentAvailable ? inlineCommentLabel : unavailableInlineCommentLabel,
-        }}
-        onPress={() => togglePanel('inlineComment')}
-      />
-      <AppIconButton
-        ref={(node) => {
-          triggerRefs.current.interact = node;
-        }}
-        icon={<MessagesSquare size={18} aria-hidden="true" />}
-        label={interactAvailable ? interactLabel : unavailableInteractLabel}
-        size="sm"
-        isActive={activePanelId === 'interact'}
-        isDisabled={!interactAvailable}
-        aria-controls={getWorkspacePanelTargetId('interact')}
-        aria-expanded={activePanelId === 'interact'}
-        tooltip={{ content: interactAvailable ? interactLabel : unavailableInteractLabel }}
-        onPress={() => togglePanel('interact')}
-      />
-      <GuideAnchor id={GUIDE_TOOL_ID.noteChat}>
-        <AppIconButton
-          ref={(node) => {
-            triggerRefs.current.chat = node;
-          }}
-          icon={<Bot size={18} aria-hidden="true" />}
-          label={chatLabel}
-          size="sm"
-          isActive={activePanelId === 'chat'}
-          aria-controls={getWorkspacePanelTargetId('chat')}
-          aria-expanded={activePanelId === 'chat'}
-          tooltip={{ content: chatLabel }}
-          onPress={() => togglePanel('chat')}
-        />
-      </GuideAnchor>
+      {WORKSPACE_PANEL_IDS.map((panelId) => {
+        const meta = triggerMeta[panelId];
+        const Icon = meta.icon;
+        const label = meta.disabled && meta.unavailableLabel ? meta.unavailableLabel : meta.label;
+        const trigger = (
+          <AppIconButton
+            key={panelId}
+            ref={(node) => {
+              triggerRefs.current[panelId] = node;
+            }}
+            icon={<Icon size={18} aria-hidden="true" />}
+            label={label}
+            size="sm"
+            isActive={activePanelId === panelId}
+            isDisabled={meta.disabled}
+            aria-controls={getWorkspacePanelTargetId(panelId)}
+            aria-expanded={activePanelId === panelId}
+            tooltip={{ content: label }}
+            onPress={() => togglePanel(panelId)}
+          />
+        );
+        return panelId === 'chat' ? (
+          <GuideAnchor key={panelId} id={GUIDE_TOOL_ID.noteChat}>
+            {trigger}
+          </GuideAnchor>
+        ) : (
+          trigger
+        );
+      })}
     </>
   );
 }

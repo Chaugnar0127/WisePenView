@@ -6,38 +6,6 @@
   --comment-avatar-size: var(--control-height-sm);
   --comment-action-size: var(--control-height-sm);
   --comment-thread-indent: calc(var(--comment-avatar-size) + var(--space-sm));
-  display: flex;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-  flex-direction: column;
-  background: var(--surface);
-}
-
-.panelHeader {
-  box-sizing: border-box;
-  display: flex;
-  min-width: 0;
-  height: var(--layout-workspace-split-header-height);
-  min-height: var(--layout-workspace-split-header-height);
-  flex: 0 0 var(--layout-workspace-split-header-height);
-  align-items: center;
-  gap: var(--space-sm);
-  padding: 0 var(--space-md) 0 var(--space-sm);
-  border-bottom: 1px solid var(--border);
-}
-
-.panelTitle {
-  margin: 0;
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--foreground);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .content {

@@ -1,8 +1,7 @@
-import { PanelRightClose } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import AppIconButton from '@/components/base/Button/AppIconButton';
+import { WorkspacePanel } from '@/components/base/WorkspacePanel';
 
 import styles from './ResourceInlineCommentPanel.module.scss';
 
@@ -16,17 +15,14 @@ function ResourceInlineCommentPanel({
   const { t } = useTranslation('resource');
 
   return (
-    <section className={styles.panel} aria-label={t('sidePanel.annotationAria')}>
-      <header className={styles.header}>
-        <AppIconButton
-          icon={<PanelRightClose size={18} aria-hidden="true" />}
-          label={t('sidePanel.collapseAnnotation')}
-          onPress={onClose}
-        />
-        <h2 className={styles.title}>{t('sidePanel.annotation')}</h2>
-      </header>
-      <div className={styles.body}>{children}</div>
-    </section>
+    <WorkspacePanel
+      className={styles.panel}
+      title={t('sidePanel.annotation')}
+      closeLabel={t('sidePanel.collapseAnnotation')}
+      onClose={onClose}
+    >
+      {children}
+    </WorkspacePanel>
   );
 }
 

@@ -21,7 +21,7 @@ import type { WorkspaceRightPanelLayoutProps } from './index.type';
 import styles from './style.module.scss';
 import {
   clampWorkspacePanelWidth,
-  getWorkspacePanelLabelId,
+  getWorkspacePanelSlotLabelId,
   type WorkspacePanelId,
 } from './workspacePanelModel';
 import { WorkspacePanelTarget } from './WorkspacePanelTarget';
@@ -29,15 +29,15 @@ import { WorkspacePanelTarget } from './WorkspacePanelTarget';
 const RIGHT_PANEL_DOM_ID = 'workspace-right-panel';
 
 function findActivePanel(
-  panels: WorkspaceRightPanelLayoutProps['panels'],
+  panelSlots: WorkspaceRightPanelLayoutProps['panelSlots'],
   activePanelId: WorkspacePanelId | null
 ) {
-  return activePanelId ? panels.find((panel) => panel.id === activePanelId) : undefined;
+  return activePanelId ? panelSlots.find((panel) => panel.id === activePanelId) : undefined;
 }
 
 export default function WorkspaceRightPanelLayout({
   main,
-  panels,
+  panelSlots,
   activePanelId,
   panelWidths,
   mainMinWidth,
@@ -48,7 +48,7 @@ export default function WorkspaceRightPanelLayout({
 }: WorkspaceRightPanelLayoutProps) {
   const panelRef = useRef<PanelImperativeHandle | null>(null);
   const pendingWidthRef = useRef<number | null>(null);
-  const activePanel = findActivePanel(panels, activePanelId);
+  const activePanel = findActivePanel(panelSlots, activePanelId);
   const open = Boolean(activePanel);
   const panelSize = activePanel
     ? clampWorkspacePanelWidth(activePanel.id, panelWidths[activePanel.id])
@@ -101,22 +101,22 @@ export default function WorkspaceRightPanelLayout({
               onResize={handleResize}
             >
               <div className={styles.panelStack}>
-                {panels.map((panel) => (
+                {panelSlots.map((panel) => (
                   <WorkspacePanelTarget
                     key={panel.id}
                     panelId={panel.id}
                     active={panel.id === activePanelId}
-                    labelledBy={getWorkspacePanelLabelId(panel.id)}
+                    labelledBy={getWorkspacePanelSlotLabelId(panel.id)}
                   />
                 ))}
               </div>
-              {panels.map((panel) => (
+              {panelSlots.map((panel) => (
                 <span
                   key={panel.id}
-                  id={getWorkspacePanelLabelId(panel.id)}
+                  id={getWorkspacePanelSlotLabelId(panel.id)}
                   className={styles.visuallyHidden}
                 >
-                  {panel.label}
+                  {panel.ariaLabel}
                 </span>
               ))}
             </SystemResizablePanel>

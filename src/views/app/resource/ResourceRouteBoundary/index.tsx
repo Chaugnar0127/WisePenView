@@ -25,7 +25,7 @@ import { useResourceChatContextStore } from '@/layouts/Resource/_store/useResour
 import ResourceHost from '@/layouts/Resource/ResourceHost';
 import RouteOutletBoundary from '@/layouts/RouteOutletBoundary';
 import {
-  createWorkspacePanelSpecs,
+  createWorkspacePanelSlots,
   useWorkspaceRightPanel,
   WorkspacePanelPortal,
   WorkspaceRightPanelLayout,
@@ -121,7 +121,7 @@ function ResourceRouteBoundary() {
       { preventScrollReset: true }
     );
   };
-  const panelSpecs = createWorkspacePanelSpecs({
+  const panelSlots = createWorkspacePanelSlots({
     chat: t('shell.chatPanel'),
     inlineComment: tResource('sidePanel.annotation'),
     interact: tResource('sidePanel.interaction'),
@@ -136,7 +136,7 @@ function ResourceRouteBoundary() {
         <WorkspaceRightPanelLayout
           mainMinWidth={RESOURCE_MAIN_MIN_WIDTH}
           panelGroupId="app-resource-right-panel"
-          panels={panelSpecs}
+          panelSlots={panelSlots}
           activePanelId={activePanelId}
           panelWidths={panelWidths}
           resizeLabel={tResource('sidePanel.resize')}

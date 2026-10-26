@@ -1,12 +1,11 @@
 import { Tabs, toast } from '@heroui/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll } from 'ahooks';
-import { PanelRightClose } from 'lucide-react';
 import { type Key, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AppButton } from '@/components/base/Button';
-import AppIconButton from '@/components/base/Button/AppIconButton';
+import { WorkspacePanel } from '@/components/base/WorkspacePanel';
 import AppAlertDialog from '@/components/business/AppAlertDialog';
 import AppDisplayDialog from '@/components/business/AppDisplayDialog';
 import ResourceFavoriteAction from '@/components/business/Resource/ResourceFavoriteAction';
@@ -251,18 +250,12 @@ function ResourceInteractionPanel({
   };
 
   return (
-    <div className={styles.panel}>
-      <header className={styles.panelHeader}>
-        {onClose ? (
-          <AppIconButton
-            icon={<PanelRightClose size={18} aria-hidden="true" />}
-            label={t('resource:sidePanel.collapseInteraction')}
-            onPress={onClose}
-          />
-        ) : null}
-        <h2 className={styles.panelTitle}>{t('resource:sidePanel.interaction')}</h2>
-      </header>
-
+    <WorkspacePanel
+      className={styles.panel}
+      title={t('resource:sidePanel.interaction')}
+      closeLabel={t('resource:sidePanel.collapseInteraction')}
+      onClose={onClose}
+    >
       <div className={styles.content} ref={contentRef}>
         <section
           className={styles.commentsSection}
@@ -409,7 +402,7 @@ function ResourceInteractionPanel({
           />
         ) : null}
       </AppDisplayDialog>
-    </div>
+    </WorkspacePanel>
   );
 }
 

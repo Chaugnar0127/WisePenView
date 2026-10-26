@@ -2,7 +2,6 @@
 export {
   DEFAULT_RESOURCE_HOST_ID,
   type OpenResourceFn,
-  type ResourceHeaderNavigation,
   type ResourceHostContextValue,
   type ResourceHostDriveNavigationTarget,
   type ResourceHostRouteContext,

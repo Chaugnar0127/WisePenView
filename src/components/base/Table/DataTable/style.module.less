@@ -37,11 +37,14 @@
   :global(button) {
     min-height: @table-control-min-height;
     padding-inline: @table-gap-compact;
-    color: var(--muted);
     font-family: @table-font-family;
     font-size: @table-font-size-body;
     font-weight: @table-font-weight-medium;
     line-height: @table-line-height-body;
+  }
+
+  :global(button:not(.button)) {
+    color: var(--muted);
   }
 }
 

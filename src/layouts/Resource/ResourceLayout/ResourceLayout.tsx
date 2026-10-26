@@ -27,14 +27,14 @@ export default function ResourceLayout({
       : undefined;
   const layoutHeader = resourceToolbar ? (
     <ResourceLayoutHeader
-      {...host.headerNavigation}
+      leftSidebarCollapsed={host.leftSidebarCollapsed}
       resourceToolbar={resourceToolbar}
       trailingActions={headerTrailingActions}
     />
   ) : (
     (host.fallbackHeader ??
-    (header !== false || host.headerNavigation?.leftSidebarCollapsed ? (
-      <ResourceLayoutHeader {...host.headerNavigation} />
+    (header !== false ? (
+      <ResourceLayoutHeader leftSidebarCollapsed={host.leftSidebarCollapsed} />
     ) : null))
   );
 

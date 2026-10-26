@@ -15,8 +15,8 @@
   flex-direction: column;
   gap: var(--space-md);
   overflow-y: auto;
-  @include scrollbar.appSubtleScrollbar();
   padding: var(--space-md);
+  @include scrollbar.appSubtleScrollbar();
 }
 
 .feedback {

@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
-import type { ResourceHeaderNavigation } from '@/layouts/Resource/_context/host';
-
 import type { ResourceToolbarProps } from '../ResourceToolbar/index.type';
 
-export interface ResourceLayoutHeaderProps extends ResourceHeaderNavigation {
+export interface ResourceLayoutHeaderProps {
+  /** 左侧栏是否折叠，用于适配桌面窗口控件。 */
+  leftSidebarCollapsed?: boolean;
   /** 资源工具栏配置；存在时替代 inlineTitle 与 extra。 */
   resourceToolbar?: ResourceToolbarProps;
   /** 工具条中间区：如 PDF 图标 + 文件名 */

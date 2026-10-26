@@ -268,6 +268,7 @@ function ResourceToolbarOperations({
         isOpen={targetModal === 'copy'}
         title={t('resource:header.copyDialog.title')}
         hint={t('resource:header.copyDialog.hint', { name: copyName })}
+        scopeMode="all"
         scope={scope}
         submitting={copying}
         confirmText={t('resource:header.copyDialog.confirm')}

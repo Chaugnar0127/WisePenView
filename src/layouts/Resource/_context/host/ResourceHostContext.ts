@@ -4,16 +4,6 @@ import type { AppBreadcrumbItem } from '@/components/base/AppBreadcrumb';
 import type { DriveNodeScope, DriveResourceLocation } from '@/domains/Drive';
 import type { ResourceViewer } from '@/domains/Resource/model/resourceTarget';
 
-/** 宿主向资源顶栏提供的导航能力；顶栏实现消费它，而不是反过来定义宿主契约。 */
-export interface ResourceHeaderNavigation {
-  leftSidebarCollapsed?: boolean;
-  canGoBack?: boolean;
-  canGoForward?: boolean;
-  onGoBack?: () => void;
-  onGoForward?: () => void;
-  onToggleLeftSidebar?: () => void;
-}
-
 export interface OpenResourceTarget {
   resourceId: string;
   resourceType?: string;
@@ -51,7 +41,8 @@ export interface ResourceHostContextValue {
   navigateToDrive: (target: ResourceHostDriveNavigationTarget) => void;
   switchResourceViewer: (target: ResourceHostViewerNavigationTarget) => void;
   navigateResourceHash?: (hash: string) => void;
-  headerNavigation?: ResourceHeaderNavigation;
+  /** 左侧栏是否折叠，用于资源顶栏适配桌面窗口控件。 */
+  leftSidebarCollapsed?: boolean;
   fallbackHeader?: ReactNode;
   breadcrumbItems?: AppBreadcrumbItem[];
 }

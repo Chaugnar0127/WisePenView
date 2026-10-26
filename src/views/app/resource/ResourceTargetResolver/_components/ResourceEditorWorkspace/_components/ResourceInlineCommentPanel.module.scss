@@ -1,0 +1,50 @@
+/* 资源划词批注面板的头部与内容布局。 */
+.panel {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: resource-inline-comment-panel;
+  background: var(--surface);
+}
+
+.header {
+  display: flex;
+  min-height: 44px;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 0 var(--space-sm) 0 var(--space-md);
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+
+  > * {
+    min-width: 0;
+    min-height: 0;
+    flex: 1;
+  }
+}

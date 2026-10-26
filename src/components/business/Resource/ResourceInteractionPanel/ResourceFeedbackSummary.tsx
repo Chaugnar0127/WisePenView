@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next';
 
 import { formatReadCount } from '@/utils/format/formatNumber';
 
-import styles from './style.module.less';
+import styles from './style.module.scss';
 
+/** 资源阅读、收藏与点赞摘要。 */
 interface ResourceFeedbackSummaryProps {
   readCount?: number | null;
   favoriteCount?: number | null;

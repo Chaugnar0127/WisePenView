@@ -11,13 +11,14 @@ import { parseErrorMessage } from '@/utils/error';
 
 import CommentComposer from './CommentComposer';
 import ResourceCommentItem from './ResourceCommentItem';
-import styles from './style.module.less';
+import styles from './style.module.scss';
 import { updateCommentLikeCount } from './utils';
 
 const REPLY_PAGE_SIZE = 10;
 const REPLY_ITEM_ESTIMATE_SIZE = 132;
 const REPLY_ITEM_OVERSCAN = 6;
 
+/** 资源互动面板中的根评论与延迟加载回复。 */
 interface ReplyListPage {
   list: ResourceComment[];
   total: number;

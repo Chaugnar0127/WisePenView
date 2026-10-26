@@ -1,10 +1,12 @@
 import { Tabs, toast } from '@heroui/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll } from 'ahooks';
+import { X } from 'lucide-react';
 import { type Key, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AppButton } from '@/components/base/Button';
+import AppIconButton from '@/components/base/Button/AppIconButton';
 import AppAlertDialog from '@/components/business/AppAlertDialog';
 import AppDisplayDialog from '@/components/business/AppDisplayDialog';
 import ResourceFavoriteAction from '@/components/business/Resource/ResourceFavoriteAction';
@@ -17,7 +19,7 @@ import { parseErrorMessage } from '@/utils/error';
 import CommentComposer from './CommentComposer';
 import ResourceCommentThread from './ResourceCommentThread';
 import ResourceFeedbackSummary from './ResourceFeedbackSummary';
-import styles from './style.module.less';
+import styles from './style.module.scss';
 import { updateCommentLikeCount } from './utils';
 
 const COMMENT_PAGE_SIZE = 10;
@@ -31,9 +33,11 @@ interface CommentListPage {
   totalPage: number;
 }
 
-interface ResourceCommentPanelProps {
+/** 资源点赞、收藏、阅读与一般评论的统一互动面板。 */
+interface ResourceInteractionPanelProps {
   resource: ResourceItem;
   onResourceChanged?: () => unknown | Promise<unknown>;
+  onClose?: () => void;
 }
 
 interface OptimisticLikeState {
@@ -48,7 +52,11 @@ interface PendingDeletion {
   onDeleted?: () => void | Promise<void>;
 }
 
-function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPanelProps) {
+function ResourceInteractionPanel({
+  resource,
+  onResourceChanged,
+  onClose,
+}: ResourceInteractionPanelProps) {
   const { t } = useTranslation(['resource', 'common']);
   const interactService = useInteractService();
   const userService = useUserService();
@@ -245,13 +253,21 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   return (
     <div className={styles.panel}>
       <header className={styles.panelHeader}>
-        <h2 className={styles.panelTitle}>{t('resource:sidePanel.comments')}</h2>
+        <h2 className={styles.panelTitle}>{t('resource:sidePanel.interaction')}</h2>
+        {onClose ? (
+          <AppIconButton
+            icon={<X size={18} aria-hidden="true" />}
+            label={t('resource:sidePanel.collapseInteraction')}
+            size="sm"
+            onPress={onClose}
+          />
+        ) : null}
       </header>
 
       <div className={styles.content} ref={contentRef}>
         <section
           className={styles.commentsSection}
-          aria-label={t('resource:sidePanel.commentsAria')}
+          aria-label={t('resource:sidePanel.interactionAria')}
         >
           <div className={styles.commentsHeader}>
             <Tabs
@@ -398,4 +414,4 @@ function ResourceCommentPanel({ resource, onResourceChanged }: ResourceCommentPa
   );
 }
 
-export default ResourceCommentPanel;
+export default ResourceInteractionPanel;

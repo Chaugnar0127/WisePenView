@@ -1,4 +1,6 @@
-@import '@/styles/mixins/scrollbar.less';
+@use '@/styles/mixins/scrollbar' as scrollbar;
+
+/* 资源互动面板的布局、评论列表与输入区样式。 */
 
 .panel {
   --comment-avatar-size: var(--control-height-sm);
@@ -19,6 +21,7 @@
   min-height: var(--table-header-bar-min-height);
   flex: 0 0 var(--table-header-bar-min-height);
   align-items: center;
+  justify-content: space-between;
   padding: 0 var(--space-md);
   border-bottom: 1px solid var(--border);
 }
@@ -42,7 +45,7 @@
   flex-direction: column;
   gap: var(--space-md);
   overflow-y: auto;
-  .appSubtleScrollbar();
+  @include scrollbar.appSubtleScrollbar();
   padding: var(--space-md);
 }
 

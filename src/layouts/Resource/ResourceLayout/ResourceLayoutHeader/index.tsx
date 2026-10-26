@@ -12,7 +12,7 @@ function ResourceLayoutHeader({
   resourceToolbar,
   inlineTitle,
   extra,
-  sidePanelActions,
+  trailingActions,
   titleBlock,
   canGoBack = false,
   canGoForward = false,
@@ -61,7 +61,7 @@ function ResourceLayoutHeader({
           ) : null}
           {resourceToolbar ? (
             <div className={styles.resourceToolbar}>
-              <ResourceToolbar {...resourceToolbar} trailingActions={sidePanelActions} />
+              <ResourceToolbar {...resourceToolbar} trailingActions={trailingActions} />
             </div>
           ) : (
             <div className={styles.toolbarMiddle}>
@@ -71,7 +71,7 @@ function ResourceLayoutHeader({
           {resourceToolbar ? null : (
             <div className={styles.toolbarEnd}>
               {extra}
-              {sidePanelActions}
+              {trailingActions}
             </div>
           )}
         </div>

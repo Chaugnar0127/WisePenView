@@ -44,14 +44,14 @@ export default function ResourceLayout({
   const hasTrailingActions = Boolean(sidePanel || headerTrailingActions);
   const layoutHeader = resourceToolbar ? (
     <ResourceLayoutHeader
-      {...host.headerNavigation}
+      leftSidebarCollapsed={host.leftSidebarCollapsed}
       resourceToolbar={resourceToolbar}
       sidePanelActions={hasTrailingActions ? trailingActions : undefined}
     />
   ) : (
     (host.fallbackHeader ??
-    (header !== false || host.headerNavigation?.leftSidebarCollapsed ? (
-      <ResourceLayoutHeader {...host.headerNavigation} />
+    (header !== false ? (
+      <ResourceLayoutHeader leftSidebarCollapsed={host.leftSidebarCollapsed} />
     ) : null))
   );
 

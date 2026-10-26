@@ -1,6 +1,5 @@
 import { clsx } from 'clsx';
 
-import NavigationControls from '@/components/business/Sidebar/_common/header/NavigationControls';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 
 import ResourceToolbar from '../ResourceToolbar';
@@ -14,12 +13,7 @@ function ResourceLayoutHeader({
   extra,
   sidePanelActions,
   titleBlock,
-  canGoBack = false,
-  canGoForward = false,
   leftSidebarCollapsed = false,
-  onGoBack,
-  onGoForward,
-  onToggleLeftSidebar,
   className,
 }: ResourceLayoutHeaderProps) {
   const desktopWindow = useDesktopWindowState();
@@ -47,18 +41,6 @@ function ResourceLayoutHeader({
     >
       <div className={styles.bar}>
         <div className={styles.toolbar}>
-          {leftSidebarCollapsed && onToggleLeftSidebar && onGoBack && onGoForward ? (
-            <div className={styles.leftSidebarControls}>
-              <NavigationControls
-                sidebarCollapsed
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
-                onGoBack={onGoBack}
-                onGoForward={onGoForward}
-                onToggleSidebar={onToggleLeftSidebar}
-              />
-            </div>
-          ) : null}
           {resourceToolbar ? (
             <div className={styles.resourceToolbar}>
               <ResourceToolbar {...resourceToolbar} trailingActions={sidePanelActions} />

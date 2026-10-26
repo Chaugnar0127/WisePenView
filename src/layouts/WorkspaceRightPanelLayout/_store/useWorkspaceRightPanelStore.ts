@@ -1,42 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import {
-  CHAT_PANEL_MAX_WIDTH,
-  CHAT_PANEL_MIN_WIDTH,
-  clampWorkspaceContextPanelWidth,
-  WORKSPACE_CONTEXT_PANEL_DEFAULT_WIDTH,
-} from '@/constants/layoutScale';
+import { WORKSPACE_CONTEXT_PANEL_DEFAULT_WIDTH } from '@/constants/layoutScale';
 import { registerStore } from '@/store/lifecycle';
-import {
-  createStoreJSONStorage,
-  readStoreStorageValue,
-  removeStoreStorageValue,
-} from '@/store/persistence';
+import { createStoreJSONStorage } from '@/store/persistence';
 
 import {
   clampWorkspacePanelWidth,
   WORKSPACE_PANEL_IDS,
   type WorkspacePanelId,
 } from '../workspacePanelModel';
-
-interface PersistedWorkspaceRightPanel {
-  state?: {
-    panelWidths?: Partial<Record<WorkspacePanelId, number>>;
-  };
-}
-
-interface PersistedLegacyChatPanel {
-  state?: {
-    chatPanelWidth?: number;
-  };
-}
-
-interface PersistedLegacyResourceSidePanel {
-  state?: {
-    width?: number;
-  };
-}
 
 interface WorkspaceRightPanelState {
   activePanelId: WorkspacePanelId | null;
@@ -45,51 +18,16 @@ interface WorkspaceRightPanelState {
   setPanelWidth: (panelId: WorkspacePanelId, width: number) => void;
 }
 
-const resolveInitialPanelWidths = (): Record<WorkspacePanelId, number> => {
-  const current = readStoreStorageValue<PersistedWorkspaceRightPanel>(
-    'tab',
-    'workspace-right-panel'
-  );
-  if (current?.state?.panelWidths) {
-    return {
-      chat: clampWorkspacePanelWidth(
-        'chat',
-        current.state.panelWidths.chat ??
-          Math.min(Math.max(480, CHAT_PANEL_MIN_WIDTH), CHAT_PANEL_MAX_WIDTH)
-      ),
-      inlineComment: clampWorkspacePanelWidth(
-        'inlineComment',
-        current.state.panelWidths.inlineComment ?? WORKSPACE_CONTEXT_PANEL_DEFAULT_WIDTH
-      ),
-      interact: clampWorkspacePanelWidth(
-        'interact',
-        current.state.panelWidths.interact ?? WORKSPACE_CONTEXT_PANEL_DEFAULT_WIDTH
-      ),
-    };
-  }
-
-  const legacyChat = readStoreStorageValue<PersistedLegacyChatPanel>('tab', 'chat-panel');
-  const legacyContext = readStoreStorageValue<PersistedLegacyResourceSidePanel>(
-    'tab',
-    'resource-side-panel'
-  );
-  const contextWidth = clampWorkspaceContextPanelWidth(
-    legacyContext?.state?.width ?? WORKSPACE_CONTEXT_PANEL_DEFAULT_WIDTH
-  );
-
-  removeStoreStorageValue('tab', 'chat-panel');
-  removeStoreStorageValue('tab', 'resource-side-panel');
-
-  return {
-    chat: clampWorkspacePanelWidth('chat', legacyChat?.state?.chatPanelWidth ?? 480),
-    inlineComment: contextWidth,
-    interact: contextWidth,
-  };
+// 旧布局宽度只存在当前标签页，统一后直接使用默认值，避免保留一次性迁移分支。
+const DEFAULT_PANEL_WIDTHS: Record<WorkspacePanelId, number> = {
+  chat: clampWorkspacePanelWidth('chat', 480),
+  inlineComment: clampWorkspacePanelWidth('inlineComment', WORKSPACE_CONTEXT_PANEL_DEFAULT_WIDTH),
+  interact: clampWorkspacePanelWidth('interact', WORKSPACE_CONTEXT_PANEL_DEFAULT_WIDTH),
 };
 
 const DEFAULT_STATE = {
   activePanelId: 'chat' as WorkspacePanelId | null,
-  panelWidths: resolveInitialPanelWidths(),
+  panelWidths: DEFAULT_PANEL_WIDTHS,
 };
 
 export const useWorkspaceRightPanelStore = create<WorkspaceRightPanelState>()(

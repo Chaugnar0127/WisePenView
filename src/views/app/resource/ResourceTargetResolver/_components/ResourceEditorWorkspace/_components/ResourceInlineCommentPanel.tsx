@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { WorkspacePanel } from '@/components/base/WorkspacePanel';
+import { WorkspacePanel } from '@/components/business/WorkspacePanel';
 
 import styles from './ResourceInlineCommentPanel.module.scss';
 

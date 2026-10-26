@@ -7,7 +7,7 @@ import AppIconButton from '@/components/base/Button/AppIconButton';
 import type { WorkspacePanelHeaderProps, WorkspacePanelProps } from './index.type';
 import styles from './style.module.scss';
 
-/** 右侧面板共用的标题栏与内容骨架。 */
+/** 工作区右侧面板共用的标题栏与内容骨架。 */
 export function WorkspacePanelHeader({
   title,
   titleId,

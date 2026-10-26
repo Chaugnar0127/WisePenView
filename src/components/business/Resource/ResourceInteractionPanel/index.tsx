@@ -5,10 +5,10 @@ import { type Key, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AppButton } from '@/components/base/Button';
-import { WorkspacePanel } from '@/components/base/WorkspacePanel';
 import AppAlertDialog from '@/components/business/AppAlertDialog';
 import AppDisplayDialog from '@/components/business/AppDisplayDialog';
 import ResourceFavoriteAction from '@/components/business/Resource/ResourceFavoriteAction';
+import { WorkspacePanel } from '@/components/business/WorkspacePanel';
 import { useInteractService, useUserService } from '@/domains';
 import type { CommentSortBy, ResourceComment } from '@/domains/Interact';
 import type { ResourceItem } from '@/domains/Resource';

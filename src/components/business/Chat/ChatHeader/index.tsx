@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import AppIconButton from '@/components/base/Button/AppIconButton';
 import { GuideAnchor } from '@/components/base/Guide';
-import { WorkspacePanelHeader } from '@/components/base/WorkspacePanel';
+import { WorkspacePanelHeader } from '@/components/business/WorkspacePanel';
 import { GUIDE_TOOL_ID } from '@/constants/tour';
 import { useDesktopWindowState } from '@/hooks/useDesktopWindowState';
 

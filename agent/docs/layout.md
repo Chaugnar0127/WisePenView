@@ -41,7 +41,7 @@ Layout 只负责页面骨架与空间关系。判断一个实现是否属于 Lay
 ## 五、命名槽位
 
 - Panel 与 Slot 是两个概念：Panel 是可复用 UI 组件，负责标题栏、关闭动作和业务内容；Layout 只管理 `panelSlots` 等空间槽位。
-- 通用 Panel 骨架放在 `src/components/base`，业务 Panel 通过它组合内容，不重复实现标题栏和关闭动作。
+- `WorkspacePanel` 属于工作区语义的跨页面业务组件，放在 `src/components/business/WorkspacePanel`；业务 Panel 通过它组合内容，不重复实现标题栏和关闭动作。不得仅因标题栏和关闭布局相似，就把工作区面板下沉到 `src/components/base`。
 - 槽位 id 表达稳定位置或产品级面板身份，例如 `chat`、`inlineComment`、`interact`。
 - 槽位 id 不得用于分支业务请求或权限判断。
 - 面板显示名、可用性、业务内容与关闭后的业务清理均由 view 提供。

@@ -1,7 +1,6 @@
 import { type ReactNode, useEffect } from 'react';
 
 import { clearFrontendStates, FRONTEND_STATE_SOURCE, setFrontendStates } from '@/frontendState';
-import { useAppNavigation } from '@/layouts/AppNavigation/_context';
 import { useMainShell } from '@/layouts/MainShell/_context';
 import { buildResourceOpenState } from '@/layouts/Resource/_context/chatBinding/resourceChatModel';
 import { ResourceEditorProvider, useResourceEditor } from '@/layouts/Resource/_context/editor';
@@ -34,8 +33,7 @@ function ResourceHostContent({
   switchResourceViewer,
   navigateResourceHash,
 }: ResourceHostProps) {
-  const { sidebarCollapsed, onToggleSidebar } = useMainShell();
-  const appNavigation = useAppNavigation();
+  const { sidebarCollapsed } = useMainShell();
   const { snapshot: editorSnapshot } = useResourceEditor();
   const { resourceId, resourceType, viewer } = editorSnapshot?.openedResource ?? routeContext;
   /**
@@ -73,14 +71,7 @@ function ResourceHostContent({
     navigateToDrive,
     switchResourceViewer,
     navigateResourceHash,
-    headerNavigation: {
-      leftSidebarCollapsed: sidebarCollapsed,
-      canGoBack: appNavigation.canGoBack,
-      canGoForward: appNavigation.canGoForward,
-      onGoBack: appNavigation.goBack,
-      onGoForward: appNavigation.goForward,
-      onToggleLeftSidebar: onToggleSidebar,
-    },
+    leftSidebarCollapsed: sidebarCollapsed,
     breadcrumbItems: resourceBreadcrumbItems,
   } satisfies ResourceHostContextValue;
 

@@ -213,6 +213,18 @@ test('Table partial 不輸出 CSS，固定欄寬與 token fallback 可展開', (
   );
 });
 
+test('DataTable 工具栏保留主按钮标准配色与禁用态覆盖', async () => {
+  const { code, modules } = await compileCssModule(
+    'src/components/base/Table/DataTable/style.module.scss'
+  );
+  const buttons = code.match(/\.toolbar button\s*\{([^}]+)\}/);
+  assert.ok(buttons);
+  assert.doesNotMatch(buttons[1], /(?:^|;)\s*color\s*:/);
+  assert.match(code, /\.toolbar button:not\(\.button\)\s*\{\s*color: var\(--muted\);\s*\}/);
+  assert.match(code, /\.toolbarDisabled button\s*\{\s*color: var\(--text-disabled\);\s*\}/);
+  assert.equal(Object.hasOwn(modules, 'button'), false);
+});
+
 test('DataTable 與 FolderTable 各依序產生精確 16 組等寬欄規則', async () => {
   for (const variant of ['DataTable', 'FolderTable']) {
     const { code } = await compileCssModule(

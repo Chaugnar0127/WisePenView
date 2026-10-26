@@ -13,11 +13,12 @@
 }
 
 .header {
+  box-sizing: border-box;
   display: flex;
-  min-height: 44px;
-  flex: 0 0 44px;
+  height: var(--layout-workspace-split-header-height);
+  min-height: var(--layout-workspace-split-header-height);
+  flex: 0 0 var(--layout-workspace-split-header-height);
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-sm);
   padding: 0 var(--space-sm) 0 var(--space-md);
   border-bottom: 1px solid var(--border);

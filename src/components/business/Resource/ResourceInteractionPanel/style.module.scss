@@ -16,13 +16,15 @@
 }
 
 .panelHeader {
+  box-sizing: border-box;
   display: flex;
   min-width: 0;
-  min-height: var(--table-header-bar-min-height);
-  flex: 0 0 var(--table-header-bar-min-height);
+  height: var(--layout-workspace-split-header-height);
+  min-height: var(--layout-workspace-split-header-height);
+  flex: 0 0 var(--layout-workspace-split-header-height);
   align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--space-md);
+  gap: var(--space-sm);
+  padding: 0 var(--space-md) 0 var(--space-sm);
   border-bottom: 1px solid var(--border);
 }
 

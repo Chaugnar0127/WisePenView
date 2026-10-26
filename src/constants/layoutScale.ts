@@ -68,6 +68,7 @@ export const WORKSPACE_TWO_COLUMN_MIN_WIDTH =
 export const WORKSPACE_CONTEXT_PANEL_MIN_WIDTH = 320;
 export const WORKSPACE_CONTEXT_PANEL_MAX_WIDTH = 560;
 export const WORKSPACE_CONTEXT_PANEL_DEFAULT_WIDTH = 360;
+export const WORKSPACE_SPLIT_HEADER_HEIGHT = 56;
 
 export const LAYOUT_COMPACT_MAX_WIDTH = MAIN_SHELL_DRAWER_MAX_WIDTH;
 
@@ -236,6 +237,7 @@ export const getLayoutScaleCssVars = (
     '--layout-note-editor-min-width': `${NOTE_EDITOR_MIN_WIDTH}px`,
     '--layout-resource-main-min-width': `${RESOURCE_MAIN_MIN_WIDTH}px`,
     '--layout-workspace-context-panel-min-width': `${WORKSPACE_CONTEXT_PANEL_MIN_WIDTH}px`,
+    '--layout-workspace-split-header-height': `${WORKSPACE_SPLIT_HEADER_HEIGHT}px`,
     '--layout-resize-handle-reserve': `${LAYOUT_RESIZE_HANDLE_RESERVE}px`,
     '--layout-note-outline-open-width': `${NOTE_OUTLINE_OPEN_WIDTH}px`,
     '--layout-note-outline-collapsed-width': `${NOTE_OUTLINE_COLLAPSED_WIDTH}px`,

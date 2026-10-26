@@ -1,7 +1,7 @@
 import { Tabs, toast } from '@heroui/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useInfiniteScroll } from 'ahooks';
-import { X } from 'lucide-react';
+import { PanelRightClose } from 'lucide-react';
 import { type Key, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -253,15 +253,14 @@ function ResourceInteractionPanel({
   return (
     <div className={styles.panel}>
       <header className={styles.panelHeader}>
-        <h2 className={styles.panelTitle}>{t('resource:sidePanel.interaction')}</h2>
         {onClose ? (
           <AppIconButton
-            icon={<X size={18} aria-hidden="true" />}
+            icon={<PanelRightClose size={18} aria-hidden="true" />}
             label={t('resource:sidePanel.collapseInteraction')}
-            size="sm"
             onPress={onClose}
           />
         ) : null}
+        <h2 className={styles.panelTitle}>{t('resource:sidePanel.interaction')}</h2>
       </header>
 
       <div className={styles.content} ref={contentRef}>

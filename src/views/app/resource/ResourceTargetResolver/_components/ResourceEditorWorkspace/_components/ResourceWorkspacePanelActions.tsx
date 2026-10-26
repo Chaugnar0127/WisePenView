@@ -59,21 +59,6 @@ function ResourceWorkspacePanelActions({
 
   return (
     <>
-      <GuideAnchor id={GUIDE_TOOL_ID.noteChat}>
-        <AppIconButton
-          ref={(node) => {
-            triggerRefs.current.chat = node;
-          }}
-          icon={<Bot size={18} aria-hidden="true" />}
-          label={chatLabel}
-          size="sm"
-          isActive={activePanelId === 'chat'}
-          aria-controls={getWorkspacePanelTargetId('chat')}
-          aria-expanded={activePanelId === 'chat'}
-          tooltip={{ content: chatLabel }}
-          onPress={() => togglePanel('chat')}
-        />
-      </GuideAnchor>
       <AppIconButton
         ref={(node) => {
           triggerRefs.current.inlineComment = node;
@@ -104,6 +89,21 @@ function ResourceWorkspacePanelActions({
         tooltip={{ content: interactAvailable ? interactLabel : unavailableInteractLabel }}
         onPress={() => togglePanel('interact')}
       />
+      <GuideAnchor id={GUIDE_TOOL_ID.noteChat}>
+        <AppIconButton
+          ref={(node) => {
+            triggerRefs.current.chat = node;
+          }}
+          icon={<Bot size={18} aria-hidden="true" />}
+          label={chatLabel}
+          size="sm"
+          isActive={activePanelId === 'chat'}
+          aria-controls={getWorkspacePanelTargetId('chat')}
+          aria-expanded={activePanelId === 'chat'}
+          tooltip={{ content: chatLabel }}
+          onPress={() => togglePanel('chat')}
+        />
+      </GuideAnchor>
     </>
   );
 }
